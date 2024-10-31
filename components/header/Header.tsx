@@ -26,7 +26,6 @@ export const Header = () => (
         "Accueil - Fonds vert (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
     }}
     quickAccessItems={[
-      headerFooterDisplayItem,
       <HeaderQuickAccessItem
         key={0}
         quickAccessItem={{

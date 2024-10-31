@@ -1,3 +1,7 @@
 export default function Home() {
-  return <main></main>;
+  return (
+    <>
+      <h1>Espace bénéficiaire</h1>
+    </>
+  );
 }
