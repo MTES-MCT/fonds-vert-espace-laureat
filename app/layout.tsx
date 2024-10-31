@@ -18,7 +18,10 @@ export default function RootLayout({ children }: { children: ReactElement }) {
         <DsfrHead />
       </head>
       <body>
-        <DsfrProvider lang={lang}>{children}</DsfrProvider>
+        <DsfrProvider lang={lang}>
+          <Header />
+          {children}
+        </DsfrProvider>
       </body>
     </html>
   );
