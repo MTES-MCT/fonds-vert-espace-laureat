@@ -1,6 +1,6 @@
 import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 
-export default function ConnexionProConnect() {
+export default function Connexion() {
   return (
     <div className="max-w-xl pb-24">
       <h1>Espace lauréat</h1>

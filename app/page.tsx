@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <div className="max-w-2xl pb-12">
@@ -14,7 +16,7 @@ export default function Home() {
       </p>
       <p>
         Vous êtes porteur d'un projet lauréat du Fonds vert ? Accédez à votre{" "}
-        <a href="/connexion/proconnect">espace lauréat</a>.
+        <Link href="/connexion">espace lauréat</Link>.
       </p>
     </div>
   );
