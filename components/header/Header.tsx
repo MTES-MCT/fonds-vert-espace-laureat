@@ -19,7 +19,8 @@ export const Header = () => (
         LOGEMENT <span className="sr-only">Liberté, Égalité, Fraternité</span>
       </>
     }
-    serviceTitle="Fonds vert / Espace bénéficiaire"
+    serviceTitle="Fonds vert"
+    serviceTagline="Accélérer la transition écologique dans les territoires"
     homeLinkProps={{
       href: "/",
       title:
@@ -30,8 +31,8 @@ export const Header = () => (
         key={0}
         quickAccessItem={{
           iconId: "ri-account-box-line",
-          text: "Se connecter",
-          linkProps: { href: "/auth/login" },
+          text: "Espace lauréat",
+          linkProps: { href: "/connexion/proconnect" },
         }}
       />,
     ]}
