@@ -1,11 +1,13 @@
-import { DsfrHead } from "@codegouvfr/react-dsfr/next-appdir/DsfrHead";
+import "./globals.css";
+
 import { DsfrProvider } from "@codegouvfr/react-dsfr/next-appdir/DsfrProvider";
 import { getHtmlAttributes } from "@codegouvfr/react-dsfr/next-appdir/getHtmlAttributes";
-import Link from "next/link";
 import { ReactElement } from "react";
 
 import { defaultColorScheme } from "@/components/dsfr/defaultColorScheme";
+import { DsfrHead } from "@/components/dsfr/DsfrHead";
 import { StartDsfr } from "@/components/dsfr/StartDsfr";
+import { Header } from "@/components/header/Header";
 
 export default function RootLayout({ children }: { children: ReactElement }) {
   const lang = "fr";
@@ -13,14 +15,7 @@ export default function RootLayout({ children }: { children: ReactElement }) {
     <html {...getHtmlAttributes({ defaultColorScheme, lang })}>
       <head>
         <StartDsfr />
-        <DsfrHead
-          Link={Link}
-          preloadFonts={[
-            "Marianne-Regular",
-            "Marianne-Medium",
-            "Marianne-Bold",
-          ]}
-        />
+        <DsfrHead />
       </head>
       <body>
         <DsfrProvider lang={lang}>{children}</DsfrProvider>

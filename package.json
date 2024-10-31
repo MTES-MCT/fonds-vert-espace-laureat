@@ -13,6 +13,8 @@
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.14.1",
     "next": "15.0.2",
+    "postcss-import": "^16.1.0",
+    "postcss-url": "^10.1.3",
     "react": "19.0.0-rc-02c0e824-20241028",
     "react-dom": "19.0.0-rc-02c0e824-20241028"
   },
