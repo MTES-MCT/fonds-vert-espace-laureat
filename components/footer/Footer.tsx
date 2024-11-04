@@ -6,7 +6,7 @@ import { Footer as DsfrFooter } from "@codegouvfr/react-dsfr/Footer";
 export const Footer = () => (
   <DsfrFooter
     accessibility="non compliant"
-    contentDescription={"Fonds vert / Espace bénéficiaire"}
+    contentDescription={"Fonds vert / Espace lauréat"}
     bottomItems={[headerFooterDisplayItem]}
   />
 );
