@@ -11,7 +11,7 @@ export default function Home() {
         renforcer leur performance environnementale, adapter leur territoire au
         changement climatique et améliorer leur cadre de vie.{" "}
         <a target="_blank" href="https://www.ecologie.gouv.fr/fonds-vert">
-          En savoir plus
+          En&nbsp;savoir&nbsp;plus
         </a>
       </p>
       <p>

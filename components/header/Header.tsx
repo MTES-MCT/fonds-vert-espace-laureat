@@ -1,6 +1,5 @@
 "use client";
 
-import { headerFooterDisplayItem } from "@codegouvfr/react-dsfr/Display";
 import { Header as DsfrHeader } from "@codegouvfr/react-dsfr/Header";
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 
