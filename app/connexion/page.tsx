@@ -9,7 +9,7 @@ export default function Connexion() {
         vert. Identifiez-vous pour suivre vos subventions et soumettre une
         demande de versement.
       </p>
-      <ProConnectButton url="https://www.proconnect.gouv.fr/" />
+      <ProConnectButton url="/api/auth/proconnect/login" />
     </div>
   );
 }
