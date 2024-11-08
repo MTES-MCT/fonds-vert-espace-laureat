@@ -9,7 +9,7 @@ let _client = undefined as BaseClient | undefined;
 
 const CLIENT_ID = process.env.PROCONNECT_CLIENT_ID;
 const CLIENT_SECRET = process.env.PROCONNECT_CLIENT_SECRET;
-const ISSUER_URL = process.env.PROCONNECT_URL_DISCOVER;
+const ISSUER_URL = process.env.PROCONNECT_DISCOVER_URL;
 const LOGIN_CALLBACK_URL = new URL(
   "/api/auth/proconnect/login-callback",
   process.env.NEXT_PUBLIC_BASE_URL,
