@@ -9,6 +9,7 @@ import { ProConnectUserInfo } from "../proconnect";
 type User = {
   id: string;
   email: string;
+  email_verified?: boolean;
 };
 
 type Session = {
@@ -40,6 +41,7 @@ export async function setSession(
   session.user = {
     id: userInfo.sub,
     email: userInfo.email,
+    email_verified: userInfo.custom.email_verified,
   };
   await session.save();
 }
