@@ -1,23 +1,25 @@
 // Documentation ProConnect
 // https://github.com/numerique-gouv/proconnect-documentation/blob/main/doc_fs/implementation_technique.md
 
-import { BaseClient, generators,Issuer } from "openid-client";
+import { BaseClient, generators, Issuer } from "openid-client";
 
-import { HttpForbiddenError } from "#clients/exceptions";
-import { IReqWithSession } from "#utils/session/with-session";
+import { RequestWithSession } from "@/utils/session";
 
 let _client = undefined as BaseClient | undefined;
 
-// LEGACY
-// Pro Connect was called Agent Connect in the past
-const CLIENT_ID = process.env.AGENTCONNECT_CLIENT_ID;
-const CLIENT_SECRET = process.env.AGENTCONNECT_CLIENT_SECRET;
-const ISSUER_URL = process.env.AGENTCONNECT_URL_DISCOVER;
-const REDIRECT_URI = process.env.AGENTCONNECT_REDIRECT_URI;
-const POST_LOGOUT_REDIRECT_URI =
-  process.env.AGENTCONNECT_POST_LOGOUT_REDIRECT_URI;
+const CLIENT_ID = process.env.PROCONNECT_CLIENT_ID;
+const CLIENT_SECRET = process.env.PROCONNECT_CLIENT_SECRET;
+const ISSUER_URL = process.env.PROCONNECT_URL_DISCOVER;
+const LOGIN_CALLBACK_URL = new URL(
+  "/api/auth/proconnect/login-callback",
+  process.env.NEXT_PUBLIC_BASE_URL,
+).toString();
+const LOGOUT_CALLBACK_URL = new URL(
+  "/api/auth/proconnect/logout-callback",
+  process.env.NEXT_PUBLIC_BASE_URL,
+).toString();
 
-const SCOPES = "openid given_name usual_name email siret idp_id";
+const SCOPES = "openid given_name usual_name email idp_id";
 
 export const getClient = async () => {
   if (_client) {
@@ -27,8 +29,8 @@ export const getClient = async () => {
       !CLIENT_ID ||
       !ISSUER_URL ||
       !CLIENT_SECRET ||
-      !REDIRECT_URI ||
-      !POST_LOGOUT_REDIRECT_URI
+      !LOGIN_CALLBACK_URL ||
+      !LOGOUT_CALLBACK_URL
     ) {
       throw new Error("PRO CONNECT ENV variables are not defined");
     }
@@ -37,8 +39,8 @@ export const getClient = async () => {
     _client = new proConnectIssuer.Client({
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
-      redirect_uris: [REDIRECT_URI],
-      post_logout_redirect_uris: [POST_LOGOUT_REDIRECT_URI],
+      redirect_uris: [LOGIN_CALLBACK_URL],
+      post_logout_redirect_uris: [LOGOUT_CALLBACK_URL],
       id_token_signed_response_alg: "RS256",
       userinfo_signed_response_alg: "RS256",
     });
@@ -47,7 +49,7 @@ export const getClient = async () => {
   }
 };
 
-export const proConnectAuthorizeUrl = async (req: IReqWithSession) => {
+export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   const client = await getClient();
 
   const nonce = generators.nonce();
@@ -62,48 +64,33 @@ export const proConnectAuthorizeUrl = async (req: IReqWithSession) => {
     acr_values: "eidas1",
     nonce,
     state,
-    claims: {
-      id_token: {
-        amr: {
-          essential: true,
-        },
-      },
-    },
   });
 };
 
-export type IProConnectUserInfo = {
+export type ProConnectUserInfo = {
   sub: string;
   email: string;
-  email_verified: boolean;
-  family_name: string | null;
-  given_name: string | null;
-  phone_number: string | null;
-  job: string | null;
-  siret: string;
-  is_external: boolean;
-  label: string | null;
-  is_collectivite_territoriale: boolean;
-  is_service_public: boolean;
+  given_name: string;
+  usual_name: string;
   idp_id: string;
 };
 
-export const proConnectAuthenticate = async (req: IReqWithSession) => {
+export const proConnectAuthenticate = async (req: RequestWithSession) => {
   const client = await getClient();
 
   const params = client.callbackParams(req.nextUrl.toString());
 
-  const tokenSet = await client.callback(REDIRECT_URI, params, {
+  const tokenSet = await client.callback(LOGIN_CALLBACK_URL, params, {
     nonce: req.session.nonce,
     state: req.session.state,
   });
 
   const accessToken = tokenSet.access_token;
   if (!accessToken) {
-    throw new HttpForbiddenError("No access token");
+    throw new Error("No access token");
   }
 
-  const userInfo = (await client.userinfo(tokenSet)) as IProConnectUserInfo;
+  const userInfo = (await client.userinfo(tokenSet)) as ProConnectUserInfo;
   req.session.nonce = undefined;
   req.session.state = undefined;
   req.session.idToken = tokenSet.id_token;
@@ -112,10 +99,10 @@ export const proConnectAuthenticate = async (req: IReqWithSession) => {
   return userInfo;
 };
 
-export const proConnectLogoutUrl = async (req: IReqWithSession) => {
+export const proConnectLogoutUrl = async (req: RequestWithSession) => {
   const client = await getClient();
   return client.endSessionUrl({
     id_token_hint: req.session.idToken,
-    post_logout_redirect_uri: POST_LOGOUT_REDIRECT_URI,
+    post_logout_redirect_uri: LOGOUT_CALLBACK_URL,
   });
 };
