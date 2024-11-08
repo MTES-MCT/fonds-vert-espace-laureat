@@ -31,7 +31,7 @@ export const Header = () => (
         quickAccessItem={{
           iconId: "ri-account-box-line",
           text: "Espace lauréat",
-          linkProps: { href: "/connexion" },
+          linkProps: { href: "/espace-laureat" },
         }}
       />,
     ]}
