@@ -2,6 +2,8 @@ import { getIronSession, IronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+import { ttl } from "@/utils/session/ttl";
+
 import { ProConnectUserInfo } from "../proconnect";
 
 type User = {
@@ -28,7 +30,7 @@ export const sessionOptions: SessionOptions = {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   },
-  ttl: 86400, // 1 jour
+  ttl,
 };
 
 export async function setSession(
