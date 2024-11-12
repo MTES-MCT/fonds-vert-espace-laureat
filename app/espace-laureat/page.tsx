@@ -1,6 +1,10 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import { redirect } from "next/navigation";
 
+import { getDemoDossierNumber } from "@/utils/demo";
 import { getSession } from "@/utils/session";
+
+import { getDossier } from "./dossier";
 
 export default async function EspaceLaureat() {
   const session = await getSession();
@@ -10,13 +14,18 @@ export default async function EspaceLaureat() {
     return redirect("/connexion");
   }
 
+  const demoDossierNumber = getDemoDossierNumber();
+  const dossier = await getDossier(demoDossierNumber);
+
   return (
     <div className="max-w-2xl pb-24">
       <h1>Espace lauréat</h1>
-      <p>{user.email}</p>
-      <p className="fr-text--lead">
-        Suivez vos subventions et réalisez une demande de versement.
-      </p>
+      <div>
+        <h2>Dossier n°{dossier.number}</h2>
+        <Badge severity="success">
+          {dossier.state} le {dossier.dateTraitement}
+        </Badge>
+      </div>
     </div>
   );
 }

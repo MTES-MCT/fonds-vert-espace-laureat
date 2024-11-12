@@ -4,6 +4,7 @@ schema:
         Authorization: 'Bearer ${DS_TOKEN}'
 documents:
   - './**/*.tsx'
+  - './**/*.ts'
 generates:
   generated/:
     preset: client
