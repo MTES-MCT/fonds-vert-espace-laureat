@@ -1,0 +1,12 @@
+schema:
+  - ${DS_GRAPHQL_ENDPOINT}:
+      headers:
+        Authorization: 'Bearer ${DS_TOKEN}'
+documents:
+  - './**/*.tsx'
+generates:
+  generated/:
+    preset: client
+    plugins: [ ]
+    presetConfig:
+      fragmentMasking: false
