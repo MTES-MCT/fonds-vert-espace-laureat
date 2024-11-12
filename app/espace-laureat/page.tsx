@@ -1,4 +1,6 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale/fr";
 import { redirect } from "next/navigation";
 
 import { getDemoDossierNumber } from "@/utils/demo";
@@ -16,6 +18,11 @@ export default async function EspaceLaureat() {
 
   const demoDossierNumber = getDemoDossierNumber();
   const dossier = await getDossier(demoDossierNumber);
+  const dateTraitement = format(
+    new Date(dossier.dateTraitement),
+    "dd MMMM yyyy",
+    { locale: fr },
+  );
 
   return (
     <div className="max-w-2xl pb-24">
@@ -23,7 +30,7 @@ export default async function EspaceLaureat() {
       <div>
         <h2>Dossier n°{dossier.number}</h2>
         <Badge severity="success">
-          {dossier.state} le {dossier.dateTraitement}
+          {dossier.state} le {dateTraitement}
         </Badge>
       </div>
     </div>
