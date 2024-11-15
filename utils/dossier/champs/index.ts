@@ -12,6 +12,7 @@ export interface Champs {
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
   montantSubventionAttribuee?: number;
+  numeroDossierAgenceEau?: string;
   numeroEngagementJuridique?: string;
   autresNumerosEngagementJuridique?: string[];
 }

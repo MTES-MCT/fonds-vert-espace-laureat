@@ -19,7 +19,7 @@ export default async function EspaceLaureat() {
   }
 
   const dossier = await getDossier(demoDossierNumber);
-  
+
   const fr = {
     locale: frLocale,
   };
@@ -58,6 +58,10 @@ export default async function EspaceLaureat() {
             <li>
               Email du responsable de suivi :{" "}
               {dossier.champs.emailResponsableSuivi}
+            </li>
+            <li>
+              Numéro de dossier agence de l'eau :{" "}
+              {dossier.champs.numeroDossierAgenceEau}
             </li>
             <li>
               Numéros d'engagement juridique :

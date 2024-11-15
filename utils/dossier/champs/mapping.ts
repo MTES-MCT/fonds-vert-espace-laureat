@@ -5,6 +5,7 @@ const descriptorIds = {
   emailRepresentantLegal: ["Q2hhbXAtMzgwNTc1Mw==", "Q2hhbXAtMzgwMzkxMA=="],
   emailResponsableSuivi: ["Q2hhbXAtMjkzNDQwMA==", "Q2hhbXAtMjkzNDQwMA=="],
   montantSubventionAttribuee: ["Q2hhbXAtMTk5MDI2Ng==", "Q2hhbXAtMjk4NjgwNA=="],
+  numeroDossierAgenceEau: ["Q2hhbXAtMzAyNTQ3NQ=="],
   numeroEngagementJuridique: ["Q2hhbXAtMjk4MjUwMQ==", "Q2hhbXAtMjk4NjgxMQ=="],
   autresNumerosEngagementJuridique: [
     "Q2hhbXAtNDA4MzY4NA==",
