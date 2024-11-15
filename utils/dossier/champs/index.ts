@@ -7,6 +7,7 @@ import { mapping } from "@/utils/dossier/champs/mapping";
 export interface Champs {
   intituleProjet?: string;
   resumeProjet?: string;
+  dateSignatureDecision?: Date;
   departementImplantation?: string;
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
@@ -42,6 +43,8 @@ export function getValueByType(
         return add(champs, champ, champ.decimalNumber);
       case "TextChamp":
         return add(champs, champ, champ.stringValue);
+      case "DateChamp":
+        return add(champs, champ, champ.date);
       case "EngagementJuridiqueChamp":
         return add(champs, champ, champ.stringValue);
       default:

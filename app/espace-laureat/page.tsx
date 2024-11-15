@@ -1,6 +1,6 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale/fr";
+import { fr as frLocale } from "date-fns/locale/fr";
 import { redirect } from "next/navigation";
 
 import { getDemoDossierNumber } from "@/utils/demo";
@@ -19,9 +19,14 @@ export default async function EspaceLaureat() {
   }
 
   const dossier = await getDossier(demoDossierNumber);
-  const dateTraitement = format(new Date(dossier.statut.date), "dd MMMM yyyy", {
-    locale: fr,
-  });
+  
+  const fr = {
+    locale: frLocale,
+  };
+  const dateTraitement = format(dossier.statut.date, "dd MMMM yyyy", fr);
+  const dateSignatureDecision = dossier.champs.dateSignatureDecision
+    ? format(dossier.champs.dateSignatureDecision, "dd MMMM yyyy", fr)
+    : "Non renseignée";
 
   return (
     <div className="max-w-2xl pb-24">
@@ -37,11 +42,11 @@ export default async function EspaceLaureat() {
           </h3>
           <p className="text-neutral-500">{dossier.champs.resumeProjet}</p>
           <ul className="mb-0">
+            <li>Date de signature de la décision : {dateSignatureDecision}</li>
             <li>
               Montant de la subvention attribuée :{" "}
               {dossier.champs.montantSubventionAttribuee} €
             </li>
-
             <li>
               Département d'implantation :{" "}
               {dossier.champs.departementImplantation}

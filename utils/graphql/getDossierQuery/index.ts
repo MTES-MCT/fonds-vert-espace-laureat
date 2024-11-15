@@ -28,6 +28,9 @@ export const getDossierQuery = graphql(`
     ... on DecimalNumberChamp {
       decimalNumber: value
     }
+    ... on DateChamp {
+      date
+    }
   }
 
   fragment RootChampFragment on Champ {
