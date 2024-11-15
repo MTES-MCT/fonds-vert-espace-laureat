@@ -28,14 +28,14 @@ export default async function EspaceLaureat() {
       <h1>Espace lauréat</h1>
       <div>
         <h2>Dossier n°{dossier.numero}</h2>
-        <div className="bg-neutral-100 p-4 max-w-lg">
-          <h3 className="flex justify-between items-start text-lg leading-none">
+        <div className="bg-neutral-100 p-4 max-w-2xl">
+          <h3 className="flex justify-between items-start text-lg leading-none mb-0">
             <span>{dossier.champs.intituleProjet}</span>
             <Badge small className="ml-4 shrink-0" severity="success">
               {dossier.statut.label} le {dateTraitement}
             </Badge>
           </h3>
-
+          <p className="text-neutral-500">{dossier.champs.resumeProjet}</p>
           <ul className="mb-0">
             <li>
               Montant de la subvention attribuée :{" "}
@@ -44,6 +44,18 @@ export default async function EspaceLaureat() {
             <li>
               Numéro d'engagement juridique :{" "}
               {dossier.champs.numeroEngagementJuridique}
+            </li>
+            <li>
+              Département d'implantation :{" "}
+              {dossier.champs.departementImplantation}
+            </li>
+            <li>
+              Email du représentant légal :{" "}
+              {dossier.champs.emailRepresentantLegal}
+            </li>
+            <li>
+              Email du responsable de suivi :{" "}
+              {dossier.champs.emailResponsableSuivi}
             </li>
           </ul>
         </div>

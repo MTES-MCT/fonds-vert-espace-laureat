@@ -3,6 +3,10 @@ import { mapping } from "@/utils/dossier/champs/mapping";
 
 export interface Champs {
   intituleProjet?: string;
+  resumeProjet?: string;
+  departementImplantation?: string;
+  emailRepresentantLegal?: string;
+  emailResponsableSuivi?: string;
   montantSubventionAttribuee?: number;
   numeroEngagementJuridique?: string;
 }
