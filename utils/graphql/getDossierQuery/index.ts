@@ -12,9 +12,11 @@ export const getDossierQuery = graphql(`
       }
       annotations {
         ...ChampFragment
+        ...RootChampFragment
       }
       champs {
         ...ChampFragment
+        ...RootChampFragment
       }
     }
   }
@@ -25,6 +27,18 @@ export const getDossierQuery = graphql(`
     stringValue
     ... on DecimalNumberChamp {
       decimalNumber: value
+    }
+  }
+
+  fragment RootChampFragment on Champ {
+    __typename
+    champDescriptorId
+    ... on RepetitionChamp {
+      rows {
+        champs {
+          ...ChampFragment
+        }
+      }
     }
   }
 `);

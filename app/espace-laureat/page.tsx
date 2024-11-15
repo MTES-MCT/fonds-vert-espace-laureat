@@ -41,10 +41,7 @@ export default async function EspaceLaureat() {
               Montant de la subvention attribuée :{" "}
               {dossier.champs.montantSubventionAttribuee} €
             </li>
-            <li>
-              Numéro d'engagement juridique :{" "}
-              {dossier.champs.numeroEngagementJuridique}
-            </li>
+
             <li>
               Département d'implantation :{" "}
               {dossier.champs.departementImplantation}
@@ -56,6 +53,15 @@ export default async function EspaceLaureat() {
             <li>
               Email du responsable de suivi :{" "}
               {dossier.champs.emailResponsableSuivi}
+            </li>
+            <li>
+              Numéros d'engagement juridique :
+              <ul>
+                <li>{dossier.champs.numeroEngagementJuridique}</li>
+                {dossier.champs.autresNumerosEngagementJuridique?.map(
+                  (num, index) => <li key={index}>{num}</li>,
+                )}
+              </ul>
             </li>
           </ul>
         </div>
