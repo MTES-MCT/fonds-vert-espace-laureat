@@ -1,3 +1,4 @@
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import { format } from "date-fns";
 import { fr as frLocale } from "date-fns/locale/fr";
@@ -18,12 +19,27 @@ export default async function EspaceLaureat() {
     return redirect("/connexion");
   }
 
-  const dossier = await getDossier(demoDossierNumber);
+  const dossierResult = await getDossier(demoDossierNumber);
+
+  if (!dossierResult.success) {
+    return (
+      <div className="max-w-xl">
+        <Alert
+          title="Impossible d'afficher ce dossier"
+          description={dossierResult.error}
+          severity="error"
+        />
+      </div>
+    );
+  }
+
+  const dossier = dossierResult.data;
 
   const fr = {
     locale: frLocale,
   };
-  const dateTraitement = format(dossier.statut.date, "dd MMMM yyyy", fr);
+
+  const dateTraitement = format(dossier.dateTraitement, "dd MMMM yyyy", fr);
   const dateSignatureDecision = dossier.champs.dateSignatureDecision
     ? format(dossier.champs.dateSignatureDecision, "dd MMMM yyyy", fr)
     : "Non renseignée";
@@ -38,14 +54,12 @@ export default async function EspaceLaureat() {
         <div className="bg-neutral-100 p-4 max-w-2xl">
           <h3 className="flex justify-between items-start text-lg leading-none mb-0">
             <span>{dossier.champs.intituleProjet}</span>
-            <Badge small className="ml-4 shrink-0" severity="success">
-              {dossier.statut.label} le {dateTraitement}
-            </Badge>
           </h3>
           <p className="text-neutral-500">{dossier.champs.resumeProjet}</p>
           <ul className="mb-0">
             <li>Siret du demandeur : {dossier.demandeur.siret}</li>
             <li>Date de signature de la décision : {dateSignatureDecision}</li>
+            <li>Date de traitement : {dateTraitement}</li>
             <li>
               Montant de la subvention attribuée :{" "}
               {dossier.champs.montantSubventionAttribuee} €
