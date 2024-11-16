@@ -7,6 +7,10 @@ export const getDossierQuery = graphql(`
       number
       state
       dateTraitement
+      demandeur {
+        __typename
+        ...PersonneMoraleFragment
+      }
       demarche {
         title
       }
@@ -46,5 +50,10 @@ export const getDossierQuery = graphql(`
         }
       }
     }
+  }
+
+  fragment PersonneMoraleFragment on PersonneMorale {
+    siret
+    libelleNaf
   }
 `);

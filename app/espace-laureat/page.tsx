@@ -44,6 +44,7 @@ export default async function EspaceLaureat() {
           </h3>
           <p className="text-neutral-500">{dossier.champs.resumeProjet}</p>
           <ul className="mb-0">
+            <li>Siret du demandeur : {dossier.demandeur.siret}</li>
             <li>Date de signature de la décision : {dateSignatureDecision}</li>
             <li>
               Montant de la subvention attribuée :{" "}

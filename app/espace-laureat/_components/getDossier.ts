@@ -9,14 +9,24 @@ export async function getDossier(number: number): Promise<Dossier> {
     number,
   });
 
+  if (dossier.demandeur.__typename !== "PersonneMorale") {
+    throw new Error(
+      "Seules les personnes morales peuvent accéder à cet espace",
+    );
+  }
+
   return {
     numero: dossier.number,
-    demarche: {
-      title: dossier.demarche.title,
-    },
     statut: {
       label: dossier.state,
       date: dossier.dateTraitement,
+    },
+    demandeur: {
+      siret: dossier.demandeur.siret,
+      libelleNaf: dossier.demandeur?.libelleNaf,
+    },
+    demarche: {
+      title: dossier.demarche.title,
     },
     champs: getChamps([...dossier.annotations, ...dossier.champs]),
   };
