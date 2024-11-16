@@ -46,7 +46,6 @@ export default async function EspaceLaureat() {
 
   return (
     <div className="max-w-2xl pb-24">
-      <h1>Espace lauréat</h1>
       <div>
         <h2>
           Dossier n°{dossier.numero} <Badge>{dossier.demarche.title}</Badge>

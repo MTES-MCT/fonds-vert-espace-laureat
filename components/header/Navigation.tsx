@@ -14,6 +14,13 @@ export function Navigation() {
           },
           isActive: segment === null,
         },
+        {
+          text: "Espace lauréat",
+          linkProps: {
+            href: "/espace-laureat",
+          },
+          isActive: segment === "espace-laureat",
+        },
       ]}
     />
   );
