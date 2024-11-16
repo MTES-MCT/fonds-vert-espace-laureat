@@ -7,6 +7,9 @@ export const getDossierQuery = graphql(`
       number
       state
       dateTraitement
+      demarche {
+        title
+      }
       usager {
         email
       }

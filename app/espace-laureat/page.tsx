@@ -32,7 +32,9 @@ export default async function EspaceLaureat() {
     <div className="max-w-2xl pb-24">
       <h1>Espace lauréat</h1>
       <div>
-        <h2>Dossier n°{dossier.numero}</h2>
+        <h2>
+          Dossier n°{dossier.numero} <Badge>{dossier.demarche.title}</Badge>
+        </h2>
         <div className="bg-neutral-100 p-4 max-w-2xl">
           <h3 className="flex justify-between items-start text-lg leading-none mb-0">
             <span>{dossier.champs.intituleProjet}</span>

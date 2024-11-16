@@ -11,6 +11,9 @@ export async function getDossier(number: number): Promise<Dossier> {
 
   return {
     numero: dossier.number,
+    demarche: {
+      title: dossier.demarche.title,
+    },
     statut: {
       label: dossier.state,
       date: dossier.dateTraitement,
