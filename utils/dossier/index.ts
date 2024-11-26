@@ -1,3 +1,5 @@
+import { Champs } from "@/utils/dossier/champs";
+
 export interface Dossier {
   numero: number;
   dateTraitement: Date;
