@@ -48,7 +48,7 @@ export const Juridique = ({
         <Badge severity="success">Accepté</Badge>
       </h2>
       <dl>
-        <dt className="mb-1">Montant de la subvention attribué</dt>
+        <dt className="mb-1">Montant de la subvention attribuée</dt>
         <dd className="max-w-sm">{formattedMontantSubventionAttribuee}</dd>
 
         <dt>Date de signature de la décision</dt>

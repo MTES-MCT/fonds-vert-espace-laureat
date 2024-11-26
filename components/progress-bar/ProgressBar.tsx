@@ -10,7 +10,7 @@ export function ProgressBar({
   formattedMax: string;
 }) {
   return (
-    <div>
+    <div className="mb-2">
       <div className="rounded-full bg-white overflow-hidden w-full h-3 bg-blue-100">
         <div
           className="bg-blue-500 h-full"
