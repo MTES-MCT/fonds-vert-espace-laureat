@@ -14,7 +14,7 @@ export interface Champs {
   montantSubventionAttribuee?: number;
   numeroDossierAgenceEau?: string;
   numeroEngagementJuridique?: string;
-  autresNumerosEngagementJuridique?: string[];
+  autresNumerosEngagementJuridique: string[];
 }
 
 const add = (
@@ -34,7 +34,7 @@ function isChampFragmentFragment(
   return champ.__typename !== "RepetitionChamp";
 }
 
-export function getValueByType(
+function getValueByType(
   champs: Champs,
   champ: ChampFragmentFragment | RootChampFragmentFragment,
 ) {
@@ -65,4 +65,12 @@ export function getValueByType(
         return champs;
     }
   }
+}
+
+const champsDefault: Champs = {
+  autresNumerosEngagementJuridique: [],
+};
+
+export function getChamps(champs: ChampFragmentFragment[]) {
+  return champs.reduce(getValueByType, champsDefault);
 }
