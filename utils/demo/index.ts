@@ -25,7 +25,7 @@ export const getDemoStaticDossierResponse = ():
       dateTraitement: new Date(),
       demandeur: {
         siret: "12345678910111",
-        libelleNaf: "Renaturation des villes et des villages",
+        libelleNaf: "FONDS VERT - Renaturation des villes et des villages",
       },
       demarche: {
         title: "Dossier de demande de subvention",

@@ -41,10 +41,11 @@ export default async function EspaceLaureat() {
   }
 
   const dossier = dossierResult.data;
+  const mesureFondsVert = dossier.demarche.title.replace("FONDS VERT - ", "");
 
   return (
     <>
-      <h1>{dossier.demarche.title}</h1>
+      <h1>{mesureFondsVert}</h1>
       <div className="grid lg:grid-cols-2 gap-4">
         <Projet
           intitule={dossier.champs.intituleProjet}
