@@ -22,24 +22,24 @@
 }
 
 @layer components {
+    dl,
+    dt,
+    dd {
+        --xl-block: 0;
+        --ul-start: 0;
+        --li-bottom: 0;
+    }
+
+    dt {
+        @apply text-neutral-700 text-sm;
+    }
+
+    dd {
+        @apply font-medium mb-4;
+    }
+
+    dd:last-child {
+        @apply mb-0;
+    }
 }
 
-dl,
-dt,
-dd {
-    --xl-block: 0;
-    --ul-start: 0;
-    --li-bottom: 0;
-}
-
-dt {
-    @apply text-neutral-700 text-sm;
-}
-
-dd {
-    @apply font-medium mb-4;
-}
-
-dd:last-child {
-    @apply mb-0;
-}

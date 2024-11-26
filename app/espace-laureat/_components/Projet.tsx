@@ -11,6 +11,15 @@ export const Projet = ({
   departementImplantation?: string;
   montantSubventionAttribuee?: number;
 }) => {
+  const formattedMontantSubventionAttribuee = montantSubventionAttribuee
+    ? new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(montantSubventionAttribuee)
+    : "N/A";
+
   return (
     <InfoBlock>
       <h2 className="mb-0">{intitule ?? "N/A"}</h2>
@@ -21,7 +30,9 @@ export const Projet = ({
           <dd>{departementImplantation}</dd>
 
           <dt>Montant de la subvention attribuée</dt>
-          <dd>{montantSubventionAttribuee ?? "N/A"} €</dd>
+          <dd className="text-2xl font-black">
+            {formattedMontantSubventionAttribuee}
+          </dd>
         </dl>
       )}
     </InfoBlock>
