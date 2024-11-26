@@ -4,10 +4,12 @@ import { fr as frLocale } from "date-fns/locale/fr";
 
 import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
+import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Juridique = ({
   dateSignatureDecision,
   dateTraitement,
+  montantSubventionAttribuee,
   numeroDossierDemarchesSimplifiees,
   numeroDossierAgenceEau,
   numeroEngagementJuridique,
@@ -15,6 +17,7 @@ export const Juridique = ({
 }: {
   dateSignatureDecision?: Date;
   dateTraitement: Date;
+  montantSubventionAttribuee?: number;
   numeroDossierDemarchesSimplifiees: number;
   numeroDossierAgenceEau?: string;
   numeroEngagementJuridique?: string;
@@ -29,6 +32,15 @@ export const Juridique = ({
     ? format(dateSignatureDecision, "dd MMMM yyyy", fr)
     : "Non renseignée";
 
+  const formattedMontantSubventionAttribuee = montantSubventionAttribuee
+    ? new Intl.NumberFormat("fr-FR", {
+        style: "currency",
+        currency: "EUR",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(montantSubventionAttribuee)
+    : "N/A";
+
   return (
     <InfoBlock>
       <h2 className="flex justify-between items-start">
@@ -36,6 +48,9 @@ export const Juridique = ({
         <Badge severity="success">Accepté</Badge>
       </h2>
       <dl>
+        <dt className="mb-1">Montant de la subvention attribué</dt>
+        <dd className="max-w-sm">{formattedMontantSubventionAttribuee}</dd>
+
         <dt>Date de signature de la décision</dt>
         <dd>{formattedDateTraitement}</dd>
 

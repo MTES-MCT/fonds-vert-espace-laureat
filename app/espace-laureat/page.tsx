@@ -56,6 +56,7 @@ export default async function EspaceLaureat() {
         <Juridique
           dateTraitement={dossier.dateTraitement}
           dateSignatureDecision={dossier.champs.dateSignatureDecision}
+          montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
           numeroDossierDemarchesSimplifiees={dossier.numero}
           numeroDossierAgenceEau={dossier.champs.numeroDossierAgenceEau}
           numeroEngagementJuridique={dossier.champs.numeroEngagementJuridique}

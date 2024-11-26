@@ -1,4 +1,5 @@
 import { InfoBlock } from "@/components/info-block/InfoBlock";
+import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Projet = ({
   intitule,
@@ -28,11 +29,19 @@ export const Projet = ({
         <dl>
           <dt>Département d'implantation</dt>
           <dd>{departementImplantation}</dd>
-
-          <dt>Montant de la subvention attribuée</dt>
-          <dd className="text-2xl font-black">
-            {formattedMontantSubventionAttribuee}
-          </dd>
+          {montantSubventionAttribuee && (
+            <>
+              <dt className="mb-1">Versements</dt>
+              <dd className="max-w-sm">
+                <ProgressBar
+                  value={0}
+                  formattedValue="0 €"
+                  max={montantSubventionAttribuee}
+                  formattedMax={formattedMontantSubventionAttribuee}
+                />
+              </dd>
+            </>
+          )}
         </dl>
       )}
     </InfoBlock>
