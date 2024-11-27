@@ -1,6 +1,7 @@
 import { ClientError } from "graphql-request";
 
 import { DossierState } from "@/generated/graphql";
+import { getDemoDossierNumbers } from "@/utils/demo";
 import { Dossier } from "@/utils/dossier";
 import { getChamps } from "@/utils/dossier/champs";
 import { stateToLongLabel } from "@/utils/dossier/state";
@@ -38,7 +39,10 @@ export async function getDossier({
       };
     }
 
-    if (userEmail !== dossier.usager.email) {
+    if (
+      !getDemoDossierNumbers().includes(dossier.number) &&
+      userEmail !== dossier.usager.email
+    ) {
       return {
         success: false,
         error: "Vous n'êtes pas autorisé à accéder à ce dossier",
