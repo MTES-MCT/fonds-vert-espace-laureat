@@ -39,7 +39,7 @@
     }
 
     dd {
-        @apply font-medium mb-4;
+        @apply font-medium mb-5;
     }
 
     dd:last-child {

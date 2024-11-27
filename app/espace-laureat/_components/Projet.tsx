@@ -1,5 +1,7 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 
+import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
@@ -7,11 +9,17 @@ export const Projet = ({
   intitule,
   resume,
   departementImplantation,
+  numeroDossierAgenceEau,
+  numeroEngagementJuridique,
+  autresNumerosEngagementJuridique,
   montantSubventionAttribuee,
 }: {
   intitule?: string;
   resume?: string;
   departementImplantation?: string;
+  numeroDossierAgenceEau?: string;
+  numeroEngagementJuridique?: string;
+  autresNumerosEngagementJuridique: string[];
   montantSubventionAttribuee?: number;
 }) => {
   const formattedMontantSubventionAttribuee = montantSubventionAttribuee
@@ -31,6 +39,26 @@ export const Projet = ({
         <dl className="mb-4">
           <dt>Département d'implantation</dt>
           <dd>{departementImplantation}</dd>
+
+          {numeroDossierAgenceEau && (
+            <>
+              <dt>Numéro de dossier agence de l'eau</dt>
+              <dd>
+                <Badge>{numeroDossierAgenceEau}</Badge>
+              </dd>
+            </>
+          )}
+
+          {(numeroEngagementJuridique ||
+            autresNumerosEngagementJuridique.length > 0) && (
+            <NumerosEngagementJuridique
+              numeroEngagementJuridique={numeroEngagementJuridique}
+              autresNumerosEngagementJuridique={
+                autresNumerosEngagementJuridique
+              }
+            />
+          )}
+
           {montantSubventionAttribuee && (
             <>
               <dt className="mb-1">Consommation de la subvention</dt>
@@ -63,7 +91,7 @@ export const Projet = ({
         </dl>
       )}
       <div className="flex justify-end items-end">
-        <Button className="self-end">Demander un versement</Button>
+        <Button>Demander un versement</Button>
       </div>
     </InfoBlock>
   );

@@ -2,26 +2,23 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import { format } from "date-fns";
 import { fr as frLocale } from "date-fns/locale/fr";
 
-import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/NumerosEngagementJuridique";
+import { EmailLink } from "@/components/email-link/EmailLink";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
-import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Juridique = ({
   dateSignatureDecision,
   dateTraitement,
   montantSubventionAttribuee,
   numeroDossierDemarchesSimplifiees,
-  numeroDossierAgenceEau,
-  numeroEngagementJuridique,
-  autresNumerosEngagementJuridique,
+  emailRepresentantLegal,
+  emailResponsableSuivi,
 }: {
   dateSignatureDecision?: Date;
   dateTraitement: Date;
   montantSubventionAttribuee?: number;
   numeroDossierDemarchesSimplifiees: number;
-  numeroDossierAgenceEau?: string;
-  numeroEngagementJuridique?: string;
-  autresNumerosEngagementJuridique: string[];
+  emailRepresentantLegal?: string;
+  emailResponsableSuivi?: string;
 }) => {
   const fr = {
     locale: frLocale,
@@ -57,21 +54,15 @@ export const Juridique = ({
         <dt>Date de traitement</dt>
         <dd>{formattedDateSignatureDecision}</dd>
 
-        {numeroDossierAgenceEau && (
-          <>
-            <dt>Numéro de dossier agence de l'eau</dt>
-            <dd>
-              <Badge>{numeroDossierAgenceEau}</Badge>
-            </dd>
-          </>
-        )}
-        {(numeroEngagementJuridique ||
-          autresNumerosEngagementJuridique.length > 0) && (
-          <NumerosEngagementJuridique
-            numeroEngagementJuridique={numeroEngagementJuridique}
-            autresNumerosEngagementJuridique={autresNumerosEngagementJuridique}
-          />
-        )}
+        <dt>Représentant légal</dt>
+        <dd>
+          <EmailLink email={emailRepresentantLegal} />
+        </dd>
+
+        <dt>Responsable de suivi</dt>
+        <dd>
+          <EmailLink email={emailResponsableSuivi} />
+        </dd>
       </dl>
     </InfoBlock>
   );

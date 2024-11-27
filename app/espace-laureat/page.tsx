@@ -46,28 +46,25 @@ export default async function EspaceLaureat() {
   return (
     <>
       <h1>{mesureFondsVert}</h1>
-      <div className="grid lg:grid-cols-2 gap-8 mb-24">
+      <div className="grid lg:grid-cols-2 gap-y-6 mb-24 border py-6">
         <Juridique
           dateTraitement={dossier.dateTraitement}
           dateSignatureDecision={dossier.champs.dateSignatureDecision}
           montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
           numeroDossierDemarchesSimplifiees={dossier.numero}
+          emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
+          emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
+        />
+        <Projet
+          intitule={dossier.champs.intituleProjet}
+          resume={dossier.champs.resumeProjet}
+          departementImplantation={dossier.champs.departementImplantation}
           numeroDossierAgenceEau={dossier.champs.numeroDossierAgenceEau}
           numeroEngagementJuridique={dossier.champs.numeroEngagementJuridique}
           autresNumerosEngagementJuridique={
             dossier.champs.autresNumerosEngagementJuridique
           }
-        />{" "}
-        <Projet
-          intitule={dossier.champs.intituleProjet}
-          resume={dossier.champs.resumeProjet}
-          departementImplantation={dossier.champs.departementImplantation}
           montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
-        />
-        <Profil
-          siret={dossier.demandeur.siret}
-          emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
-          emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
         />
       </div>
     </>
