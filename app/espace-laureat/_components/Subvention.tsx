@@ -5,7 +5,7 @@ import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/Num
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
-export const Projet = ({
+export const Subvention = ({
   intitule,
   resume,
   departementImplantation,

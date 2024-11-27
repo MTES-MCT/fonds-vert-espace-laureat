@@ -5,7 +5,7 @@ import { fr as frLocale } from "date-fns/locale/fr";
 import { EmailLink } from "@/components/email-link/EmailLink";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 
-export const Juridique = ({
+export const Dossier = ({
   titreDemarche,
   dateSignatureDecision,
   dateTraitement,
