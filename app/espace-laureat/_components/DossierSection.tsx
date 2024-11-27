@@ -1,36 +1,11 @@
-import Alert from "@codegouvfr/react-dsfr/Alert";
+import { Subvention } from "@/app/espace-laureat/_components/dossier-section/Subvention";
+import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
+import { Dossier } from "@/utils/dossier";
 
-import { getDossier } from "@/app/espace-laureat/_components/getDossier";
-import { Dossier } from "@/app/espace-laureat/_components/projet/Dossier";
-import { Subvention } from "@/app/espace-laureat/_components/projet/Subvention";
-import {
-  demoStaticDossierNumber,
-  getDemoStaticDossierResponse,
-} from "@/utils/demo";
-
-export async function Projet({ dossierNumber }: { dossierNumber: number }) {
-  const dossierResult =
-    dossierNumber === demoStaticDossierNumber
-      ? getDemoStaticDossierResponse()
-      : await getDossier(dossierNumber);
-
-  if (!dossierResult.success) {
-    return (
-      <div className="max-w-xl">
-        <Alert
-          title="Impossible d'afficher ce dossier"
-          description={dossierResult.error}
-          severity="error"
-        />
-      </div>
-    );
-  }
-
-  const dossier = dossierResult.data;
-
+export async function DossierSection({ dossier }: { dossier: Dossier }) {
   return (
     <div className="grid lg:grid-cols-2 gap-y-6 border py-6">
-      <Dossier
+      <Summary
         titreDemarche={dossier.demarche.title}
         dateTraitement={dossier.dateTraitement}
         dateSignatureDecision={dossier.champs.dateSignatureDecision}

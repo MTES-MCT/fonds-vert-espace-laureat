@@ -1,7 +1,7 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 
-import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/projet/NumerosEngagementJuridique";
+import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/dossier-section/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 

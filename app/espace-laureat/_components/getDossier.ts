@@ -10,14 +10,18 @@ import { getDossierQuery } from "@/utils/graphql/getDossierQuery";
 
 const graphqlClient = createGraphqlClient();
 
-export async function getDossier(
-  number: number,
-): Promise<
+export async function getDossier({
+  dossierNumber,
+  userEmail,
+}: {
+  dossierNumber: number;
+  userEmail: string;
+}): Promise<
   { success: true; data: Dossier } | { success: false; error: string }
 > {
   try {
     const { dossier } = await graphqlClient.request(getDossierQuery, {
-      number,
+      number: dossierNumber,
     });
 
     if (dossier.demandeur.__typename !== "PersonneMorale") {
@@ -34,12 +38,20 @@ export async function getDossier(
       };
     }
 
+    if (userEmail !== dossier.usager.email) {
+      return {
+        success: false,
+        error: "Vous n'êtes pas autorisé à accéder à ce dossier",
+      };
+    }
+
     return {
       success: true,
       data: {
         numero: dossier.number,
         dateTraitement: dossier.dateTraitement,
         demandeur: {
+          email: dossier.usager.email,
           siret: dossier.demandeur.siret,
           libelleNaf: dossier.demandeur?.libelleNaf,
         },

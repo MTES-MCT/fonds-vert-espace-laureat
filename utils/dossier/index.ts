@@ -4,6 +4,7 @@ export interface Dossier {
   numero: number;
   dateTraitement: Date;
   demandeur: {
+    email: string;
     siret: string;
     libelleNaf: string;
   };
