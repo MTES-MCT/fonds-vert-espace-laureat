@@ -4,7 +4,7 @@ import { DossierSection } from "@/app/espace-laureat/_components/DossierSection"
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import {
   demoStaticDossierNumber,
-  getDemoDossierNumber,
+  getDemoDossierNumbers,
   getDemoStaticDossierResponse,
 } from "@/utils/demo";
 import { getSession } from "@/utils/session";
@@ -13,13 +13,11 @@ export default async function EspaceLaureat() {
   const session = await getSession();
   const user = session?.user;
 
-  const demoDossierNumber = getDemoDossierNumber();
-
   if (!user || !user.email || !user.email_verified) {
     return redirect("/connexion");
   }
 
-  const dossierNumbers = [demoDossierNumber, demoDossierNumber];
+  const dossierNumbers = getDemoDossierNumbers();
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
     dossierNumber === demoStaticDossierNumber

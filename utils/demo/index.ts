@@ -1,16 +1,15 @@
-import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { Dossier } from "@/utils/dossier";
 
-export const getDemoDossierNumber = () => {
-  const demoDossierNumber = Number(process.env.DEMO_DOSSIER_NUMBER);
+export const getDemoDossierNumbers = () => {
+  const demoDossierNumbers = process.env.DEMO_DOSSIER_NUMBERS;
 
-  if (!demoDossierNumber) {
+  if (!demoDossierNumbers) {
     throw new Error(
-      "La variable d'environnement DEMO_DOSSIER_NUMBER n'est pas définie ou n'est pas un nombre",
+      "La variable d'environnement DEMO_DOSSIER_NUMBERS n'est pas définie",
     );
   }
 
-  return demoDossierNumber;
+  return demoDossierNumbers.split(",").map(Number);
 };
 
 export const demoStaticDossierNumber = 12345678;
@@ -24,6 +23,7 @@ export const getDemoStaticDossierResponse = ():
       numero: demoStaticDossierNumber,
       dateTraitement: new Date(),
       demandeur: {
+        email: "alice.doe@example.com",
         siret: "12345678910111",
         libelleNaf: "FONDS VERT - Renaturation des villes et des villages",
       },
