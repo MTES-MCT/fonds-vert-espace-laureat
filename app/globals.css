@@ -22,6 +22,10 @@
 }
 
 @layer components {
+    html {
+        @apply text-gray-900;
+    }
+
     dl,
     dt,
     dd {
@@ -31,7 +35,7 @@
     }
 
     dt {
-        @apply text-neutral-700 text-sm;
+        @apply text-gray-700 text-sm;
     }
 
     dd {
