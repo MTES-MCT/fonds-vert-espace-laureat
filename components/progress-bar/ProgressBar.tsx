@@ -1,24 +1,24 @@
 export function ProgressBar({
   value,
   max,
+  formattedMin,
   formattedMax,
-  formattedValue,
 }: {
   value: number;
   max: number;
-  formattedValue: string;
+  formattedMin: string;
   formattedMax: string;
 }) {
   return (
-    <div className="mb-2">
-      <div className="rounded-full bg-white overflow-hidden w-full h-3 bg-blue-100">
+    <div className="mb-3 max-w-xs">
+      <div className="rounded-full border border-blue-france-sun-113 overflow-hidden w-full h-3">
         <div
-          className="bg-blue-500 h-full"
+          className="bg-blue-france-sun-113 h-full"
           style={{ width: `${(value / max) * 100}%` }}
         />
       </div>
-      <div className="flex justify-between">
-        <div>{formattedValue}</div>
+      <div className="flex justify-between text-xs">
+        <div>{formattedMin}</div>
         <div>{formattedMax}</div>
       </div>
     </div>
