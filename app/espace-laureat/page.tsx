@@ -2,7 +2,6 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import { redirect } from "next/navigation";
 
 import { Juridique } from "@/app/espace-laureat/_components/Juridique";
-import { Profil } from "@/app/espace-laureat/_components/Profil";
 import { Projet } from "@/app/espace-laureat/_components/Projet";
 import {
   demoStaticDossierNumber,
@@ -41,13 +40,13 @@ export default async function EspaceLaureat() {
   }
 
   const dossier = dossierResult.data;
-  const mesureFondsVert = dossier.demarche.title.replace("FONDS VERT - ", "");
 
   return (
     <>
-      <h1>{mesureFondsVert}</h1>
+      <h1>Projet lauréat</h1>
       <div className="grid lg:grid-cols-2 gap-y-6 mb-24 border py-6">
         <Juridique
+          titreDemarche={dossier.demarche.title}
           dateTraitement={dossier.dateTraitement}
           dateSignatureDecision={dossier.champs.dateSignatureDecision}
           montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}

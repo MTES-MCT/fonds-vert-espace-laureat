@@ -6,6 +6,7 @@ import { EmailLink } from "@/components/email-link/EmailLink";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 
 export const Juridique = ({
+  titreDemarche,
   dateSignatureDecision,
   dateTraitement,
   montantSubventionAttribuee,
@@ -13,6 +14,7 @@ export const Juridique = ({
   emailRepresentantLegal,
   emailResponsableSuivi,
 }: {
+  titreDemarche: string;
   dateSignatureDecision?: Date;
   dateTraitement: Date;
   montantSubventionAttribuee?: number;
@@ -23,6 +25,8 @@ export const Juridique = ({
   const fr = {
     locale: frLocale,
   };
+
+  const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   const formattedDateTraitement = format(dateTraitement, "dd MMMM yyyy", fr);
   const formattedDateSignatureDecision = dateSignatureDecision
@@ -45,6 +49,9 @@ export const Juridique = ({
         <Badge severity="success">Accepté</Badge>
       </h2>
       <dl>
+        <dt className="mb-1">Mesure Fonds vert</dt>
+        <dd className="max-w-sm">{mesureFondsVert}</dd>
+
         <dt className="mb-1">Montant de la subvention attribuée</dt>
         <dd className="max-w-sm">{formattedMontantSubventionAttribuee}</dd>
 
