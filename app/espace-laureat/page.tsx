@@ -14,5 +14,16 @@ export default async function EspaceLaureat() {
     return redirect("/connexion");
   }
 
-  return <Projet dossierNumber={demoDossierNumber} />;
+  const dossieNumbers = [demoDossierNumber, demoDossierNumber];
+
+  return (
+    <>
+      <h1>Projets lauréat</h1>
+      <div className="flex flex-col gap-y-8">
+        {dossieNumbers.map((dossierNumber, index) => (
+          <Projet key={index} dossierNumber={dossierNumber} />
+        ))}
+      </div>
+    </>
+  );
 }
