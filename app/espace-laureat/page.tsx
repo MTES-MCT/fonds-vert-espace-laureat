@@ -3,14 +3,11 @@ import { redirect } from "next/navigation";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import {
-  demoStaticDossierNumber,
-  getDemoDossierNumbers,
-  getDemoStaticDossierResponse,
-} from "@/utils/demo";
+  getSearchParams,
+  SearchParams,
+} from "@/app/espace-laureat/_components/getParams";
 import { getDossierNumbers } from "@/utils/fondsvert";
 import { getSession } from "@/utils/session";
-
-type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
 export default async function EspaceLaureat({
   searchParams,
@@ -20,19 +17,21 @@ export default async function EspaceLaureat({
   const session = await getSession();
   const user = session?.user;
 
-  const { siret: siretParam } = await searchParams;
-
   if (!user || !user.email || !user.email_verified) {
     return redirect("/connexion");
   }
 
-  const siret = typeof siretParam === "string" ? siretParam : user.siret;
-  const dossierNumbers = await getDossierNumbers({ siret });
+  const params = await getSearchParams({ searchParams });
+
+  const siret = params.siret ?? user.siret;
+
+  const dossierNumbers =
+    params.dossierNumbers.length > 0
+      ? params.dossierNumbers
+      : await getDossierNumbers({ siret });
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
-    dossierNumber === demoStaticDossierNumber
-      ? getDemoStaticDossierResponse()
-      : getDossier({ dossierNumber, userEmail: user.email }),
+    getDossier({ dossierNumber, userEmail: user.email }),
   );
 
   const dossiers = await Promise.all(dossierRequests);
