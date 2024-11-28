@@ -1,47 +1,52 @@
 import { Dossier } from "@/utils/dossier";
 
-export const getDemoDossierNumbers = () => {
-  const demoDossierNumbers = process.env.DEMO_DOSSIER_NUMBERS;
-
-  if (!demoDossierNumbers) {
-    throw new Error(
-      "La variable d'environnement DEMO_DOSSIER_NUMBERS n'est pas définie",
-    );
-  }
-
-  return demoDossierNumbers.split(",").map(Number);
+const demandeur = {
+  demandeur: {
+    email: "alice.doe@example.com",
+    siret: "12345678910111",
+    libelleNaf: "FONDS VERT - Renaturation des villes et des villages",
+  },
 };
 
-export const demoStaticDossierNumber = 12345678;
+const demarche = {
+  demarche: {
+    title: "Dossier de demande de subvention",
+  },
+};
 
-export const getDemoStaticDossierResponse = ():
-  | { success: true; data: Dossier }
-  | { success: false; error: string } => {
-  return {
-    success: true,
-    data: {
-      numero: demoStaticDossierNumber,
-      dateTraitement: new Date(),
-      demandeur: {
-        email: "alice.doe@example.com",
-        siret: "12345678910111",
-        libelleNaf: "FONDS VERT - Renaturation des villes et des villages",
-      },
-      demarche: {
-        title: "Dossier de demande de subvention",
-      },
-      champs: {
-        intituleProjet: "Projet de démonstration",
-        resumeProjet: "Lorem ipsum dolor sit amet",
-        departementImplantation: "Paris",
-        montantSubventionAttribuee: 100000,
-        emailRepresentantLegal: "alice.doe@example.com",
-        emailResponsableSuivi: "bob.doe@example.com",
-        dateSignatureDecision: new Date(),
-        numeroDossierAgenceEau: "45678",
-        numeroEngagementJuridique: "987654",
-        autresNumerosEngagementJuridique: ["123456", "654321"],
-      },
-    },
-  };
+export const demoDossier1 = {
+  numero: 12345678,
+  dateTraitement: new Date(),
+  ...demandeur,
+  ...demarche,
+  champs: {
+    intituleProjet: "Projet 1 de démonstration",
+    resumeProjet: "Lorem ipsum dolor sit amet",
+    departementImplantation: "Paris",
+    montantSubventionAttribuee: 100000,
+    emailRepresentantLegal: "alice.doe@example.com",
+    emailResponsableSuivi: "bob.doe@example.com",
+    dateSignatureDecision: new Date(),
+    numeroDossierAgenceEau: "45678",
+    numeroEngagementJuridique: "987654",
+    autresNumerosEngagementJuridique: ["123456", "654321"],
+  },
+};
+
+export const demoDossier2 = {
+  numero: 12345910,
+  dateTraitement: new Date(),
+  ...demandeur,
+  ...demarche,
+  champs: {
+    intituleProjet: "Projet 2 de démonstration",
+    resumeProjet: "Lorem ipsum dolor sit amet",
+    departementImplantation: "Nantes",
+    montantSubventionAttribuee: 4000000,
+    emailRepresentantLegal: "alice.doe@example.com",
+    emailResponsableSuivi: "bob.doe@example.com",
+    dateSignatureDecision: new Date(),
+    numeroEngagementJuridique: "987654",
+    autresNumerosEngagementJuridique: ["123456", "654321"],
+  },
 };
