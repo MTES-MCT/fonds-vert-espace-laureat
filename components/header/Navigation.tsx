@@ -19,7 +19,9 @@ export function Navigation() {
           linkProps: {
             href: "/espace-laureat",
           },
-          isActive: segment === "espace-laureat",
+          isActive:
+            segment !== null &&
+            ["espace-laureat", "connexion"].includes(segment),
         },
       ]}
     />
