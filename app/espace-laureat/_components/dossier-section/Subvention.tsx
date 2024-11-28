@@ -1,6 +1,6 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
-import Button from "@codegouvfr/react-dsfr/Button";
 
+import { DemandeDeVersement } from "@/app/espace-laureat/_components/dossier-section/DemandeDeVersement";
 import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/dossier-section/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
@@ -91,7 +91,7 @@ export const Subvention = ({
         </dl>
       )}
       <div className="flex justify-end items-end">
-        <Button>Demander un versement</Button>
+        <DemandeDeVersement />
       </div>
     </InfoBlock>
   );
