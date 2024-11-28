@@ -34,7 +34,7 @@ export const Subvention = ({
   return (
     <InfoBlock>
       <h2 className="mb-0">{intitule ?? "N/A"}</h2>
-      {resume && <p className="text-gray-500">{resume}</p>}
+      {resume && <p className="text-gray-500 text-sm">{resume}</p>}
       {departementImplantation && (
         <dl className="mb-4">
           <dt>Département d'implantation</dt>

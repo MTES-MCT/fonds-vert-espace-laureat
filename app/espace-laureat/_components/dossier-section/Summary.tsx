@@ -1,4 +1,4 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
+import Tag from "@codegouvfr/react-dsfr/Tag";
 import { format } from "date-fns";
 import { fr as frLocale } from "date-fns/locale/fr";
 
@@ -44,16 +44,14 @@ export const Summary = ({
 
   return (
     <InfoBlock>
-      <h2 className="flex justify-between items-start">
+      <h2>
         Dossier n°{numeroDossierDemarchesSimplifiees}{" "}
-        <Badge severity="success">Accepté</Badge>
+        <Tag iconId="fr-icon-award-fill">{mesureFondsVert}</Tag>
       </h2>
-      <dl>
-        <dt className="mb-1">Mesure Fonds vert</dt>
-        <dd className="max-w-sm">{mesureFondsVert}</dd>
 
+      <dl>
         <dt className="mb-1">Montant de la subvention attribuée</dt>
-        <dd className="max-w-sm">{formattedMontantSubventionAttribuee}</dd>
+        <dd>{formattedMontantSubventionAttribuee}</dd>
 
         <dt>Date de signature de la décision</dt>
         <dd>{formattedDateTraitement}</dd>
