@@ -33,59 +33,63 @@ export const Subvention = ({
 
   return (
     <InfoBlock>
-      <h2 className="mb-0">{intitule ?? "N/A"}</h2>
-      {resume && <p className="text-gray-500 text-sm">{resume}</p>}
-      {departementImplantation && (
-        <dl className="mb-4">
+      <h3 className="mb-2 text-base">{intitule ?? "N/A"}</h3>
+      <p className="text-gray-500 text-sm">{resume ? resume : ""}</p>
+
+      <dl className="mb-4">
+        <>
           <dt>Département d'implantation</dt>
-          <dd>{departementImplantation}</dd>
+          <dd>
+            {departementImplantation
+              ? departementImplantation
+              : "Aucun département précisé"}
+          </dd>
+        </>
 
-          {numeroDossierAgenceEau && (
-            <>
-              <dt>Numéro de dossier agence de l'eau</dt>
-              <dd>
-                <Badge>{numeroDossierAgenceEau}</Badge>
-              </dd>
-            </>
-          )}
+        {numeroDossierAgenceEau && (
+          <>
+            <dt>Numéro de dossier agence de l'eau</dt>
+            <dd>
+              <Badge>{numeroDossierAgenceEau}</Badge>
+            </dd>
+          </>
+        )}
 
-          {(numeroEngagementJuridique ||
-            autresNumerosEngagementJuridique.length > 0) && (
-            <NumerosEngagementJuridique
-              numeroEngagementJuridique={numeroEngagementJuridique}
-              autresNumerosEngagementJuridique={
-                autresNumerosEngagementJuridique
-              }
-            />
-          )}
+        {(numeroEngagementJuridique ||
+          autresNumerosEngagementJuridique.length > 0) && (
+          <NumerosEngagementJuridique
+            numeroEngagementJuridique={numeroEngagementJuridique}
+            autresNumerosEngagementJuridique={autresNumerosEngagementJuridique}
+          />
+        )}
 
-          {montantSubventionAttribuee && (
-            <>
-              <dt className="mb-1">Consommation de la subvention</dt>
-              <dd>
-                <ProgressBar
-                  value={montantSubventionAttribuee}
-                  max={montantSubventionAttribuee}
-                  formattedMin="0 €"
-                  formattedMax={formattedMontantSubventionAttribuee}
-                />
-                <div className="mb-4 bg-gray-100 py-3 px-4">
-                  <span className="text-lg text-gray-900 font-semibold">
-                    Restant : {formattedMontantSubventionAttribuee}
-                  </span>
-                  <p className="text-sm mb-0">
-                    Vous pouvez obtenir une avance au démarrage des travaux à
-                    hauteur de 30% maximum du montant de la subvention.{" "}
-                    <a
-                      className="fr-link fr-link--sm"
-                      target="_blank"
-                      href="https://www.ecologie.gouv.fr/fonds-vert"
-                    >
-                      En savoir plus
-                    </a>
-                  </p>
-                </div>
-              </dd>
+        {montantSubventionAttribuee && (
+          <>
+            <dt className="mb-1">Consommation de la subvention</dt>
+            <dd>
+              <ProgressBar
+                value={montantSubventionAttribuee}
+                max={montantSubventionAttribuee}
+                formattedMin="0 €"
+                formattedMax={formattedMontantSubventionAttribuee}
+              />
+              <div className="mb-4 bg-gray-100 py-3 px-4">
+                <span className="text-lg text-gray-900 font-semibold">
+                  Restant : {formattedMontantSubventionAttribuee}
+                </span>
+                <p className="text-sm mb-0">
+                  Vous pouvez obtenir une avance au démarrage des travaux à
+                  hauteur de 30% maximum du montant de la subvention.{" "}
+                  <a
+                    className="fr-link fr-link--sm"
+                    target="_blank"
+                    href="https://www.ecologie.gouv.fr/fonds-vert"
+                  >
+                    En savoir plus
+                  </a>
+                </p>
+              </div>
+            </dd>
             </>
           )}
         </dl>

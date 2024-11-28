@@ -19,10 +19,11 @@ export const demoDossier1: Dossier = {
     title: "FONDS VERT - Rénovation énergétique des bâtiments publics locaux",
   },
   champs: {
-    intituleProjet: "Projet 1 de démonstration",
+    intituleProjet:
+      "Travaux de rénovation et de modernisation de la Médiathèque Jacques Demy, visant à améliorer l'efficacité énergétique et la durabilité de l'infrastructure",
     resumeProjet,
-    departementImplantation: "Paris",
-    montantSubventionAttribuee: 100000,
+    departementImplantation: "Nantes",
+    montantSubventionAttribuee: 778200.28,
     emailRepresentantLegal: "alice.doe@example.com",
     emailResponsableSuivi: "bob.doe@example.com",
     dateSignatureDecision: new Date(),
@@ -40,14 +41,15 @@ export const demoDossier2: Dossier = {
     title: "FONDS VERT - Renaturation des villes et des villages",
   },
   champs: {
-    intituleProjet: "Projet 2 de démonstration",
+    intituleProjet:
+      "Conception et mise en œuvre d’un plan de gestion pour une réserve naturelle afin de restaurer la biodiversité",
     resumeProjet,
     departementImplantation: "Nantes",
-    montantSubventionAttribuee: 4000000,
+    montantSubventionAttribuee: 3240000,
     emailRepresentantLegal: "alice.doe@example.com",
     emailResponsableSuivi: "bob.doe@example.com",
     dateSignatureDecision: new Date(),
     numeroEngagementJuridique: "987654",
-    autresNumerosEngagementJuridique: ["123456", "654321"],
+    autresNumerosEngagementJuridique: [],
   },
 };
