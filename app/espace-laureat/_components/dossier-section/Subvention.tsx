@@ -3,6 +3,7 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import { DemandeDeVersement } from "@/app/espace-laureat/_components/dossier-section/DemandeDeVersement";
 import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/dossier-section/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
+import { NonDisponible } from "@/components/non-disponible/NonDisponible";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Subvention = ({
@@ -65,7 +66,7 @@ export const Subvention = ({
 
         {montantSubventionAttribuee && (
           <>
-            <dt className="mb-1">Consommation de la subvention</dt>
+            <dt className="mb-1">Subvention</dt>
             <dd>
               <ProgressBar
                 value={montantSubventionAttribuee}
@@ -74,9 +75,9 @@ export const Subvention = ({
                 formattedMax={formattedMontantSubventionAttribuee}
               />
               <div className="mb-4 bg-gray-100 py-3 px-4">
-                <span className="text-lg text-gray-900 font-semibold">
-                  Restant : {formattedMontantSubventionAttribuee}
-                </span>
+                <div className="flex items-center gap-x-2 text-lg text-gray-900 font-semibold mb-1">
+                  Consommé : <NonDisponible />
+                </div>
                 <p className="text-sm mb-0">
                   Vous pouvez obtenir une avance au démarrage des travaux à
                   hauteur de 30% maximum du montant de la subvention.{" "}
