@@ -24,14 +24,19 @@ export default async function RootLayout({
 
   const quickAccessItems = user
     ? [
-        <HeaderQuickAccessItem
-          key={0}
-          quickAccessItem={{
-            iconId: "fr-icon-logout-box-r-line",
-            text: "Se déconnecter",
-            linkProps: { href: "/api/auth/proconnect/logout" },
-          }}
-        />,
+        <div key={0} className="sm:flex items-center gap-x-2 mb-4">
+          <div className="text-sm font-medium">{user.email}</div>
+          <HeaderQuickAccessItem
+            quickAccessItem={{
+              iconId: "fr-icon-logout-box-r-line",
+              text: "Se déconnecter",
+              linkProps: {
+                className: "mb-0",
+                href: "/api/auth/proconnect/logout",
+              },
+            }}
+          />
+        </div>,
       ]
     : [
         <HeaderQuickAccessItem
