@@ -1,11 +1,15 @@
 "use client";
 
 import { Header as DsfrHeader } from "@codegouvfr/react-dsfr/Header";
-import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
+import { ReactElement } from "react";
 
 import { Navigation } from "@/components/header/Navigation";
 
-export const Header = () => (
+export const Header = ({
+  quickAccessItems,
+}: {
+  quickAccessItems: ReactElement[];
+}) => (
   <DsfrHeader
     brandTop={
       <>
@@ -25,16 +29,7 @@ export const Header = () => (
       title:
         "Accueil - Fonds vert (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
     }}
-    quickAccessItems={[
-      <HeaderQuickAccessItem
-        key={0}
-        quickAccessItem={{
-          iconId: "ri-account-box-line",
-          text: "Espace lauréat",
-          linkProps: { href: "/espace-laureat" },
-        }}
-      />,
-    ]}
+    quickAccessItems={quickAccessItems}
     navigation={<Navigation />}
   />
 );
