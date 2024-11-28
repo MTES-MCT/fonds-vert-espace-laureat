@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
+import { getPageTitle } from "@/app/espace-laureat/_components/getPageTitle";
 import {
   getSearchParams,
   SearchParams,
@@ -41,15 +42,13 @@ export default async function EspaceLaureat({
 
   return (
     <>
-      <h1>
-        {successDossiers.length > 1 ? "Dossiers acceptés" : "Dossier accepté"}
-      </h1>
+      <h1>{getPageTitle({ successDossiersLength: successDossiers.length })}</h1>
 
       {successDossiers.length === 0 ? (
-        <div className="py-12 px-8 text-center text-balance text-gray-700 max-w-xl bg-gray-100">
-          Aucun dossier n'est associé à la fois à l'adresse email{" "}
-          <span className="font-semibold">{user.email}</span> et au siret{" "}
-          <span className="font-semibold">{siret}</span>.
+        <div className="p-12 text-center text-balance text-gray-900 max-w-lg bg-gray-200">
+          Nous ne trouvons pas de dossiers associés à l'email{" "}
+          <span className="font-medium">{user.email}</span> et au siret{" "}
+          <span className="font-medium">{siret}</span>.
         </div>
       ) : (
         <div className="flex flex-col gap-y-8">
