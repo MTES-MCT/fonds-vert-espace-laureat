@@ -19,7 +19,7 @@ const LOGOUT_CALLBACK_URL = new URL(
   process.env.NEXT_PUBLIC_BASE_URL,
 ).toString();
 
-const SCOPES = "openid given_name usual_name email custom idp_id";
+const SCOPES = "openid given_name usual_name email siret custom idp_id";
 
 export const getClient = async () => {
   if (_client) {
@@ -77,6 +77,7 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
 export type ProConnectUserInfo = {
   sub: string;
   email: string;
+  siret: string;
   given_name: string;
   usual_name: string;
   idp_id: string;

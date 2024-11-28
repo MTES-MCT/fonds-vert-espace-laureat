@@ -77,7 +77,7 @@ export async function getDossierNumbers({
     );
 
     if (dossiersResponse.status === 404) {
-      return error(`Aucun dossier n'a été trouvé pour le siret ${siret}`);
+      return [];
     }
 
     if (!dossiersResponse.ok) {
@@ -87,7 +87,7 @@ export async function getDossierNumbers({
     }
 
     const dossiersData = await dossiersResponse.json();
-    
+
     return dossiersData.data.map(
       (dossier: { socle_commun: { dossier_number: number } }) =>
         dossier.socle_commun.dossier_number,

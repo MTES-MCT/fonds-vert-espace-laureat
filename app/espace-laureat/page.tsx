@@ -20,16 +20,14 @@ export default async function EspaceLaureat({
   const session = await getSession();
   const user = session?.user;
 
-  const { siret } = await searchParams;
+  const { siret: siretParam } = await searchParams;
 
   if (!user || !user.email || !user.email_verified) {
     return redirect("/connexion");
   }
 
-  const dossierNumbers =
-    typeof siret === "string"
-      ? await getDossierNumbers({ siret })
-      : getDemoDossierNumbers();
+  const siret = typeof siretParam === "string" ? siretParam : user.siret;
+  const dossierNumbers = await getDossierNumbers({ siret });
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
     dossierNumber === demoStaticDossierNumber
@@ -50,8 +48,9 @@ export default async function EspaceLaureat({
 
       {successDossiers.length === 0 ? (
         <div className="py-12 px-8 text-center text-balance text-gray-700 max-w-xl bg-gray-100">
-          Aucun dossier n'est associé à l'adresse email{" "}
-          <span className="font-semibold">{user.email}</span>
+          Aucun dossier n'est associé à la fois à l'adresse email{" "}
+          <span className="font-semibold">{user.email}</span> et au siret{" "}
+          <span className="font-semibold">{siret}</span>.
         </div>
       ) : (
         <div className="flex flex-col gap-y-8">

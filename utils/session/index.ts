@@ -10,6 +10,7 @@ type User = {
   id: string;
   email: string;
   email_verified?: boolean;
+  siret: string;
 };
 
 type Session = {
@@ -41,6 +42,7 @@ export async function setSession(
   session.user = {
     id: userInfo.sub,
     email: userInfo.email,
+    siret: userInfo.siret,
     email_verified: userInfo.custom.email_verified,
   };
   await session.save();
