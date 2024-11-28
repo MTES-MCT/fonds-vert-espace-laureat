@@ -7,17 +7,29 @@ import {
   getDemoDossierNumbers,
   getDemoStaticDossierResponse,
 } from "@/utils/demo";
+import { getDossierNumbers } from "@/utils/fondsvert";
 import { getSession } from "@/utils/session";
 
-export default async function EspaceLaureat() {
+type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
+
+export default async function EspaceLaureat({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   const session = await getSession();
   const user = session?.user;
+
+  const { siret } = await searchParams;
 
   if (!user || !user.email || !user.email_verified) {
     return redirect("/connexion");
   }
 
-  const dossierNumbers = getDemoDossierNumbers();
+  const dossierNumbers =
+    typeof siret === "string"
+      ? await getDossierNumbers({ siret })
+      : getDemoDossierNumbers();
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
     dossierNumber === demoStaticDossierNumber
