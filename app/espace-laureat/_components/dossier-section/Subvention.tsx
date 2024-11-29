@@ -1,12 +1,13 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import Link from "next/link";
 
-import { DemandeDeVersement } from "@/app/espace-laureat/_components/dossier-section/DemandeDeVersement";
 import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/dossier-section/NumerosEngagementJuridique";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { NonDisponible } from "@/components/non-disponible/NonDisponible";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Subvention = ({
+  dossierNumero,
   intitule,
   resume,
   departementImplantation,
@@ -15,6 +16,7 @@ export const Subvention = ({
   autresNumerosEngagementJuridique,
   montantSubventionAttribuee,
 }: {
+  dossierNumero: number;
   intitule?: string;
   resume?: string;
   departementImplantation?: string;
@@ -91,12 +93,16 @@ export const Subvention = ({
                 </p>
               </div>
             </dd>
-            </>
-          )}
-        </dl>
-      )}
+          </>
+        )}
+      </dl>
       <div className="flex justify-end items-end">
-        <DemandeDeVersement />
+        <Link
+          className="fr-btn"
+          href={`/espace-laureat/${dossierNumero}/demande-de-versement`}
+        >
+          Demander un versement
+        </Link>
       </div>
     </InfoBlock>
   );

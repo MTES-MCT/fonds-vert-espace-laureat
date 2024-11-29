@@ -4,7 +4,10 @@ import { Dossier } from "@/utils/dossier";
 
 export async function DossierSection({ dossier }: { dossier: Dossier }) {
   return (
-    <div className="grid lg:grid-cols-2 gap-y-6 border py-6">
+    <div
+      className="grid lg:grid-cols-2 gap-y-6 border py-6"
+      id={`dossier-${dossier.numero}`}
+    >
       <Summary
         titreDemarche={dossier.demarche.title}
         dateTraitement={dossier.dateTraitement}
@@ -15,6 +18,7 @@ export async function DossierSection({ dossier }: { dossier: Dossier }) {
         emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
       />
       <Subvention
+        dossierNumero={dossier.numero}
         intitule={dossier.champs.intituleProjet}
         resume={dossier.champs.resumeProjet}
         departementImplantation={dossier.champs.departementImplantation}
