@@ -40,15 +40,26 @@ export default async function EspaceLaureat({
     .filter((dossier) => dossier.success)
     .map((dossier) => dossier.data);
 
+  const noResultMsg =
+    "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
+
   return (
     <>
       <h1>{getPageTitle({ successDossiersLength: successDossiers.length })}</h1>
 
       {successDossiers.length === 0 ? (
-        <div className="p-12 text-center text-balance text-gray-900 max-w-lg bg-gray-200">
-          Nous ne trouvons pas de dossiers associés à l'email{" "}
-          <span className="font-medium">{user.email}</span> et au siret{" "}
-          <span className="font-medium">{siret}</span>.
+        <div className="flex flex-col gap-y-6 text-center items-center justify-center border w-full h-96">
+          <span
+            className="text-gray-900 fr-icon-warning-fill fr-icon--lg"
+            aria-hidden="true"
+          ></span>
+          <h2 className="text-lg max-w-lg mb-0">
+            Aucun dossier n'est associé à l'adresse email {user.email} et au
+            siret {siret}
+          </h2>
+          <p className="max-w-3xl mb-0 text-gray-700  text-balance">
+            {noResultMsg}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-y-8">
@@ -58,11 +69,11 @@ export default async function EspaceLaureat({
         </div>
       )}
 
-      <p className="max-w-lg text-sm my-6">
-        Vous ne trouvez pas votre dossier ? Assurez-vous de vous connecter avec
-        l'adresse e-mail utilisée lors du dépôt de votre demande de subvention.
-        Si vous avez besoin d'aide, n'hésitez pas à nous contacter.
-      </p>
+      {successDossiers.length > 0 && (
+        <p className="max-w-lg text-sm my-6">
+          Vous ne trouvez pas votre dossier ? {noResultMsg}
+        </p>
+      )}
     </>
   );
 }
