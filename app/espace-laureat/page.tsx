@@ -1,5 +1,4 @@
-import { redirect } from "next/navigation";
-
+import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { getPageTitle } from "@/app/espace-laureat/_components/getPageTitle";
@@ -19,7 +18,7 @@ export default async function EspaceLaureat({
   const user = session?.user;
 
   if (!user || !user.email || !user.email_verified) {
-    return redirect("/connexion");
+    return <Connexion />;
   }
 
   const params = await getSearchParams({ searchParams });

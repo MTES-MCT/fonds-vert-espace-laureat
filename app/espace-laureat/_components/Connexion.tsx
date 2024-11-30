@@ -1,8 +1,8 @@
 import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 
-export default function Connexion() {
+export function Connexion() {
   return (
-    <div className="max-w-xl pb-24">
+    <div className="max-w-xl pb-48">
       <h1>Espace lauréat</h1>
       <p className="fr-text--lead">
         Ce service est accessible aux porteurs d'un projet lauréat du Fonds
