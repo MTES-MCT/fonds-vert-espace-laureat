@@ -1,3 +1,4 @@
+import { AucunDossier } from "@/app/espace-laureat/_components/AucunDossier";
 import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
@@ -47,24 +48,16 @@ export default async function EspaceLaureat({
       <h1>{getPageTitle({ successDossiersLength: successDossiers.length })}</h1>
 
       {successDossiers.length === 0 ? (
-        <div className="flex flex-col gap-y-6 text-center items-center justify-center border w-full h-96">
-          <span
-            className="text-gray-900 fr-icon-warning-fill fr-icon--lg"
-            aria-hidden="true"
-          ></span>
-          <h2 className="text-lg max-w-lg mb-0">
-            Aucun dossier n'est associé à l'adresse email {user.email} et au
-            siret {siret}
-          </h2>
-          <p className="max-w-3xl mb-0 text-gray-700  text-balance">
-            {noResultMsg}
-          </p>
-        </div>
+        <AucunDossier
+          siret={siret}
+          email={user.email}
+          noResultMsg={noResultMsg}
+        />
       ) : (
         <div className="flex flex-col gap-y-8">
           {successDossiers.map((dossier, index) => (
             <DossierSection key={index} dossier={dossier} />
-          ))}{" "}
+          ))}
         </div>
       )}
 
