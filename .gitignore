@@ -45,3 +45,6 @@ next-env.d.ts
 
 # Graphql codegen
 generated/
+
+# Private data
+data/projets.csv
