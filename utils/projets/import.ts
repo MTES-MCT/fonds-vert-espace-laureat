@@ -10,13 +10,7 @@ function parseFloatOrNull(value: string): number | null {
 }
 
 export async function importProjets(): Promise<Projet[]> {
-  const filePath = path.join(
-    process.cwd(),
-    "utils",
-    "projets",
-    "data",
-    "projets.csv",
-  );
+  const filePath = path.join(process.cwd(), "data", "projets.csv");
   if (!fs.existsSync(filePath)) {
     throw new Error(
       "Export projets.csv introuvable dans le dossier utils/projets/data",
