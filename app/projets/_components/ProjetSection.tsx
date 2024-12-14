@@ -31,19 +31,21 @@ export function ProjetSection({
   return (
     <li
       key={key}
-      className="flex flex-col gap-y-6 border bg-white shadow-sm text-sm p-6 rounded-lg w-96"
+      className="shadow-xl border-t-4 border-green-400 flex flex-col gap-y-6 bg-white text-sm p-6 h-60 w-80"
     >
       <div className="text-3xl font-bold text-gray-900">
         <div className="text-xs font-normal text-gray-400">
           Subvention Fonds Vert / total des dépenses
         </div>
         {getSubvention(projet)}{" "}
-        <span className="text-lg font-medium">
+        <span className="text-base font-medium">
           / {formattedMontantTotalDepense}{" "}
         </span>
       </div>
       <div className="h-28">
-        <p className="line-clamp-5">{projet.nom_du_projet}</p>
+        <p className="line-clamp-4 text-sm text-gray-600">
+          {projet.nom_du_projet}
+        </p>
       </div>
     </li>
   );

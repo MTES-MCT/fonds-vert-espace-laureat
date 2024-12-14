@@ -12,13 +12,13 @@ export interface Projets {
   projets: Projet[];
 }
 
-export type ProjetsParCommunes = Array<Projets>;
+export type ProjetsParDemarches = Array<Projets>;
 
-export type ProjetsParDemarchesCommunes = Array<ProjetsParCommunes>;
+export type ProjetsParCommunesDemarches = Array<ProjetsParDemarches>;
 
 export type ProjetsParDepartementsDemarchesCommunes = Record<
   string,
-  ProjetsParDemarchesCommunes
+  ProjetsParCommunesDemarches
 >;
 
 export type ProjetsParAnneesDepartementsDemarchesCommunes = Record<
@@ -37,8 +37,8 @@ export const projetsGroupes: ProjetsParAnneesDepartementsDemarchesCommunes =
       [
         "annee_millesime",
         "code_departement",
-        "demarche_number",
         "code_commune",
+        "demarche_number",
       ],
       [
         summarize<Projet>({
