@@ -1,22 +1,19 @@
 import { ProjetSection } from "@/app/projets/_components/ProjetSection";
 import { departements } from "@/data/departements";
-import { Projets, projetsGroupes, ProjetsParDemarches } from "@/utils/projets";
+import {
+  communeEtDepartements,
+  Projets,
+  projetsGroupes,
+  ProjetsParDemarches,
+} from "@/utils/projets";
 import { Projet } from "@/utils/projets/projet";
-
-export function generateStaticParams() {
-  return Object.entries(departements).map(([code]) => {
-    return {
-      codeCommuneOuRegion: code,
-    };
-  });
-}
 
 export default async function ProjetsDepartement({
   params,
 }: {
-  params: Promise<{ codeCommuneOuRegion: string }>;
+  params: Promise<{ codeCommuneOuDepartement: string }>;
 }) {
-  const { codeCommuneOuRegion: code } = await params;
+  const { codeCommuneOuDepartement: code } = await params;
 
   if (!projetsGroupes[code]) {
     return <h1>Commune introuvable</h1>;
@@ -29,7 +26,7 @@ export default async function ProjetsDepartement({
     <div>
       <h1 className="mb-4">
         <div className="text-xs font-normal text-gray-400">{code}</div>
-        {code}
+        {communeEtDepartements[code]}
       </h1>
       <ViewProjetsParDemarches
         annee={2024}
