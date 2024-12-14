@@ -15,7 +15,9 @@ type ProjetsParDepartementDemarche = Record<
   Record<number, ProjetsParDemarche>
 >;
 
-const projets = await importProjets();
+const projets = (await importProjets()).sort(
+  (projet1, projet2) => projet2.total_des_depenses - projet1.total_des_depenses,
+);
 
 export const projetsParDepartementDemarche: ProjetsParDepartementDemarche =
   tidy(
