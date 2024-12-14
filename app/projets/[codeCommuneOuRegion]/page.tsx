@@ -14,16 +14,16 @@ export function generateStaticParams() {
 export default async function ProjetsDepartement({
   params,
 }: {
-  params: Promise<{ codeCommune: string }>;
+  params: Promise<{ codeCommuneOuRegion: string }>;
 }) {
-  const { codeCommune } = await params;
+  const { codeCommuneOuRegion: code } = await params;
 
-  if (!projetsGroupes[codeCommune]) {
+  if (!projetsGroupes[code]) {
     return <h1>Commune introuvable</h1>;
   }
 
-  const projetsParDemarches2023 = projetsGroupes[codeCommune][2023];
-  const projetsParDemarches2024 = projetsGroupes[codeCommune][2024];
+  const projetsParDemarches2023 = projetsGroupes[code][2023];
+  const projetsParDemarches2024 = projetsGroupes[code][2024];
 
   return (
     <div>
@@ -55,9 +55,9 @@ function ViewProjetsParDemarches({
       <div className="mb-12 font-semibold">{annee}</div>
       <h1 className="mb-4">
         <div className="text-xs font-normal text-gray-400">
-          {projetsParDemarches[0].code_commune}
+          {projetsParDemarches[0].code_commune_sinon_region}
         </div>
-        {projetsParDemarches[0].nom_commune}
+        {projetsParDemarches[0].nom_commune_sinon_region}
       </h1>
       <ul className="flex flex-wrap justify-start items-end gap-y-12 gap-x-8 bg-gray-100 list-none p-10 mb-24">
         {projetsParDemarches?.map((projets: Projets, index: number) => (

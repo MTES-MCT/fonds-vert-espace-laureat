@@ -32,8 +32,8 @@ export async function importProjets(): Promise<Projet[]> {
             row.montant_subvention_attribuee,
           ),
           population_commune: parseInt(row.population_commune),
-          code_commune: row.code_commune || "00",
-          nom_commune: row.nom_commune || "Commune inconnue",
+          code_commune_sinon_region: row.code_commune || row.code_region,
+          nom_commune_sinon_region: row.nom_commune || row.nom_region,
           date_depot: new Date(row.date_depot),
         };
         projets.push(projet);

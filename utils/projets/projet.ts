@@ -8,8 +8,8 @@ export interface Projet {
   nom_region: string;
   code_departement: string;
   nom_departement: string;
-  nom_commune: string;
-  code_commune: string;
+  nom_commune_sinon_region: string;
+  code_commune_sinon_region: string;
   entreprise_raison_sociale: string;
   total_des_depenses: number;
   annee_millesime: number;

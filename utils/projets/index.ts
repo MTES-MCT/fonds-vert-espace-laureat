@@ -7,8 +7,8 @@ import { Projet } from "./projet";
 export interface Projets {
   total_des_depenses: number;
   demarche_title: string;
-  nom_commune: string;
-  code_commune: string;
+  nom_commune_sinon_region: string;
+  code_commune_sinon_region: string;
   projets: Projet[];
 }
 
@@ -28,13 +28,14 @@ const projetsTries = (await importProjets()).sort(
 export const projetsGroupes: ProjetsParCommunesAnneeDemarches = tidy(
   projetsTries,
   groupBy(
-    ["code_commune", "annee_millesime", "demarche_number"],
+    ["code_commune_sinon_region", "annee_millesime", "demarche_number"],
     [
       summarize<Projet>({
         total_des_depenses: sum("total_des_depenses"),
         demarche_title: (group) => group[0].demarche_title,
-        nom_commune: (group) => group[0].nom_commune,
-        code_commune: (group) => group[0].code_commune,
+        nom_commune_sinon_region: (group) => group[0].nom_commune_sinon_region,
+        code_commune_sinon_region: (group) =>
+          group[0].code_commune_sinon_region,
         projets: (group) => group,
       }),
     ],
