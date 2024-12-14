@@ -14,16 +14,21 @@ export interface Projets {
 
 export type ProjetsParDemarches = Array<Projets>;
 
-export type ProjetsParCommunesDemarches = Record<string, ProjetsParDemarches>;
+export type ProjetsParAnneeDemarches = Record<string, ProjetsParDemarches>;
+
+export type ProjetsParCommunesAnneeDemarches = Record<
+  string,
+  ProjetsParAnneeDemarches
+>;
 
 const projetsTries = (await importProjets()).sort(
   (projet1, projet2) => projet2.total_des_depenses - projet1.total_des_depenses,
 );
 
-export const projetsGroupes: ProjetsParCommunesDemarches = tidy(
+export const projetsGroupes: ProjetsParCommunesAnneeDemarches = tidy(
   projetsTries,
   groupBy(
-    ["code_commune", "demarche_number"],
+    ["code_commune", "annee_millesime", "demarche_number"],
     [
       summarize<Projet>({
         total_des_depenses: sum("total_des_depenses"),
@@ -34,7 +39,7 @@ export const projetsGroupes: ProjetsParCommunesDemarches = tidy(
       }),
     ],
     groupBy.levels({
-      levels: ["object", "values"],
+      levels: ["object", "object", "values"],
       single: true,
     }),
   ),

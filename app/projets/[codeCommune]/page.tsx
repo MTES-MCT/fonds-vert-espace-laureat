@@ -18,32 +18,47 @@ export default async function ProjetsDepartement({
 }) {
   const { codeCommune } = await params;
 
-  const projetsParDemarches = projetsGroupes[codeCommune];
-
-  if (!projetsParDemarches) {
+  if (!projetsGroupes[codeCommune]) {
     return <h1>Commune introuvable</h1>;
   }
 
+  const projetsParDemarches2023 = projetsGroupes[codeCommune][2023];
+  const projetsParDemarches2024 = projetsGroupes[codeCommune][2024];
+
   return (
     <div>
-      {<ViewProjetsParDemarches projetsParDemarches={projetsParDemarches} />}
+      <ViewProjetsParDemarches
+        annee={2024}
+        projetsParDemarches={projetsParDemarches2024}
+      />
+      <ViewProjetsParDemarches
+        annee={2023}
+        projetsParDemarches={projetsParDemarches2023}
+      />
     </div>
   );
 }
 
 function ViewProjetsParDemarches({
+  annee,
   projetsParDemarches,
 }: {
+  annee: number;
   projetsParDemarches: ProjetsParDemarches;
 }) {
+  if (!projetsParDemarches) {
+    return <></>;
+  }
+
   return (
     <>
-      <h2 className="mb-4">
+      <div className="mb-12 font-semibold">{annee}</div>
+      <h1 className="mb-4">
         <div className="text-xs font-normal text-gray-400">
           {projetsParDemarches[0].code_commune}
         </div>
         {projetsParDemarches[0].nom_commune}
-      </h2>
+      </h1>
       <ul className="flex flex-wrap justify-start items-end gap-y-12 gap-x-8 bg-gray-100 list-none p-10 mb-24">
         {projetsParDemarches?.map((projets: Projets, index: number) => (
           <ViewProjets key={index.toString()} projets={projets} />

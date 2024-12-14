@@ -42,7 +42,7 @@ export function ProjetSection({
           / {formattedMontantTotalDepense}{" "}
         </span>
       </div>
-      <div className="h-28">
+      <div className="h-">
         <p className="line-clamp-4 text-sm text-gray-600">
           {projet.nom_du_projet}
         </p>
