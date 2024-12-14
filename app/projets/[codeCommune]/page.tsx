@@ -14,48 +14,30 @@ export function generateStaticParams() {
 export default async function ProjetsDepartement({
   params,
 }: {
-  params: Promise<{ year: number; codeDepartement: string }>;
+  params: Promise<{ codeCommune: string }>;
 }) {
-  const { year, codeDepartement } = await params;
+  const { codeCommune } = await params;
 
-  if (!projetsGroupes[year]) {
-    return <h1>Aucune donnée pour {year}</h1>;
-  }
+  const projetsParDemarches = projetsGroupes[codeCommune];
 
-  const projetsParDemarchesCommunes = projetsGroupes[year][codeDepartement];
-
-  if (!projetsParDemarchesCommunes) {
-    return <h1>Département introuvable</h1>;
+  if (!projetsParDemarches) {
+    return <h1>Commune introuvable</h1>;
   }
 
   return (
     <div>
-      <h1>{departements[codeDepartement]}</h1>
-      <ul className="list-none p-0">
-        {projetsParDemarchesCommunes.map(
-          (projetsParDemarches: ProjetsParDemarches, index) => {
-            return (
-              <ViewProjetsParDemarches
-                key={index.toString()}
-                projetsParDemarches={projetsParDemarches}
-              />
-            );
-          },
-        )}
-      </ul>
+      {<ViewProjetsParDemarches projetsParDemarches={projetsParDemarches} />}
     </div>
   );
 }
 
 function ViewProjetsParDemarches({
-  key,
   projetsParDemarches,
 }: {
-  key: string;
   projetsParDemarches: ProjetsParDemarches;
 }) {
   return (
-    <li key={key}>
+    <>
       <h2 className="mb-4">
         <div className="text-xs font-normal text-gray-400">
           {projetsParDemarches[0].code_commune}
@@ -67,7 +49,7 @@ function ViewProjetsParDemarches({
           <ViewProjets key={index.toString()} projets={projets} />
         ))}
       </ul>
-    </li>
+    </>
   );
 }
 
