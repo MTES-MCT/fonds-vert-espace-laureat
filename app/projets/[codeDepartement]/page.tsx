@@ -30,7 +30,7 @@ export default async function ProjetsDepartement({
         return (
           <>
             <h2>{demarche.demarche_title}</h2>
-            <ul className="list-none flex flex-wrap gap-2">
+            <ul className="list-none flex flex-wrap p-0 gap-6">
               {demarche?.projets?.map((projet: Projet, index: number) => (
                 <ProjetSection key={index} projet={projet} />
               ))}
