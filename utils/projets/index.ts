@@ -15,22 +15,26 @@ type ProjetsParDepartementDemarche = Record<
   Record<number, ProjetsParDemarche>
 >;
 
-const projets = (await importProjets()).sort(
+type ProjetsParAnneeDepartementDemarche = Record<
+  string,
+  Record<string, ProjetsParDepartementDemarche>
+>;
+
+const projetsTries = (await importProjets()).sort(
   (projet1, projet2) => projet2.total_des_depenses - projet1.total_des_depenses,
 );
 
-export const projetsParDepartementDemarche: ProjetsParDepartementDemarche =
-  tidy(
-    projets,
-    groupBy(
-      ["code_departement", "demarche_number"],
-      [
-        summarize({
-          total_des_depenses: sum("total_des_depenses"),
-          demarche_title: (group) => group[0].demarche_title,
-          projets: (group) => group,
-        }),
-      ],
-      groupBy.object({ single: true }),
-    ),
-  );
+export const projetsGroupes: ProjetsParAnneeDepartementDemarche = tidy(
+  projetsTries,
+  groupBy(
+    ["annee_millesime", "code_departement", "demarche_number"],
+    [
+      summarize({
+        total_des_depenses: sum("total_des_depenses"),
+        demarche_title: (group) => group[0].demarche_title,
+        projets: (group) => group,
+      }),
+    ],
+    groupBy.object({ single: true }),
+  ),
+);

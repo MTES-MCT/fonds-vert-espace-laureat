@@ -13,7 +13,7 @@ const getSubvention = (projet: Projet) => {
       projet.montant_subvention_attribuee,
     );
   }
-  return "montant subvention inconnu";
+  return "Inconnu";
 };
 
 export function ProjetSection({
