@@ -6,7 +6,7 @@ import { Projet } from "@/utils/projets/projet";
 export function generateStaticParams() {
   return Object.entries(departements).map(([code]) => {
     return {
-      codeDepartement: code,
+      codeCommuneOuRegion: code,
     };
   });
 }
@@ -27,6 +27,10 @@ export default async function ProjetsDepartement({
 
   return (
     <div>
+      <h1 className="mb-4">
+        <div className="text-xs font-normal text-gray-400">{code}</div>
+        {code}
+      </h1>
       <ViewProjetsParDemarches
         annee={2024}
         projetsParDemarches={projetsParDemarches2024}
@@ -52,13 +56,7 @@ function ViewProjetsParDemarches({
 
   return (
     <>
-      <div className="mb-12 font-semibold">{annee}</div>
-      <h1 className="mb-4">
-        <div className="text-xs font-normal text-gray-400">
-          {projetsParDemarches[0].code_commune_sinon_region}
-        </div>
-        {projetsParDemarches[0].nom_commune_sinon_region}
-      </h1>
+      <div className="mb-3 font-semibold">{annee}</div>
       <ul className="flex flex-wrap justify-start items-end gap-y-12 gap-x-8 bg-gray-100 list-none p-10 mb-24">
         {projetsParDemarches?.map((projets: Projets, index: number) => (
           <ViewProjets key={index.toString()} projets={projets} />
