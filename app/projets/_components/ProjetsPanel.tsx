@@ -11,10 +11,6 @@ export function ProjetsPanel({
   annee: number;
   projetsParDemarches: ProjetsParDemarches;
 }) {
-  if (!projetsParDemarches) {
-    return <></>;
-  }
-
   return (
     <div
       id={`tabpanel-${annee}-panel`}
@@ -23,11 +19,15 @@ export function ProjetsPanel({
       aria-labelledby={`tabpanel-${annee}`}
       tabIndex={0}
     >
-      <ul className="flex flex-wrap justify-start items-end gap-y-8 gap-x-8 list-none p-0 m-0">
-        {projetsParDemarches?.map((projets: Projets, index: number) => (
-          <DemarcheProjets key={index.toString()} projets={projets} />
-        ))}
-      </ul>
+      {projetsParDemarches ? (
+        <ul className="flex flex-wrap justify-start items-end gap-y-8 gap-x-8 list-none p-0 m-0">
+          {projetsParDemarches?.map((projets: Projets, index: number) => (
+            <DemarcheProjets key={index.toString()} projets={projets} />
+          ))}
+        </ul>
+      ) : (
+        "Aucun projet"
+      )}
     </div>
   );
 }
