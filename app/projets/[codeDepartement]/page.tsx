@@ -1,3 +1,4 @@
+import { CommunesFilter } from "@/app/projets/_components/CommunesFilter";
 import {
   getSearchParams,
   SearchParams,
@@ -5,7 +6,8 @@ import {
 import { ProjetsPanel } from "@/app/projets/_components/ProjetsPanel";
 import { TabButton } from "@/app/projets/_components/TabButton";
 import {
-  communesEtDepartements,
+  communesParDepartements,
+  nomDepartements,
   projetsParCommunesAnneesDemarches,
   projetsParDepartementsAnneesDemarches,
 } from "@/utils/projets";
@@ -30,10 +32,16 @@ export default async function ProjetsDepartement({
 
   const projetsParDemarches2023 = projetsGroupe[2023];
   const projetsParDemarches2024 = projetsGroupe[2024];
+  const communes = communesParDepartements[codeDepartement];
 
   return (
     <div>
-      <h1 className="mb-4">{communesEtDepartements[codeDepartement]}</h1>
+      <h1 className="mb-4">{nomDepartements[codeDepartement]}</h1>
+      <CommunesFilter
+        communes={communes}
+        codeDepartement={codeDepartement}
+        codeCommune={codeCommune}
+      />
       <div className="fr-tabs">
         <ul
           className="fr-tabs__list"

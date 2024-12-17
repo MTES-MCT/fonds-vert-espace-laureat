@@ -47,7 +47,7 @@ export function ProjetSection({
           {projet.nom_du_projet}
         </p>
         <p className="mb-0 text-right text-xs text-gray-400">
-          {projet.nom_commune_sinon_departement}
+          {projet.nom_commune}
         </p>
       </div>
     </li>

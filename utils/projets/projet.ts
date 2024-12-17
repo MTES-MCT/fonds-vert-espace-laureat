@@ -10,6 +10,8 @@ export interface Projet {
   nom_departement: string;
   nom_commune_sinon_departement: string;
   code_commune_sinon_departement: string;
+  code_commune: string;
+  nom_commune: string;
   entreprise_raison_sociale: string;
   total_des_depenses: number;
   annee_millesime: number;
