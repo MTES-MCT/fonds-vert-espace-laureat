@@ -42,9 +42,12 @@ export function ProjetSection({
           / {formattedMontantTotalDepense}{" "}
         </span>
       </div>
-      <div className="h-">
-        <p className="line-clamp-4 text-sm text-gray-600">
+      <div className="h-full flex flex-col justify-between">
+        <p className="mb-0 line-clamp-4 text-sm text-gray-600">
           {projet.nom_du_projet}
+        </p>
+        <p className="mb-0 text-right text-xs text-gray-400">
+          {projet.nom_commune_sinon_departement}
         </p>
       </div>
     </li>
