@@ -1,9 +1,11 @@
 export function TabButton({
   selected,
   annee,
+  count,
 }: {
   selected: boolean;
   annee: number;
+  count: number;
 }) {
   return (
     <li role="presentation">
@@ -15,7 +17,7 @@ export function TabButton({
         aria-selected={selected ? true : false}
         aria-controls={`tabpanel-${annee}-panel`}
       >
-        Lauréats {annee}
+        Lauréats {annee} ({count})
       </button>
     </li>
   );

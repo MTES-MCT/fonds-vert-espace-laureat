@@ -24,7 +24,7 @@ export function CommunesFilter({
   };
 
   if (!communes) {
-    return <>Aucune commune pour ce département</>;
+    return null;
   }
 
   return (

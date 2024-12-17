@@ -9,6 +9,7 @@ import {
   communesParDepartements,
   nomDepartements,
   projetsParCommunesAnneesDemarches,
+  ProjetsParDemarches,
   projetsParDepartementsAnneesDemarches,
 } from "@/utils/projets";
 
@@ -48,8 +49,16 @@ export default async function ProjetsDepartement({
           role="tablist"
           aria-label="Projets par année"
         >
-          <TabButton selected={true} annee={2024} />
-          <TabButton selected={false} annee={2023} />
+          <TabButton
+            selected={true}
+            annee={2024}
+            count={countProjets(projetsParDemarches2024)}
+          />
+          <TabButton
+            selected={false}
+            annee={2023}
+            count={countProjets(projetsParDemarches2023)}
+          />
         </ul>
         <ProjetsPanel
           selected={true}
@@ -63,5 +72,16 @@ export default async function ProjetsDepartement({
         />
       </div>
     </div>
+  );
+}
+
+function countProjets(projetsParDemarches: ProjetsParDemarches) {
+  if (!projetsParDemarches) {
+    return 0;
+  }
+  
+  return projetsParDemarches.reduce(
+    (acc, demarchProjets) => acc + demarchProjets.projets.length,
+    0,
   );
 }
