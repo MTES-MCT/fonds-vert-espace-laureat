@@ -28,23 +28,30 @@ export function CommunesFilter({
   }
 
   return (
-    <div className="mb-12">
+    <div className="mb-10">
       <label htmlFor="commune-select" className="block mb-2 font-medium">
         Filtrer sur une commune :
       </label>
-      <select
-        id="commune-select"
-        className="fr-select w-full max-w-xs"
-        onChange={handleChange}
-        value={codeCommune || ""}
-      >
-        <option value="">-- Toutes les communes --</option>
-        {communes.map((commune) => (
-          <option key={commune.code} value={commune.code}>
-            {commune.nom}
-          </option>
-        ))}
-      </select>
+      <div className="flex flex-wrap items-center gap-x-4">
+        <select
+          id="commune-select"
+          className="fr-select w-full max-w-xs mb-0"
+          onChange={handleChange}
+          value={codeCommune || ""}
+        >
+          <option value="">-- Toutes les communes --</option>
+          {communes.map((commune) => (
+            <option key={commune.code} value={commune.code}>
+              {commune.nom}
+            </option>
+          ))}
+        </select>
+        {codeCommune && (
+          <a className="fr-link block" href={`/projets/${codeDepartement}`}>
+            Réinitialiser
+          </a>
+        )}
+      </div>
     </div>
   );
 }
