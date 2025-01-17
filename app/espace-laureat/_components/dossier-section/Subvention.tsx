@@ -7,7 +7,6 @@ import { NonDisponible } from "@/components/non-disponible/NonDisponible";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
 
 export const Subvention = ({
-  dossierNumero,
   intitule,
   resume,
   departementImplantation,
@@ -16,7 +15,6 @@ export const Subvention = ({
   autresNumerosEngagementJuridique,
   montantSubventionAttribuee,
 }: {
-  dossierNumero: number;
   intitule?: string;
   resume?: string;
   departementImplantation?: string;
@@ -99,7 +97,8 @@ export const Subvention = ({
       <div className="flex justify-end items-end">
         <Link
           className="fr-btn"
-          href={`/espace-laureat/${dossierNumero}/demande-de-versement`}
+          target="_blank"
+          href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
         >
           Demander un versement
         </Link>

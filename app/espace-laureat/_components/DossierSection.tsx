@@ -18,7 +18,6 @@ export async function DossierSection({ dossier }: { dossier: Dossier }) {
         emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
       />
       <Subvention
-        dossierNumero={dossier.numero}
         intitule={dossier.champs.intituleProjet}
         resume={dossier.champs.resumeProjet}
         departementImplantation={dossier.champs.departementImplantation}
