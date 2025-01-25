@@ -98,6 +98,21 @@ export const Subvention = ({
             </dd>
           </>
         )}
+        <dt className="mb-1">Impact du projet</dt>
+        <dd className="bg-gray-100 p-4 pt-3">
+          <p className="text-sm mb-3">
+            Les données de votre projet participent à la transition écologique.
+            Merci de compléter l'évaluation d'impact réel de votre projet,
+            conformément aux engagements liés à la subvention.
+          </p>
+          <Link
+            className="fr-btn fr-btn--sm"
+            target="_blank"
+            href="https://www.demarches-simplifiees.fr/commencer/b709e4b9-57a5-46be-b570-59d6be6c1643"
+          >
+            Compléter l'évaluation
+          </Link>
+        </dd>
       </dl>
     </InfoBlock>
   );
