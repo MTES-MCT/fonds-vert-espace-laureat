@@ -2,19 +2,11 @@ import {
   ChampFragmentFragment,
   RootChampFragmentFragment,
 } from "@/generated/graphql";
-import { mapping } from "@/utils/dossier/champs/mapping";
+
+import { mapping } from "./mapping";
 
 export interface Champs {
-  intituleProjet?: string;
-  resumeProjet?: string;
-  dateSignatureDecision?: Date;
-  departementImplantation?: string;
-  emailRepresentantLegal?: string;
-  emailResponsableSuivi?: string;
-  montantSubventionAttribuee?: number;
-  numeroDossierAgenceEau?: string;
-  numeroEngagementJuridique?: string;
-  autresNumerosEngagementJuridique: string[];
+  numeroDossierSubvention?: number;
 }
 
 const add = (
@@ -67,9 +59,7 @@ function getValueByType(
   }
 }
 
-const champsDefault: Champs = {
-  autresNumerosEngagementJuridique: [],
-};
+const champsDefault: Champs = {};
 
 export function getChamps(champs: ChampFragmentFragment[]) {
   return champs.reduce(getValueByType, champsDefault);

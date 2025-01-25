@@ -1,6 +1,6 @@
 import { Subvention } from "@/app/espace-laureat/_components/dossier-section/Subvention";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
-import { Dossier } from "@/utils/dossier";
+import { Dossier } from "@/utils/demarches/subvention";
 
 export async function DossierSection({ dossier }: { dossier: Dossier }) {
   return (

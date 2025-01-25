@@ -1,4 +1,4 @@
-import { Champs } from "@/utils/impact/champs";
+import { Champs } from "@/utils/demarches/impact/champs";
 
 export interface Impact {
   numero: number;

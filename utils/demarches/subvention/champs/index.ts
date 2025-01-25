@@ -2,10 +2,20 @@ import {
   ChampFragmentFragment,
   RootChampFragmentFragment,
 } from "@/generated/graphql";
-import { mapping } from "@/utils/impact/champs/mapping";
+
+import { mapping } from "./mapping";
 
 export interface Champs {
-  numeroDossierSubvention?: number;
+  intituleProjet?: string;
+  resumeProjet?: string;
+  dateSignatureDecision?: Date;
+  departementImplantation?: string;
+  emailRepresentantLegal?: string;
+  emailResponsableSuivi?: string;
+  montantSubventionAttribuee?: number;
+  numeroDossierAgenceEau?: string;
+  numeroEngagementJuridique?: string;
+  autresNumerosEngagementJuridique: string[];
 }
 
 const add = (
@@ -58,7 +68,9 @@ function getValueByType(
   }
 }
 
-const champsDefault: Champs = {};
+const champsDefault: Champs = {
+  autresNumerosEngagementJuridique: [],
+};
 
 export function getChamps(champs: ChampFragmentFragment[]) {
   return champs.reduce(getValueByType, champsDefault);

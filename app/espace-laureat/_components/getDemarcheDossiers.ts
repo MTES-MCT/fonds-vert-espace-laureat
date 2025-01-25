@@ -1,8 +1,8 @@
+import { Impact } from "@/utils/demarches/impact";
+import { getChamps } from "@/utils/demarches/impact/champs";
 import { logException } from "@/utils/error";
 import { createGraphqlClient } from "@/utils/graphql";
 import { getDemarcheDossiersQuery } from "@/utils/graphql/getDemarcheDossiersQuery";
-import { Impact } from "@/utils/impact";
-import { getChamps } from "@/utils/impact/champs";
 
 const graphqlClient = createGraphqlClient();
 

@@ -1,9 +1,9 @@
 import { ClientError } from "graphql-request";
 
 import { DossierState } from "@/generated/graphql";
-import { Dossier } from "@/utils/dossier";
-import { getChamps } from "@/utils/dossier/champs";
-import { stateToLongLabel } from "@/utils/dossier/state";
+import { Dossier } from "@/utils/demarches/subvention";
+import { getChamps } from "@/utils/demarches/subvention/champs";
+import { stateToLongLabel } from "@/utils/demarches/subvention/state";
 import { logException } from "@/utils/error";
 import { createGraphqlClient } from "@/utils/graphql";
 import { getDossierQuery } from "@/utils/graphql/getDossierQuery";

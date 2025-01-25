@@ -1,4 +1,4 @@
-import { Champs } from "@/utils/dossier/champs";
+import { Champs } from "@/utils/demarches/subvention/champs";
 
 export interface Dossier {
   numero: number;
