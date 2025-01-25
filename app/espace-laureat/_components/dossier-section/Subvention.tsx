@@ -37,7 +37,7 @@ export const Subvention = ({
       <h3 className="mb-2 text-base">{intitule ?? "N/A"}</h3>
       <p className="text-gray-500 text-sm">{resume ? resume : ""}</p>
 
-      <dl className="mb-4">
+      <dl>
         <>
           <dt>Département d'implantation</dt>
           <dd>
@@ -67,42 +67,38 @@ export const Subvention = ({
         {montantSubventionAttribuee && (
           <>
             <dt className="mb-1">Subvention</dt>
-            <dd>
+            <dd className="bg-gray-100 p-4">
+              <div className="flex items-center gap-x-2 text-gray-900 font-semibold mb-4">
+                Consommé : <NonDisponible />
+              </div>
               <ProgressBar
                 value={montantSubventionAttribuee}
                 max={montantSubventionAttribuee}
                 formattedMin="0 €"
                 formattedMax={formattedMontantSubventionAttribuee}
               />
-              <div className="mb-4 bg-gray-100 py-3 px-4">
-                <div className="flex items-center gap-x-2 text-lg text-gray-900 font-semibold mb-1">
-                  Consommé : <NonDisponible />
-                </div>
-                <p className="text-sm mb-0">
-                  Vous pouvez obtenir une avance au démarrage des travaux à
-                  hauteur de 30% maximum du montant de la subvention.{" "}
-                  <a
-                    className="fr-link fr-link--sm"
-                    target="_blank"
-                    href="https://www.ecologie.gouv.fr/fonds-vert"
-                  >
-                    En savoir plus
-                  </a>
-                </p>
-              </div>
+              <p className="text-sm mb-3">
+                Vous pouvez obtenir une avance au démarrage des travaux à
+                hauteur de 30% maximum du montant de la subvention.{" "}
+                <a
+                  className="fr-link fr-link--sm"
+                  target="_blank"
+                  href="https://www.ecologie.gouv.fr/fonds-vert"
+                >
+                  En savoir plus
+                </a>
+              </p>
+              <Link
+                className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50"
+                target="_blank"
+                href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
+              >
+                Demander un versement
+              </Link>
             </dd>
           </>
         )}
       </dl>
-      <div className="flex justify-end items-end">
-        <Link
-          className="fr-btn"
-          target="_blank"
-          href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
-        >
-          Demander un versement
-        </Link>
-      </div>
     </InfoBlock>
   );
 };
