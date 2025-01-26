@@ -1,3 +1,5 @@
+import { descriptorIdsToMapping } from "@/utils/demarches/helpers/descriptorIdsToMapping";
+
 const descriptorIds = {
   intituleProjet: ["Q2hhbXAtMjk3MTQ0NA==", "Q2hhbXAtMjk3ODA3NQ=="],
   resumeProjet: ["Q2hhbXAtMjk5Nzg3Mw==", "Q2hhbXAtMjY2NDgxNg=="],
@@ -14,8 +16,4 @@ const descriptorIds = {
   dateSignatureDecision: ["Q2hhbXAtMjk4MjQ5NA==", "Q2hhbXAtMjk4NjgwMg=="],
 };
 
-export const mapping: { [key: string]: string } = Object.fromEntries(
-  Object.entries(descriptorIds).flatMap(([key, values]) =>
-    values.map((value) => [value, key]),
-  ),
-);
+export const mapping = descriptorIdsToMapping(descriptorIds);
