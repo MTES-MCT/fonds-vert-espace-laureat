@@ -3,11 +3,13 @@ import { getChamps } from "@/utils/demarches/impact/champs";
 import { logException } from "@/utils/error";
 import { createGraphqlClient } from "@/utils/graphql";
 import { getDemarcheDossiersQuery } from "@/utils/graphql/getDemarcheDossiersQuery";
+import { isAdmin } from "@/utils/roles";
 
 const graphqlClient = createGraphqlClient();
 
 export async function getDemarcheDossiers({
   demarcheNumber,
+  userEmail,
 }: {
   demarcheNumber: number;
   userEmail: string;
@@ -23,6 +25,9 @@ export async function getDemarcheDossiers({
 
     const dossiers = nodes
       .filter((dossier) => dossier !== null)
+      .filter((dossier) =>
+        !isAdmin ? dossier.usager.email === userEmail : true,
+      )
       .map((dossier) => ({
         numero: dossier.number,
         dateTraitement: dossier.dateTraitement,
