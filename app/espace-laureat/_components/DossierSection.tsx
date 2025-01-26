@@ -1,8 +1,15 @@
 import { Subvention } from "@/app/espace-laureat/_components/dossier-section/Subvention";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
+import { Impact } from "@/utils/demarches/impact";
 import { Dossier } from "@/utils/demarches/subvention";
 
-export async function DossierSection({ dossier }: { dossier: Dossier }) {
+export async function DossierSection({
+  dossier,
+  impact,
+}: {
+  dossier: Dossier;
+  impact?: Impact;
+}) {
   return (
     <div
       className="grid lg:grid-cols-2 gap-y-6 border py-6"
@@ -27,6 +34,7 @@ export async function DossierSection({ dossier }: { dossier: Dossier }) {
           dossier.champs.autresNumerosEngagementJuridique
         }
         montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
+        impact={impact}
       />
     </div>
   );

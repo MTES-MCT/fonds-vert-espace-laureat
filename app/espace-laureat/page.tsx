@@ -1,6 +1,7 @@
 import { AucunDossier } from "@/app/espace-laureat/_components/AucunDossier";
 import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
+import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { getPageTitle } from "@/app/espace-laureat/_components/getPageTitle";
 import {
@@ -35,8 +36,25 @@ export default async function EspaceLaureat({
     getDossier({ dossierNumber, userEmail: user.email }),
   );
 
-  const dossiers = await Promise.all(dossierRequests);
-  const successDossiers = dossiers
+  const demarcheImpactNumber = Number(process.env.DEMARCHE_IMPACT_NUMBER);
+
+  if (!demarcheImpactNumber || isNaN(demarcheImpactNumber)) {
+    throw new Error(
+      "Une erreur est survenue lors du chargement des données d'impact",
+    );
+  }
+
+  const dossiersImpactResult = await getDemarcheDossiers({
+    demarcheNumber: demarcheImpactNumber,
+    userEmail: user.email,
+  });
+
+  const dossiersImpact = dossiersImpactResult.success
+    ? dossiersImpactResult.data
+    : [];
+
+  const dossiersSubventionResult = await Promise.all(dossierRequests);
+  const dossiersSubvention = dossiersSubventionResult
     .filter((dossier) => dossier.success)
     .map((dossier) => dossier.data);
 
@@ -45,9 +63,11 @@ export default async function EspaceLaureat({
 
   return (
     <>
-      <h1>{getPageTitle({ successDossiersLength: successDossiers.length })}</h1>
+      <h1>
+        {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
+      </h1>
 
-      {successDossiers.length === 0 ? (
+      {dossiersSubvention.length === 0 ? (
         <AucunDossier
           siret={siret}
           email={user.email}
@@ -55,13 +75,20 @@ export default async function EspaceLaureat({
         />
       ) : (
         <div className="flex flex-col gap-y-8">
-          {successDossiers.map((dossier, index) => (
-            <DossierSection key={index} dossier={dossier} />
+          {dossiersSubvention.map((dossier, index) => (
+            <DossierSection
+              key={index}
+              dossier={dossier}
+              impact={dossiersImpact.find(
+                (impact) =>
+                  impact.champs.numeroDossierSubvention === dossier.numero,
+              )}
+            />
           ))}
         </div>
       )}
 
-      {successDossiers.length > 0 && (
+      {dossiersSubvention.length > 0 && (
         <p className="max-w-lg text-sm my-6">
           Vous ne trouvez pas votre dossier ? {noResultMsg}
         </p>

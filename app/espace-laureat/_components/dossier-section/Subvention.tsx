@@ -5,6 +5,7 @@ import { NumerosEngagementJuridique } from "@/app/espace-laureat/_components/dos
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { NonDisponible } from "@/components/non-disponible/NonDisponible";
 import { ProgressBar } from "@/components/progress-bar/ProgressBar";
+import { Impact } from "@/utils/demarches/impact";
 
 export const Subvention = ({
   intitule,
@@ -14,6 +15,7 @@ export const Subvention = ({
   numeroEngagementJuridique,
   autresNumerosEngagementJuridique,
   montantSubventionAttribuee,
+  impact,
 }: {
   intitule?: string;
   resume?: string;
@@ -22,6 +24,7 @@ export const Subvention = ({
   numeroEngagementJuridique?: string;
   autresNumerosEngagementJuridique: string[];
   montantSubventionAttribuee?: number;
+  impact?: Impact;
 }) => {
   const formattedMontantSubventionAttribuee = montantSubventionAttribuee
     ? new Intl.NumberFormat("fr-FR", {
@@ -112,6 +115,7 @@ export const Subvention = ({
           >
             Compléter l'évaluation
           </Link>
+          <p>{impact?.state}</p>
         </dd>
       </dl>
     </InfoBlock>
