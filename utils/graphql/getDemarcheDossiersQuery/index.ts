@@ -5,13 +5,13 @@ export const getDemarcheDossiersQuery = graphql(`
     demarche(number: $demarcheNumber) {
       dossiers {
         nodes {
-          ...DossierFragment
+          ...NodeFragment
         }
       }
     }
   }
 
-  fragment DossierFragment on Dossier {
+  fragment NodeFragment on Dossier {
     __typename
     id
     number
@@ -22,7 +22,6 @@ export const getDemarcheDossiersQuery = graphql(`
     }
     champs {
       ...ChampFragment
-      ...RootChampFragment
     }
   }
 
@@ -36,16 +35,9 @@ export const getDemarcheDossiersQuery = graphql(`
     ... on DateChamp {
       date
     }
-  }
-
-  fragment RootChampFragment on Champ {
-    __typename
-    champDescriptorId
-    ... on RepetitionChamp {
-      rows {
-        champs {
-          ...ChampFragment
-        }
+    ... on DossierLinkChamp {
+      dossier {
+        number
       }
     }
   }

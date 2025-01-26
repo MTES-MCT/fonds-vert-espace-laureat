@@ -38,6 +38,11 @@ export const getDossierQuery = graphql(`
     ... on DateChamp {
       date
     }
+    ... on DossierLinkChamp {
+      dossier {
+        number
+      }
+    }
   }
 
   fragment RootChampFragment on Champ {

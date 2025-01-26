@@ -15,19 +15,16 @@ function add<T extends object>(
   };
 }
 
-function isChampFragmentFragment(
-  champ: ChampFragmentFragment | RootChampFragmentFragment,
-): champ is ChampFragmentFragment {
+type Champ = ChampFragmentFragment | RootChampFragmentFragment;
+
+function isChampFragmentFragment(champ: Champ): champ is ChampFragmentFragment {
   return champ.__typename !== "RepetitionChamp";
 }
 
 export function getValueByTypeBuilder<T extends object>(mapping: {
   [key: string]: string;
 }) {
-  return function getValueByType(
-    champs: T,
-    champ: ChampFragmentFragment | RootChampFragmentFragment,
-  ): T {
+  return function getValueByType(champs: T, champ: Champ): T {
     if (isChampFragmentFragment(champ)) {
       switch (champ.__typename) {
         case "DecimalNumberChamp":
@@ -38,6 +35,8 @@ export function getValueByTypeBuilder<T extends object>(mapping: {
           return add(mapping, champs, champ, champ.date);
         case "EngagementJuridiqueChamp":
           return add(mapping, champs, champ, champ.stringValue);
+        case "DossierLinkChamp":
+          return add(mapping, champs, champ, champ.dossier?.number);
         default:
           return champs;
       }
