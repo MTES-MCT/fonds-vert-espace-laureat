@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { DossierState } from "@/generated/graphql";
 import { Impact } from "@/utils/demarches/impact";
 
-export const ImpactSection = ({ impact }: { impact?: Impact }) => {
+export const ImpactDetails = ({ impact }: { impact?: Impact }) => {
   if (!impact?.numero) {
     return (
       <>

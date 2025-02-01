@@ -1,4 +1,4 @@
-import { Subvention } from "@/app/espace-laureat/_components/dossier-section/Subvention";
+import { Details } from "@/app/espace-laureat/_components/dossier-section/Details";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Impact } from "@/utils/demarches/impact";
 import { Dossier } from "@/utils/demarches/subvention";
@@ -29,7 +29,7 @@ export async function DossierSection({
         emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
         emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
       />
-      <Subvention
+      <Details
         intitule={dossier.champs.intituleProjet}
         resume={dossier.champs.resumeProjet}
         departementImplantation={dossier.champs.departementImplantation}
