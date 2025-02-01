@@ -18,7 +18,7 @@ export function defaultHeaders({ token }: { token?: string } = {}) {
 
 export async function fetchFondsVert<T>(
   path: string,
-): Promise<{ success: true; data: T } | { success: false }> {
+): Promise<{ success: true; data: T } | { success: false; status: number }> {
   try {
     const token = await login();
     const dossiersResponse = await fetch(
@@ -31,19 +31,23 @@ export async function fetchFondsVert<T>(
       },
     );
 
+    if (dossiersResponse.status === 422) {
+      return { success: false, status: 422 };
+    }
+
     if (dossiersResponse.status === 404) {
       error("Ressource introuvable");
-      return { success: false };
+      return { success: false, status: 404 };
     }
 
     if (!dossiersResponse.ok) {
       error(dossiersResponse.statusText);
-      return { success: false };
+      return { success: false, status: dossiersResponse.status };
     }
 
     return { success: true, data: await dossiersResponse.json() };
   } catch (e) {
     logException(e);
-    return { success: false };
+    return { success: false, status: 500 };
   }
 }

@@ -2,6 +2,7 @@ import { Subvention } from "@/app/espace-laureat/_components/dossier-section/Sub
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Impact } from "@/utils/demarches/impact";
 import { Dossier } from "@/utils/demarches/subvention";
+import { getDossierFondsVert } from "@/utils/fondsvert/dossier";
 
 export async function DossierSection({
   dossier,
@@ -10,6 +11,10 @@ export async function DossierSection({
   dossier: Dossier;
   impact?: Impact;
 }) {
+  const dossierFondsVertResult = await getDossierFondsVert({
+    dossierNumber: dossier.numero,
+  });
+
   return (
     <div
       className="grid lg:grid-cols-2 gap-y-6 border py-6"
@@ -36,6 +41,11 @@ export async function DossierSection({
         montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
         impact={impact}
       />
+      <p>
+        {dossierFondsVertResult.success
+          ? `${Object.keys(dossierFondsVertResult.data.demarche_specifique).length} metriques disponibles`
+          : dossierFondsVertResult.error}
+      </p>
     </div>
   );
 }
