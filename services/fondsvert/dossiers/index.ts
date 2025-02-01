@@ -1,6 +1,6 @@
 import { URLSearchParams } from "url";
 
-import { fetchFondsVert } from "@/utils/fondsvert/helpers";
+import { fetchFondsVert } from "@/services/fondsvert/helpers";
 
 const defaultDossierSearchParams = {
   statut: "Accepté",

@@ -1,4 +1,4 @@
-import { descriptorIdsToMapping } from "@/utils/demarches/helpers/descriptorIdsToMapping";
+import { descriptorIdsToMapping } from "@/services/ds/helpers/descriptorIdsToMapping";
 
 const descriptorIds = {
   intituleProjet: ["Q2hhbXAtMjk3MTQ0NA==", "Q2hhbXAtMjk3ODA3NQ=="],

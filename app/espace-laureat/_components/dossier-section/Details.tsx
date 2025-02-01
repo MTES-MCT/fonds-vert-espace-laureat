@@ -4,7 +4,7 @@ import { ImpactDetails } from "@/app/espace-laureat/_components/dossier-section/
 import { NumerosEngagementJuridiqueDetails } from "@/app/espace-laureat/_components/dossier-section/details/NumerosEngagementJuridiqueDetails";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
-import { Impact } from "@/utils/demarches/impact";
+import { Impact } from "@/services/ds/impact";
 
 export const Details = ({
   intitule,

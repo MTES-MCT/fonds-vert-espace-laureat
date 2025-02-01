@@ -1,5 +1,5 @@
 import { DossierState } from "@/generated/graphql";
-import { Champs } from "@/utils/demarches/impact/champs";
+import { Champs } from "@/services/ds/impact/champs";
 
 export interface Impact {
   numero: number;

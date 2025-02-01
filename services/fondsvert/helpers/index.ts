@@ -1,6 +1,6 @@
+import { login } from "@/services/fondsvert/login";
 import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
-import { login } from "@/utils/fondsvert/login";
 
 const [endpoint] = requireEnv("FONDSVERT_API_ENDPOINT");
 

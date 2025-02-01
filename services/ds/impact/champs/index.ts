@@ -1,5 +1,5 @@
 import { ChampFragmentFragment } from "@/generated/graphql";
-import { getValueByTypeBuilder } from "@/utils/demarches/helpers/getValueByTypeBuilder";
+import { getValueByTypeBuilder } from "@/services/ds/helpers/getValueByTypeBuilder";
 
 import { mapping } from "./mapping";
 

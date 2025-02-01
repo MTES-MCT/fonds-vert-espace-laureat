@@ -1,6 +1,6 @@
 import { ChampFragmentFragment } from "@/generated/graphql";
-import { getValueByTypeBuilder } from "@/utils/demarches/helpers/getValueByTypeBuilder";
-import { mapping } from "@/utils/demarches/subvention/champs/mapping";
+import { getValueByTypeBuilder } from "@/services/ds/helpers/getValueByTypeBuilder";
+import { mapping } from "@/services/ds/subvention/champs/mapping";
 
 export interface Champs {
   intituleProjet?: string;

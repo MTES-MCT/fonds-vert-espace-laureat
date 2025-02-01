@@ -1,8 +1,8 @@
 import { URLSearchParams } from "url";
 
+import { defaultHeaders, error } from "@/services/fondsvert/helpers";
 import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
-import { defaultHeaders, error } from "@/utils/fondsvert/helpers";
 
 export async function login() {
   const [endpoint, username, password] = requireEnv(
