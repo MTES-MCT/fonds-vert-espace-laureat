@@ -1,18 +1,9 @@
 import { GraphQLClient } from "graphql-request";
 
+import { requireEnv } from "@/utils/env";
+
 export function createGraphqlClient() {
-  const endpoint = process.env.DS_GRAPHQL_ENDPOINT;
-  const token = process.env.DS_TOKEN;
-
-  if (!endpoint) {
-    throw new Error(
-      "La variable d'environnement DS_GRAPHQL_ENDPOINT n'est pas définie",
-    );
-  }
-
-  if (!token) {
-    throw new Error("La variable d'environnement DS_TOKEN n'est pas définie");
-  }
+  const [endpoint, token] = requireEnv("DS_GRAPHQL_ENDPOINT", "DS_TOKEN");
 
   return new GraphQLClient(endpoint, {
     headers: {

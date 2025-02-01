@@ -3,44 +3,39 @@
 
 import { BaseClient, generators, Issuer } from "openid-client";
 
+import { requireEnv } from "@/utils/env";
 import { RequestWithSession } from "@/utils/session";
 
 let _client = undefined as BaseClient | undefined;
 
-const CLIENT_ID = process.env.PROCONNECT_CLIENT_ID;
-const CLIENT_SECRET = process.env.PROCONNECT_CLIENT_SECRET;
-const ISSUER_URL = process.env.PROCONNECT_DISCOVER_URL;
-const LOGIN_CALLBACK_URL = new URL(
+const [clientId, clientSecret, discoverUrl, baseUrl] = requireEnv(
+  "PROCONNECT_CLIENT_ID",
+  "PROCONNECT_CLIENT_SECRET",
+  "PROCONNECT_DISCOVER_URL",
+  "NEXT_PUBLIC_BASE_URL",
+);
+
+const loginCallbackUrl = new URL(
   "/api/auth/proconnect/login-callback",
-  process.env.NEXT_PUBLIC_BASE_URL,
-).toString();
-const LOGOUT_CALLBACK_URL = new URL(
-  "/api/auth/proconnect/logout-callback",
-  process.env.NEXT_PUBLIC_BASE_URL,
+  baseUrl,
 ).toString();
 
-const SCOPES = "openid given_name usual_name email siret custom idp_id";
+const logoutCallbackUrl = new URL(
+  "/api/auth/proconnect/logout-callback",
+  baseUrl,
+).toString();
 
 export const getClient = async () => {
   if (_client) {
     return _client;
   } else {
-    if (
-      !CLIENT_ID ||
-      !ISSUER_URL ||
-      !CLIENT_SECRET ||
-      !LOGIN_CALLBACK_URL ||
-      !LOGOUT_CALLBACK_URL
-    ) {
-      throw new Error("PRO CONNECT ENV variables are not defined");
-    }
-    const proConnectIssuer = await Issuer.discover(ISSUER_URL);
+    const proConnectIssuer = await Issuer.discover(discoverUrl);
 
     _client = new proConnectIssuer.Client({
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-      redirect_uris: [LOGIN_CALLBACK_URL],
-      post_logout_redirect_uris: [LOGOUT_CALLBACK_URL],
+      client_id: clientId,
+      client_secret: clientSecret,
+      redirect_uris: [loginCallbackUrl],
+      post_logout_redirect_uris: [logoutCallbackUrl],
       id_token_signed_response_alg: "RS256",
       userinfo_signed_response_alg: "RS256",
     });
@@ -60,7 +55,7 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   await req.session.save();
 
   return client.authorizationUrl({
-    scope: SCOPES,
+    scope: "openid given_name usual_name email siret custom idp_id",
     acr_values: "eidas1",
     nonce,
     state,
@@ -91,7 +86,7 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
 
   const params = client.callbackParams(req.nextUrl.toString());
 
-  const tokenSet = await client.callback(LOGIN_CALLBACK_URL, params, {
+  const tokenSet = await client.callback(loginCallbackUrl, params, {
     nonce: req.session.nonce,
     state: req.session.state,
   });
@@ -114,6 +109,6 @@ export const proConnectLogoutUrl = async (req: RequestWithSession) => {
   const client = await getClient();
   return client.endSessionUrl({
     id_token_hint: req.session.idToken,
-    post_logout_redirect_uri: LOGOUT_CALLBACK_URL,
+    post_logout_redirect_uri: logoutCallbackUrl,
   });
 };

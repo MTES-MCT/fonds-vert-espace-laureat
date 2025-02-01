@@ -1,3 +1,5 @@
+import { requireEnv } from "@/utils/env";
+
 type GristImpactRecord = {
   fields: {
     action: string;
@@ -7,15 +9,11 @@ type GristImpactRecord = {
 };
 
 export async function fetchPrefillMapping(): Promise<Record<string, string>> {
-  const docId = process.env.GRIST_DOC_ID;
-  const apiKey = process.env.GRIST_API_KEY;
-  const apiEndpoint = process.env.GRIST_API_ENDPOINT;
-
-  if (!docId || !apiKey || !apiEndpoint) {
-    throw new Error(
-      "Les variables d'environnement RIST_DOC_ID, GRIST_API_KEY et GRIST_API_ENDPOINT doivent être définies.",
-    );
-  }
+  const [docId, apiKey, apiEndpoint] = requireEnv(
+    "GRIST_DOC_ID",
+    "GRIST_API_KEY",
+    "GRIST_API_ENDPOINT",
+  );
 
   const url = `${apiEndpoint}/docs/${docId}/tables/Champs_DS/records`;
 

@@ -2,6 +2,7 @@ import { getIronSession, IronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+import { requireEnv } from "@/utils/env";
 import { ttl } from "@/utils/session/ttl";
 
 import { ProConnectUserInfo } from "../proconnect";
@@ -24,8 +25,10 @@ export type RequestWithSession = NextRequest & {
   session: IronSession<Session>;
 };
 
+const [ironSessionPwd] = requireEnv("IRON_SESSION_PWD");
+
 export const sessionOptions: SessionOptions = {
-  password: process.env.IRON_SESSION_PWD as string,
+  password: ironSessionPwd,
   cookieName: "fonds-vert-espace-laureat",
   cookieOptions: {
     httpOnly: true,

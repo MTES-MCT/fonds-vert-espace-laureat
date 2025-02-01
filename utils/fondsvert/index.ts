@@ -1,5 +1,6 @@
 import { URLSearchParams } from "url";
 
+import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
 
 function error(message: string) {
@@ -27,15 +28,11 @@ export async function getDossierNumbers({
 }: {
   siret: string;
 }): Promise<number[]> {
-  const endpoint = process.env.FONDSVERT_API_ENDPOINT;
-  const username = process.env.FONDSVERT_API_USERNAME;
-  const password = process.env.FONDSVERT_API_PASSWORD;
-
-  if (!endpoint || !username || !password) {
-    return error(
-      "Les variables d'environnement FONDSVERT_API_ENDPOINT, FONDSVERT_API_USERNAME et FONDSVERT_API_PASSWORD doivent être définies.",
-    );
-  }
+  const [endpoint, username, password] = requireEnv(
+    "FONDSVERT_API_ENDPOINT",
+    "FONDSVERT_API_USERNAME",
+    "FONDSVERT_API_PASSWORD",
+  );
 
   try {
     const loginResponse = await fetch(new URL("/fonds_vert/login", endpoint), {

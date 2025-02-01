@@ -1,4 +1,6 @@
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+import { requireEnv } from "@/utils/env";
+
+const [baseUrl] = requireEnv("NEXT_PUBLIC_BASE_URL");
 
 export const welcomeUrl = new URL("/", baseUrl);
 
