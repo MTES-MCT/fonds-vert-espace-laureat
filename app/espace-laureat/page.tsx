@@ -8,7 +8,7 @@ import {
   getSearchParams,
   SearchParams,
 } from "@/app/espace-laureat/_components/getParams";
-import { getDossierNumbers } from "@/utils/fondsvert";
+import { getDossierNumbers } from "@/utils/fondsvert/dossiers";
 import { getSession } from "@/utils/session";
 
 export default async function EspaceLaureat({
