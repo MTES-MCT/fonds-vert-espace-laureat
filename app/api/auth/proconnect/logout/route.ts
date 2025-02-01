@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { proConnectLogoutUrl } from "@/services/proconnect";
 import { logException } from "@/utils/error";
-import { proConnectLogoutUrl } from "@/utils/proconnect";
 import { withSession } from "@/utils/session";
 import { welcomeUrl } from "@/utils/url";
 

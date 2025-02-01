@@ -1,8 +1,8 @@
 import { Details } from "@/app/espace-laureat/_components/dossier-section/Details";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
-import { Impact } from "@/utils/demarches/impact";
-import { Dossier } from "@/utils/demarches/subvention";
-import { getDossierFondsVert } from "@/utils/fondsvert/dossier";
+import { Impact } from "@/services/ds/impact";
+import { Dossier } from "@/services/ds/subvention";
+import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 
 export async function DossierSection({
   dossier,

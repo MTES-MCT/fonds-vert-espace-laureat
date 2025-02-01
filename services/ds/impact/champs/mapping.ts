@@ -1,4 +1,4 @@
-import { descriptorIdsToMapping } from "@/utils/demarches/helpers/descriptorIdsToMapping";
+import { descriptorIdsToMapping } from "@/services/ds/helpers/descriptorIdsToMapping";
 
 const descriptorIds = {
   numeroDossierSubvention: ["Q2hhbXAtNDc2OTEyOQ=="],

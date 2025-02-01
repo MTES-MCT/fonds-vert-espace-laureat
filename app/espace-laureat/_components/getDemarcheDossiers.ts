@@ -1,8 +1,8 @@
-import { Impact } from "@/utils/demarches/impact";
-import { getChamps } from "@/utils/demarches/impact/champs";
+import { createGraphqlClient } from "@/services/ds/graphql";
+import { getDemarcheDossiersQuery } from "@/services/ds/graphql/getDemarcheDossiersQuery";
+import { Impact } from "@/services/ds/impact";
+import { getChamps } from "@/services/ds/impact/champs";
 import { logException } from "@/utils/error";
-import { createGraphqlClient } from "@/utils/graphql";
-import { getDemarcheDossiersQuery } from "@/utils/graphql/getDemarcheDossiersQuery";
 import { isAdmin } from "@/utils/roles";
 
 const graphqlClient = createGraphqlClient();

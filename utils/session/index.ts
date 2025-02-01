@@ -2,10 +2,9 @@ import { getIronSession, IronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+import { ProConnectUserInfo } from "@/services/proconnect";
 import { requireEnv } from "@/utils/env";
 import { ttl } from "@/utils/session/ttl";
-
-import { ProConnectUserInfo } from "../proconnect";
 
 type User = {
   id: string;

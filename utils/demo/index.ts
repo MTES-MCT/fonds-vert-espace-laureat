@@ -1,4 +1,4 @@
-import { Dossier } from "@/utils/dossier";
+import { Dossier } from "@/services/ds/subvention";
 
 const demandeur = {
   demandeur: {

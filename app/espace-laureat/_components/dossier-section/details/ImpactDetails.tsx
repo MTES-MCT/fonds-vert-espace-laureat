@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 
 import { DossierState } from "@/generated/graphql";
-import { Impact } from "@/utils/demarches/impact";
+import { Impact } from "@/services/ds/impact";
 
 export const ImpactDetails = ({ impact }: { impact?: Impact }) => {
   if (!impact?.numero) {

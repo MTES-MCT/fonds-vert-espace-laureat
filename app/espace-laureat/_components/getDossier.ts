@@ -1,12 +1,12 @@
 import { ClientError } from "graphql-request";
 
 import { DossierState } from "@/generated/graphql";
-import { Dossier } from "@/utils/demarches/subvention";
-import { getChamps } from "@/utils/demarches/subvention/champs";
-import { stateToLongLabel } from "@/utils/demarches/subvention/state";
+import { createGraphqlClient } from "@/services/ds/graphql";
+import { getDossierQuery } from "@/services/ds/graphql/getDossierQuery";
+import { Dossier } from "@/services/ds/subvention";
+import { getChamps } from "@/services/ds/subvention/champs";
+import { stateToLongLabel } from "@/services/ds/subvention/state";
 import { logException } from "@/utils/error";
-import { createGraphqlClient } from "@/utils/graphql";
-import { getDossierQuery } from "@/utils/graphql/getDossierQuery";
 import { isAdmin } from "@/utils/roles";
 
 const graphqlClient = createGraphqlClient();
