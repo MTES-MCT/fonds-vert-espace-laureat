@@ -3,8 +3,21 @@ import { ReactNode } from "react";
 
 import { DossierState } from "@/generated/graphql";
 import { Impact } from "@/services/ds/impact";
+import { Metrics } from "@/services/fondsvert/dossier";
 
-export const ImpactDetails = ({ impact }: { impact?: Impact }) => {
+export const ImpactDetails = ({
+  impact,
+  metriques,
+}: {
+  impact?: Impact;
+  metriques: Metrics;
+}) => {
+  // Pour le moment, les sous-mesures (value de type object) ne sont pas supportées
+  const metricEntries = Object.entries(metriques).filter(
+    (entry): entry is [string, string | number] =>
+      ["string", "number"].includes(typeof entry[1]),
+  );
+
   if (!impact?.numero) {
     return (
       <>
@@ -13,6 +26,21 @@ export const ImpactDetails = ({ impact }: { impact?: Impact }) => {
           Merci de compléter l'évaluation d'impact réel de votre projet,
           conformément aux engagements liés à la subvention.
         </Help>
+        {metricEntries.length > 0 && (
+          <>
+            <p>
+              Pour rappel, voici les metriques que vous avez renseignées lors de
+              la demande de subvention :
+            </p>
+            <ul>
+              {metricEntries.map(([key, value]) => (
+                <li key={key}>
+                  {key}: <strong>{value}</strong>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
         <Link
           className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50"
           target="_blank"

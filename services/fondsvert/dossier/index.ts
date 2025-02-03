@@ -8,8 +8,10 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
+export type Metrics = Record<string, string | number | object | null>;
+
 type DossierFondsVert = {
-  demarche_specifique: Record<string, string>;
+  demarche_specifique: Metrics;
   information_financiere: {
     informations_engagement: {
       annee_information_financiere: number;
