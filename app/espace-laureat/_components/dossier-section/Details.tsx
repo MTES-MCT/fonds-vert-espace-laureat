@@ -5,6 +5,7 @@ import { NumerosEngagementJuridiqueDetails } from "@/app/espace-laureat/_compone
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import { InfoBlock } from "@/components/info-block/InfoBlock";
 import { Impact } from "@/services/ds/impact";
+import { Metrics } from "@/services/fondsvert/dossier";
 
 export const Details = ({
   intitule,
@@ -15,6 +16,7 @@ export const Details = ({
   autresNumerosEngagementJuridique,
   montantSubventionAttribuee,
   impact,
+  metriquesResult,
 }: {
   intitule?: string;
   resume?: string;
@@ -24,6 +26,9 @@ export const Details = ({
   autresNumerosEngagementJuridique: string[];
   montantSubventionAttribuee?: number;
   impact?: Impact;
+  metriquesResult:
+    | { success: true; data: Metrics }
+    | { success: false; error: string };
 }) => {
   return (
     <InfoBlock>
@@ -69,7 +74,14 @@ export const Details = ({
         )}
         <dt className="mb-1">Impact du projet</dt>
         <dd className="bg-gray-100 p-4 pt-3">
-          <ImpactDetails impact={impact} />
+          {metriquesResult.success ? (
+            <ImpactDetails impact={impact} metriques={metriquesResult.data} />
+          ) : (
+            <>
+              <p>{metriquesResult.error}</p>
+              <ImpactDetails impact={impact} metriques={{}} />
+            </>
+          )}
         </dd>
       </dl>
     </InfoBlock>

@@ -40,12 +40,15 @@ export async function DossierSection({
         }
         montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
         impact={impact}
+        metriquesResult={
+          dossierFondsVertResult.success
+            ? {
+                success: true,
+                data: dossierFondsVertResult.data.demarche_specifique,
+              }
+            : { success: false, error: dossierFondsVertResult.error }
+        }
       />
-      <p>
-        {dossierFondsVertResult.success
-          ? `${Object.keys(dossierFondsVertResult.data.demarche_specifique).length} metriques disponibles`
-          : dossierFondsVertResult.error}
-      </p>
     </div>
   );
 }

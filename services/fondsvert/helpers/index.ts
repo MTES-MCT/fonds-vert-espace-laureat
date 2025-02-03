@@ -36,7 +36,6 @@ export async function fetchFondsVert<T>(
     }
 
     if (dossiersResponse.status === 404) {
-      error("Ressource introuvable");
       return { success: false, status: 404 };
     }
 
