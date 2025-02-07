@@ -2,18 +2,26 @@ import Link from "next/link";
 
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
 import { Metrics } from "@/services/fondsvert/dossier";
-import { fetchPrefillMapping } from "@/services/grist/impact";
+import {
+  fetchPrefillMapping,
+  getPrefillMappingCached,
+} from "@/services/grist/impact";
 import { requireEnv } from "@/utils/env";
 
 export async function ImpactSubmission({
   numeroDossier,
   metriques,
+  nocache,
 }: {
   numeroDossier: number;
   metriques: Metrics;
+  nocache: boolean;
 }) {
   const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
-  const prefillMapping = await fetchPrefillMapping();
+
+  const prefillMapping = nocache
+    ? await fetchPrefillMapping()
+    : await getPrefillMappingCached();
 
   // Pour le moment, les sous-mesures (value de type object) ne sont pas supportées
   const metricEntries = Object.entries(metriques).filter(
