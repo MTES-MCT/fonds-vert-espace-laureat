@@ -9,15 +9,19 @@ type GristImpactRecord = {
   };
 };
 
-export async function fetchPrefillMapping(): Promise<{
+type Mapping = {
   champNumeroDossier: string;
   champsMetriques: Record<string, string>;
-}> {
+};
+
+export async function fetchPrefillMapping(): Promise<Mapping> {
   const [docId, apiKey, apiEndpoint] = requireEnv(
     "GRIST_DOC_ID",
     "GRIST_API_KEY",
     "GRIST_API_ENDPOINT",
   );
+
+  console.log("fetch!!");
 
   const url = `${apiEndpoint}/docs/${docId}/tables/Champs_DS/records`;
 
@@ -27,6 +31,7 @@ export async function fetchPrefillMapping(): Promise<{
       accept: "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
+    next: { revalidate: 30 },
   });
 
   if (!response.ok) {
@@ -60,4 +65,13 @@ export async function fetchPrefillMapping(): Promise<{
     champNumeroDossier,
     champsMetriques,
   };
+}
+
+let _prefillMappingCached: Mapping | undefined;
+
+export async function getPrefillMappingCached() {
+  if (!_prefillMappingCached) {
+    _prefillMappingCached = await fetchPrefillMapping();
+  }
+  return _prefillMappingCached;
 }

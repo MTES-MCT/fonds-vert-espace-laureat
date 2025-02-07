@@ -7,10 +7,12 @@ import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { getSession } from "@/utils/session";
 
-export default async function Versement({
+export default async function DossierPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ dossierNumber: string }>;
+  searchParams: Promise<{ nocache: string }>;
 }) {
   const session = await getSession();
   const user = session?.user;
@@ -19,6 +21,8 @@ export default async function Versement({
     return <Connexion />;
   }
   const { dossierNumber: dossierNumberString } = await params;
+  const { nocache } = await searchParams;
+
   const numeroDossier = Number(dossierNumberString);
 
   const demarcheImpactNumber = Number(process.env.DEMARCHE_IMPACT_NUMBER);
@@ -66,6 +70,7 @@ export default async function Versement({
           (impact) =>
             impact.champs.numeroDossierSubvention === dossierSubvention.numero,
         )}
+        nocache={["", "1"].includes(nocache)}
       />
       <div>
         <Link

@@ -8,6 +8,7 @@ export async function Details({
   dossierFondsVertResult,
   montantSubventionAttribuee,
   impact,
+  nocache,
 }: {
   numeroDossier: number;
   dossierFondsVertResult:
@@ -17,6 +18,7 @@ export async function Details({
   resume?: string;
   montantSubventionAttribuee?: number;
   impact?: Impact;
+  nocache: boolean;
 }) {
   return (
     <div className="w-full">
@@ -27,6 +29,7 @@ export async function Details({
             numeroDossier={numeroDossier}
             impact={impact}
             metriques={dossierFondsVertResult.data.demarche_specifique}
+            nocache={nocache}
           />
         ) : (
           <>
@@ -35,6 +38,7 @@ export async function Details({
               numeroDossier={numeroDossier}
               impact={impact}
               metriques={{}}
+              nocache={nocache}
             />
           </>
         )}

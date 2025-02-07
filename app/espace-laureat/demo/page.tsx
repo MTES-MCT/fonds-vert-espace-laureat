@@ -1,8 +1,8 @@
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
-import { demoDossier1, demoDossier2 } from "@/utils/demo";
+import { demoDossier1 } from "@/utils/demo";
 
 export default async function EspaceLaureatDemo() {
-  const dossiers = [demoDossier1, demoDossier2];
+  const dossiers = [demoDossier1];
 
   return (
     <>
@@ -18,6 +18,7 @@ export default async function EspaceLaureatDemo() {
             key={index}
             dossierSubvention={dossier}
             dossierFondsVertResult={{ success: false, error: "" }}
+            nocache={false}
           />
         ))}{" "}
       </div>

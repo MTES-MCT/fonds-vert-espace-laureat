@@ -7,14 +7,20 @@ export async function ImpactDetails({
   numeroDossier,
   impact,
   metriques,
+  nocache,
 }: {
   numeroDossier: number;
   impact?: Impact;
   metriques: Metrics;
+  nocache: boolean;
 }) {
   if (!impact?.numero) {
     return (
-      <ImpactSubmission numeroDossier={numeroDossier} metriques={metriques} />
+      <ImpactSubmission
+        numeroDossier={numeroDossier}
+        metriques={metriques}
+        nocache={nocache}
+      />
     );
   }
 
