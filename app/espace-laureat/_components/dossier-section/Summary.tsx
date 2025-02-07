@@ -1,74 +1,69 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Tag from "@codegouvfr/react-dsfr/Tag";
-import { format } from "date-fns";
-import { fr as frLocale } from "date-fns/locale/fr";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
-import { InfoBlock } from "@/components/info-block/InfoBlock";
 
 export const Summary = ({
+  intitule,
+  resume,
   titreDemarche,
-  dateSignatureDecision,
-  dateTraitement,
-  montantSubventionAttribuee,
   numeroDossierDemarchesSimplifiees,
+  numeroDossierAgenceEau,
   emailRepresentantLegal,
   emailResponsableSuivi,
+  departementImplantation,
 }: {
+  intitule?: string;
+  resume?: string;
   titreDemarche: string;
-  dateSignatureDecision?: Date;
-  dateTraitement: Date;
-  montantSubventionAttribuee?: number;
   numeroDossierDemarchesSimplifiees: number;
+  numeroDossierAgenceEau?: string;
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
+  departementImplantation?: string;
 }) => {
-  const fr = {
-    locale: frLocale,
-  };
-
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
-  const formattedDateTraitement = format(dateTraitement, "dd MMMM yyyy", fr);
-  const formattedDateSignatureDecision = dateSignatureDecision
-    ? format(dateSignatureDecision, "dd MMMM yyyy", fr)
-    : "Non renseignée";
-
-  const formattedMontantSubventionAttribuee = montantSubventionAttribuee
-    ? new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(montantSubventionAttribuee)
-    : "N/A";
-
   return (
-    <InfoBlock>
+    <div>
       <h2>
         Dossier n°{numeroDossierDemarchesSimplifiees}{" "}
         <Tag iconId="fr-icon-award-fill">{mesureFondsVert}</Tag>
       </h2>
-
-      <dl>
-        <dt className="mb-1">Montant de la subvention attribuée</dt>
-        <dd>{formattedMontantSubventionAttribuee}</dd>
-
-        <dt>Date de signature de la décision</dt>
-        <dd>{formattedDateTraitement}</dd>
-
-        <dt>Date de traitement</dt>
-        <dd>{formattedDateSignatureDecision}</dd>
-
-        <dt>Représentant légal</dt>
-        <dd>
-          <EmailLink email={emailRepresentantLegal} />
-        </dd>
-
-        <dt>Responsable de suivi</dt>
-        <dd>
-          <EmailLink email={emailResponsableSuivi} />
-        </dd>
-      </dl>
-    </InfoBlock>
+      <div>
+        <p className="mb-6 max-w-3xl text-balance">{intitule ?? "N/A"}</p>
+        {resume && <p className="text-gray-500 text-sm">{resume}</p>}
+        <dl className="flex gap-x-8">
+          <div>
+            <dt>Représentant légal</dt>
+            <dd>
+              <EmailLink email={emailRepresentantLegal} />
+            </dd>
+          </div>
+          <div>
+            <dt>Responsable de suivi</dt>
+            <dd>
+              <EmailLink email={emailResponsableSuivi} />
+            </dd>
+          </div>
+          <div>
+            <dt>Département d'implantation</dt>
+            <dd>
+              {departementImplantation
+                ? departementImplantation
+                : "Aucun département précisé"}
+            </dd>
+          </div>
+          {numeroDossierAgenceEau && (
+            <div>
+              <dt>Numéro de dossier agence de l'eau</dt>
+              <dd>
+                <Badge>{numeroDossierAgenceEau}</Badge>
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
+    </div>
   );
 };

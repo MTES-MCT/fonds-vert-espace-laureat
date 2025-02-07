@@ -5,27 +5,6 @@ import { DossierState } from "@/generated/graphql";
 import { Impact } from "@/services/ds/impact";
 
 export function ImpactReview({ impact }: { impact: Impact }) {
-  if (impact.state === DossierState.EnConstruction) {
-    return (
-      <>
-        <Help>
-          Votre évaluation sera instruite prochainement. Vous pouvez encore la
-          modifier.
-        </Help>
-        <ImpactReviewLink impact={impact} label="Modifier l'évaluation" />
-      </>
-    );
-  }
-
-  if (impact.state === DossierState.EnInstruction) {
-    return (
-      <>
-        <Help>Votre évaluation est en cours d'instruction.</Help>
-        <ImpactReviewLink impact={impact} label="Consulter l'évaluation" />
-      </>
-    );
-  }
-
   return (
     <>
       <Help>Votre évaluation a été instruite.</Help>

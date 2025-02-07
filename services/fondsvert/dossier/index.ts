@@ -28,9 +28,9 @@ type DossierFondsVert = {
 };
 
 export async function getDossierFondsVert({
-  dossierNumber,
+  numeroDossier,
 }: {
-  dossierNumber: number;
+  numeroDossier: number;
 }): Promise<
   { success: false; error: string } | { success: true; data: DossierFondsVert }
 > {
@@ -39,7 +39,7 @@ export async function getDossierFondsVert({
   });
 
   const dossierResult = await fetchFondsVert<{ data: DossierFondsVert }>(
-    `dossiers/${dossierNumber}?${params.toString()}`,
+    `dossiers/${numeroDossier}?${params.toString()}`,
   );
 
   if (!dossierResult.success) {
@@ -53,7 +53,8 @@ export async function getDossierFondsVert({
     if (dossierResult.status === 422) {
       return {
         success: false,
-        error: "Les données ne sont pas encore disponibles pour cette démarche",
+        error:
+          "Les metriques de cette démarche ne sont pas disponibles dans l'API Fonds Vert.",
       };
     }
 
