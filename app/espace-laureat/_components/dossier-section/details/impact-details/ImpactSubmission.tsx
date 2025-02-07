@@ -55,14 +55,13 @@ export async function ImpactSubmission({
       </Help>
       {metricEntries.length > 0 && (
         <>
-          <p>
-            Pour rappel, voici les metriques que vous avez renseignées lors de
-            la demande de subvention :
+          <p className="mb-2 text-sm">
+            Voici les estimations renseignées lors de la demande de subvention :
           </p>
-          <ul>
+          <ul className="text-xs">
             {metricEntries.map(([key, value]) => (
               <li key={key}>
-                {key}: <strong>{value}</strong>
+                {key.replaceAll("_", " ")} : <strong>{value}</strong>
               </li>
             ))}
           </ul>
