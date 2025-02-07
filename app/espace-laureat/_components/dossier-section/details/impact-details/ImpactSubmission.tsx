@@ -5,7 +5,13 @@ import { Metrics } from "@/services/fondsvert/dossier";
 import { fetchPrefillMapping } from "@/services/grist/impact";
 import { requireEnv } from "@/utils/env";
 
-export async function ImpactSubmission({ metriques }: { metriques: Metrics }) {
+export async function ImpactSubmission({
+  numeroDossier,
+  metriques,
+}: {
+  numeroDossier: number;
+  metriques: Metrics;
+}) {
   const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
   const prefillMapping = await fetchPrefillMapping();
 
@@ -18,7 +24,7 @@ export async function ImpactSubmission({ metriques }: { metriques: Metrics }) {
   const prefilledDsImpactUrl = new URL(dsImpactUrl);
 
   for (const [metricKey, value] of metricEntries) {
-    const champId = prefillMapping[metricKey];
+    const champId = prefillMapping.champsMetriques[metricKey];
     if (champId) {
       prefilledDsImpactUrl.searchParams.append(
         `champ_${champId}`,
@@ -26,6 +32,11 @@ export async function ImpactSubmission({ metriques }: { metriques: Metrics }) {
       );
     }
   }
+
+  prefilledDsImpactUrl.searchParams.append(
+    `champ_${prefillMapping.champNumeroDossier}`,
+    String(numeroDossier),
+  );
 
   return (
     <>
