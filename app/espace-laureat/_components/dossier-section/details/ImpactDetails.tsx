@@ -4,19 +4,36 @@ import { ReactNode } from "react";
 import { DossierState } from "@/generated/graphql";
 import { Impact } from "@/services/ds/impact";
 import { Metrics } from "@/services/fondsvert/dossier";
+import { fetchPrefillMapping } from "@/services/grist/impact";
+import { requireEnv } from "@/utils/env";
 
-export const ImpactDetails = ({
+export async function ImpactDetails({
   impact,
   metriques,
 }: {
   impact?: Impact;
   metriques: Metrics;
-}) => {
+}) {
+  const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
+  const prefillMapping = await fetchPrefillMapping();
+
   // Pour le moment, les sous-mesures (value de type object) ne sont pas supportées
   const metricEntries = Object.entries(metriques).filter(
     (entry): entry is [string, string | number] =>
       ["string", "number"].includes(typeof entry[1]),
   );
+
+  const prefilledDsImpactUrl = new URL(dsImpactUrl);
+
+  for (const [metricKey, value] of metricEntries) {
+    const champId = prefillMapping[metricKey];
+    if (champId) {
+      prefilledDsImpactUrl.searchParams.append(
+        `champ_${champId}`,
+        String(value),
+      );
+    }
+  }
 
   if (!impact?.numero) {
     return (
@@ -44,7 +61,7 @@ export const ImpactDetails = ({
         <Link
           className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50"
           target="_blank"
-          href="https://www.demarches-simplifiees.fr/commencer/b709e4b9-57a5-46be-b570-59d6be6c1643"
+          href={prefilledDsImpactUrl.toString()}
         >
           Compléter l'évaluation
         </Link>
@@ -82,7 +99,7 @@ export const ImpactDetails = ({
       <ConsulterDossierImpact impact={impact} label="Consulter l'évaluation" />
     </>
   );
-};
+}
 
 const ConsulterDossierImpact = ({
   impact,
