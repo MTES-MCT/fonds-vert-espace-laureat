@@ -10,7 +10,7 @@ const defaultDossierSearchParams = {
 
 export type Metrics = Record<string, string | number | object | null>;
 
-type DossierFondsVert = {
+export type DossierFondsVert = {
   demarche_specifique: Metrics;
   information_financiere: {
     informations_engagement: {

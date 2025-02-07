@@ -14,7 +14,11 @@ export default async function EspaceLaureatDemo() {
       </h1>
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => (
-          <DossierSection key={index} dossier={dossier} />
+          <DossierSection
+            key={index}
+            dossierSubvention={dossier}
+            dossierFondsVertResult={{ success: false, error: "" }}
+          />
         ))}{" "}
       </div>
     </>

@@ -1,23 +1,23 @@
 import { ImpactDetails } from "@/app/espace-laureat/_components/dossier-section/details/ImpactDetails";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import { Impact } from "@/services/ds/impact";
-import { getDossierFondsVert } from "@/services/fondsvert/dossier";
+import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 export async function Details({
   numeroDossier,
+  dossierFondsVertResult,
   montantSubventionAttribuee,
   impact,
 }: {
   numeroDossier: number;
+  dossierFondsVertResult:
+    | { success: false; error: string }
+    | { success: true; data: DossierFondsVert };
   intitule?: string;
   resume?: string;
   montantSubventionAttribuee?: number;
   impact?: Impact;
 }) {
-  const dossierFondsVertResult = await getDossierFondsVert({
-    numeroDossier,
-  });
-
   return (
     <div className="w-full">
       <div className="mb-8 border px-6 py-4">
