@@ -1,15 +1,13 @@
-import { AucunDossier } from "@/app/espace-laureat/_components/AucunDossier";
-import { Connexion } from "@/app/espace-laureat/_components/Connexion";
-import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
-import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
-import { getDossier } from "@/app/espace-laureat/_components/getDossier";
-import { getPageTitle } from "@/app/espace-laureat/_components/getPageTitle";
-import {
-  getSearchParams,
-  SearchParams,
-} from "@/app/espace-laureat/_components/getParams";
 import { getDossierNumbers } from "@/services/fondsvert/dossiers";
 import { getSession } from "@/utils/session";
+
+import { AucunDossier } from "./_components/AucunDossier";
+import { compareDateSignatureDecision } from "./_components/compareDateSignatureDecision";
+import { Connexion } from "./_components/Connexion";
+import DossiersTable from "./_components/DossiersTable";
+import { getDossier } from "./_components/getDossier";
+import { getPageTitle } from "./_components/getPageTitle";
+import { getSearchParams, SearchParams } from "./_components/getParams";
 
 export default async function EspaceLaureat({
   searchParams,
@@ -24,7 +22,6 @@ export default async function EspaceLaureat({
   }
 
   const params = await getSearchParams({ searchParams });
-
   const siret = params.siret ?? user.siret;
 
   const dossierNumbers =
@@ -36,27 +33,11 @@ export default async function EspaceLaureat({
     getDossier({ dossierNumber, userEmail: user.email }),
   );
 
-  const demarcheImpactNumber = Number(process.env.DEMARCHE_IMPACT_NUMBER);
-
-  if (!demarcheImpactNumber || isNaN(demarcheImpactNumber)) {
-    throw new Error(
-      "Une erreur est survenue lors du chargement des données d'impact",
-    );
-  }
-
-  const dossiersImpactResult = await getDemarcheDossiers({
-    demarcheNumber: demarcheImpactNumber,
-    userEmail: user.email,
-  });
-
-  const dossiersImpact = dossiersImpactResult.success
-    ? dossiersImpactResult.data
-    : [];
-
   const dossiersSubventionResult = await Promise.all(dossierRequests);
   const dossiersSubvention = dossiersSubventionResult
     .filter((dossier) => dossier.success)
-    .map((dossier) => dossier.data);
+    .map((dossier) => dossier.data)
+    .sort(compareDateSignatureDecision);
 
   const noResultMsg =
     "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
@@ -74,18 +55,7 @@ export default async function EspaceLaureat({
           noResultMsg={noResultMsg}
         />
       ) : (
-        <div className="flex flex-col gap-y-8">
-          {dossiersSubvention.map((dossier, index) => (
-            <DossierSection
-              key={index}
-              dossier={dossier}
-              impact={dossiersImpact.find(
-                (impact) =>
-                  impact.champs.numeroDossierSubvention === dossier.numero,
-              )}
-            />
-          ))}
-        </div>
+        <DossiersTable dossiers={dossiersSubvention} />
       )}
 
       {dossiersSubvention.length > 0 && (
