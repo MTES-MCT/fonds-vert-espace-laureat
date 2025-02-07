@@ -2,29 +2,39 @@ import { Details } from "@/app/espace-laureat/_components/dossier-section/Detail
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
+import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 export async function DossierSection({
-  dossier,
+  dossierSubvention,
+  dossierFondsVertResult,
   impact,
 }: {
-  dossier: Dossier;
+  dossierSubvention: Dossier;
+  dossierFondsVertResult:
+    | { success: false; error: string }
+    | { success: true; data: DossierFondsVert };
   impact?: Impact;
 }) {
+  const subvention = dossierSubvention.champs;
   return (
-    <div className="flex flex-col gap-y-8" id={`dossier-${dossier.numero}`}>
+    <div
+      className="flex flex-col gap-y-8"
+      id={`dossier-${dossierSubvention.numero}`}
+    >
       <Summary
-        intitule={dossier.champs.intituleProjet}
-        resume={dossier.champs.resumeProjet}
-        titreDemarche={dossier.demarche.title}
-        numeroDossierDemarchesSimplifiees={dossier.numero}
-        numeroDossierAgenceEau={dossier.champs.numeroDossierAgenceEau}
-        emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
-        emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
-        departementImplantation={dossier.champs.departementImplantation}
+        intitule={subvention.intituleProjet}
+        resume={subvention.resumeProjet}
+        titreDemarche={dossierSubvention.demarche.title}
+        numeroDossierDemarchesSimplifiees={dossierSubvention.numero}
+        numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+        emailRepresentantLegal={subvention.emailRepresentantLegal}
+        emailResponsableSuivi={subvention.emailResponsableSuivi}
+        departementImplantation={subvention.departementImplantation}
       />
       <Details
-        numeroDossier={dossier.numero}
-        montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
+        numeroDossier={dossierSubvention.numero}
+        dossierFondsVertResult={dossierFondsVertResult}
+        montantSubventionAttribuee={subvention.montantSubventionAttribuee}
         impact={impact}
       />
     </div>

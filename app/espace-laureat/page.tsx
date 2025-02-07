@@ -30,7 +30,7 @@ export default async function EspaceLaureat({
       : await getDossierNumbers({ siret });
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
-    getDossier({ dossierNumber, userEmail: user.email }),
+    getDossier({ numeroDossier: dossierNumber, userEmail: user.email }),
   );
 
   const dossiersSubventionResult = await Promise.all(dossierRequests);

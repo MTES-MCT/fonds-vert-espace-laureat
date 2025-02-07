@@ -4,6 +4,7 @@ import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
+import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { getSession } from "@/utils/session";
 
 export default async function Versement({
@@ -17,7 +18,8 @@ export default async function Versement({
   if (!user || !user.email || !user.email_verified) {
     return <Connexion />;
   }
-  const { dossierNumber } = await params;
+  const { dossierNumber: dossierNumberString } = await params;
+  const numeroDossier = Number(dossierNumberString);
 
   const demarcheImpactNumber = Number(process.env.DEMARCHE_IMPACT_NUMBER);
 
@@ -27,21 +29,29 @@ export default async function Versement({
     );
   }
 
-  const dossierSubventionResult = await getDossier({
-    dossierNumber: Number(dossierNumber),
-    userEmail: user.email,
-  });
+  const [
+    dossierSubventionResult,
+    dossiersImpactResult,
+    dossierFondsVertResult,
+  ] = await Promise.all([
+    getDossier({
+      numeroDossier,
+      userEmail: user.email,
+    }),
+    getDemarcheDossiers({
+      demarcheNumber: demarcheImpactNumber,
+      userEmail: user.email,
+    }),
+    getDossierFondsVert({
+      numeroDossier,
+    }),
+  ]);
 
   if (!dossierSubventionResult.success) {
     return <>Introuvable</>;
   }
 
   const dossierSubvention = dossierSubventionResult.data;
-
-  const dossiersImpactResult = await getDemarcheDossiers({
-    demarcheNumber: demarcheImpactNumber,
-    userEmail: user.email,
-  });
 
   const dossiersImpact = dossiersImpactResult.success
     ? dossiersImpactResult.data
@@ -50,7 +60,8 @@ export default async function Versement({
   return (
     <div>
       <DossierSection
-        dossier={dossierSubvention}
+        dossierSubvention={dossierSubvention}
+        dossierFondsVertResult={dossierFondsVertResult}
         impact={dossiersImpact.find(
           (impact) =>
             impact.champs.numeroDossierSubvention === dossierSubvention.numero,
@@ -59,7 +70,7 @@ export default async function Versement({
       <div>
         <Link
           className="fr-btn fr-btn--tertiary"
-          href={`/espace-laureat${dossierNumber.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumber}`}
+          href={`/espace-laureat${dossierNumberString.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumberString}`}
         >
           Retour
         </Link>

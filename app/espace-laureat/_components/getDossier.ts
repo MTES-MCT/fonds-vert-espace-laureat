@@ -12,17 +12,17 @@ import { isAdmin } from "@/utils/roles";
 const graphqlClient = createGraphqlClient();
 
 export async function getDossier({
-  dossierNumber,
+  numeroDossier,
   userEmail,
 }: {
-  dossierNumber: number;
+  numeroDossier: number;
   userEmail: string;
 }): Promise<
   { success: true; data: Dossier } | { success: false; error: string }
 > {
   try {
     const { dossier } = await graphqlClient.request(getDossierQuery, {
-      number: dossierNumber,
+      number: numeroDossier,
     });
 
     if (dossier.demandeur.__typename !== "PersonneMorale") {
