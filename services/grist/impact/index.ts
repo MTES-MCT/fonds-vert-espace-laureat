@@ -5,10 +5,14 @@ type GristImpactRecord = {
     action: string;
     metriques_API_Field_Name: string;
     champ_id_ds: string;
+    type: string;
   };
 };
 
-export async function fetchPrefillMapping(): Promise<Record<string, string>> {
+export async function fetchPrefillMapping(): Promise<{
+  champNumeroDossier: string;
+  champsMetriques: Record<string, string>;
+}> {
   const [docId, apiKey, apiEndpoint] = requireEnv(
     "GRIST_DOC_ID",
     "GRIST_API_KEY",
@@ -39,11 +43,21 @@ export async function fetchPrefillMapping(): Promise<Record<string, string>> {
       record.fields.metriques_API_Field_Name !== "",
   );
 
-  return prefillRecords.reduce(
+  const champNumeroDossier = data.records.find(
+    (record: GristImpactRecord) =>
+      record.fields.type === "Lien vers un autre dossier",
+  ).fields.champ_id_ds;
+
+  const champsMetriques = prefillRecords.reduce(
     (acc: Record<string, string>, record: GristImpactRecord) => {
       acc[record.fields.metriques_API_Field_Name] = record.fields.champ_id_ds;
       return acc;
     },
     {},
   );
+
+  return {
+    champNumeroDossier,
+    champsMetriques,
+  };
 }
