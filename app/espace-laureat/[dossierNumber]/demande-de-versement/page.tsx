@@ -3,14 +3,14 @@ import Link from "next/link";
 export default async function Versement({
   params,
 }: {
-  params: Promise<{ dossierNum: string }>;
+  params: Promise<{ dossierNumber: string }>;
 }) {
-  const { dossierNum } = await params;
+  const { dossierNumber } = await params;
 
   return (
     <div className="max-w-xl pb-8">
       <h1>Demande de versement</h1>
-      <h2>Dossier n°{dossierNum}</h2>
+      <h2>Dossier n°{dossierNumber}</h2>
       <p>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
         tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
@@ -23,7 +23,7 @@ export default async function Versement({
       <div className="flex justify-between">
         <Link
           className="fr-btn fr-btn--tertiary"
-          href={`/espace-laureat${dossierNum.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNum}`}
+          href={`/espace-laureat${dossierNumber.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumber}`}
         >
           Retour
         </Link>

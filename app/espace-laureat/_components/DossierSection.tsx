@@ -2,7 +2,6 @@ import { Details } from "@/app/espace-laureat/_components/dossier-section/Detail
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
-import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 
 export async function DossierSection({
   dossier,
@@ -11,43 +10,22 @@ export async function DossierSection({
   dossier: Dossier;
   impact?: Impact;
 }) {
-  const dossierFondsVertResult = await getDossierFondsVert({
-    dossierNumber: dossier.numero,
-  });
-
   return (
-    <div
-      className="grid lg:grid-cols-2 gap-y-6 border py-6"
-      id={`dossier-${dossier.numero}`}
-    >
+    <div className="flex flex-col gap-y-8" id={`dossier-${dossier.numero}`}>
       <Summary
-        titreDemarche={dossier.demarche.title}
-        dateTraitement={dossier.dateTraitement}
-        dateSignatureDecision={dossier.champs.dateSignatureDecision}
-        montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
-        numeroDossierDemarchesSimplifiees={dossier.numero}
-        emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
-        emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
-      />
-      <Details
         intitule={dossier.champs.intituleProjet}
         resume={dossier.champs.resumeProjet}
-        departementImplantation={dossier.champs.departementImplantation}
+        titreDemarche={dossier.demarche.title}
+        numeroDossierDemarchesSimplifiees={dossier.numero}
         numeroDossierAgenceEau={dossier.champs.numeroDossierAgenceEau}
-        numeroEngagementJuridique={dossier.champs.numeroEngagementJuridique}
-        autresNumerosEngagementJuridique={
-          dossier.champs.autresNumerosEngagementJuridique
-        }
+        emailRepresentantLegal={dossier.champs.emailRepresentantLegal}
+        emailResponsableSuivi={dossier.champs.emailResponsableSuivi}
+        departementImplantation={dossier.champs.departementImplantation}
+      />
+      <Details
+        numeroDossier={dossier.numero}
         montantSubventionAttribuee={dossier.champs.montantSubventionAttribuee}
         impact={impact}
-        metriquesResult={
-          dossierFondsVertResult.success
-            ? {
-                success: true,
-                data: dossierFondsVertResult.data.demarche_specifique,
-              }
-            : { success: false, error: dossierFondsVertResult.error }
-        }
       />
     </div>
   );
