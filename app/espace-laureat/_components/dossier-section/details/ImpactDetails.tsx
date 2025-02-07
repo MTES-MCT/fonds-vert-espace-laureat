@@ -4,14 +4,18 @@ import { Impact } from "@/services/ds/impact";
 import { Metrics } from "@/services/fondsvert/dossier";
 
 export async function ImpactDetails({
+  numeroDossier,
   impact,
   metriques,
 }: {
+  numeroDossier: number;
   impact?: Impact;
   metriques: Metrics;
 }) {
   if (!impact?.numero) {
-    return <ImpactSubmission metriques={metriques} />;
+    return (
+      <ImpactSubmission numeroDossier={numeroDossier} metriques={metriques} />
+    );
   }
 
   return <ImpactReview impact={impact} />;

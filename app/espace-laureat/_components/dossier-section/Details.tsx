@@ -24,13 +24,18 @@ export async function Details({
         <h2 className="mb-2">Impact du projet</h2>
         {dossierFondsVertResult.success ? (
           <ImpactDetails
+            numeroDossier={numeroDossier}
             impact={impact}
             metriques={dossierFondsVertResult.data.demarche_specifique}
           />
         ) : (
           <>
             <p className="text-xs">{dossierFondsVertResult.error}</p>
-            <ImpactDetails impact={impact} metriques={{}} />
+            <ImpactDetails
+              numeroDossier={numeroDossier}
+              impact={impact}
+              metriques={{}}
+            />
           </>
         )}
       </div>
