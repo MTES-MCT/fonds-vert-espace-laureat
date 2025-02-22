@@ -5,7 +5,7 @@ import { InformationFinanciere } from "@/services/fondsvert/dossier";
 
 function DsfrTable({ children }: { children: ReactNode }) {
   return (
-    <div className="fr-table">
+    <div className="fr-table mb-2">
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>
@@ -69,11 +69,6 @@ export function InformationFinanciereTimeline({
 
   return (
     <div>
-      <p>
-        Centre financier Chorus n°
-        {informationFinanciere.centre_financier_chorus}
-      </p>
-
       {Object.values(groupedEngagements).map((group, index) => {
         const sortedhistorique = [...group.historique].sort(
           (a, b) => b.annee - a.annee,

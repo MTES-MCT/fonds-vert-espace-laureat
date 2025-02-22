@@ -68,7 +68,7 @@ export async function ImpactSubmission({
         </>
       )}
       <Link
-        className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50"
+        className="fr-btn fr-btn--secondary fr-btn--sm bg-white hover:bg-gray-50"
         target="_blank"
         href={prefilledDsImpactUrl.toString()}
       >

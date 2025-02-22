@@ -33,9 +33,10 @@ export async function Details({
         };
 
   return (
-    <div className="w-full">
+    <div className="max-w-3xl">
       {errorMessage && <p className="text-xs">{errorMessage}</p>}
-      <div className="mb-8 border px-6 py-4">
+
+      <div className="mb-8 px-10 py-8 bg-white border">
         <h2 className="mb-2">Impact du projet</h2>
         <ImpactDetails
           numeroDossier={numeroDossier}
@@ -45,8 +46,16 @@ export async function Details({
         />
       </div>
 
-      <div className="mb-8 border px-6 py-4">
-        <h2 className="mb-2">Subvention attribuée</h2>
+      <div className="mb-8 px-10 py-8 bg-white border">
+        <div className="flex justify-between">
+          <h2 className="mb-2 leading-none">Subvention attribuée</h2>
+          {informationFinanciere && (
+            <div className="text-xs text-gray-400 font-medium">
+              Chorus n°
+              {informationFinanciere.centre_financier_chorus}
+            </div>
+          )}
+        </div>
         <SubventionDetails
           montantSubventionAttribuee={montantSubventionAttribuee}
           informationFinanciere={informationFinanciere}

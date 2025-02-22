@@ -36,13 +36,13 @@ export function SubventionDetails({
         </a>
       </p>
       <Link
-        className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50 mb-4"
+        className="fr-btn fr-btn--secondary fr-btn--sm bg-white hover:bg-gray-50 mb-4"
         target="_blank"
         href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
       >
         Demander un versement
       </Link>
-      <div className="mt-4">
+      <div>
         {informationFinanciere &&
         informationFinanciere.informations_engagement?.length > 0 ? (
           <InformationFinanciereTimeline
