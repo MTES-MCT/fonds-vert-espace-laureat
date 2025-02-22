@@ -43,20 +43,14 @@ export function SubventionDetails({
         Demander un versement
       </Link>
       <div className="mt-4">
-        {informationFinanciere ? (
-          informationFinanciere.informations_engagement &&
-          informationFinanciere.informations_engagement.length > 0 ? (
-            <InformationFinanciereTimeline
-              informationFinanciere={informationFinanciere}
-            />
-          ) : (
-            <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
-              Aucun historique de versements pour le moment
-            </div>
-          )
+        {informationFinanciere &&
+        informationFinanciere.informations_engagement?.length > 0 ? (
+          <InformationFinanciereTimeline
+            informationFinanciere={informationFinanciere}
+          />
         ) : (
           <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
-            Historique des versements bientôt disponible
+            Historique financier non disponible
           </div>
         )}
       </div>

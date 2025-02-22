@@ -1,64 +1,137 @@
 import React from "react";
+import { ReactNode } from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+
+function DsfrTable({ children }: { children: ReactNode }) {
+  return (
+    <div className="fr-table">
+      <div className="fr-table__wrapper">
+        <div className="fr-table__container">
+          <div className="fr-table__content">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface Engagement {
+  annee: number;
+  montant_engage: number;
+  demandes_paiement: {
+    numero_dp: string;
+    date_dp: string;
+    montant_paye: number;
+  }[];
+}
+
+interface GroupedEngagement {
+  numero_ej: string;
+  montant_engage_initial: number;
+  historique: Engagement[];
+}
 
 export function InformationFinanciereTimeline({
   informationFinanciere,
 }: {
   informationFinanciere: InformationFinanciere;
 }) {
+  const formatMontant = (montant: number) =>
+    new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(montant);
+
+  const groupedEngagements =
+    informationFinanciere.informations_engagement.reduce(
+      (acc, info) => {
+        info.engagements_juridiques.forEach((eng) => {
+          const key = `${eng.numero_ej}-${eng.montant_engage_initial}`;
+          if (!acc[key]) {
+            acc[key] = {
+              numero_ej: eng.numero_ej,
+              montant_engage_initial: eng.montant_engage_initial,
+              historique: [],
+            } as GroupedEngagement;
+          }
+          acc[key].historique.push({
+            annee: info.annee_information_financiere,
+            montant_engage: eng.montant_engage,
+            demandes_paiement: eng.demandes_paiement,
+          });
+        });
+        return acc;
+      },
+      {} as Record<string, GroupedEngagement>,
+    );
+
   return (
     <div>
       <p>
-        <strong>Centre financier CHORUS:</strong>{" "}
+        Centre financier Chorus n°
         {informationFinanciere.centre_financier_chorus}
       </p>
-      {informationFinanciere.informations_engagement.map((info, index) => (
-        <div key={index} className="border-t pt-2 mt-2">
-          <h3 className="text-lg font-bold">
-            Année: {info.annee_information_financiere}
-          </h3>
-          {info.engagements_juridiques.map((eng, i) => (
-            <div key={i} className="ml-4 mt-2">
-              <p>
-                <strong>Numéro EJ:</strong> {eng.numero_ej}
-              </p>
-              <p>
-                <strong>Nom démarche:</strong> {eng.nom_demarche}
-              </p>
-              <p>
-                <strong>Nom axe:</strong> {eng.nom_axe}
-              </p>
-              <p>
-                <strong>Montant engagé:</strong> {eng.montant_engage}
-              </p>
-              <p>
-                <strong>Montant engagé initial:</strong>{" "}
-                {eng.montant_engage_initial}
-              </p>
-              {eng.demandes_paiement.length > 0 && (
-                <div className="ml-4">
-                  <h4 className="font-semibold">Demandes de paiement</h4>
-                  {eng.demandes_paiement.map((dp, j) => (
-                    <div key={j} className="ml-4">
-                      <p>
-                        <strong>Numéro DP:</strong> {dp.numero_dp}
-                      </p>
-                      <p>
-                        <strong>Date DP:</strong>{" "}
-                        {new Date(dp.date_dp).toLocaleDateString()}
-                      </p>
-                      <p>
-                        <strong>Montant payé:</strong> {dp.montant_paye}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      ))}
+
+      {Object.values(groupedEngagements).map((group, index) => {
+        const sortedhistorique = [...group.historique].sort(
+          (a, b) => b.annee - a.annee,
+        );
+        return (
+          <div key={index} className="mt-8 max-w-3xl">
+            <h3 className="text-lg font-bold mb-2">
+              Engagement juridique n°{group.numero_ej}
+            </h3>
+            <DsfrTable>
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Année</th>
+                    <th scope="col">Montant engagé</th>
+                    <th scope="col">Montant payé</th>
+                    <th scope="col">Date de demande</th>
+                    <th scope="col">Numéro de demande</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedhistorique.flatMap((item, idxItem) => {
+                    if (item.demandes_paiement.length > 0) {
+                      return item.demandes_paiement.map((dp, idxDp) => (
+                        <tr key={`${idxItem}-${idxDp}`}>
+                          <td>{item.annee}</td>
+                          <td>{formatMontant(item.montant_engage)}</td>
+                          <td>{formatMontant(dp.montant_paye)}</td>
+                          <td>
+                            {new Date(dp.date_dp).toLocaleDateString("fr-FR", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                          </td>
+                          <td>{dp.numero_dp}</td>
+                        </tr>
+                      ));
+                    } else {
+                      return (
+                        <tr key={`${idxItem}-0`}>
+                          <td>{item.annee}</td>
+                          <td>{formatMontant(item.montant_engage)}</td>
+                          <td className="text-xs text-gray-500">
+                            Aucun paiement
+                          </td>
+                          <td className="text-gray-300">—</td>
+                          <td className="text-gray-300">—</td>
+                        </tr>
+                      );
+                    }
+                  })}
+                </tbody>
+              </table>
+            </DsfrTable>
+          </div>
+        );
+      })}
     </div>
   );
 }
