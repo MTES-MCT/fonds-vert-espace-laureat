@@ -74,7 +74,7 @@ export function InformationFinanciereTimeline({
           (a, b) => b.annee - a.annee,
         );
         return (
-          <div key={index} className="mt-8 max-w-3xl">
+          <div key={index} className="mt-5 max-w-3xl">
             <h3 className="text-lg font-bold mb-2">
               Engagement juridique n°{group.numero_ej}
             </h3>

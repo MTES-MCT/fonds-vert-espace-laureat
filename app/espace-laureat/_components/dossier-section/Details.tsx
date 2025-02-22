@@ -36,8 +36,8 @@ export async function Details({
     <>
       <div className="flex flex-wrap items-start">
         <div className="flex-1 p-8 bg-white border border-gray-300">
-          <div className="flex justify-between">
-            <h2 className="mb-2 leading-none">Subvention attribuée</h2>
+          <div className="flex justify-between items-end mb-3">
+            <h2 className="mb-0">Subvention</h2>
             {informationFinanciere && (
               <div className="text-xs text-gray-400 font-medium">
                 Chorus n°
