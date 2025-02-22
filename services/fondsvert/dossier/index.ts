@@ -10,22 +10,35 @@ const defaultDossierSearchParams = {
 
 export type Metrics = Record<string, string | number | object | null>;
 
-export type DossierFondsVert = {
+interface DemandePaiement {
+  numero_dp: string;
+  date_dp: string;
+  montant_paye: number;
+}
+
+interface EngagementJuridiques {
+  numero_ej: string;
+  nom_demarche: string;
+  nom_axe: number;
+  montant_engage: number;
+  montant_engage_initial: number;
+  demandes_paiement: DemandePaiement[];
+}
+
+interface InformationsEngagement {
+  annee_information_financiere: number;
+  engagements_juridiques: EngagementJuridiques[];
+}
+
+export interface InformationFinanciere {
+  centre_financier_chorus: string;
+  informations_engagement: InformationsEngagement[];
+}
+
+export interface DossierFondsVert {
   demarche_specifique: Metrics;
-  information_financiere: {
-    informations_engagement: {
-      annee_information_financiere: number;
-      engagements_juridiques: {
-        montant_engage: number;
-        montant_engage_initial: number;
-        demandes_paiement: {
-          date_dp: string;
-          montant_paye: number;
-        }[];
-      }[];
-    };
-  };
-};
+  information_financiere?: InformationFinanciere;
+}
 
 export async function getDossierFondsVert({
   numeroDossier,

@@ -1,9 +1,14 @@
 import Link from "next/link";
 
+import { InformationFinanciereTimeline } from "@/app/espace-laureat/_components/dossier-section/details/InformationFinanciereTimeline";
+import { InformationFinanciere } from "@/services/fondsvert/dossier";
+
 export function SubventionDetails({
   montantSubventionAttribuee,
+  informationFinanciere,
 }: {
-  montantSubventionAttribuee: number;
+  montantSubventionAttribuee?: number;
+  informationFinanciere?: InformationFinanciere;
 }) {
   const formattedMontantSubventionAttribuee = montantSubventionAttribuee
     ? new Intl.NumberFormat("fr-FR", {
@@ -37,8 +42,23 @@ export function SubventionDetails({
       >
         Demander un versement
       </Link>
-      <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
-        Historique des versements bientôt disponible
+      <div className="mt-4">
+        {informationFinanciere ? (
+          informationFinanciere.informations_engagement &&
+          informationFinanciere.informations_engagement.length > 0 ? (
+            <InformationFinanciereTimeline
+              informationFinanciere={informationFinanciere}
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
+              Aucun historique de versements pour le moment
+            </div>
+          )
+        ) : (
+          <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
+            Historique des versements bientôt disponible
+          </div>
+        )}
       </div>
     </>
   );
