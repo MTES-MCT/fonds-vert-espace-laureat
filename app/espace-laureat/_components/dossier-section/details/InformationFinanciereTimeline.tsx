@@ -5,7 +5,7 @@ import { InformationFinanciere } from "@/services/fondsvert/dossier";
 
 function DsfrTable({ children }: { children: ReactNode }) {
   return (
-    <div className="fr-table mb-2">
+    <div className="fr-table mb-0">
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>

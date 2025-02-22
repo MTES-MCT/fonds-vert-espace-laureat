@@ -49,31 +49,34 @@ export async function ImpactSubmission({
   return (
     <>
       <Help>
-        Les données de votre projet participent à la transition écologique.
-        Merci de compléter l'évaluation d'impact réel de votre projet,
-        conformément aux engagements liés à la subvention.
+        Évaluez l'impact réel de votre projet, conformément aux engagements liés
+        à la subvention.
       </Help>
-      {metricEntries.length > 0 && (
-        <>
-          <p className="mb-2 text-sm">
-            Voici les estimations renseignées lors de la demande de subvention :
-          </p>
-          <ul className="text-xs">
-            {metricEntries.map(([key, value]) => (
-              <li key={key}>
-                {key.replaceAll("_", " ")} : <strong>{value}</strong>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
       <Link
-        className="fr-btn fr-btn--secondary fr-btn--sm bg-white hover:bg-gray-50"
+        className="fr-btn fr-btn--primary w-full inline-flex items-center justify-center"
         target="_blank"
         href={prefilledDsImpactUrl.toString()}
       >
         Compléter l'évaluation
       </Link>
+      {metricEntries.length > 0 && (
+        <>
+          <p className="mt-8 mb-2 font-medium">Vos estimations</p>
+          <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
+            {metricEntries.map(([key, value]) => (
+              <li key={key} className="capitalize my-2 pt-2 pb-0 border-t">
+                <span className="whitespace-nowrap">
+                  {key.replaceAll("_", " ")} :
+                </span>
+                <span className="whitespace-nowrap font-semibold">
+                  {" "}
+                  {value}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
     </>
   );
 }

@@ -33,34 +33,37 @@ export async function Details({
         };
 
   return (
-    <div className="max-w-3xl">
-      {errorMessage && <p className="text-xs">{errorMessage}</p>}
-
-      <div className="mb-8 px-10 py-8 bg-white border">
-        <h2 className="mb-2">Impact du projet</h2>
-        <ImpactDetails
-          numeroDossier={numeroDossier}
-          impact={impact}
-          metriques={metriques}
-          nocache={nocache}
-        />
-      </div>
-
-      <div className="mb-8 px-10 py-8 bg-white border">
-        <div className="flex justify-between">
-          <h2 className="mb-2 leading-none">Subvention attribuée</h2>
-          {informationFinanciere && (
-            <div className="text-xs text-gray-400 font-medium">
-              Chorus n°
-              {informationFinanciere.centre_financier_chorus}
-            </div>
-          )}
+    <>
+      <div className="flex flex-wrap items-start">
+        <div className="flex-1 p-8 bg-white border border-gray-300">
+          <div className="flex justify-between">
+            <h2 className="mb-2 leading-none">Subvention attribuée</h2>
+            {informationFinanciere && (
+              <div className="text-xs text-gray-400 font-medium">
+                Chorus n°
+                {informationFinanciere.centre_financier_chorus}
+              </div>
+            )}
+          </div>
+          <SubventionDetails
+            montantSubventionAttribuee={montantSubventionAttribuee}
+            informationFinanciere={informationFinanciere}
+          />
         </div>
-        <SubventionDetails
-          montantSubventionAttribuee={montantSubventionAttribuee}
-          informationFinanciere={informationFinanciere}
-        />
+
+        <div className="p-6 pt-10 bg-white shadow-lg w-96 ml-8 sticky top-12 text-center text-balance">
+          <p className="text-2xl font-semibold mb-2 text-gray-900">
+            Les données de votre projet participent à la transition écologique
+          </p>
+          <ImpactDetails
+            numeroDossier={numeroDossier}
+            impact={impact}
+            metriques={metriques}
+            nocache={nocache}
+          />
+        </div>
       </div>
-    </div>
+      {errorMessage && <p className="text-xs">{errorMessage}</p>}
+    </>
   );
 }

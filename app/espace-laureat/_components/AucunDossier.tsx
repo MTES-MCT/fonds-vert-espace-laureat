@@ -8,7 +8,7 @@ export function AucunDossier({
   noResultMsg: string;
 }) {
   return (
-    <div className="flex flex-col gap-y-6 text-center items-center justify-center border w-full h-96">
+    <div className="flex flex-col gap-y-6 text-center items-center justify-center border w-full h-96 mb-6">
       <span
         className="text-gray-900 fr-icon-warning-fill fr-icon--lg"
         aria-hidden="true"

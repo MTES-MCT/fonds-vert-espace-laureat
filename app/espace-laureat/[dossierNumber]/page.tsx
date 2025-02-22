@@ -74,7 +74,7 @@ export default async function DossierPage({
       />
       <div>
         <Link
-          className="fr-btn fr-btn--tertiary"
+          className="fr-btn fr-btn--tertiary bg-white"
           href={`/espace-laureat${dossierNumberString.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumberString}`}
         >
           Retour

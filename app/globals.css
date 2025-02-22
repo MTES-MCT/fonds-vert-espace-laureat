@@ -26,6 +26,10 @@
         @apply text-gray-900;
     }
 
+    body {
+        background-color: #f8f4f0;
+    }
+
     dl,
     dt,
     dd {

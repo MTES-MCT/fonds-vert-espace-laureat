@@ -28,11 +28,13 @@ export const Summary = ({
     <div>
       <h2>
         Dossier n°{numeroDossierDemarchesSimplifiees}{" "}
-        <Tag iconId="fr-icon-award-fill">{mesureFondsVert}</Tag>
+        <Tag className="bg-white shadow" iconId="fr-icon-award-fill">
+          {mesureFondsVert}
+        </Tag>
       </h2>
       <div>
-        <p className="mb-6 max-w-3xl text-balance">{intitule ?? "N/A"}</p>
-        {resume && <p className="text-gray-500 text-sm">{resume}</p>}
+        <p className="mb-4 max-w-5xl text-balance">{intitule ?? "N/A"}</p>
+        {resume && <p className="text-gray-700 text-sm max-w-2xl">{resume}</p>}
         <dl className="flex gap-x-8">
           <div>
             <dt>Représentant légal</dt>

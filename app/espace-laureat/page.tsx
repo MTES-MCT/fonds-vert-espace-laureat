@@ -43,7 +43,7 @@ export default async function EspaceLaureat({
     "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
 
   return (
-    <>
+    <div className="bg-white shadow px-8 pt-6 pb-2">
       <h1>
         {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
       </h1>
@@ -63,6 +63,6 @@ export default async function EspaceLaureat({
           Vous ne trouvez pas votre dossier ? {noResultMsg}
         </p>
       )}
-    </>
+    </div>
   );
 }
