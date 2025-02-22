@@ -1,7 +1,6 @@
 import "./globals.css";
 
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
-import { DsfrProvider } from "@codegouvfr/react-dsfr/next-appdir/DsfrProvider";
 import { getHtmlAttributes } from "@codegouvfr/react-dsfr/next-appdir/getHtmlAttributes";
 import { ReactElement } from "react";
 
@@ -56,11 +55,9 @@ export default async function RootLayout({
         <DsfrHead />
       </head>
       <body>
-        <DsfrProvider lang={lang}>
-          <Header quickAccessItems={quickAccessItems} />
-          <main className="fr-container my-8 min-h-80">{children}</main>
-          <Footer />
-        </DsfrProvider>
+        <Header quickAccessItems={quickAccessItems} />
+        <main className="fr-container my-8 min-h-80">{children}</main>
+        <Footer />
       </body>
     </html>
   );
