@@ -39,11 +39,11 @@
     }
 
     dt {
-        @apply text-gray-700 text-sm;
+        @apply text-gray-600 text-sm;
     }
 
     dd {
-        @apply font-medium mb-5;
+        @apply font-medium text-gray-900 mb-5;
     }
 
     dd:last-child {

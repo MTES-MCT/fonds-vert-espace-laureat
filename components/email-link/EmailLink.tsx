@@ -4,7 +4,7 @@ export function EmailLink({ email }: { email?: string }) {
   }
 
   return (
-    <a className="fr-link" href={`mailto:${email}`}>
+    <a className="fr-link fr-link--sm" href={`mailto:${email}`}>
       {email}
     </a>
   );
