@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";

@@ -78,7 +78,7 @@ export async function DossierSection({
         <div>
           <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
             <div className="flex justify-between items-end mb-3">
-              <h2 className="mb-0">Subvention</h2>
+              <h3 className="mb-0">Subvention</h3>
               {informationFinanciere && (
                 <div className="text-xs text-gray-400 font-medium">
                   Chorus n°
