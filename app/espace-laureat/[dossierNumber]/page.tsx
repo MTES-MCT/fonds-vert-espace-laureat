@@ -62,24 +62,14 @@ export default async function DossierPage({
     : [];
 
   return (
-    <div>
-      <DossierSection
-        dossierSubvention={dossierSubvention}
-        dossierFondsVertResult={dossierFondsVertResult}
-        impact={dossiersImpact.find(
-          (impact) =>
-            impact.champs.numeroDossierSubvention === dossierSubvention.numero,
-        )}
-        nocache={["", "1"].includes(nocache)}
-      />
-      <div>
-        <Link
-          className="fr-btn fr-btn--tertiary bg-white"
-          href={`/espace-laureat${dossierNumberString.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumberString}`}
-        >
-          Retour
-        </Link>
-      </div>
-    </div>
+    <DossierSection
+      dossierSubvention={dossierSubvention}
+      dossierFondsVertResult={dossierFondsVertResult}
+      impact={dossiersImpact.find(
+        (impact) =>
+          impact.champs.numeroDossierSubvention === dossierSubvention.numero,
+      )}
+      nocache={["", "1"].includes(nocache)}
+    />
   );
 }
