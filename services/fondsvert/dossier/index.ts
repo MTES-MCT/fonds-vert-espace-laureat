@@ -67,7 +67,7 @@ export async function getDossierFondsVert({
       return {
         success: false,
         error:
-          "Les metriques de cette démarche ne sont pas disponibles dans l'API Fonds Vert.",
+          "L'historique n'est pas encore disponible pour ce type de démarche.",
       };
     }
 

@@ -46,15 +46,11 @@ export function SubventionDetails({
       </div>
       <div>
         {informationFinanciere &&
-        informationFinanciere.informations_engagement?.length > 0 ? (
-          <InformationFinanciereTimeline
-            informationFinanciere={informationFinanciere}
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-48 bg-gray-100 text-gray-500">
-            Historique financier non disponible
-          </div>
-        )}
+          informationFinanciere.informations_engagement?.length > 0 && (
+            <InformationFinanciereTimeline
+              informationFinanciere={informationFinanciere}
+            />
+          )}
       </div>
     </>
   );

@@ -38,7 +38,7 @@ export async function DossierSection({
 
   return (
     <div className="flex flex-wrap items-start">
-      <div className="flex-1 flex flex-col gap-y-8">
+      <div className="flex-1 flex flex-col gap-y-10">
         <Summary
           intitule={subvention.intituleProjet}
           resume={subvention.resumeProjet}
@@ -49,27 +49,32 @@ export async function DossierSection({
           emailResponsableSuivi={subvention.emailResponsableSuivi}
           departementImplantation={subvention.departementImplantation}
         />
-        <div className="flex-1 p-8 bg-white border border-gray-300">
-          <div className="flex justify-between items-end mb-3">
-            <h2 className="mb-0">Subvention</h2>
-            {informationFinanciere && (
-              <div className="text-xs text-gray-400 font-medium">
-                Chorus n°
-                {informationFinanciere.centre_financier_chorus}
-              </div>
-            )}
+        <div>
+          <div className="flex-1 p-8 bg-white border border-gray-300 mb-4">
+            <div className="flex justify-between items-end mb-3">
+              <h2 className="mb-0">Subvention</h2>
+              {informationFinanciere && (
+                <div className="text-xs text-gray-400 font-medium">
+                  Chorus n°
+                  {informationFinanciere.centre_financier_chorus}
+                </div>
+              )}
+            </div>
+            <SubventionDetails
+              montantSubventionAttribuee={subvention.montantSubventionAttribuee}
+              informationFinanciere={informationFinanciere}
+            />
           </div>
-          <SubventionDetails
-            montantSubventionAttribuee={subvention.montantSubventionAttribuee}
-            informationFinanciere={informationFinanciere}
-          />
+          {errorMessage && (
+            <p className="text-xs text-gray-500 font-medium">{errorMessage}</p>
+          )}
+          <Link
+            className="fr-btn fr-btn--tertiary bg-white mb-20"
+            href={`/espace-laureat${dossierSubvention.numero.toString().startsWith("12345") ? "/demo" : ""}#dossier-${dossierSubvention.numero}`}
+          >
+            Retour
+          </Link>
         </div>
-        <Link
-          className="fr-btn fr-btn--tertiary bg-white mb-20"
-          href={`/espace-laureat${dossierSubvention.numero.toString().startsWith("12345") ? "/demo" : ""}#dossier-${dossierSubvention.numero}`}
-        >
-          Retour
-        </Link>
       </div>
       <div className="p-6 pt-10 bg-white shadow-lg w-96 ml-8 sticky top-8 text-center text-balance">
         <p className="text-2xl font-semibold mb-2 text-gray-900">
@@ -82,7 +87,6 @@ export async function DossierSection({
           nocache={nocache}
         />
       </div>
-      {errorMessage && <p className="text-xs">{errorMessage}</p>}
     </div>
   );
 }
