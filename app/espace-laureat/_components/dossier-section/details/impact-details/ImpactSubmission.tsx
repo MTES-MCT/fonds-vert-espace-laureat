@@ -64,14 +64,14 @@ export async function ImpactSubmission({
           <p className="mt-8 mb-2 font-medium">Vos estimations</p>
           <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
             {metricEntries.map(([key, value]) => (
-              <li key={key} className="capitalize my-2 pt-2 pb-0 border-t">
+              <li
+                key={key}
+                className="capitalize my-2 last:mb-0 pt-2 pb-0 border-t"
+              >
                 <span className="whitespace-nowrap">
                   {key.replaceAll("_", " ")} :
                 </span>
-                <span className="whitespace-nowrap font-semibold">
-                  {" "}
-                  {value}
-                </span>
+                <span className="font-semibold"> {value}</span>
               </li>
             ))}
           </ul>

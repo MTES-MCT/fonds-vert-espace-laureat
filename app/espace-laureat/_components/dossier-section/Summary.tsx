@@ -26,9 +26,9 @@ export const Summary = ({
 
   return (
     <div>
-      <h2 className="flex items-center">
+      <h2 className="flex flex-wrap items-center gap-4">
         Dossier n°{numeroDossierDemarchesSimplifiees}{" "}
-        <Tag small className="ml-4 bg-white shadow" iconId="fr-icon-award-fill">
+        <Tag small className="bg-white shadow" iconId="fr-icon-award-fill">
           {mesureFondsVert}
         </Tag>
       </h2>
@@ -44,7 +44,7 @@ export const Summary = ({
             {resume}
           </p>
         )}
-        <dl className="flex text-sm gap-x-8">
+        <dl className="flex flex-wrap text-sm gap-x-8 gap-y-4">
           <div>
             <dt>Représentant légal</dt>
             <dd>

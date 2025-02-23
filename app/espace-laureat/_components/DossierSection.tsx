@@ -37,7 +37,7 @@ export async function DossierSection({
         };
 
   return (
-    <div className="flex flex-wrap items-start">
+    <div className="flex flex-wrap items-start gap-8">
       <div className="flex-1 flex flex-col gap-y-10">
         <Summary
           intitule={subvention.intituleProjet}
@@ -50,7 +50,7 @@ export async function DossierSection({
           departementImplantation={subvention.departementImplantation}
         />
         <div>
-          <div className="flex-1 p-8 bg-white border border-gray-300 mb-4">
+          <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
             <div className="flex justify-between items-end mb-3">
               <h2 className="mb-0">Subvention</h2>
               {informationFinanciere && (
@@ -69,14 +69,14 @@ export async function DossierSection({
             <p className="text-xs text-gray-500 font-medium">{errorMessage}</p>
           )}
           <Link
-            className="fr-btn fr-btn--tertiary bg-white mb-20"
+            className="fr-btn fr-btn--tertiary bg-white xl:mb-20"
             href={`/espace-laureat${dossierSubvention.numero.toString().startsWith("12345") ? "/demo" : ""}#dossier-${dossierSubvention.numero}`}
           >
             Retour
           </Link>
         </div>
       </div>
-      <div className="p-6 pt-10 bg-white shadow-lg w-96 ml-8 sticky top-8 text-center text-balance">
+      <div className="p-6 pt-10 bg-white shadow-lg max-w-lg xl:w-96 sticky top-8 text-center text-balance">
         <p className="text-2xl font-semibold mb-2 text-gray-900">
           Les données de votre projet participent à la transition écologique
         </p>
