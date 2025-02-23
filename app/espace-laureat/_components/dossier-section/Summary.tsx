@@ -34,7 +34,14 @@ export const Summary = ({
       </h2>
       <div>
         <p className="mb-4 max-w-5xl text-balance">{intitule ?? "N/A"}</p>
-        {resume && <p className="text-gray-700 text-sm max-w-2xl">{resume}</p>}
+        {resume && (
+          <p
+            title={resume}
+            className="text-gray-700 text-sm max-w-2xl line-clamp-3"
+          >
+            {resume}
+          </p>
+        )}
         <dl className="flex gap-x-8">
           <div>
             <dt>Représentant légal</dt>
