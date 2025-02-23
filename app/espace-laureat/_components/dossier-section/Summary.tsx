@@ -7,7 +7,6 @@ export const Summary = ({
   intitule,
   resume,
   titreDemarche,
-  numeroDossierDemarchesSimplifiees,
   numeroDossierAgenceEau,
   emailRepresentantLegal,
   emailResponsableSuivi,
@@ -16,7 +15,6 @@ export const Summary = ({
   intitule?: string;
   resume?: string;
   titreDemarche: string;
-  numeroDossierDemarchesSimplifiees: number;
   numeroDossierAgenceEau?: string;
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
@@ -27,15 +25,12 @@ export const Summary = ({
   return (
     <div>
       <h2 className="flex flex-wrap items-center gap-4">
-        Dossier n°{numeroDossierDemarchesSimplifiees}{" "}
+        {intitule ?? "N/A"}
         <Tag small className="bg-white shadow" iconId="fr-icon-award-fill">
           {mesureFondsVert}
         </Tag>
       </h2>
       <div>
-        <p className="mb-4 max-w-5xl text-gray-900 text-balance font-medium">
-          {intitule ?? "N/A"}
-        </p>
         {resume && (
           <p
             title={resume}

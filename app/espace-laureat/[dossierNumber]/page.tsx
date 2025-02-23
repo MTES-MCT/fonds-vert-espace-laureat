@@ -5,6 +5,7 @@ import { DossierSection } from "@/app/espace-laureat/_components/DossierSection"
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
+import { isAdmin } from "@/utils/roles";
 import { getSession } from "@/utils/session";
 
 export default async function DossierPage({
@@ -63,6 +64,7 @@ export default async function DossierPage({
 
   return (
     <DossierSection
+      isAdmin={isAdmin({ userEmail: user.email })}
       dossierSubvention={dossierSubvention}
       dossierFondsVertResult={dossierFondsVertResult}
       impact={dossiersImpact.find(

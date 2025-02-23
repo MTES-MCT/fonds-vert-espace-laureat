@@ -1,3 +1,4 @@
+import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
 
 import { ImpactDetails } from "@/app/espace-laureat/_components/dossier-section/details/ImpactDetails";
@@ -8,11 +9,13 @@ import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 export async function DossierSection({
+  isAdmin,
   dossierSubvention,
   dossierFondsVertResult,
   impact,
   nocache,
 }: {
+  isAdmin: boolean;
   dossierSubvention: Dossier;
   dossierFondsVertResult:
     | { success: false; error: string }
@@ -39,16 +42,39 @@ export async function DossierSection({
   return (
     <div className="flex flex-wrap items-start gap-8">
       <div className="flex-1 flex flex-col gap-y-10">
-        <Summary
-          intitule={subvention.intituleProjet}
-          resume={subvention.resumeProjet}
-          titreDemarche={dossierSubvention.demarche.title}
-          numeroDossierDemarchesSimplifiees={dossierSubvention.numero}
-          numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-          emailRepresentantLegal={subvention.emailRepresentantLegal}
-          emailResponsableSuivi={subvention.emailResponsableSuivi}
-          departementImplantation={subvention.departementImplantation}
-        />
+        <div>
+          <Breadcrumb
+            className="mb-6"
+            homeLinkProps={{
+              href: "/",
+            }}
+            segments={[
+              isAdmin
+                ? {
+                    label: `Tous les dossier du siret n°${dossierSubvention.demandeur.siret}`,
+                    linkProps: {
+                      href: `/espace-laureat?siret=${dossierSubvention.demandeur.siret}`,
+                    },
+                  }
+                : {
+                    label: "Tous mes dossiers",
+                    linkProps: {
+                      href: "/espace-laureat",
+                    },
+                  },
+            ]}
+            currentPageLabel={`Dossier n°${dossierSubvention.numero}`}
+          />
+          <Summary
+            intitule={subvention.intituleProjet}
+            resume={subvention.resumeProjet}
+            titreDemarche={dossierSubvention.demarche.title}
+            numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+            emailRepresentantLegal={subvention.emailRepresentantLegal}
+            emailResponsableSuivi={subvention.emailResponsableSuivi}
+            departementImplantation={subvention.departementImplantation}
+          />
+        </div>
         <div>
           <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
             <div className="flex justify-between items-end mb-3">

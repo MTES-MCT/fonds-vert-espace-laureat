@@ -15,6 +15,7 @@ export default async function EspaceLaureatDemo() {
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => (
           <DossierSection
+            isAdmin={false}
             key={index}
             dossierSubvention={dossier}
             dossierFondsVertResult={{ success: false, error: "" }}

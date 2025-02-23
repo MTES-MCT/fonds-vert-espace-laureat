@@ -25,8 +25,9 @@ export async function getDemarcheDossiers({
 
     const dossiers = nodes
       .filter((dossier) => dossier !== null)
-      .filter((dossier) =>
-        !isAdmin ? dossier.usager.email === userEmail : true,
+      .filter(
+        (dossier) =>
+          isAdmin({ userEmail }) || dossier.usager.email === userEmail,
       )
       .map((dossier) => ({
         numero: dossier.number,
