@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="max-w-2xl pb-12">
+    <div className="max-w-2xl pt-2 pb-12">
       <h1>Accélérer la transition écologique dans les territoires</h1>
       <p className="fr-text--lead">
         Porté par le Ministère de la Transition écologique et de la Cohésion des

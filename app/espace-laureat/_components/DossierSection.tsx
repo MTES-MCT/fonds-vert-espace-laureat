@@ -39,30 +39,30 @@ export async function DossierSection({
           informationFinanciere: undefined,
         };
 
+  const backLink = isAdmin
+    ? {
+        label: `Tous les dossier`,
+        linkProps: {
+          href: `/espace-laureat?siret=${dossierSubvention.demandeur.siret}`,
+        },
+      }
+    : {
+        label: "Tous mes dossiers",
+        linkProps: {
+          href: "/espace-laureat",
+        },
+      };
+
   return (
     <div className="flex flex-wrap items-start gap-8">
       <div className="flex-1 flex flex-col gap-y-10">
         <div>
           <Breadcrumb
-            className="mb-6"
+            className="mt-0 mb-6"
             homeLinkProps={{
               href: "/",
             }}
-            segments={[
-              isAdmin
-                ? {
-                    label: `Tous les dossier du siret n°${dossierSubvention.demandeur.siret}`,
-                    linkProps: {
-                      href: `/espace-laureat?siret=${dossierSubvention.demandeur.siret}`,
-                    },
-                  }
-                : {
-                    label: "Tous mes dossiers",
-                    linkProps: {
-                      href: "/espace-laureat",
-                    },
-                  },
-            ]}
+            segments={[backLink]}
             currentPageLabel={`Dossier n°${dossierSubvention.numero}`}
           />
           <Summary
@@ -96,7 +96,7 @@ export async function DossierSection({
           )}
           <Link
             className="fr-btn fr-btn--tertiary bg-white xl:mb-20"
-            href={`/espace-laureat${dossierSubvention.numero.toString().startsWith("12345") ? "/demo" : ""}#dossier-${dossierSubvention.numero}`}
+            href={backLink.linkProps.href}
           >
             Retour
           </Link>
