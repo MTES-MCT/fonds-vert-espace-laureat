@@ -71,7 +71,13 @@ export async function getDossierFondsVert({
       };
     }
 
-    return { success: false, error: "Une erreur est survenue" };
+    console.error(
+      `Impossible de récupérer l'historique du dossier via l'API Fonds Vert (${dossierResult.statusText})`,
+    );
+    return {
+      success: false,
+      error: `L'historique financier est temporairement indisponible.`,
+    };
   }
 
   return {

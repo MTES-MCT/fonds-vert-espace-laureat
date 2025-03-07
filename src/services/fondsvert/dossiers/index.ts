@@ -28,7 +28,7 @@ export async function getDossierNumbers({
 
   if (!dossiersResult.success) {
     console.error(
-      `Impossible récupérer les dossiers à partir de l'API Fonds Vert (erreur ${dossiersResult.status}).`,
+      `Impossible récupérer les dossiers à partir de l'API Fonds Vert (${dossiersResult.statusText}).`,
     );
     return {
       success: false,

@@ -1,3 +1,4 @@
+import Alert from "@codegouvfr/react-dsfr/Alert";
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
 
@@ -86,14 +87,14 @@ export async function DossierSection({
                 </div>
               )}
             </div>
+            {errorMessage && (
+              <Alert severity="error" small description={errorMessage} />
+            )}
             <SubventionDetails
               montantSubventionAttribuee={subvention.montantSubventionAttribuee}
               informationFinanciere={informationFinanciere}
             />
           </div>
-          {errorMessage && (
-            <p className="text-xs text-gray-500 font-medium">{errorMessage}</p>
-          )}
           <Link
             className="fr-btn fr-btn--tertiary bg-white xl:mb-20"
             href={backLink.linkProps.href}

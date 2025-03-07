@@ -13,7 +13,10 @@ export function defaultHeaders({ token }: { token?: string } = {}) {
 
 export async function fetchFondsVert<T>(
   path: string,
-): Promise<{ success: true; data: T } | { success: false; status: number }> {
+): Promise<
+  | { success: true; data: T }
+  | { success: false; status: number; statusText: string }
+> {
   try {
     const token = await login();
     const dossiersResponse = await fetch(
@@ -26,17 +29,17 @@ export async function fetchFondsVert<T>(
       },
     );
 
-    if ([503, 422, 404].includes(dossiersResponse.status)) {
-      return { success: false, status: dossiersResponse.status };
-    }
-
     if (!dossiersResponse.ok) {
-      return { success: false, status: dossiersResponse.status };
+      return {
+        success: false,
+        status: dossiersResponse.status,
+        statusText: dossiersResponse.statusText,
+      };
     }
 
     return { success: true, data: await dossiersResponse.json() };
   } catch (e) {
     logException(e);
-    return { success: false, status: 500 };
+    return { success: false, status: 500, statusText: "" };
   }
 }
