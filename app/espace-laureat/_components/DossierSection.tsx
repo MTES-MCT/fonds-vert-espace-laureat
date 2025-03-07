@@ -41,7 +41,7 @@ export async function DossierSection({
 
   const backLink = isAdmin
     ? {
-        label: `Tous les dossier`,
+        label: `Tous les dossiers`,
         linkProps: {
           href: `/espace-laureat?siret=${dossierSubvention.demandeur.siret}`,
         },
