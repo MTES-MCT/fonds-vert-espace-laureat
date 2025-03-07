@@ -1,8 +1,8 @@
 import { filter, groupBy, sum, summarize, tidy } from "@tidyjs/tidy";
 
-import { codeCommuneToCodeDepartement } from "@/data/codeCommuneToCodeDepartement";
 import { importProjets } from "@/utils/projets/import";
 
+import { codeCommuneToCodeDepartement } from "./codeCommuneToCodeDepartement";
 import { Projet } from "./projet";
 
 export interface Projets {

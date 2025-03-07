@@ -6,7 +6,7 @@ documents:
   - './**/*.tsx'
   - './**/*.ts'
 generates:
-  generated/:
+  src/generated/:
     preset: client
     plugins: [ ]
     presetConfig:
