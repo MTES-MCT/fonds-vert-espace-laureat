@@ -1,4 +1,5 @@
 import { Dossier } from "@/services/ds/subvention";
+import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 const demandeur = {
   demandeur: {
@@ -19,37 +20,81 @@ export const demoDossier1: Dossier = {
     title: "FONDS VERT - Rénovation énergétique des bâtiments publics locaux",
   },
   champs: {
-    intituleProjet:
-      "Travaux de rénovation et de modernisation de la Médiathèque Jacques Demy, visant à améliorer l'efficacité énergétique et la durabilité de l'infrastructure",
+    intituleProjet: "Rénovation de la piscine Jacques Demy",
     resumeProjet,
     departementImplantation: "Nantes",
-    montantSubventionAttribuee: 778200.28,
+    montantSubventionAttribuee: 10073574,
     emailRepresentantLegal: "alice.doe@example.com",
     emailResponsableSuivi: "bob.doe@example.com",
     dateSignatureDecision: new Date(),
-    numeroDossierAgenceEau: "45678",
     numeroEngagementJuridique: "987654",
     autresNumerosEngagementJuridique: ["123456", "654321"],
   },
 };
 
-export const demoDossier2: Dossier = {
-  numero: 12345910,
-  dateTraitement: new Date(),
-  ...demandeur,
-  demarche: {
-    title: "FONDS VERT - Renaturation des villes et des villages",
+export const demoDossierFondsVert: DossierFondsVert = {
+  demarche_specifique: {
+    surface_batiment_m2_avant_projet: 4968,
+    surface_batiment_m2_apres_projet: null,
+    type_surface: "surface de plancher",
+    modifie_surface_batiment: null,
+    systeme_chauffage_avant_travaux: "Chauffage urbain et électrique",
+    systeme_chauffage_apres_travaux: "Chauffage urbain et électrique",
+    conso_energetique_avant_travaux: 2055650,
+    conso_energetique_apres_travaux: 1235863,
+    emission_ges_avant_travaux: 448,
+    emission_ges_apres_travaux: 312,
+    gain_energetique_estime_percentage: 39,
+    emission_ges_evitees_percentage: 38,
   },
-  champs: {
-    intituleProjet:
-      "Conception et mise en œuvre d’un plan de gestion pour une réserve naturelle afin de restaurer la biodiversité",
-    resumeProjet,
-    departementImplantation: "Nantes",
-    montantSubventionAttribuee: 3240000,
-    emailRepresentantLegal: "alice.doe@example.com",
-    emailResponsableSuivi: "bob.doe@example.com",
-    dateSignatureDecision: new Date(),
-    numeroEngagementJuridique: "987654",
-    autresNumerosEngagementJuridique: [],
+  information_financiere: {
+    centre_financier_chorus: "0789-IDF1-DR75",
+    informations_engagement: [
+      {
+        annee_information_financiere: 2023,
+        engagements_juridiques: [
+          {
+            numero_ej: "2105212345",
+            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_axe: 1,
+            montant_engage: 10073574,
+            montant_engage_initial: 10073574,
+            demandes_paiement: [],
+          },
+        ],
+      },
+      {
+        annee_information_financiere: 2024,
+        engagements_juridiques: [
+          {
+            numero_ej: "2105212345",
+            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_axe: 1,
+            montant_engage: 10073574,
+            montant_engage_initial: 10073574,
+            demandes_paiement: [
+              {
+                numero_dp: "1001234567",
+                date_dp: "2024-10-07T00:00:00",
+                montant_paye: 3422079.2,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        annee_information_financiere: 2025,
+        engagements_juridiques: [
+          {
+            numero_ej: "2105212345",
+            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_axe: 1,
+            montant_engage: 6651494.8,
+            montant_engage_initial: 10073574,
+            demandes_paiement: [],
+          },
+        ],
+      },
+    ],
   },
 };

@@ -64,7 +64,9 @@ export const Summary = ({
             <div>
               <dt>Numéro de dossier agence de l'eau</dt>
               <dd>
-                <Badge>{numeroDossierAgenceEau}</Badge>
+                <Badge className="bg-white shadow">
+                  {numeroDossierAgenceEau}
+                </Badge>
               </dd>
             </div>
           )}

@@ -21,8 +21,6 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
     "GRIST_API_ENDPOINT",
   );
 
-  console.log("fetch!!");
-
   const url = `${apiEndpoint}/docs/${docId}/tables/Champs_DS/records`;
 
   const response = await fetch(url, {
