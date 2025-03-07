@@ -8,6 +8,7 @@ import { ttl } from "@/utils/session/ttl";
 
 type User = {
   id: string;
+  isProConnectIdentityProvider: boolean;
   email: string;
   email_verified?: boolean;
   siret: string;
@@ -24,7 +25,10 @@ export type RequestWithSession = NextRequest & {
   session: IronSession<Session>;
 };
 
-const [ironSessionPwd] = requireEnv("IRON_SESSION_PWD");
+const [ironSessionPwd, proconnectIdentiteIdpId] = requireEnv(
+  "IRON_SESSION_PWD",
+  "PROCONNECT_IDENTITE_IDP_ID",
+);
 
 export const sessionOptions: SessionOptions = {
   password: ironSessionPwd,
@@ -46,6 +50,7 @@ export async function setSession(
     email: userInfo.email,
     siret: userInfo.siret,
     email_verified: userInfo.custom.email_verified,
+    isProConnectIdentityProvider: userInfo.idp_id === proconnectIdentiteIdpId,
   };
   await session.save();
 }

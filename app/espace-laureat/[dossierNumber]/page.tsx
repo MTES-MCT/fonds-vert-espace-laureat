@@ -16,7 +16,7 @@ export default async function DossierPage({
   const session = await getSession();
   const user = session?.user;
 
-  if (user && !user.email_verified) {
+  if (user && user.isProConnectIdentityProvider && !user.email_verified) {
     return (
       <Connexion
         error={`L'adresse ${user.email} n'a pas été vérifiée par ProConnect.`}
@@ -24,7 +24,7 @@ export default async function DossierPage({
     );
   }
 
-  if (!user || !user.email || !user.email_verified) {
+  if (!user || !user.email) {
     return <Connexion />;
   }
   const { dossierNumber: dossierNumberString } = await params;
