@@ -1,10 +1,9 @@
-import { Connexion } from "@/app/espace-laureat/_components/Connexion";
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { isAdmin } from "@/utils/roles";
-import { getSession } from "@/utils/session";
+import { getAuthenticatedUser } from "@/utils/session";
 
 export default async function DossierPage({
   params,
@@ -13,20 +12,8 @@ export default async function DossierPage({
   params: Promise<{ dossierNumber: string }>;
   searchParams: Promise<{ nocache: string }>;
 }) {
-  const session = await getSession();
-  const user = session?.user;
+  const user = await getAuthenticatedUser();
 
-  if (user && user.isProConnectIdentityProvider && !user.email_verified) {
-    return (
-      <Connexion
-        error={`L'adresse ${user.email} n'a pas été vérifiée par ProConnect.`}
-      />
-    );
-  }
-
-  if (!user || !user.email) {
-    return <Connexion />;
-  }
   const { dossierNumber: dossierNumberString } = await params;
   const { nocache } = await searchParams;
 

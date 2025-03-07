@@ -60,6 +60,23 @@ export async function getSession(): Promise<Session | null> {
   return await getIronSession<Session>(cookieStore, sessionOptions);
 }
 
+export async function getAuthenticatedUser(): Promise<User> {
+  const session = await getSession();
+  const user = session?.user;
+
+  if (!user) {
+    throw new Error("L'utilisateur n'est pas authentifié");
+  }
+
+  if (user.isProConnectIdentityProvider && !user.email_verified) {
+    throw new Error(
+      "L'email de l'utilisateur n'est pas vérifié par ProConnect",
+    );
+  }
+
+  return user;
+}
+
 export async function cleanSession(session: IronSession<Session>) {
   session.destroy();
   await session.save();

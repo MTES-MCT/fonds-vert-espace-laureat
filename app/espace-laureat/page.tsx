@@ -1,9 +1,8 @@
 import { getDossierNumbers } from "@/services/fondsvert/dossiers";
-import { getSession } from "@/utils/session";
+import { getAuthenticatedUser } from "@/utils/session";
 
 import { AucunDossier } from "./_components/AucunDossier";
 import { compareDateSignatureDecision } from "./_components/compareDateSignatureDecision";
-import { Connexion } from "./_components/Connexion";
 import DossiersTable from "./_components/DossiersTable";
 import { getDossier } from "./_components/getDossier";
 import { getPageTitle } from "./_components/getPageTitle";
@@ -14,20 +13,7 @@ export default async function EspaceLaureat({
 }: {
   searchParams: SearchParams;
 }) {
-  const session = await getSession();
-  const user = session?.user;
-
-  if (user && user.isProConnectIdentityProvider && !user.email_verified) {
-    return (
-      <Connexion
-        error={`L'adresse ${user.email} n'a pas été vérifiée par ProConnect.`}
-      />
-    );
-  }
-
-  if (!user || !user.email) {
-    return <Connexion />;
-  }
+  const user = await getAuthenticatedUser();
 
   const params = await getSearchParams({ searchParams });
   const siret = params.siret ?? user.siret;
