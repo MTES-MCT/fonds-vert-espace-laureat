@@ -4,11 +4,6 @@ import { logException } from "@/utils/error";
 
 const [endpoint] = requireEnv("FONDSVERT_API_ENDPOINT");
 
-export function error(message: string) {
-  console.error(message);
-  return [];
-}
-
 export function defaultHeaders({ token }: { token?: string } = {}) {
   return {
     Accept: "application/json",
@@ -31,16 +26,11 @@ export async function fetchFondsVert<T>(
       },
     );
 
-    if (dossiersResponse.status === 422) {
-      return { success: false, status: 422 };
-    }
-
-    if (dossiersResponse.status === 404) {
-      return { success: false, status: 404 };
+    if ([503, 422, 404].includes(dossiersResponse.status)) {
+      return { success: false, status: dossiersResponse.status };
     }
 
     if (!dossiersResponse.ok) {
-      error(dossiersResponse.statusText);
       return { success: false, status: dossiersResponse.status };
     }
 

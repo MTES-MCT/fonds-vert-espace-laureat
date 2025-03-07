@@ -1,3 +1,5 @@
+import Alert from "@codegouvfr/react-dsfr/Alert";
+
 import { getDossierNumbers } from "@/services/fondsvert/dossiers";
 import { getAuthenticatedUser } from "@/utils/session";
 
@@ -18,10 +20,20 @@ export default async function EspaceLaureat({
   const params = await getSearchParams({ searchParams });
   const siret = params.siret ?? user.siret;
 
-  const dossierNumbers =
-    params.dossierNumbers.length > 0
-      ? params.dossierNumbers
-      : await getDossierNumbers({ siret });
+  const dossierNumbersResult = await getDossierNumbers({ siret });
+
+  if (!dossierNumbersResult.success) {
+    return (
+      <Alert
+        severity="error"
+        className="bg-white max-w-xl"
+        small
+        description={dossierNumbersResult.error}
+      />
+    );
+  }
+
+  const dossierNumbers = dossierNumbersResult.data;
 
   const dossierRequests = dossierNumbers.map((dossierNumber) =>
     getDossier({ numeroDossier: dossierNumber, userEmail: user.email }),

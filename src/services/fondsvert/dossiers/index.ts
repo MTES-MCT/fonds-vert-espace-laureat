@@ -14,7 +14,9 @@ export async function getDossierNumbers({
   siret,
 }: {
   siret: string;
-}): Promise<number[]> {
+}): Promise<
+  { success: true; data: number[] } | { success: false; error: string }
+> {
   const params = new URLSearchParams({
     ...defaultDossierSearchParams,
     siret,
@@ -25,10 +27,19 @@ export async function getDossierNumbers({
   }>(`dossiers?${params.toString()}`);
 
   if (!dossiersResult.success) {
-    return [];
+    console.error(
+      `Impossible récupérer les dossiers à partir de l'API Fonds Vert (erreur ${dossiersResult.status}).`,
+    );
+    return {
+      success: false,
+      error: `La liste de vos dossiers est temporairement indisponible. Cependant, vous pouvez accéder directement à l’un de vos dossiers via un email de Démarches Simplifiées.`,
+    };
   }
 
-  return dossiersResult.data.data.map(
-    (dossier) => dossier.socle_commun.dossier_number,
-  );
+  return {
+    success: true,
+    data: dossiersResult.data.data.map(
+      (dossier) => dossier.socle_commun.dossier_number,
+    ),
+  };
 }

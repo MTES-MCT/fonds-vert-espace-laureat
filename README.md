@@ -30,9 +30,9 @@ L'utilisateur se connecte via ProConnect. Nous récupérons tous les dossiers as
 Fonds Vert. Nous n'affichons que les dossiers rattachés à l'adresse email de l'utilisateur connecté. Seuls les
 utilisateurs connectés avec une adresse email vérifiée par ProConnect peuvent accéder à l'espace lauréat.
 
-Il est possible d'accéder directement à un ou plusieurs dossiers :
+Il est possible d'accéder directement à un dossier :
 
-- [/espace-laureat?dossier=1234567&dossier=567890](http://localhost:3000/espace-laureat?dossier=1234567&dossier=567890)
+- [/espace-laureat/1234567](http://localhost:3000/espace-laureat/1234567)
 
 Cette URL d'accès direct peut être utilisée, par exemple, dans les communications par email. Elle est également utile
 pour les administrateurs de la plateforme.
