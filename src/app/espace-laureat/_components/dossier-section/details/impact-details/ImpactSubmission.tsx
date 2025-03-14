@@ -14,7 +14,7 @@ export async function ImpactSubmission({
   nocache,
 }: {
   numeroDossier: number;
-  metriques: Metrics;
+  metriques?: Metrics;
   nocache: boolean;
 }) {
   const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
@@ -23,20 +23,20 @@ export async function ImpactSubmission({
     ? await fetchPrefillMapping()
     : await getPrefillMappingCached();
 
-  // Pour le moment, les sous-mesures (value de type object) ne sont pas supportées
-  const metricEntries = Object.entries(metriques).filter(
-    (entry): entry is [string, string | number] =>
-      ["string", "number"].includes(typeof entry[1]),
-  );
+  const metricEntries = metriques
+    ? Object.entries(metriques).filter(
+        ([, metricValue]) => metricValue.valeur_estimee !== null,
+      )
+    : [];
 
   const prefilledDsImpactUrl = new URL(dsImpactUrl);
 
-  for (const [metricKey, value] of metricEntries) {
+  for (const [metricKey, metricValue] of metricEntries) {
     const champId = prefillMapping.champsMetriques[metricKey];
     if (champId) {
       prefilledDsImpactUrl.searchParams.append(
         `champ_${champId}`,
-        String(value),
+        String(metricValue.valeur_estimee),
       );
     }
   }
@@ -63,15 +63,13 @@ export async function ImpactSubmission({
         <>
           <p className="mt-8 mb-2 font-medium">Vos estimations</p>
           <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
-            {metricEntries.map(([key, value]) => (
-              <li
-                key={key}
-                className="capitalize my-2 last:mb-0 pt-2 pb-0 border-t"
-              >
-                <span className="whitespace-nowrap">
-                  {key.replaceAll("_", " ")} :
+            {metricEntries.map(([key, metricValue]) => (
+              <li key={key} className="my-2 last:mb-0 pt-3 pb-0 border-t">
+                <div>{metricValue.label}</div>
+                <span className="text-base font-medium">
+                  {metricValue.valeur_estimee}
+                  {metricValue.unite && ` ${metricValue.unite}`}
                 </span>
-                <span className="font-semibold"> {value}</span>
               </li>
             ))}
           </ul>

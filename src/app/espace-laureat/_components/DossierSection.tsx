@@ -30,7 +30,7 @@ export async function DossierSection({
     dossierFondsVertResult.success
       ? {
           errorMessage: null,
-          metriques: dossierFondsVertResult.data.demarche_specifique,
+          metriques: dossierFondsVertResult.data.metrique_specifique,
           informationFinanciere:
             dossierFondsVertResult.data.information_financiere,
         }

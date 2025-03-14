@@ -8,7 +8,14 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
-export type Metrics = Record<string, string | number | object | null>;
+export type MetricValue = {
+  label: string;
+  unite: string | null;
+  valeur_estimee: number | null;
+  valeur_reelle: number | null;
+};
+
+export type Metrics = Record<string, MetricValue>;
 
 interface DemandePaiement {
   numero_dp: string;
@@ -36,7 +43,7 @@ export interface InformationFinanciere {
 }
 
 export interface DossierFondsVert {
-  demarche_specifique: Metrics;
+  metrique_specifique?: Metrics;
   information_financiere?: InformationFinanciere;
 }
 
@@ -52,7 +59,7 @@ export async function getDossierFondsVert({
   });
 
   const dossierResult = await fetchFondsVert<{ data: DossierFondsVert }>(
-    `dossiers/${numeroDossier}?${params.toString()}`,
+    `v2/dossiers/${numeroDossier}?${params.toString()}`,
   );
 
   if (!dossierResult.success) {

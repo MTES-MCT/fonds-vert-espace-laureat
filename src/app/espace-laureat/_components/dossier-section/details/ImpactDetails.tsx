@@ -11,7 +11,7 @@ export async function ImpactDetails({
 }: {
   numeroDossier: number;
   impact?: Impact;
-  metriques: Metrics;
+  metriques?: Metrics;
   nocache: boolean;
 }) {
   if (!impact?.numero) {
