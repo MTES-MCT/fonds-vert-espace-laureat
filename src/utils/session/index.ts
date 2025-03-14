@@ -10,7 +10,7 @@ type User = {
   id: string;
   isProConnectIdentityProvider: boolean;
   email: string;
-  email_verified?: boolean;
+  isSiretVerifiedForEmailDomain?: boolean;
   siret: string;
 };
 
@@ -49,7 +49,10 @@ export async function setSession(
     id: userInfo.sub,
     email: userInfo.email,
     siret: userInfo.siret,
-    email_verified: userInfo.custom.email_verified,
+    // With ProConnect, email_verified=true means the siret has been manually verified by against the email domain.
+    // This is only supported by ProConnect Identité (other FI returns email_verified=false).
+    // Note: the user email itself is always verified, automatically.
+    isSiretVerifiedForEmailDomain: userInfo.custom.email_verified,
     isProConnectIdentityProvider: userInfo.idp_id === proconnectIdentiteIdpId,
   };
   await session.save();
@@ -66,12 +69,6 @@ export async function getAuthenticatedUser(): Promise<User> {
 
   if (!user) {
     throw new Error("L'utilisateur n'est pas authentifié");
-  }
-
-  if (user.isProConnectIdentityProvider && !user.email_verified) {
-    throw new Error(
-      "L'email de l'utilisateur n'est pas vérifié par ProConnect",
-    );
   }
 
   return user;

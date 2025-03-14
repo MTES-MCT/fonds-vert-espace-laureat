@@ -9,7 +9,6 @@ export default async function ConnexionPage({
   const { error } = await searchParams;
 
   const errorMessages: Record<string, string> = {
-    email_not_verified: `Votre adresse n'a pas été vérifiée par ProConnect.`,
     user_unknown: "Veuillez vous connecter pour accéder à cette page.",
   };
 

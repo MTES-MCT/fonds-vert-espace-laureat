@@ -13,12 +13,6 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  if (user.isProConnectIdentityProvider && !user.email_verified) {
-    return NextResponse.redirect(
-      new URL(`/connexion?error=email_not_verified`, request.url),
-    );
-  }
-
   return NextResponse.next();
 }
 
