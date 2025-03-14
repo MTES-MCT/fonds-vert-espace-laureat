@@ -26,6 +26,13 @@ export async function getDossierNumbers({
     data: { socle_commun: { dossier_number: number } }[];
   }>(`dossiers?${params.toString()}`);
 
+  if (!dossiersResult.success && dossiersResult.status === 404) {
+    return {
+      success: true,
+      data: [],
+    };
+  }
+
   if (!dossiersResult.success) {
     console.error(
       `Impossible récupérer les dossiers à partir de l'API Fonds Vert (${dossiersResult.statusText}).`,
