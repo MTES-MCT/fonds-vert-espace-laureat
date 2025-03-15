@@ -18,6 +18,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!connexion|api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|$).*)",
+    "/((?!connexion|api|espace-laureat/demo|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|$).*)",
   ],
 };
