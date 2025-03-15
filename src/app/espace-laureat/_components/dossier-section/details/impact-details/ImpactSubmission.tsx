@@ -31,6 +31,8 @@ export async function ImpactSubmission({
 
   const prefilledDsImpactUrl = new URL(dsImpactUrl);
 
+  const numberFormatter = new Intl.NumberFormat("fr-FR");
+
   for (const [metricKey, metricValue] of metricEntries) {
     const champId = prefillMapping.champsMetriques[metricKey];
     if (champId) {
@@ -66,10 +68,14 @@ export async function ImpactSubmission({
             {metricEntries.map(([key, metricValue]) => (
               <li key={key} className="my-2 last:mb-0 pt-3 pb-0 border-t">
                 <div>{metricValue.label}</div>
-                <span className="text-base font-medium">
-                  {metricValue.valeur_estimee}
-                  {metricValue.unite && ` ${metricValue.unite}`}
-                </span>
+                {metricValue.valeur_estimee && (
+                  <div className="text-2xl font-semibold text-gray-800">
+                    {numberFormatter.format(metricValue.valeur_estimee)}
+                    <span className="text-base font-normal">
+                      {metricValue.unite && ` ${metricValue.unite}`}
+                    </span>
+                  </div>
+                )}
               </li>
             ))}
           </ul>
