@@ -1,17 +1,11 @@
+import { formatEuros } from "@/utils/format";
 import { Projet } from "@/utils/projets/projet";
-
-const currencyOptions: Intl.NumberFormatOptions = {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-};
 
 const getSubvention = (projet: Projet) => {
   if (projet.montant_subvention_attribuee) {
-    return new Intl.NumberFormat("fr-FR", currencyOptions).format(
-      projet.montant_subvention_attribuee,
-    );
+    return formatEuros(projet.montant_subvention_attribuee, {
+      showDigits: false,
+    });
   }
   return "Inconnu";
 };
@@ -23,10 +17,9 @@ export function ProjetSection({
   key: string;
   projet: Projet;
 }) {
-  const formattedMontantTotalDepense = new Intl.NumberFormat(
-    "fr-FR",
-    currencyOptions,
-  ).format(projet.total_des_depenses);
+  const formattedMontantTotalDepense = formatEuros(projet.total_des_depenses, {
+    showDigits: false,
+  });
 
   const ratio =
     projet.montant_subvention_attribuee &&

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { InformationFinanciereTimeline } from "@/app/espace-laureat/_components/dossier-section/details/InformationFinanciereTimeline";
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import { formatEuros } from "@/utils/format";
 
 export function SubventionDetails({
   montantSubventionAttribuee,
@@ -10,14 +11,9 @@ export function SubventionDetails({
   montantSubventionAttribuee?: number;
   informationFinanciere?: InformationFinanciere;
 }) {
-  const formattedMontantSubventionAttribuee = montantSubventionAttribuee
-    ? new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(montantSubventionAttribuee)
-    : "N/A";
+  const formattedMontantSubventionAttribuee = formatEuros(
+    montantSubventionAttribuee,
+  );
 
   return (
     <>
