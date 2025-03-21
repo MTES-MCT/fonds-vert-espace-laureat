@@ -34,6 +34,7 @@
     "@graphql-codegen/cli": "5.0.5",
     "@graphql-codegen/client-preset": "4.7.0",
     "@parcel/watcher": "^2.5.1",
+    "@playwright/test": "^1.51.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -48,3 +48,9 @@ src/generated/
 
 # Private data
 data/projets.csv
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
