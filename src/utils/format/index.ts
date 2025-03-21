@@ -48,3 +48,13 @@ export function formatMetric(
     ...options,
   }).format(value);
 }
+
+export function formatDate(date?: Date | string | null): string {
+  if (!date) return "Non disponible";
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  return dateObj.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}

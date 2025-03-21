@@ -53,7 +53,7 @@ export function EngagementHistoryTable({
                   <td>{item.annee}</td>
                   <td>{formatEuros(item.montant_engage)}</td>
                   <td>{formatEuros(dp.montant_paye)}</td>
-                  <td>{formatDate(dp.date_dp)}</td>
+                  <td>le {formatDate(dp.date_dp)}</td>
                   <td>{dp.numero_dp}</td>
                 </tr>
               ));

@@ -60,7 +60,7 @@ export function LastPaymentInfo({ group, formatDate }: LastPaymentInfoProps) {
       </div>
       <div>
         <dt>Date de paiement</dt>
-        <dd>{formatDate(lastPayment.date_dp)}</dd>
+        <dd>le {formatDate(lastPayment.date_dp)}</dd>
       </div>
       <div>
         <dt>Numéro de demande</dt>
