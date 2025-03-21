@@ -1,5 +1,7 @@
 import React, { ReactNode } from "react";
 
+import { formatEuros } from "@/utils/format";
+
 interface Engagement {
   annee: number;
   montant_engage: number;
@@ -12,7 +14,6 @@ interface Engagement {
 
 interface EngagementHistoryTableProps {
   sortedhistorique: Engagement[];
-  formatMontant: (montant: number) => string;
   formatDate: (date: string) => string;
 }
 
@@ -30,7 +31,6 @@ function DsfrTable({ children }: { children: ReactNode }) {
 
 export function EngagementHistoryTable({
   sortedhistorique,
-  formatMontant,
   formatDate,
 }: EngagementHistoryTableProps) {
   return (
@@ -51,8 +51,8 @@ export function EngagementHistoryTable({
               return item.demandes_paiement.map((dp, idxDp) => (
                 <tr key={`${idxItem}-${idxDp}`}>
                   <td>{item.annee}</td>
-                  <td>{formatMontant(item.montant_engage)}</td>
-                  <td>{formatMontant(dp.montant_paye)}</td>
+                  <td>{formatEuros(item.montant_engage)}</td>
+                  <td>{formatEuros(dp.montant_paye)}</td>
                   <td>{formatDate(dp.date_dp)}</td>
                   <td>{dp.numero_dp}</td>
                 </tr>
@@ -61,7 +61,7 @@ export function EngagementHistoryTable({
               return (
                 <tr key={`${idxItem}-0`}>
                   <td>{item.annee}</td>
-                  <td>{formatMontant(item.montant_engage)}</td>
+                  <td>{formatEuros(item.montant_engage)}</td>
                   <td className="text-xs text-gray-500">Aucun paiement</td>
                   <td className="text-gray-300">—</td>
                   <td className="text-gray-300">—</td>

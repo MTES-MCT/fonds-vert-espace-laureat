@@ -1,6 +1,7 @@
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import { formatEuros } from "@/utils/format";
 
 import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
 import { LastPaymentInfo } from "./information-financiere/LastPaymentInfo";
@@ -26,14 +27,6 @@ export function InformationFinanciereTimeline({
 }: {
   informationFinanciere: InformationFinanciere;
 }) {
-  const formatMontant = (montant: number) =>
-    new Intl.NumberFormat("fr-FR", {
-      style: "currency",
-      currency: "EUR",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(montant);
-
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
@@ -76,7 +69,7 @@ export function InformationFinanciereTimeline({
             <dl className="flex flex-wrap text-sm gap-x-8 gap-y-4 mb-4">
               <div>
                 <dt>Engagés pour {sortedhistorique[0].annee}</dt>
-                <dd>{formatMontant(sortedhistorique[0].montant_engage)}</dd>
+                <dd>{formatEuros(sortedhistorique[0].montant_engage)}</dd>
               </div>
               <div>
                 <dt>Numéro d'engagement juridique</dt>
@@ -85,11 +78,7 @@ export function InformationFinanciereTimeline({
             </dl>
 
             <div className="mb-4">
-              <LastPaymentInfo
-                group={group}
-                formatMontant={formatMontant}
-                formatDate={formatDate}
-              />
+              <LastPaymentInfo group={group} formatDate={formatDate} />
 
               <details>
                 <summary className="list-item fr-link--sm fr-link fr-text--sm">
@@ -97,7 +86,6 @@ export function InformationFinanciereTimeline({
                 </summary>
                 <EngagementHistoryTable
                   sortedhistorique={sortedhistorique}
-                  formatMontant={formatMontant}
                   formatDate={formatDate}
                 />
               </details>

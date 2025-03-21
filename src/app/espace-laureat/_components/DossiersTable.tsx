@@ -3,6 +3,7 @@ import { fr } from "date-fns/locale/fr";
 import { ReactNode } from "react";
 
 import { Dossier } from "@/services/ds/subvention";
+import { formatEuros } from "@/utils/format";
 
 interface DossiersTableProps {
   dossiers: Dossier[];
@@ -18,17 +19,6 @@ function DsfrTable({ children }: { children: ReactNode }) {
       </div>
     </div>
   );
-}
-
-function formatMontant(montant: number | undefined) {
-  return montant
-    ? new Intl.NumberFormat("fr-FR", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
-      }).format(montant)
-    : "N/A";
 }
 
 function formatDate(date?: Date) {
@@ -62,7 +52,7 @@ export default function DossiersTable({ dossiers }: DossiersTableProps) {
                 </td>
                 <td className="leading-tight">
                   <div className="text-lg font-semibold">
-                    {formatMontant(dossier.champs.montantSubventionAttribuee)}
+                    {formatEuros(dossier.champs.montantSubventionAttribuee)}
                   </div>
                   <div className="text-xs">{formatDate(date)}</div>
                 </td>

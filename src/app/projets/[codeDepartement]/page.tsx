@@ -79,7 +79,7 @@ function countProjets(projetsParDemarches: ProjetsParDemarches) {
   if (!projetsParDemarches) {
     return 0;
   }
-  
+
   return projetsParDemarches.reduce(
     (acc, demarchProjets) => acc + demarchProjets.projets.length,
     0,
