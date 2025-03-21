@@ -1,9 +1,7 @@
-import { format } from "date-fns";
-import { fr } from "date-fns/locale/fr";
 import { ReactNode } from "react";
 
 import { Dossier } from "@/services/ds/subvention";
-import { formatEuros } from "@/utils/format";
+import { formatDate, formatEuros } from "@/utils/format";
 
 interface DossiersTableProps {
   dossiers: Dossier[];
@@ -21,11 +19,6 @@ function DsfrTable({ children }: { children: ReactNode }) {
   );
 }
 
-function formatDate(date?: Date) {
-  if (!date) return "Non disponible";
-  return `le ${format(date, "dd MMMM yyyy", { locale: fr })}`;
-}
-
 export default function DossiersTable({ dossiers }: DossiersTableProps) {
   return (
     <DsfrTable>
@@ -39,36 +32,32 @@ export default function DossiersTable({ dossiers }: DossiersTableProps) {
           </tr>
         </thead>
         <tbody>
-          {dossiers.map((dossier, index) => {
-            const numero = dossier.numero;
-            const date = dossier.champs.dateSignatureDecision
-              ? new Date(dossier.champs.dateSignatureDecision)
-              : undefined;
-            return (
-              <tr key={index}>
-                <td>{numero}</td>
-                <td className="whitespace-normal max-w-lg leading-5">
-                  {dossier.champs.intituleProjet}
-                </td>
-                <td className="leading-tight">
-                  <div className="text-lg font-semibold">
-                    {formatEuros(dossier.champs.montantSubventionAttribuee)}
-                  </div>
-                  <div className="text-xs">{formatDate(date)}</div>
-                </td>
-                <td>
-                  <div className="flex justify-end">
-                    <a
-                      className="fr-btn fr-btn--secondary"
-                      href={`/espace-laureat/${numero}`}
-                    >
-                      Ouvrir
-                    </a>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+          {dossiers.map((dossier) => (
+            <tr key={dossier.numero}>
+              <td>{dossier.numero}</td>
+              <td className="whitespace-normal max-w-lg leading-5">
+                {dossier.champs.intituleProjet}
+              </td>
+              <td className="leading-tight">
+                <div className="text-lg font-semibold">
+                  {formatEuros(dossier.champs.montantSubventionAttribuee)}
+                </div>
+                <div className="text-xs">
+                  le {formatDate(dossier.champs.dateSignatureDecision)}
+                </div>
+              </td>
+              <td>
+                <div className="flex justify-end">
+                  <a
+                    className="fr-btn fr-btn--secondary"
+                    href={`/espace-laureat/${dossier.numero}`}
+                  >
+                    Ouvrir
+                  </a>
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </DsfrTable>

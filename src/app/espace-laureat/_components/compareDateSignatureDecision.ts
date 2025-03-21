@@ -1,5 +1,3 @@
-import { compareDesc } from "date-fns";
-
 import { Dossier } from "@/services/ds/subvention";
 
 export function compareDateSignatureDecision(a: Dossier, b: Dossier) {
@@ -15,5 +13,5 @@ export function compareDateSignatureDecision(a: Dossier, b: Dossier) {
   if (!dateA) return 1;
   if (!dateB) return -1;
 
-  return compareDesc(dateA, dateB);
+  return dateB.getTime() - dateA.getTime();
 }

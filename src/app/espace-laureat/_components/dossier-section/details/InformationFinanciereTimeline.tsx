@@ -1,7 +1,7 @@
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
-import { formatEuros } from "@/utils/format";
+import { formatDate, formatEuros } from "@/utils/format";
 
 import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
 import { LastPaymentInfo } from "./information-financiere/LastPaymentInfo";
@@ -27,13 +27,6 @@ export function InformationFinanciereTimeline({
 }: {
   informationFinanciere: InformationFinanciere;
 }) {
-  const formatDate = (date: string) =>
-    new Date(date).toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
   const groupedEngagements =
     informationFinanciere.informations_engagement.reduce(
       (acc, info) => {
