@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  experimental: {
+    testProxy: process.env.NODE_ENV === "test",
+  },
 };
 
 export default nextConfig;
