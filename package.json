@@ -10,9 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "predev": "react-dsfr update-icons && npm run codegen",
+    "predev": "react-dsfr update-icons",
     "test": "NODE_ENV=test playwright test",
-    "prebuild": "react-dsfr update-icons && npm run codegen",
+    "prebuild": "react-dsfr update-icons",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "npm run codegen -- --watch"
   },

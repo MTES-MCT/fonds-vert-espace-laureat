@@ -45,7 +45,8 @@ next-env.d.ts
 /.idea
 
 # Graphql codegen
-src/generated/
+src/generated/*
+!src/generated/graphql.ts
 
 # Private data
 data/projets.csv
