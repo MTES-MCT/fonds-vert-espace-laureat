@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npm run codegen && next build",
     "start": "next start",
     "lint": "next lint",
     "predev": "react-dsfr update-icons",
