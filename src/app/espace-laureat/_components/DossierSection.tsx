@@ -63,8 +63,16 @@ export async function DossierSection({
             homeLinkProps={{
               href: "/",
             }}
-            segments={[backLink]}
+            segments={[
+              {
+                ...backLink,
+                linkProps: {
+                  ...backLink.linkProps,
+                },
+              },
+            ]}
             currentPageLabel={`Dossier n°${dossierSubvention.numero}`}
+            data-testid="breadcrumb-current"
           />
           <Summary
             intitule={subvention.intituleProjet}
@@ -81,7 +89,10 @@ export async function DossierSection({
             <div className="flex justify-between items-end mb-3">
               <h3 className="mb-0">Subvention</h3>
               {informationFinanciere && (
-                <div className="text-xs text-gray-400 font-medium">
+                <div
+                  className="text-xs text-gray-400 font-medium"
+                  data-testid="chorus-number"
+                >
                   Chorus n°
                   {informationFinanciere.centre_financier_chorus}
                 </div>
@@ -98,6 +109,7 @@ export async function DossierSection({
           <Link
             className="fr-btn fr-btn--tertiary bg-white xl:mb-20"
             href={backLink.linkProps.href}
+            data-testid="footer-back"
           >
             Retour
           </Link>

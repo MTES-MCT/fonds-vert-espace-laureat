@@ -1,16 +1,21 @@
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
+import {
+  CHORUS_NUMBER,
+  LEGAL_REPRESENTATIVE_EMAIL,
+  RESUME_PROJET,
+} from "../../../tests/fixtures/constants";
+
 const demandeur = {
   demandeur: {
-    email: "alice.doe@example.com",
+    email: LEGAL_REPRESENTATIVE_EMAIL,
     siret: "12345678910111",
     libelleNaf: "Mon entreprise",
   },
 };
 
-const resumeProjet =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+const resumeProjet = RESUME_PROJET;
 
 export const demoDossier1: Dossier = {
   numero: 12345678,
@@ -24,7 +29,7 @@ export const demoDossier1: Dossier = {
     resumeProjet,
     departementImplantation: "Nantes",
     montantSubventionAttribuee: 10073574,
-    emailRepresentantLegal: "alice.doe@example.com",
+    emailRepresentantLegal: LEGAL_REPRESENTATIVE_EMAIL,
     emailResponsableSuivi: "bob.doe@example.com",
     dateSignatureDecision: new Date(),
     numeroEngagementJuridique: "987654",
@@ -132,7 +137,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
     },
   },
   information_financiere: {
-    centre_financier_chorus: "0789-IDF1-DR75",
+    centre_financier_chorus: CHORUS_NUMBER,
     informations_engagement: [
       {
         annee_information_financiere: 2023,

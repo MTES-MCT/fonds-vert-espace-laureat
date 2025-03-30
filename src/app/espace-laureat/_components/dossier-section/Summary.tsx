@@ -23,10 +23,15 @@ export const Summary = ({
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   return (
-    <div>
+    <div data-testid="dossier-summary">
       <h2 className="flex flex-wrap items-center gap-4">
-        {intitule ?? "N/A"}
-        <Tag small className="bg-white shadow" iconId="fr-icon-award-fill">
+        <span data-testid="project-title">{intitule ?? "N/A"}</span>
+        <Tag
+          small
+          className="bg-white shadow"
+          iconId="fr-icon-award-fill"
+          data-testid="program-title"
+        >
           {mesureFondsVert}
         </Tag>
       </h2>
@@ -35,6 +40,7 @@ export const Summary = ({
           <p
             title={resume}
             className="text-gray-700 text-sm max-w-2xl line-clamp-3"
+            data-testid="project-summary"
           >
             {resume}
           </p>
@@ -43,28 +49,37 @@ export const Summary = ({
           <div>
             <dt>Représentant légal</dt>
             <dd>
-              <EmailLink email={emailRepresentantLegal} />
+              <EmailLink
+                email={emailRepresentantLegal}
+                data-testid="legal-rep-email"
+              />
             </dd>
           </div>
           <div>
             <dt>Responsable de suivi</dt>
             <dd>
-              <EmailLink email={emailResponsableSuivi} />
+              <EmailLink
+                email={emailResponsableSuivi}
+                data-testid="contact-email"
+              />
             </dd>
           </div>
           <div>
             <dt>Département d'implantation</dt>
-            <dd>
+            <dd data-testid="department">
               {departementImplantation
                 ? departementImplantation
                 : "Aucun département précisé"}
             </dd>
           </div>
           {numeroDossierAgenceEau && (
-            <div>
+            <div data-testid="agency-container">
               <dt>Numéro de dossier agence de l'eau</dt>
               <dd>
-                <Badge className="bg-white shadow">
+                <Badge
+                  className="bg-white shadow"
+                  data-testid="agency-dossier-number"
+                >
                   {numeroDossierAgenceEau}
                 </Badge>
               </dd>

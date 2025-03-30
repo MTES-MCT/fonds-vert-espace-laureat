@@ -1,5 +1,6 @@
-const resumeProjet =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+import { RESUME_PROJET, LEGAL_REPRESENTATIVE_EMAIL, DEPARTMENT, CONTACT_EMAIL } from "./constants";
+
+export const resumeProjet = RESUME_PROJET;
 
 const dossier = {
   id: "ABCDEFGHg==",
@@ -15,7 +16,7 @@ const dossier = {
     title: "FONDS VERT - Rénovation énergétique des bâtiments publics locaux",
   },
   usager: {
-    email: "alice.doe@example.com",
+    email: LEGAL_REPRESENTATIVE_EMAIL,
   },
   annotations: [
     {
@@ -308,7 +309,7 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzgwNTc1Mw==",
-      stringValue: "alice.doe@example.com",
+      stringValue: LEGAL_REPRESENTATIVE_EMAIL,
     },
     {
       __typename: "TextChamp",
@@ -348,7 +349,7 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMjkzNDQwMA==",
-      stringValue: "john.doe@example.com",
+      stringValue: CONTACT_EMAIL,
     },
     {
       __typename: "TextChamp",
@@ -409,12 +410,12 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzM0ODkyMw==",
-      stringValue: "44 - Nantes",
+      stringValue: DEPARTMENT,
     },
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzgwNjc5OQ==",
-      stringValue: "44 - Nantes",
+      stringValue: DEPARTMENT,
     },
     {
       __typename: "CheckboxChamp",
