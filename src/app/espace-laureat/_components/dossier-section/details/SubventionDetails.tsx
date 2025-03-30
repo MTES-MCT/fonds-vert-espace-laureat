@@ -16,9 +16,12 @@ export function SubventionDetails({
   );
 
   return (
-    <>
+    <div data-testid="subvention-details">
       <div className="pt-4 pb-6 border-b border-t">
-        <p className="mb-2 text-xl text-gray-800 font-semibold">
+        <p
+          className="mb-2 text-xl text-gray-800 font-semibold"
+          data-testid="subvention-amount"
+        >
           {formattedMontantSubventionAttribuee} attribué
         </p>
         <p className="text-xs mb-3 max-w-xl text-balance">
@@ -36,11 +39,12 @@ export function SubventionDetails({
           className="fr-btn fr-btn--secondary fr-btn--sm bg-white hover:bg-gray-50 mb-0"
           target="_blank"
           href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
+          data-testid="payment-request-link"
         >
           Demander un versement
         </Link>
       </div>
-      <div>
+      <div data-testid="financial-timeline-container">
         {informationFinanciere &&
           informationFinanciere.informations_engagement?.length > 0 && (
             <InformationFinanciereTimeline
@@ -48,6 +52,6 @@ export function SubventionDetails({
             />
           )}
       </div>
-    </>
+    </div>
   );
 }

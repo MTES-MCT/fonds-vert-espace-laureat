@@ -1,5 +1,11 @@
-const resumeProjet =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
+import {
+  CONTACT_EMAIL,
+  DEPARTMENT,
+  LEGAL_REPRESENTATIVE_EMAIL,
+  PROGRAM_TITLE,
+  PROJECT_SUMMARY,
+  PROJECT_TITLE,
+} from "./constants";
 
 const dossier = {
   id: "ABCDEFGHg==",
@@ -12,10 +18,10 @@ const dossier = {
     libelleNaf: "Administration publique générale",
   },
   demarche: {
-    title: "FONDS VERT - Rénovation énergétique des bâtiments publics locaux",
+    title: `FONDS VERT - ${PROGRAM_TITLE}`,
   },
   usager: {
-    email: "alice.doe@example.com",
+    email: LEGAL_REPRESENTATIVE_EMAIL,
   },
   annotations: [
     {
@@ -159,8 +165,8 @@ const dossier = {
     {
       __typename: "DecimalNumberChamp",
       champDescriptorId: "Q2hhbXAtMTk5MDI2Ng==",
-      stringValue: "8073564",
-      decimalNumber: 8073564,
+      stringValue: "10073564",
+      decimalNumber: 10073564,
     },
     {
       __typename: "DecimalNumberChamp",
@@ -308,7 +314,7 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzgwNTc1Mw==",
-      stringValue: "alice.doe@example.com",
+      stringValue: LEGAL_REPRESENTATIVE_EMAIL,
     },
     {
       __typename: "TextChamp",
@@ -348,7 +354,7 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMjkzNDQwMA==",
-      stringValue: "john.doe@example.com",
+      stringValue: CONTACT_EMAIL,
     },
     {
       __typename: "TextChamp",
@@ -368,12 +374,12 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMjk3MTQ0NA==",
-      stringValue: "Rénovation de la piscine Jaques Demy",
+      stringValue: PROJECT_TITLE,
     },
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMjk5Nzg3Mw==",
-      stringValue: resumeProjet,
+      stringValue: PROJECT_SUMMARY,
     },
     {
       __typename: "PieceJustificativeChamp",
@@ -409,12 +415,12 @@ const dossier = {
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzM0ODkyMw==",
-      stringValue: "44 - Nantes",
+      stringValue: DEPARTMENT,
     },
     {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzgwNjc5OQ==",
-      stringValue: "44 - Nantes",
+      stringValue: DEPARTMENT,
     },
     {
       __typename: "CheckboxChamp",

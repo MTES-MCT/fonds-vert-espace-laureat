@@ -57,6 +57,7 @@ export async function ImpactSubmission({
         className="fr-btn fr-btn--primary w-full inline-flex items-center justify-center"
         target="_blank"
         href={prefilledDsImpactUrl.toString()}
+        data-testid="impact-evaluation-link"
       >
         Compléter l'évaluation
       </Link>
@@ -65,10 +66,17 @@ export async function ImpactSubmission({
           <p className="mt-8 mb-2 font-medium">Vos estimations</p>
           <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
             {metricEntries.map(([key, metricValue]) => (
-              <li key={key} className="my-2 last:mb-0 pt-3 pb-0 border-t">
+              <li
+                key={key}
+                className="my-2 last:mb-0 pt-3 pb-0 border-t"
+                data-testid={`metric-${key}`}
+              >
                 <div>{metricValue.label}</div>
                 {metricValue.valeur_estimee !== null && (
-                  <div className="text-2xl font-semibold text-gray-800">
+                  <div
+                    className="text-2xl font-semibold text-gray-800"
+                    data-testid={`metric-${key}-value-display`}
+                  >
                     {formatMetric(metricValue.valeur_estimee)}
                     <span className="text-base font-normal">
                       {metricValue.unite && ` ${metricValue.unite}`}

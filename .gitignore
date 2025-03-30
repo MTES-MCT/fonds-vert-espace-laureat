@@ -49,6 +49,7 @@ src/generated
 
 # Private data
 data/projets.csv
+*.local*
 
 # Playwright
 /test-results/

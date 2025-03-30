@@ -1,30 +1,35 @@
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
+import {
+  CHORUS_NUMBER,
+  LEGAL_REPRESENTATIVE_EMAIL,
+  PROGRAM_TITLE,
+  PROJECT_SUMMARY,
+  PROJECT_TITLE,
+} from "../../../tests/fixtures/constants";
+
 const demandeur = {
   demandeur: {
-    email: "alice.doe@example.com",
+    email: LEGAL_REPRESENTATIVE_EMAIL,
     siret: "12345678910111",
     libelleNaf: "Mon entreprise",
   },
 };
-
-const resumeProjet =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 
 export const demoDossier1: Dossier = {
   numero: 12345678,
   dateTraitement: new Date(),
   ...demandeur,
   demarche: {
-    title: "FONDS VERT - Rénovation énergétique des bâtiments publics locaux",
+    title: `FONDS VERT - ${PROGRAM_TITLE}`,
   },
   champs: {
-    intituleProjet: "Rénovation de la piscine Jacques Demy",
-    resumeProjet,
+    intituleProjet: PROJECT_TITLE,
+    resumeProjet: PROJECT_SUMMARY,
     departementImplantation: "Nantes",
     montantSubventionAttribuee: 10073574,
-    emailRepresentantLegal: "alice.doe@example.com",
+    emailRepresentantLegal: LEGAL_REPRESENTATIVE_EMAIL,
     emailResponsableSuivi: "bob.doe@example.com",
     dateSignatureDecision: new Date(),
     numeroEngagementJuridique: "987654",
@@ -132,14 +137,14 @@ export const demoDossierFondsVert: DossierFondsVert = {
     },
   },
   information_financiere: {
-    centre_financier_chorus: "0789-IDF1-DR75",
+    centre_financier_chorus: CHORUS_NUMBER,
     informations_engagement: [
       {
         annee_information_financiere: 2023,
         engagements_juridiques: [
           {
             numero_ej: "2105212345",
-            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 10073574,
             montant_engage_initial: 10073574,
@@ -152,7 +157,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
         engagements_juridiques: [
           {
             numero_ej: "2105212345",
-            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 10073574,
             montant_engage_initial: 10073574,
@@ -160,7 +165,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
               {
                 numero_dp: "1001234567",
                 date_dp: "2024-10-07T00:00:00",
-                montant_paye: 3422079.2,
+                montant_paye: 3422069.2,
               },
             ],
           },
@@ -171,7 +176,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
         engagements_juridiques: [
           {
             numero_ej: "2105212345",
-            nom_demarche: "Rénovation énergétique des bâtiments publics locaux",
+            nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 6651494.8,
             montant_engage_initial: 10073574,
