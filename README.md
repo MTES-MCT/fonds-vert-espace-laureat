@@ -8,12 +8,32 @@ npm i
 
 Copiez le fichier `.env.example` en `.env` et renseignez les variables d'environnement.
 
+### Génération du code Graphql
+
+```bash
+npm run codegen
+```
+
 ### Développement
 
 Lancez le serveur de développement :
 
 ```bash
 npm run dev
+```
+
+### Tests
+
+Lancez les tests avec Playwright :
+
+```bash
+npm run test
+```
+
+Lancez un test spécifique :
+
+```bash
+npm run test -- tests/dossier.spec.ts
 ```
 
 Ouvrez [http://localhost:3000](http://localhost:3000) avec votre navigateur pour voir le résultat.
