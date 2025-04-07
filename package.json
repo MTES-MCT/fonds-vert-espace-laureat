@@ -7,12 +7,12 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "npm run codegen && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "predev": "react-dsfr update-icons",
+    "predev": "react-dsfr update-icons && npm run codegen",
     "test": "NODE_ENV=test playwright test",
-    "prebuild": "react-dsfr update-icons",
+    "prebuild": "react-dsfr update-icons && npm run codegen",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "npm run codegen -- --watch"
   },
