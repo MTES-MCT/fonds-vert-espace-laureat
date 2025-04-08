@@ -11,8 +11,8 @@ const defaultDossierSearchParams = {
 export type MetricValue = {
   label: string;
   unite: string | null;
-  valeur_estimee: number | null;
-  valeur_reelle: number | null;
+  valeur_estimee: number | string | null;
+  valeur_reelle: number | string | null;
 };
 
 export type Metrics = Record<string, MetricValue>;

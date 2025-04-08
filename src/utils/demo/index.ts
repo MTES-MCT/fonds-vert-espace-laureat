@@ -54,7 +54,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
     type_surface: {
       label: "Type de surface",
       unite: null,
-      valeur_estimee: null,
+      valeur_estimee: "Surface habitable",
       valeur_reelle: null,
     },
     modifie_surface_batiment: {
@@ -66,7 +66,8 @@ export const demoDossierFondsVert: DossierFondsVert = {
     systeme_chauffage_avant_travaux: {
       label: "Système de chauffage avant travaux",
       unite: null,
-      valeur_estimee: null,
+      valeur_estimee:
+        "Chauffage électrique à effet Joule (radiateurs électriques)",
       valeur_reelle: null,
     },
     systeme_chauffage_apres_travaux: {
@@ -109,7 +110,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
       label: "Consommation énergétique après travaux",
       unite: "kWh",
       valeur_estimee: 1235863,
-      valeur_reelle: null,
+      valeur_reelle: 1935960,
     },
     emission_ges_avant_travaux: {
       label: "Émissions de GES avant travaux",
@@ -121,13 +122,13 @@ export const demoDossierFondsVert: DossierFondsVert = {
       label: "Émissions de GES après travaux",
       unite: "kgCO₂e",
       valeur_estimee: 312,
-      valeur_reelle: null,
+      valeur_reelle: 383,
     },
     gain_energetique_estime_percentage: {
       label: "Gain énergétique estimé",
       unite: "%",
       valeur_estimee: 39,
-      valeur_reelle: null,
+      valeur_reelle: 32,
     },
     emission_ges_evitees_percentage: {
       label: "Émissions de GES évitées",
