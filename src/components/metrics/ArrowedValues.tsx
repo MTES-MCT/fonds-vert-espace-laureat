@@ -1,4 +1,4 @@
-import { formatMetric } from "@/utils/format";
+import { MetricValue } from "./MetricValue";
 
 export type ArrowedValuesProps = {
   values: (string | number | null)[];
@@ -37,18 +37,12 @@ export const ArrowedValues = ({
               </svg>
             </div>
           )}
-          <div className="flex flex-col">
-            <div className="text-xs text-gray-500">{nonNullLabels[index]}</div>
-            <div
-              className="text-lg font-semibold"
-              data-testid={`valeur-${index}`}
-            >
-              {formatMetric(value)}
-              {unite && (
-                <span className="text-sm font-normal ml-1">{unite}</span>
-              )}
-            </div>
-          </div>
+          <MetricValue
+            value={value}
+            label={nonNullLabels[index]}
+            unite={unite}
+            testId={`valeur-${index}`}
+          />
         </div>
       ))}
     </div>

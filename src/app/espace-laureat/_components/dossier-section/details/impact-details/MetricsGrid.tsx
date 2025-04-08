@@ -1,6 +1,6 @@
 import { ArrowedValues } from "@/components/metrics/ArrowedValues";
+import { MetricValue } from "@/components/metrics/MetricValue";
 import { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
-import { formatMetric } from "@/utils/format";
 import { processMetrics } from "@/utils/metrics";
 
 function labelToTestId(label: string): string {
@@ -45,36 +45,22 @@ const SimpleMetricCard = ({
       ) : (
         <>
           {hasEstimee && (
-            <div className="flex flex-col">
-              <div className="text-xs text-gray-500">Valeur estimée</div>
-              <div
-                className="text-lg font-semibold"
-                data-testid="valeur-estimee"
-              >
-                {formatMetric(metric.valeur_estimee)}
-                {metric.unite && (
-                  <span className="text-sm font-normal ml-1">
-                    {metric.unite}
-                  </span>
-                )}
-              </div>
-            </div>
+            <MetricValue
+              value={metric.valeur_estimee}
+              label="Valeur estimée"
+              unite={metric.unite}
+              testId="valeur-estimee"
+            />
           )}
 
           {hasReelle && (
-            <div className="flex flex-col mt-2">
-              <div className="text-xs text-gray-500">Valeur réelle</div>
-              <div
-                className="text-lg font-semibold"
-                data-testid="valeur-reelle"
-              >
-                {formatMetric(metric.valeur_reelle)}
-                {metric.unite && (
-                  <span className="text-sm font-normal ml-1">
-                    {metric.unite}
-                  </span>
-                )}
-              </div>
+            <div className="mt-2">
+              <MetricValue
+                value={metric.valeur_reelle}
+                label="Valeur réelle"
+                unite={metric.unite}
+                testId="valeur-reelle"
+              />
             </div>
           )}
         </>
