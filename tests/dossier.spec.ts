@@ -7,6 +7,7 @@ import {
 } from "next/experimental/testmode/playwright/msw";
 
 import { demoDossierFondsVert } from "@/utils/demo";
+import { formatMetric } from "@/utils/format";
 
 import {
   CHORUS_NUMBER,
@@ -68,12 +69,8 @@ test("dossier page displays project information correctly", async ({
     "Dossier n°123456789",
   );
 
-  await expect(page.getByTestId("project-title")).toHaveText(
-    PROJECT_TITLE,
-  );
-  await expect(page.getByTestId("program-title")).toHaveText(
-    PROGRAM_TITLE,
-  );
+  await expect(page.getByTestId("project-title")).toHaveText(PROJECT_TITLE);
+  await expect(page.getByTestId("program-title")).toHaveText(PROGRAM_TITLE);
 
   await expect(page.getByTestId("project-summary")).toContainText(
     PROJECT_SUMMARY,
@@ -115,9 +112,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     await expect(metricElement).toBeVisible();
     await expect(metricElement).toContainText(metric.label);
 
-    const formattedValue = Number(metric.valeur_estimee).toLocaleString(
-      "fr-FR",
-    );
+    const formattedValue = formatMetric(metric.valeur_estimee);
 
     const expectedText = metric.unite
       ? `${formattedValue} ${metric.unite}`
@@ -126,6 +121,22 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     await expect(page.getByTestId(`metric-${key}-value-display`)).toContainText(
       expectedText,
     );
+
+    if (metric.valeur_reelle !== null) {
+      const formattedRealValue = formatMetric(metric.valeur_reelle);
+
+      const expectedRealText = metric.unite
+        ? `${formattedRealValue} ${metric.unite}`
+        : formattedRealValue;
+
+      await expect(
+        page.getByTestId(`metric-${key}-real-value-display`),
+      ).toContainText(expectedRealText);
+
+      await expect(
+        page.getByTestId(`metric-${key}-real-value-display`),
+      ).toContainText("Valeur réelle");
+    }
   }
 
   const impactLink = page.getByTestId("impact-evaluation-link");

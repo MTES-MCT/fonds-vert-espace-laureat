@@ -63,7 +63,7 @@ export async function ImpactSubmission({
       </Link>
       {metricEntries.length > 0 && (
         <>
-          <p className="mt-8 mb-2 font-medium">Vos estimations</p>
+          <p className="mt-8 mb-2 font-medium">Vos métriques</p>
           <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
             {metricEntries.map(([key, metricValue]) => (
               <li
@@ -78,6 +78,17 @@ export async function ImpactSubmission({
                     data-testid={`metric-${key}-value-display`}
                   >
                     {formatMetric(metricValue.valeur_estimee)}
+                    <span className="text-base font-normal">
+                      {metricValue.unite && ` ${metricValue.unite}`}
+                    </span>
+                  </div>
+                )}
+                {metricValue.valeur_reelle !== null && (
+                  <div
+                    className="text-lg font-medium text-gray-900"
+                    data-testid={`metric-${key}-real-value-display`}
+                  >
+                    Valeur réelle : {formatMetric(metricValue.valeur_reelle)}
                     <span className="text-base font-normal">
                       {metricValue.unite && ` ${metricValue.unite}`}
                     </span>
