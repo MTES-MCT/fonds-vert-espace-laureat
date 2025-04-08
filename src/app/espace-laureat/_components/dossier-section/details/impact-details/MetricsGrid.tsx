@@ -45,28 +45,36 @@ const SimpleMetricCard = ({
       ) : (
         <>
           {hasEstimee && (
-            <div
-              className="text-2xl font-semibold text-gray-800"
-              data-testid="valeur-estimee"
-            >
-              {formatMetric(metric.valeur_estimee)}
-              {metric.unite && (
-                <span className="text-base font-normal ml-1">
-                  {metric.unite}
-                </span>
-              )}
+            <div className="flex flex-col">
+              <div className="text-xs text-gray-500">Valeur estimée</div>
+              <div
+                className="text-lg font-semibold"
+                data-testid="valeur-estimee"
+              >
+                {formatMetric(metric.valeur_estimee)}
+                {metric.unite && (
+                  <span className="text-sm font-normal ml-1">
+                    {metric.unite}
+                  </span>
+                )}
+              </div>
             </div>
           )}
 
           {hasReelle && (
-            <div
-              className="text-sm font-medium text-gray-900 mt-1"
-              data-testid="valeur-reelle"
-            >
-              Valeur réelle : {formatMetric(metric.valeur_reelle)}
-              {metric.unite && (
-                <span className="text-sm font-normal ml-1">{metric.unite}</span>
-              )}
+            <div className="flex flex-col mt-2">
+              <div className="text-xs text-gray-500">Valeur réelle</div>
+              <div
+                className="text-lg font-semibold"
+                data-testid="valeur-reelle"
+              >
+                {formatMetric(metric.valeur_reelle)}
+                {metric.unite && (
+                  <span className="text-sm font-normal ml-1">
+                    {metric.unite}
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </>
