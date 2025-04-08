@@ -7,6 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
+    "dev:test": "NODE_ENV=test npx next dev -p 4000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
