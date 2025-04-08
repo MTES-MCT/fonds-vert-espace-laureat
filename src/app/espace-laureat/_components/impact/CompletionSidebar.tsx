@@ -1,23 +1,32 @@
 import Link from "next/link";
 
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
+import { ImpactReview } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/ImpactReview";
+import { Impact } from "@/services/ds/impact";
 import { Metrics } from "@/services/fondsvert/dossier";
 import {
   fetchPrefillMapping,
   getPrefillMappingCached,
 } from "@/services/grist/impact";
 import { requireEnv } from "@/utils/env";
-import { formatMetric } from "@/utils/format";
 
-export async function ImpactSubmission({
+export async function CompletionSidebar({
   numeroDossier,
+  impact,
   metriques,
   nocache,
 }: {
   numeroDossier: number;
+  impact?: Impact;
   metriques?: Metrics;
   nocache: boolean;
 }) {
+  // Si le formulaire a déjà été rempli alors on affiche un bouton pour le consulter :
+  if (impact?.numero) {
+    return <ImpactReview impact={impact} />;
+  }
+
+  // Sinon, on crée le lien qui va préremplir vers le formulaire avec les données connues :
   const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
 
   const prefillMapping = nocache
@@ -61,44 +70,6 @@ export async function ImpactSubmission({
       >
         Compléter l'évaluation
       </Link>
-      {metricEntries.length > 0 && (
-        <>
-          <p className="mt-8 mb-2 font-medium">Vos métriques</p>
-          <ul className="list-none text-xs text-gray-600 text-left p-0 mb-0">
-            {metricEntries.map(([key, metricValue]) => (
-              <li
-                key={key}
-                className="my-2 last:mb-0 pt-3 pb-0 border-t"
-                data-testid={`metric-${key}`}
-              >
-                <div>{metricValue.label}</div>
-                {metricValue.valeur_estimee !== null && (
-                  <div
-                    className="text-2xl font-semibold text-gray-800"
-                    data-testid={`metric-${key}-value-display`}
-                  >
-                    {formatMetric(metricValue.valeur_estimee)}
-                    <span className="text-base font-normal">
-                      {metricValue.unite && ` ${metricValue.unite}`}
-                    </span>
-                  </div>
-                )}
-                {metricValue.valeur_reelle !== null && (
-                  <div
-                    className="text-lg font-medium text-gray-900"
-                    data-testid={`metric-${key}-real-value-display`}
-                  >
-                    Valeur réelle : {formatMetric(metricValue.valeur_reelle)}
-                    <span className="text-base font-normal">
-                      {metricValue.unite && ` ${metricValue.unite}`}
-                    </span>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
     </>
   );
 }

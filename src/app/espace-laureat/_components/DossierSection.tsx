@@ -2,9 +2,10 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
 
-import { ImpactDetails } from "@/app/espace-laureat/_components/dossier-section/details/ImpactDetails";
+import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
+import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
@@ -77,6 +78,9 @@ export async function DossierSection({
             departementImplantation={subvention.departementImplantation}
           />
         </div>
+
+        <MetricsGrid metriques={metriques} />
+
         <div>
           <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
             <div className="flex justify-between items-end mb-3">
@@ -108,11 +112,11 @@ export async function DossierSection({
           </Link>
         </div>
       </div>
-      <div className="p-6 pt-10 bg-white shadow-lg max-w-lg xl:w-96 sticky top-8 text-center text-balance">
-        <p className="text-2xl font-semibold mb-2 text-gray-900">
+      <div className="p-6 pt-10 bg-white shadow-lg max-w-xs xl:w-80 sticky top-8 text-center text-balance">
+        <p className="text-xl font-semibold mb-2 text-gray-900">
           Les données de votre projet participent à la transition écologique
         </p>
-        <ImpactDetails
+        <CompletionSidebar
           numeroDossier={dossierSubvention.numero}
           impact={impact}
           metriques={metriques}

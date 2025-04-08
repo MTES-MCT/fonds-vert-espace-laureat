@@ -108,7 +108,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   )) {
     if (metric.valeur_estimee === null) continue;
 
-    const metricElement = page.getByTestId(`metric-${key}`);
+    const metricElement = page.getByTestId(`metric-grid-${key}`);
     await expect(metricElement).toBeVisible();
     await expect(metricElement).toContainText(metric.label);
 
@@ -118,7 +118,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
       ? `${formattedValue} ${metric.unite}`
       : formattedValue;
 
-    await expect(page.getByTestId(`metric-${key}-value-display`)).toContainText(
+    await expect(page.getByTestId(`metric-grid-${key}-value-display`)).toContainText(
       expectedText,
     );
 
@@ -130,12 +130,9 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
         : formattedRealValue;
 
       await expect(
-        page.getByTestId(`metric-${key}-real-value-display`),
+        page.getByTestId(`metric-grid-${key}-real-value-display`),
       ).toContainText(expectedRealText);
 
-      await expect(
-        page.getByTestId(`metric-${key}-real-value-display`),
-      ).toContainText("Valeur réelle");
     }
   }
 
