@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   experimental: {
     testProxy: process.env.NODE_ENV === "test",
   },
+  eslint: {
+    dirs: ["src", "tests"],
+  },
 };
 
 export default nextConfig;
