@@ -22,6 +22,9 @@ const SimpleMetricCard = ({
   if (metric._typename !== "Simple") return null;
 
   const metricId = labelToTestId(metric.label);
+  const hasEstimee = metric.valeur_estimee !== null;
+  const hasReelle = metric.valeur_reelle !== null;
+  const hasBothValues = hasEstimee && hasReelle;
 
   return (
     <div
@@ -33,28 +36,40 @@ const SimpleMetricCard = ({
         {metric.label}
       </div>
 
-      {metric.valeur_estimee !== null && (
-        <div
-          className="text-2xl font-semibold text-gray-800"
-          data-testid="valeur-estimee"
-        >
-          {formatMetric(metric.valeur_estimee)}
-          {metric.unite && (
-            <span className="text-base font-normal ml-1">{metric.unite}</span>
+      {hasBothValues ? (
+        <ArrowedValues
+          values={[metric.valeur_estimee, metric.valeur_reelle]}
+          labels={["Valeur estimée", "Valeur réelle"]}
+          unite={metric.unite}
+        />
+      ) : (
+        <>
+          {hasEstimee && (
+            <div
+              className="text-2xl font-semibold text-gray-800"
+              data-testid="valeur-estimee"
+            >
+              {formatMetric(metric.valeur_estimee)}
+              {metric.unite && (
+                <span className="text-base font-normal ml-1">
+                  {metric.unite}
+                </span>
+              )}
+            </div>
           )}
-        </div>
-      )}
 
-      {metric.valeur_reelle !== null && (
-        <div
-          className="text-sm font-medium text-gray-900 mt-1"
-          data-testid="valeur-reelle"
-        >
-          Valeur réelle : {formatMetric(metric.valeur_reelle)}
-          {metric.unite && (
-            <span className="text-sm font-normal ml-1">{metric.unite}</span>
+          {hasReelle && (
+            <div
+              className="text-sm font-medium text-gray-900 mt-1"
+              data-testid="valeur-reelle"
+            >
+              Valeur réelle : {formatMetric(metric.valeur_reelle)}
+              {metric.unite && (
+                <span className="text-sm font-normal ml-1">{metric.unite}</span>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

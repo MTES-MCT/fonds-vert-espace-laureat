@@ -117,12 +117,8 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
 
   const gainEnergetique = page.getByTestId("metric-gain-energetique-estime");
   await expect(gainEnergetique).toContainText("Gain énergétique estimé");
-  await expect(gainEnergetique.getByTestId("valeur-estimee")).toContainText(
-    "39%",
-  );
-  await expect(gainEnergetique.getByTestId("valeur-reelle")).toContainText(
-    "32%",
-  );
+  await expect(gainEnergetique.getByTestId("valeur-0")).toContainText("39%");
+  await expect(gainEnergetique.getByTestId("valeur-1")).toContainText("32%");
 
   await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();
 });
