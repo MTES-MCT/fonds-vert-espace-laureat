@@ -36,9 +36,13 @@ export function formatEuros(
 }
 
 export function formatMetric(
-  value: number | undefined | null,
+  value: number | string | undefined | null,
   options?: Partial<Intl.NumberFormatOptions>,
 ): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
   if (value === undefined || value === null) {
     return "N/A";
   }
