@@ -8,14 +8,35 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
-export type MetricValue = {
+export type MetricValue = number | string | null;
+
+export type MetricFields = {
   label: string;
   unite: string | null;
-  valeur_estimee: number | string | null;
-  valeur_reelle: number | string | null;
+  valeur_estimee: MetricValue;
+  valeur_reelle: MetricValue;
 };
 
-export type Metrics = Record<string, MetricValue>;
+export type SimpleMetric = {
+  _typename: "Simple";
+  label: string;
+  unite: string | null;
+  valeur_estimee: MetricValue;
+  valeur_reelle: MetricValue;
+};
+
+export type AvantApresTravaux = {
+  _typename: "AvantApresTravaux";
+  label: string;
+  unite: string | null;
+  valeur_avant_travaux: MetricValue;
+  valeur_apres_travaux_estimee: MetricValue;
+  valeur_apres_travaux_reelle: MetricValue;
+};
+
+export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
+
+export type Metrics = Record<string, MetricFields>;
 
 interface DemandePaiement {
   numero_dp: string;

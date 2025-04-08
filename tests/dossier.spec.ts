@@ -6,9 +6,6 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
-import { demoDossierFondsVert } from "@/utils/demo";
-import { formatMetric } from "@/utils/format";
-
 import {
   CHORUS_NUMBER,
   CONTACT_EMAIL,
@@ -103,41 +100,31 @@ test("dossier page displays subvention financial details correctly", async ({
 test("dossier page displays impact metrics correctly", async ({ page }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
-  for (const [key, metric] of Object.entries(
-    demoDossierFondsVert.metrique_specifique || {},
-  )) {
-    if (metric.valeur_estimee === null) continue;
+  const consoEnergetique = page.getByTestId("metric-consommation-energetique");
+  await expect(consoEnergetique).toContainText("Consommation énergétique");
+  await expect(consoEnergetique.getByTestId("valeur-0")).toContainText(
+    "2 055 650",
+  );
+  await expect(consoEnergetique.getByTestId("valeur-1")).toContainText(
+    "1 235 863",
+  );
+  await expect(consoEnergetique.getByTestId("valeur-2")).toContainText(
+    "1 935 960",
+  );
 
-    const metricElement = page.getByTestId(`metric-grid-${key}`);
-    await expect(metricElement).toBeVisible();
-    await expect(metricElement).toContainText(metric.label);
+  const emissionsGES = page.getByTestId("metric-emissions-de-ges");
+  await expect(emissionsGES).toContainText("Émissions de GES");
 
-    const formattedValue = formatMetric(metric.valeur_estimee);
+  const gainEnergetique = page.getByTestId("metric-gain-energetique-estime");
+  await expect(gainEnergetique).toContainText("Gain énergétique estimé");
+  await expect(gainEnergetique.getByTestId("valeur-estimee")).toContainText(
+    "39%",
+  );
+  await expect(gainEnergetique.getByTestId("valeur-reelle")).toContainText(
+    "32%",
+  );
 
-    const expectedText = metric.unite
-      ? `${formattedValue} ${metric.unite}`
-      : formattedValue;
-
-    await expect(page.getByTestId(`metric-grid-${key}-value-display`)).toContainText(
-      expectedText,
-    );
-
-    if (metric.valeur_reelle !== null) {
-      const formattedRealValue = formatMetric(metric.valeur_reelle);
-
-      const expectedRealText = metric.unite
-        ? `${formattedRealValue} ${metric.unite}`
-        : formattedRealValue;
-
-      await expect(
-        page.getByTestId(`metric-grid-${key}-real-value-display`),
-      ).toContainText(expectedRealText);
-
-    }
-  }
-
-  const impactLink = page.getByTestId("impact-evaluation-link");
-  await expect(impactLink).toBeVisible();
+  await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();
 });
 
 test("navigation links work correctly", async ({ page }) => {
