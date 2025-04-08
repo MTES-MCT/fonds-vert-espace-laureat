@@ -1,4 +1,15 @@
-## Fonds vert
+## Fonds Vert - Espace lauréat
+
+### Introduction
+
+Ce projet repose sur 4 services externes :
+
+- [ProConnect](https://github.com/numerique-gouv/proconnect-documentation/tree/main/doc_fs) : identité des utilisateurs et authentification
+- [Demarches Simplifiée](https://doc.demarches-simplifiees.fr/api-graphql) : dossiers de subvention et d'évaluation
+- [API Fonds Vert](https://api-fonds-vert.datahub.din.developpement-durable.gouv.fr/docs) : données financières et consolidation des indicateurs
+- [Grist](https://grist.numerique.gouv.fr/) : mapping entre les champs des différentes APIs
+
+Toutes les données sont hébergées sur ces services, aucune base de données n'est donc nécessaire.
 
 ### Installation
 
@@ -6,13 +17,8 @@
 npm i
 ```
 
-Copiez le fichier `.env.example` en `.env` et renseignez les variables d'environnement.
+Copiez le fichier `.env.example` en `.env` et complétez les variables d'environnement.
 
-### Génération du code Graphql
-
-```bash
-npm run codegen
-```
 
 ### Développement
 
@@ -21,8 +27,18 @@ Lancez le serveur de développement :
 ```bash
 npm run dev
 ```
+Ouvrez [http://localhost:3000](http://localhost:3000) avec votre navigateur pour voir le résultat.
 
 ### Tests
+
+En activant le mode `testProxy` de Next, les appels API côté serveur peuvent être interceptés par MSW.
+Lancez le serveur de développement en activant ce proxy :
+
+```bash
+npm run dev:test
+```
+
+Cette commande est optionnelle. Elle permettra notamment d'exécuter plus rapidement les tests par la suite.
 
 Lancez les tests avec Playwright :
 
@@ -30,13 +46,13 @@ Lancez les tests avec Playwright :
 npm run test
 ```
 
+Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `npm run dev:test` avant.
+
 Lancez un test spécifique :
 
 ```bash
 npm run test -- tests/dossier.spec.ts
 ```
-
-Ouvrez [http://localhost:3000](http://localhost:3000) avec votre navigateur pour voir le résultat.
 
 ### Guide
 
