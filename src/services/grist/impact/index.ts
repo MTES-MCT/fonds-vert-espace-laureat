@@ -5,7 +5,7 @@ type GristImpactRecord = {
     action: string;
     metriques_API_Field_Name: string;
     champ_id_ds: string;
-    type: string;
+    champ_type: string;
   };
 };
 
@@ -48,7 +48,7 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
 
   const champNumeroDossier = data.records.find(
     (record: GristImpactRecord) =>
-      record.fields.type === "Lien vers un autre dossier",
+      record.fields.champ_type === "Lien vers un autre dossier",
   ).fields.champ_id_ds;
 
   const champsMetriques = prefillRecords.reduce(
