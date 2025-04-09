@@ -21,7 +21,7 @@ export const ArrowedValues = ({
       {nonNullValues.map((value, index) => (
         <div key={index} className="flex items-center">
           {index > 0 && (
-            <div className="mx-2 text-gray-400">
+            <div className="mx-4 text-gray-400/50">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -29,7 +29,7 @@ export const ArrowedValues = ({
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
