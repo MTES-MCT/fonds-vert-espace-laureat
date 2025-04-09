@@ -24,7 +24,7 @@ export const MetricValue = ({
         <div className="text-xs text-gray-500">{label}</div>
       )}
       <div
-        className={`font-semibold ${isStringValue ? "text-sm" : "text-lg"}`}
+        className={`font-semibold ${isStringValue ? "text-sm max-w-[18rem]" : "text-lg"}`}
         data-testid={testId}
       >
         {formatMetric(value)}
