@@ -79,8 +79,6 @@ export async function DossierSection({
           />
         </div>
 
-        <MetricsGrid metriques={metriques} />
-
         <div>
           <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
             <div className="flex justify-between items-end mb-3">
@@ -103,6 +101,12 @@ export async function DossierSection({
               informationFinanciere={informationFinanciere}
             />
           </div>
+
+          <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
+            <h3>Impact</h3>
+            <MetricsGrid metriques={metriques} />
+          </div>
+
           <Link
             className="fr-btn fr-btn--tertiary bg-white xl:mb-20"
             href={backLink.linkProps.href}
