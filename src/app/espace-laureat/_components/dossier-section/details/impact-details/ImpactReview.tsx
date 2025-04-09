@@ -21,7 +21,7 @@ const ImpactReviewLink = ({
 }) => {
   return (
     <Link
-      className="fr-btn fr-btn--tertiary fr-btn--sm bg-white hover:bg-gray-50"
+      className="fr-btn fr-btn--tertiary w-full flex justify-center fr-btn--sm bg-white hover:bg-gray-50"
       target="_blank"
       href={`https://www.demarches-simplifiees.fr/dossiers/${impact?.numero}`}
     >

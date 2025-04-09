@@ -91,7 +91,7 @@ const AvantApresTravauxCard = ({
       className={`relative bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
-      <div className="text-sm text-gray-600 font-medium mb-3">
+      <div className="text-sm text-gray-600 font-medium mb-2">
         {metric.label}
       </div>
 
