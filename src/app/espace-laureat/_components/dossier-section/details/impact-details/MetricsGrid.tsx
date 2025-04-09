@@ -1,7 +1,8 @@
 import { ArrowedValues } from "@/components/metrics/ArrowedValues";
 import { MetricValue } from "@/components/metrics/MetricValue";
 import { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
-import { processMetrics } from "@/utils/metrics";
+import { processMetrics } from "@/utils/metrics/process";
+import { groupMetricsByTheme } from "@/utils/metrics/themes";
 
 function labelToTestId(label: string): string {
   return label
@@ -15,9 +16,11 @@ function labelToTestId(label: string): string {
 const SimpleMetricCard = ({
   metricKey,
   metric,
+  borderColorClass = "border-t-green-500",
 }: {
   metricKey: string;
   metric: ProcessedMetric;
+  borderColorClass?: string;
 }) => {
   if (metric._typename !== "Simple") return null;
 
@@ -29,7 +32,7 @@ const SimpleMetricCard = ({
   return (
     <div
       key={metricKey}
-      className="relative bg-white p-4 shadow border-t-4 border-t-green-500 rounded-sm overflow-hidden"
+      className={`relative bg-white p-4 shadow border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
       <div className="text-sm text-gray-600 font-medium mb-2">
@@ -72,9 +75,11 @@ const SimpleMetricCard = ({
 const AvantApresTravauxCard = ({
   metricKey,
   metric,
+  borderColorClass = "border-t-green-500",
 }: {
   metricKey: string;
   metric: ProcessedMetric;
+  borderColorClass?: string;
 }) => {
   if (metric._typename !== "AvantApresTravaux") return null;
 
@@ -83,7 +88,7 @@ const AvantApresTravauxCard = ({
   return (
     <div
       key={metricKey}
-      className="relative bg-white p-4 shadow border-t-4 border-t-green-500 rounded-sm overflow-hidden"
+      className={`relative bg-white p-4 shadow border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
       <div className="text-sm text-gray-600 font-medium mb-3">
@@ -111,19 +116,50 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
   if (!metriques) return null;
 
   const processedMetrics = processMetrics(metriques);
-  const metricEntries = Object.entries(processedMetrics);
+  const metricGroups = groupMetricsByTheme(processedMetrics);
 
-  if (metricEntries.length === 0) return null;
+  if (Object.keys(metricGroups).length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-4">
-      {metricEntries.map(([key, metric]) =>
-        metric._typename === "Simple" ? (
-          <SimpleMetricCard key={key} metricKey={key} metric={metric} />
-        ) : (
-          <AvantApresTravauxCard key={key} metricKey={key} metric={metric} />
-        ),
-      )}
+    <div className="space-y-8">
+      {Object.entries(metricGroups).map(([groupId, group]) => (
+        <div
+          key={groupId}
+          className="metric-group"
+          data-testid={`metric-group-${groupId}`}
+        >
+          {group.theme && (
+            <h3
+              className="text-lg font-medium mb-4"
+              data-testid={`metric-group-title-${groupId}`}
+            >
+              {group.theme.label}
+            </h3>
+          )}
+          <div className="flex flex-wrap gap-4">
+            {Object.entries(group.metrics).map(([key, metric]) => {
+              const borderColorClass =
+                group.theme?.borderColor || "border-t-green-500";
+
+              return metric._typename === "Simple" ? (
+                <SimpleMetricCard
+                  key={key}
+                  metricKey={key}
+                  metric={metric}
+                  borderColorClass={borderColorClass}
+                />
+              ) : (
+                <AvantApresTravauxCard
+                  key={key}
+                  metricKey={key}
+                  metric={metric}
+                  borderColorClass={borderColorClass}
+                />
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

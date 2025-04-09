@@ -123,6 +123,80 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();
 });
 
+test("dossier page organizes metrics by thematic groups correctly", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  // 1- Vérification des titres de chaque groupe de métriques
+
+  await expect(page.getByTestId("metric-group-title-energy")).toHaveText(
+    "Énergie",
+  );
+
+  await expect(page.getByTestId("metric-group-title-ges")).toHaveText(
+    "Gaz à Effet de Serre (GES)",
+  );
+
+  await expect(page.getByTestId("metric-group-title-surface")).toHaveText(
+    "Surface",
+  );
+
+  await expect(
+    page.getByTestId("metric-group-title-proximity-management"),
+  ).toHaveText("Gestion de proximité");
+
+  await expect(
+    page.getByTestId("metric-group-title-separate-collection"),
+  ).toHaveText("Collecte séparée");
+
+  // 2- Vérification du contenu de chaque groupe
+
+  const surfaceSection = page.getByTestId("metric-group-surface");
+
+  await expect(
+    surfaceSection.getByTestId("metric-surface-du-batiment-avant-projet"),
+  ).toBeVisible();
+
+  await expect(
+    surfaceSection.getByTestId("metric-type-de-surface"),
+  ).toBeVisible();
+
+  const energieSection = page.getByTestId("metric-group-energy");
+
+  await expect(
+    energieSection.getByTestId("metric-systeme-de-chauffage-avant-travaux"),
+  ).toBeVisible();
+
+  const proxSection = page.getByTestId("metric-group-proximity-management");
+
+  await expect(
+    proxSection.getByTestId(
+      "metric-nombre-d-habitants-pratiquant-la-gestion-de-proximite",
+    ),
+  ).toBeVisible();
+
+  await expect(
+    proxSection.getByTestId(
+      "metric-tonnage-annuel-entrant-pour-la-gestion-de-proximite",
+    ),
+  ).toBeVisible();
+
+  const collecteSection = page.getByTestId("metric-group-separate-collection");
+
+  await expect(
+    collecteSection.getByTestId(
+      "metric-nombre-d-habitants-concernes-par-la-collecte-separee",
+    ),
+  ).toBeVisible();
+
+  await expect(
+    collecteSection.getByTestId(
+      "metric-quantite-annuelle-globale-de-biodechets-collectes",
+    ),
+  ).toBeVisible();
+});
+
 test("navigation links work correctly", async ({ page }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
