@@ -5,6 +5,7 @@ import { fetchFondsVert } from "@/services/fondsvert/helpers";
 const defaultDossierSearchParams = {
   include_metrics: "true",
   include_finances: "true",
+  include_impact: "true",
   type_export: "JSON",
 };
 
