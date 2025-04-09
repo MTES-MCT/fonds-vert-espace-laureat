@@ -32,12 +32,12 @@ const SimpleMetricCard = ({
   return (
     <div
       key={metricKey}
-      className={`relative bg-white p-4 shadow border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
+      className={`bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
-      <div className="text-sm text-gray-600 font-medium mb-2">
+      <h5 className="text-sm text-gray-600 font-medium mb-2 text-balance max-w-[18rem]">
         {metric.label}
-      </div>
+      </h5>
 
       {hasBothValues ? (
         <ArrowedValues
@@ -88,7 +88,7 @@ const AvantApresTravauxCard = ({
   return (
     <div
       key={metricKey}
-      className={`relative bg-white p-4 shadow border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
+      className={`relative bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
       <div className="text-sm text-gray-600 font-medium mb-3">
@@ -129,12 +129,12 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
           data-testid={`metric-group-${groupId}`}
         >
           {group.theme && (
-            <h3
+            <h4
               className="text-lg font-medium mb-4"
               data-testid={`metric-group-title-${groupId}`}
             >
               {group.theme.label}
-            </h3>
+            </h4>
           )}
           <div className="flex flex-wrap gap-4">
             {Object.entries(group.metrics).map(([key, metric]) => {
