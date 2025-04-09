@@ -16,11 +16,15 @@ export const MetricValue = ({
 }: MetricValueProps) => {
   if (value === null) return null;
 
+  const isStringValue = typeof value === "string";
+
   return (
     <div className="flex flex-col">
-      {label && <div className="text-xs text-gray-500">{label}</div>}
+      {label && !isStringValue && (
+        <div className="text-xs text-gray-500">{label}</div>
+      )}
       <div
-        className={`font-semibold ${typeof value === "string" ? "text-base" : "text-lg"}`}
+        className={`font-semibold ${isStringValue ? "text-sm" : "text-lg"}`}
         data-testid={testId}
       >
         {formatMetric(value)}
