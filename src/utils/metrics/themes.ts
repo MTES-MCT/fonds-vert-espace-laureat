@@ -18,13 +18,7 @@ export const METRIC_THEMES: MetricTheme[] = [
     id: "ges",
     label: "Gaz à Effet de Serre (GES)",
     keywords: ["GES"],
-    borderColor: "border-t-blue-500",
-  },
-  {
-    id: "surface",
-    label: "Surface",
-    keywords: ["surface", "Surface"],
-    borderColor: "border-t-gray-500",
+    borderColor: "border-t-green-500",
   },
   {
     id: "proximity-management",
@@ -37,6 +31,12 @@ export const METRIC_THEMES: MetricTheme[] = [
     label: "Collecte séparée",
     keywords: ["collecte", "collectés"],
     borderColor: "border-t-purple-500",
+  },
+  {
+    id: "surface",
+    label: "Surface",
+    keywords: ["surface", "Surface"],
+    borderColor: "border-t-gray-700",
   },
 ];
 
