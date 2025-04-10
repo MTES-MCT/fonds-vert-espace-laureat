@@ -1,12 +1,12 @@
 import "./globals.css";
 
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
-import { getHtmlAttributes } from "@codegouvfr/react-dsfr/next-appdir/getHtmlAttributes";
+import { createGetHtmlAttributes } from "@codegouvfr/react-dsfr/next-app-router/getHtmlAttributes";
 import { ReactElement } from "react";
 
+import { DsfrProvider } from "@/components/dsfr";
 import { defaultColorScheme } from "@/components/dsfr/defaultColorScheme";
 import { DsfrHead } from "@/components/dsfr/DsfrHead";
-import { StartDsfr } from "@/components/dsfr/StartDsfr";
 import { Footer } from "@/components/footer/Footer";
 import { Header } from "@/components/header/Header";
 import { getSession } from "@/utils/session";
@@ -17,7 +17,9 @@ export default async function RootLayout({
   children: ReactElement;
 }) {
   const lang = "fr";
-
+  const { getHtmlAttributes } = createGetHtmlAttributes({
+    defaultColorScheme,
+  });
   const session = await getSession();
   const user = session?.user;
 
@@ -49,15 +51,16 @@ export default async function RootLayout({
       ];
 
   return (
-    <html {...getHtmlAttributes({ defaultColorScheme, lang })}>
+    <html {...getHtmlAttributes({ lang })}>
       <head>
-        <StartDsfr />
         <DsfrHead />
       </head>
       <body>
-        <Header quickAccessItems={quickAccessItems} />
-        <main className="fr-container my-8 min-h-80">{children}</main>
-        <Footer />
+        <DsfrProvider lang={lang}>
+          <Header quickAccessItems={quickAccessItems} />
+          <main className="fr-container my-8 min-h-80">{children}</main>
+          <Footer />
+        </DsfrProvider>
       </body>
     </html>
   );
