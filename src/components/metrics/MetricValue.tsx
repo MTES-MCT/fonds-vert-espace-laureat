@@ -1,3 +1,5 @@
+import Tag from "@codegouvfr/react-dsfr/Tag";
+
 import { MetricValue as MetricValueType } from "@/services/fondsvert/dossier";
 import { formatMetric } from "@/utils/format";
 
@@ -17,19 +19,30 @@ export const MetricValue = ({
   if (value === null) return null;
 
   const isStringValue = typeof value === "string";
+  const isArrayValue = Array.isArray(value);
 
   return (
     <div className="flex flex-col">
       {label && !isStringValue && (
         <div className="text-xs text-gray-500">{label}</div>
       )}
-      <div
-        className={`font-semibold ${isStringValue ? "text-sm max-w-[18rem]" : "text-lg"}`}
-        data-testid={testId}
-      >
-        {formatMetric(value)}
-        {unite && <span className="text-sm font-normal ml-1">{unite}</span>}
-      </div>
+      {isArrayValue ? (
+        <ul className="fr-tags-group mt-2 -mb-2 max-w-md" data-testid={testId}>
+          {value.map((item, index) => (
+            <li className="leading-tight" key={index}>
+              <Tag small>{item}</Tag>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div
+          className={`font-semibold ${isStringValue ? "text-sm max-w-[18rem]" : "text-lg"}`}
+          data-testid={testId}
+        >
+          {formatMetric(value)}
+          {unite && <span className="text-sm font-normal ml-1">{unite}</span>}
+        </div>
+      )}
     </div>
   );
 };

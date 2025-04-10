@@ -9,7 +9,7 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
-export type MetricValue = number | string | null;
+export type MetricValue = number | string | string[] | null;
 
 export type MetricFields = {
   label: string;
@@ -115,7 +115,7 @@ export async function getDossierFondsVert({
   const filteredMetriqueSpecifique =
     data.metrique_specifique &&
     Object.entries(data.metrique_specifique).reduce((acc, [key, value]) => {
-      if (Array.isArray(value) || Array.isArray(value.valeur_estimee)) {
+      if (Array.isArray(value)) {
         return acc;
       }
 

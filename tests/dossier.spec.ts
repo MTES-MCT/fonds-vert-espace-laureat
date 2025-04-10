@@ -100,6 +100,8 @@ test("dossier page displays subvention financial details correctly", async ({
 test("dossier page displays impact metrics correctly", async ({ page }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
+  // Métriques avant/après travaux
+
   const consoEnergetique = page.getByTestId("metric-consommation-energetique");
   await expect(consoEnergetique).toContainText("Consommation énergétique");
   await expect(consoEnergetique.getByTestId("valeur-0")).toContainText(
@@ -112,6 +114,8 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     "1 935 960",
   );
 
+  // Métriques simples
+
   const emissionsGES = page.getByTestId("metric-emissions-de-ges");
   await expect(emissionsGES).toContainText("Émissions de GES");
 
@@ -119,6 +123,32 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   await expect(gainEnergetique).toContainText("Gain énergétique estimé");
   await expect(gainEnergetique.getByTestId("valeur-0")).toContainText("39%");
   await expect(gainEnergetique.getByTestId("valeur-1")).toContainText("32%");
+
+  // Métriques de type Array
+
+  const natureOperations = page.getByTestId("metric-nature-des-operations");
+  await expect(natureOperations).toContainText("Nature des opérations");
+
+  const natureOperationsTags = natureOperations.locator("li");
+  await expect(natureOperationsTags).toHaveCount(3);
+  await expect(natureOperationsTags.nth(0)).toContainText(
+    "Travaux d'isolation de l'enveloppe du ou des bâtiments",
+  );
+  await expect(natureOperationsTags.nth(1)).toContainText(
+    "Travaux de rénovation énergétique",
+  );
+  await expect(natureOperationsTags.nth(2)).toContainText(
+    "Travaux de mise en conformité",
+  );
+
+  const typeBatiments = page.getByTestId("metric-types-des-batiments");
+  await expect(typeBatiments).toContainText("Types des bâtiments");
+
+  const typeBatimentsTags = typeBatiments.locator("li");
+  await expect(typeBatimentsTags).toHaveCount(1);
+  await expect(typeBatimentsTags.nth(0)).toContainText(
+    "École (établissement public du premier degré)",
+  );
 
   await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();
 });

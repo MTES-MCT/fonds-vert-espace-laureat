@@ -136,6 +136,22 @@ export const demoDossierFondsVert: DossierFondsVert = {
       valeur_estimee: 38,
       valeur_reelle: null,
     },
+    nature_operations: {
+      label: "Nature des opérations",
+      unite: null,
+      valeur_estimee: [
+        "Travaux d'isolation de l'enveloppe du ou des bâtiments",
+        "Travaux de rénovation énergétique",
+        "Travaux de mise en conformité",
+      ],
+      valeur_reelle: null,
+    },
+    type_batiments: {
+      label: "Types des bâtiments",
+      unite: null,
+      valeur_estimee: ["École (établissement public du premier degré)"],
+      valeur_reelle: null,
+    },
   },
   information_financiere: {
     centre_financier_chorus: CHORUS_NUMBER,

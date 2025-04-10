@@ -1,7 +1,9 @@
+import { MetricValue as MetricValueType } from "@/services/fondsvert/dossier";
+
 import { MetricValue } from "./MetricValue";
 
 export type ArrowedValuesProps = {
-  values: (string | number | null)[];
+  values: MetricValueType[];
   labels: string[];
   unite: string | null;
 };
