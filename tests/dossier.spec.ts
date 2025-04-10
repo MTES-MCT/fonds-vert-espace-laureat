@@ -168,8 +168,8 @@ test("dossier page organizes metrics by thematic groups correctly", async ({
     "Gaz à Effet de Serre (GES)",
   );
 
-  await expect(page.getByTestId("metric-group-title-surface")).toHaveText(
-    "Surface",
+  await expect(page.getByTestId("metric-group-title-project")).toHaveText(
+    "Caractéristiques du projet",
   );
 
   await expect(
@@ -182,14 +182,14 @@ test("dossier page organizes metrics by thematic groups correctly", async ({
 
   // 2- Vérification du contenu de chaque groupe
 
-  const surfaceSection = page.getByTestId("metric-group-surface");
+  const projectSection = page.getByTestId("metric-group-project");
 
   await expect(
-    surfaceSection.getByTestId("metric-surface-du-batiment-avant-projet"),
+    projectSection.getByTestId("metric-surface-du-batiment-avant-projet"),
   ).toBeVisible();
 
   await expect(
-    surfaceSection.getByTestId("metric-type-de-surface"),
+    projectSection.getByTestId("metric-type-de-surface"),
   ).toBeVisible();
 
   const energieSection = page.getByTestId("metric-group-energy");

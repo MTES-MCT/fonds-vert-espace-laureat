@@ -9,6 +9,12 @@ export type MetricTheme = {
 
 export const METRIC_THEMES: MetricTheme[] = [
   {
+    id: "project",
+    label: "Caractéristiques du projet",
+    keywords: ["bâtiment", "surface", "Surface", "Nature des opérations"],
+    borderColor: "border-t-gray-700",
+  },
+  {
     id: "energy",
     label: "Énergie",
     keywords: ["énergétique", "chauffage"],
@@ -31,12 +37,6 @@ export const METRIC_THEMES: MetricTheme[] = [
     label: "Collecte séparée",
     keywords: ["collecte", "collectés"],
     borderColor: "border-t-purple-500",
-  },
-  {
-    id: "surface",
-    label: "Surface",
-    keywords: ["surface", "Surface"],
-    borderColor: "border-t-gray-700",
   },
 ];
 
