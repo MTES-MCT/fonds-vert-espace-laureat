@@ -28,7 +28,7 @@ export const Summary = ({
         <span data-testid="project-title">{intitule ?? "N/A"}</span>
         <Tag
           small
-          className="bg-white shadow"
+          className="bg-white shadow-sm"
           iconId="fr-icon-award-fill"
           data-testid="program-title"
         >
@@ -77,7 +77,7 @@ export const Summary = ({
               <dt>Numéro de dossier agence de l'eau</dt>
               <dd>
                 <Badge
-                  className="bg-white shadow"
+                  className="bg-white shadow-sm"
                   data-testid="agency-dossier-number"
                 >
                   {numeroDossierAgenceEau}

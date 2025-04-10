@@ -3,7 +3,7 @@ const config = {
   plugins: {
     "postcss-import": {},
     "postcss-url": { url: "rebase" },
-    tailwindcss: {},
+    '@tailwindcss/postcss': {},
   },
 };
 

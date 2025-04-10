@@ -32,7 +32,7 @@ const SimpleMetricCard = ({
   return (
     <div
       key={metricKey}
-      className={`bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
+      className={`bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-xs overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
       <h5 className="text-sm text-gray-600 font-medium mb-2 text-balance max-w-[18rem]">
@@ -88,7 +88,7 @@ const AvantApresTravauxCard = ({
   return (
     <div
       key={metricKey}
-      className={`relative bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-sm overflow-hidden`}
+      className={`relative bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-xs overflow-hidden`}
       data-testid={`metric-${metricId}`}
     >
       <div className="text-sm text-gray-600 font-medium mb-2">

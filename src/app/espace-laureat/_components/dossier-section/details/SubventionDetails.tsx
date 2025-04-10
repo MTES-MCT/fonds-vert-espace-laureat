@@ -17,7 +17,7 @@ export function SubventionDetails({
 
   return (
     <div data-testid="subvention-details">
-      <div className="pt-4 pb-6 border-b border-t">
+      <div className="pt-4 pb-6 border-b border-t border-gray-200">
         <p
           className="mb-2 text-xl text-gray-800 font-semibold"
           data-testid="subvention-amount"

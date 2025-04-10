@@ -7,18 +7,26 @@
     4 - Add Tailwind utilities and other classes that, coming last, can override DSFR styles
 **/
 
-@layer tw_base, dsfr_icons, dsfr, tw_components_utils;
+@layer tw_theme, tw_base, dsfr_icons, dsfr, components, tw_utilities;
 
 @import "@codegouvfr/react-dsfr/dsfr/utility/icons/icons.min.css" layer(dsfr_icons);
 @import "@codegouvfr/react-dsfr/dsfr/dsfr.min.css" layer(dsfr);
+@import "tailwindcss/theme.css" layer(tw_theme);
+@import "tailwindcss/preflight.css" layer(tw_base);
+@import "tailwindcss/utilities.css" layer(tw_utilities);
 
-@layer tw_base {
-    @tailwind base;
-}
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-blue-france-sun-113: #000091;
 
-@layer tw_components_utils {
-    @tailwind components;
-    @tailwind utilities;
+  --color-gray-100: #f6f6f6;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #dddddd;
+  --color-gray-400: #929292;
+  --color-gray-500: #666666;
+  --color-gray-700: #3a3a3a;
+  --color-gray-900: #161616;
 }
 
 @layer components {
