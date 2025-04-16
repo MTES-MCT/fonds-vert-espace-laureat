@@ -2,15 +2,24 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript",
-    "plugin:prettier/recommended"
+    "plugin:prettier/recommended",
+    "plugin:readable-tailwind/error"
   ],
   "plugins": [
-    "simple-import-sort"
+    "simple-import-sort",
+    "readable-tailwind"
   ],
   "rules": {
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
-    "react/no-unescaped-entities": 0
+    "react/no-unescaped-entities": 0,
+    "readable-tailwind/multiline": [
+      "warn",
+      {
+        "preferSingleLine": true,
+        "printWidth": 100
+      }
+    ]
   },
   "parserOptions": {
     "sourceType": "module",

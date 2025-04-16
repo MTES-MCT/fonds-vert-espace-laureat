@@ -46,14 +46,14 @@ export function LastPaymentInfo({ group, formatDate }: LastPaymentInfoProps) {
 
   if (!lastPayment) {
     return (
-      <div className="text-sm text-gray-400 font-medium mb-4">
+      <div className="mb-4 text-sm font-medium text-gray-400">
         Aucun paiement n'a été réalisé pour ce projet.
       </div>
     );
   }
 
   return (
-    <dl className="flex flex-wrap text-sm gap-x-8 gap-y-4 mb-8">
+    <dl className="mb-8 flex flex-wrap gap-x-8 gap-y-4 text-sm">
       <div>
         <dt>Dernier paiement</dt>
         <dd>{formatEuros(lastPayment.montant_paye)}</dd>

@@ -20,7 +20,7 @@ export function ProjetsPanel({
       tabIndex={0}
     >
       {projetsParDemarches ? (
-        <ul className="flex flex-wrap justify-start items-end gap-y-8 gap-x-8 list-none p-0 m-0">
+        <ul className="m-0 flex list-none flex-wrap items-end justify-start gap-x-8 gap-y-8 p-0">
           {projetsParDemarches?.map((projets: Projets, index: number) => (
             <DemarcheProjets key={index.toString()} projets={projets} />
           ))}
@@ -34,11 +34,11 @@ export function ProjetsPanel({
 
 function DemarcheProjets({ key, projets }: { key: string; projets: Projets }) {
   return (
-    <li key={key} className="p-10 mt-0 w-full bg-gray-100">
-      <h2 className="mt-0 mb-5 leading-tight text-xl text-balance font-semibold">
+    <li key={key} className="mt-0 w-full bg-gray-100 p-10">
+      <h2 className="mt-0 mb-5 text-xl leading-tight font-semibold text-balance">
         {projets.demarche_title} ({projets.projets.length})
       </h2>
-      <ul className="list-none flex flex-wrap p-0 m-0 gap-8">
+      <ul className="m-0 flex list-none flex-wrap gap-8 p-0">
         {projets.projets.map((projet: Projet, index: number) => (
           <ProjetSection key={index.toString()} projet={projet} />
         ))}

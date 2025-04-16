@@ -32,10 +32,10 @@ const SimpleMetricCard = ({
   return (
     <div
       key={metricKey}
-      className={`bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-xs overflow-hidden`}
+      className={`border-t-4 bg-white p-4 shadow-md ${borderColorClass} overflow-hidden rounded-xs`}
       data-testid={`metric-${metricId}`}
     >
-      <h5 className="text-sm text-gray-600 font-medium mb-2 text-balance max-w-[18rem]">
+      <h5 className="mb-2 max-w-[18rem] text-sm font-medium text-balance text-gray-600">
         {metric.label}
       </h5>
 
@@ -88,10 +88,12 @@ const AvantApresTravauxCard = ({
   return (
     <div
       key={metricKey}
-      className={`relative bg-white p-4 shadow-md border-t-4 ${borderColorClass} rounded-xs overflow-hidden`}
+      className={`relative border-t-4 bg-white p-4 shadow-md ${borderColorClass}
+        overflow-hidden rounded-xs
+      `}
       data-testid={`metric-${metricId}`}
     >
-      <div className="text-sm text-gray-600 font-medium mb-2">
+      <div className="mb-2 text-sm font-medium text-gray-600">
         {metric.label}
       </div>
 
@@ -130,7 +132,7 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
         >
           {group.theme && (
             <h4
-              className="text-lg font-medium mb-4"
+              className="mb-4 text-lg font-medium"
               data-testid={`metric-group-title-${groupId}`}
             >
               {group.theme.label}

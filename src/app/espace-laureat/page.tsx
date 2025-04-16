@@ -26,7 +26,7 @@ export default async function EspaceLaureat({
     return (
       <Alert
         severity="error"
-        className="bg-white max-w-xl"
+        className="max-w-xl bg-white"
         small
         description={dossierNumbersResult.error}
       />
@@ -49,7 +49,7 @@ export default async function EspaceLaureat({
     "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
 
   return (
-    <div className="bg-white shadow-sm px-8 pt-6 pb-2">
+    <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
       <h1>
         {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
       </h1>
@@ -65,7 +65,7 @@ export default async function EspaceLaureat({
       )}
 
       {dossiersSubvention.length > 0 && (
-        <p className="max-w-lg text-sm my-6">
+        <p className="my-6 max-w-lg text-sm">
           Vous ne trouvez pas votre dossier ? {noResultMsg}
         </p>
       )}

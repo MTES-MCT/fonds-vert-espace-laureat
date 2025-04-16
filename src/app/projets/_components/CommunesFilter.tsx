@@ -29,13 +29,13 @@ export function CommunesFilter({
 
   return (
     <div className="mb-10">
-      <label htmlFor="commune-select" className="block mb-2 font-medium">
+      <label htmlFor="commune-select" className="mb-2 block font-medium">
         Filtrer sur une commune :
       </label>
       <div className="flex flex-wrap items-center gap-x-4">
         <select
           id="commune-select"
-          className="fr-select w-full max-w-xs mb-0"
+          className="fr-select mb-0 w-full max-w-xs"
           onChange={handleChange}
           value={codeCommune || ""}
         >

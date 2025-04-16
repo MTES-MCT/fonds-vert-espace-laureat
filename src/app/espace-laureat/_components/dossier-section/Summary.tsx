@@ -39,13 +39,13 @@ export const Summary = ({
         {resume && (
           <p
             title={resume}
-            className="text-gray-700 text-sm max-w-2xl line-clamp-3"
+            className="line-clamp-3 max-w-2xl text-sm text-gray-700"
             data-testid="project-summary"
           >
             {resume}
           </p>
         )}
-        <dl className="flex flex-wrap text-sm gap-x-8 gap-y-4">
+        <dl className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
           <div>
             <dt>Représentant légal</dt>
             <dd>

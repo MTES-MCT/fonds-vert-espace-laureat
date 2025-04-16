@@ -8,18 +8,21 @@ export function AucunDossier({
   noResultMsg: string;
 }) {
   return (
-    <div className="flex flex-col gap-y-6 text-center items-center justify-center border border-gray-200 w-full h-96 mb-6">
+    <div
+      className={`
+        mb-6 flex h-96 w-full flex-col items-center justify-center gap-y-6 border border-gray-200
+        text-center
+      `}
+    >
       <span
-        className="text-gray-900 fr-icon-warning-fill fr-icon--lg"
+        className="fr-icon-warning-fill fr-icon--lg text-gray-900"
         aria-hidden="true"
       ></span>
-      <h2 className="text-lg max-w-lg mb-0">
+      <h2 className="mb-0 max-w-lg text-lg">
         Aucun dossier n'est associé à l'adresse email {email} et au siret{" "}
         {siret}
       </h2>
-      <p className="max-w-3xl mb-0 text-gray-700  text-balance">
-        {noResultMsg}
-      </p>
+      <p className="mb-0 max-w-3xl text-balance text-gray-700">{noResultMsg}</p>
     </div>
   );
 }

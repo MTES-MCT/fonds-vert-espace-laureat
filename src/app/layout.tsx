@@ -25,7 +25,7 @@ export default async function RootLayout({
 
   const quickAccessItems = user
     ? [
-        <div key={0} className="sm:flex items-center gap-x-2 mb-4">
+        <div key={0} className="mb-4 items-center gap-x-2 sm:flex">
           <div className="text-sm font-medium">{user.email}</div>
           <HeaderQuickAccessItem
             quickAccessItem={{

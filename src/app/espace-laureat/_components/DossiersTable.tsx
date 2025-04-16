@@ -9,7 +9,7 @@ interface DossiersTableProps {
 
 function DsfrTable({ children }: { children: ReactNode }) {
   return (
-    <div className="fr-table--lg border-t border-l border-r">
+    <div className="fr-table--lg border-t border-r border-l">
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>
@@ -35,7 +35,7 @@ export default function DossiersTable({ dossiers }: DossiersTableProps) {
           {dossiers.map((dossier) => (
             <tr key={dossier.numero}>
               <td>{dossier.numero}</td>
-              <td className="whitespace-normal max-w-lg leading-5">
+              <td className="max-w-lg leading-5 whitespace-normal">
                 {dossier.champs.intituleProjet}
               </td>
               <td className="leading-tight">

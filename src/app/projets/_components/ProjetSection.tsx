@@ -30,10 +30,12 @@ export function ProjetSection({
   return (
     <li
       key={key}
-      className="shadow-xl border-t-4 border-green-400 flex flex-col gap-y-5 bg-white text-sm p-6 h-72 w-80"
+      className={`
+        flex h-72 w-80 flex-col gap-y-5 border-t-4 border-green-400 bg-white p-6 text-sm shadow-xl
+      `}
     >
       <div className="text-2xl font-bold text-gray-900">
-        <div className="text-xs font-normal text-gray-500 pb-1 mb-1 border-b border-gray-100">
+        <div className="mb-1 border-b border-gray-100 pb-1 text-xs font-normal text-gray-500">
           Subvention Fonds Vert
         </div>
         <div className="flex justify-between">
@@ -42,13 +44,13 @@ export function ProjetSection({
         </div>
       </div>
       <div className="text-base font-medium">
-        <div className="text-xs font-normal text-gray-500 pb-1 mb-1 border-b border-gray-100">
+        <div className="mb-1 border-b border-gray-100 pb-1 text-xs font-normal text-gray-500">
           Montant total du projet
         </div>
         {formattedMontantTotalDepense}
       </div>
-      <div className="h-full flex flex-col justify-between">
-        <p className="mb-0 line-clamp-4 text-sm text-gray-600 leading-tight">
+      <div className="flex h-full flex-col justify-between">
+        <p className="mb-0 line-clamp-4 text-sm leading-tight text-gray-600">
           {projet.nom_du_projet}
         </p>
         <p className="mb-0 text-right text-xs text-gray-500">

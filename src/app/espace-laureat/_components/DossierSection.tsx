@@ -57,7 +57,7 @@ export async function DossierSection({
 
   return (
     <div className="flex flex-wrap items-start gap-8">
-      <div className="flex-1 flex flex-col gap-y-10">
+      <div className="flex flex-1 flex-col gap-y-10">
         <div>
           <Breadcrumb
             className="mt-0 mb-6"
@@ -80,12 +80,12 @@ export async function DossierSection({
         </div>
 
         <div>
-          <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
-            <div className="flex justify-between items-end mb-3">
+          <div className="mb-4 flex-1 border border-gray-300 bg-white p-4 sm:p-8">
+            <div className="mb-3 flex items-end justify-between">
               <h3 className="mb-0">Subvention</h3>
               {informationFinanciere && (
                 <div
-                  className="text-xs text-gray-400 font-medium"
+                  className="text-xs font-medium text-gray-400"
                   data-testid="chorus-number"
                 >
                   Chorus n°
@@ -102,7 +102,7 @@ export async function DossierSection({
             />
           </div>
 
-          <div className="flex-1 p-4 sm:p-8 bg-white border border-gray-300 mb-4">
+          <div className="mb-4 flex-1 border border-gray-300 bg-white p-4 sm:p-8">
             <h3>Impact</h3>
             <MetricsGrid metriques={metriques} />
           </div>
@@ -116,8 +116,13 @@ export async function DossierSection({
           </Link>
         </div>
       </div>
-      <div className="p-6 pt-10 bg-white shadow-lg max-w-xs xl:w-80 sticky top-8 text-center text-balance">
-        <p className="text-xl font-semibold mb-2 text-gray-900">
+      <div
+        className={`
+          sticky top-8 max-w-xs bg-white p-6 pt-10 text-center text-balance shadow-lg
+          xl:w-80
+        `}
+      >
+        <p className="mb-2 text-xl font-semibold text-gray-900">
           Les données de votre projet participent à la transition écologique
         </p>
         <CompletionSidebar

@@ -17,14 +17,14 @@ export function SubventionDetails({
 
   return (
     <div data-testid="subvention-details">
-      <div className="pt-4 pb-6 border-b border-t border-gray-200">
+      <div className="border-t border-b border-gray-200 pt-4 pb-6">
         <p
-          className="mb-2 text-xl text-gray-800 font-semibold"
+          className="mb-2 text-xl font-semibold text-gray-800"
           data-testid="subvention-amount"
         >
           {formattedMontantSubventionAttribuee} attribué
         </p>
-        <p className="text-xs mb-3 max-w-xl text-balance">
+        <p className="mb-3 max-w-xl text-xs text-balance">
           Vous pouvez obtenir une avance au démarrage des travaux à hauteur de
           30% maximum du montant de la subvention.{" "}
           <a
@@ -36,7 +36,7 @@ export function SubventionDetails({
           </a>
         </p>
         <Link
-          className="fr-btn fr-btn--secondary fr-btn--sm bg-white hover:bg-gray-50 mb-0"
+          className="fr-btn fr-btn--secondary fr-btn--sm mb-0 bg-white hover:bg-gray-50"
           target="_blank"
           href="https://www.demarches-simplifiees.fr/commencer/813814e9-84dd-43ce-9e38-f64b561abf5f"
           data-testid="payment-request-link"

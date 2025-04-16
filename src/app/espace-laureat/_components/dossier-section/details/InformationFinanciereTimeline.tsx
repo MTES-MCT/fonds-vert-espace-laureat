@@ -59,7 +59,7 @@ export function InformationFinanciereTimeline({
 
         return (
           <div key={index} className="mt-5 max-w-3xl">
-            <dl className="flex flex-wrap text-sm gap-x-8 gap-y-4 mb-4">
+            <dl className="mb-4 flex flex-wrap gap-x-8 gap-y-4 text-sm">
               <div>
                 <dt>Engagés pour {sortedhistorique[0].annee}</dt>
                 <dd>{formatEuros(sortedhistorique[0].montant_engage)}</dd>
@@ -74,7 +74,7 @@ export function InformationFinanciereTimeline({
               <LastPaymentInfo group={group} formatDate={formatDate} />
 
               <details>
-                <summary className="list-item fr-link--sm fr-link fr-text--sm">
+                <summary className="fr-link--sm fr-link fr-text--sm list-item">
                   Voir l'historique des engagements
                 </summary>
                 <EngagementHistoryTable

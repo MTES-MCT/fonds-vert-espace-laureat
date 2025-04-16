@@ -63,7 +63,7 @@ export async function CompletionSidebar({
         à la subvention.
       </Help>
       <Link
-        className="fr-btn fr-btn--primary w-full inline-flex items-center justify-center"
+        className="fr-btn fr-btn--primary inline-flex w-full items-center justify-center"
         target="_blank"
         href={prefilledDsImpactUrl.toString()}
         data-testid="impact-evaluation-link"

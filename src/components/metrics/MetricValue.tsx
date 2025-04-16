@@ -37,11 +37,11 @@ export const MetricValue = ({
         </ul>
       ) : (
         <div
-          className={`font-semibold ${isStringValue ? "text-sm max-w-[18rem]" : "text-lg"}`}
+          className={`font-semibold ${isStringValue ? "max-w-[18rem] text-sm" : "text-lg"}`}
           data-testid={testId}
         >
           {formatMetric(value)}
-          {unite && <span className="text-sm font-normal ml-1">{unite}</span>}
+          {unite && <span className="ml-1 text-sm font-normal">{unite}</span>}
         </div>
       )}
     </div>
