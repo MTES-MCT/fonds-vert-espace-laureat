@@ -20,7 +20,7 @@ export async function importProjets(): Promise<Projet[]> {
 
   return new Promise((resolve, reject) => {
     fs.createReadStream(filePath)
-      .pipe(parse({ headers: true }))
+      .pipe(parse({ headers: true, delimiter: ";" }))
       .on("error", (error: Error) => reject(error))
       .on("data", (row) => {
         const projet: Projet = {
