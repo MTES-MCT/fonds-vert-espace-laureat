@@ -35,10 +35,5 @@ export const getDemarcheDossiersQuery = graphql(`
     ... on DateChamp {
       date
     }
-    ... on DossierLinkChamp {
-      dossier {
-        number
-      }
-    }
   }
 `);

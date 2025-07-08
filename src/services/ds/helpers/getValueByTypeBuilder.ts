@@ -35,8 +35,6 @@ export function getValueByTypeBuilder<T extends object>(mapping: {
           return add(mapping, champs, champ, champ.date);
         case "EngagementJuridiqueChamp":
           return add(mapping, champs, champ, champ.stringValue);
-        case "DossierLinkChamp":
-          return add(mapping, champs, champ, champ.dossier?.number);
         default:
           return champs;
       }
