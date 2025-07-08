@@ -29,7 +29,6 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
       accept: "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    next: { revalidate: 30 },
   });
 
   if (!response.ok) {
