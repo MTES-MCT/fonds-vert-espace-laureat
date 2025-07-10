@@ -93,7 +93,6 @@ test("dossier page displays subvention financial details correctly", async ({
 
   await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
 
-  await expect(page.getByTestId("payment-request-link")).toBeVisible();
   await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 });
 

@@ -70,7 +70,7 @@ export function InformationFinanciereTimeline({
               </div>
             </dl>
 
-            <div className="mb-4">
+            <div>
               <LastPaymentInfo group={group} formatDate={formatDate} />
 
               <details>
