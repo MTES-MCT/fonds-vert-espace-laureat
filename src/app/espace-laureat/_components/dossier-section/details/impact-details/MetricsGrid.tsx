@@ -26,7 +26,7 @@ const SimpleMetricCard = ({
 
   const metricId = labelToTestId(metric.label);
   const hasEstimee = metric.valeur_estimee !== null;
-  const hasReelle = metric.valeur_reelle !== null;
+  const hasReelle = metric.valeur_suivi !== null;
   const hasBothValues = hasEstimee && hasReelle;
 
   return (
@@ -41,7 +41,7 @@ const SimpleMetricCard = ({
 
       {hasBothValues ? (
         <ArrowedValues
-          values={[metric.valeur_estimee, metric.valeur_reelle]}
+          values={[metric.valeur_estimee, metric.valeur_suivi]}
           labels={["Valeur estimée", "Valeur réelle"]}
           unite={metric.unite}
         />
@@ -59,7 +59,7 @@ const SimpleMetricCard = ({
           {hasReelle && (
             <div className="mt-2">
               <MetricValue
-                value={metric.valeur_reelle}
+                value={metric.valeur_suivi}
                 label="Valeur réelle"
                 unite={metric.unite}
                 testId="valeur-reelle"

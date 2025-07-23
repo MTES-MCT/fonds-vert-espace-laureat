@@ -54,7 +54,7 @@ export function processMetrics(
           unite: apresValue.unite,
           valeur_avant_travaux: avantMetric.value.valeur_estimee,
           valeur_apres_travaux_estimee: apresValue.valeur_estimee,
-          valeur_apres_travaux_reelle: apresValue.valeur_reelle,
+          valeur_apres_travaux_reelle: apresValue.valeur_suivi,
         };
 
         processedKeys.add(apresKey);
@@ -71,7 +71,7 @@ export function processMetrics(
       label: value.label,
       unite: value.unite,
       valeur_estimee: value.valeur_estimee,
-      valeur_reelle: value.valeur_reelle,
+      valeur_suivi: value.valeur_suivi,
     };
 
     processedKeys.add(key);

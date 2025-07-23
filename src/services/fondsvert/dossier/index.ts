@@ -15,7 +15,7 @@ export type MetricFields = {
   label: string;
   unite: string | null;
   valeur_estimee: MetricValue;
-  valeur_reelle: MetricValue;
+  valeur_suivi: MetricValue;
 };
 
 export type SimpleMetric = {
@@ -23,7 +23,7 @@ export type SimpleMetric = {
   label: string;
   unite: string | null;
   valeur_estimee: MetricValue;
-  valeur_reelle: MetricValue;
+  valeur_suivi: MetricValue;
 };
 
 export type AvantApresTravaux = {
