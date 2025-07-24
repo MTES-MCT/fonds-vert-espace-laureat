@@ -25,6 +25,11 @@ export const getDossierQuery = graphql(`
         ...ChampFragment
         ...RootChampFragment
       }
+      groupeInstructeur {
+        instructeurs {
+          email
+        }
+      }
     }
   }
 

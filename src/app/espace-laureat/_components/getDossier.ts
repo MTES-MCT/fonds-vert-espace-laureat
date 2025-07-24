@@ -39,7 +39,15 @@ export async function getDossier({
       };
     }
 
-    if (userEmail !== dossier.usager.email && !isAdmin({ userEmail })) {
+    const instructeurEmails = dossier.groupeInstructeur.instructeurs.map(
+      (instructeur) => instructeur.email,
+    );
+
+    const isInstructeur = instructeurEmails.includes(userEmail);
+    const isDemandeur = userEmail === dossier.usager.email;
+    const isAdminUser = isAdmin({ userEmail });
+
+    if (!isDemandeur && !isInstructeur && !isAdminUser) {
       return {
         success: false,
         error: "Vous n'êtes pas autorisé à accéder à ce dossier",

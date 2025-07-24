@@ -23,6 +23,13 @@ const dossier = {
   usager: {
     email: LEGAL_REPRESENTATIVE_EMAIL,
   },
+  groupeInstructeur: {
+    instructeurs: [
+      {
+        email: "instructeur@example.com",
+      },
+    ],
+  },
   annotations: [
     {
       __typename: "TextChamp",
