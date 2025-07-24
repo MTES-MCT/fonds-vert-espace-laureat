@@ -16,6 +16,7 @@ const mockUser = {
 
 interface SessionData {
   user: typeof mockUser;
+  returnTo?: string;
 }
 
 const getSessionOptions = (): SessionOptions => {

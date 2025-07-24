@@ -4,9 +4,9 @@ import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 export default async function ConnexionPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error: string }>;
+  searchParams: Promise<{ error: string; returnTo?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, returnTo } = await searchParams;
 
   const errorMessages: Record<string, string> = {
     user_unknown: "Veuillez vous connecter pour accéder à cette page.",
@@ -30,7 +30,9 @@ export default async function ConnexionPage({
         vert. Identifiez-vous pour suivre vos subventions et soumettre une
         demande de versement.
       </p>
-      <ProConnectButton url="/api/auth/proconnect/login" />
+      <ProConnectButton
+        url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
+      />
     </div>
   );
 }

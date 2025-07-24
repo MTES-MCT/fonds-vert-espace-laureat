@@ -19,6 +19,7 @@ type Session = {
   state?: string;
   nonce?: string;
   idToken?: string;
+  returnTo?: string;
 };
 
 export type RequestWithSession = NextRequest & {

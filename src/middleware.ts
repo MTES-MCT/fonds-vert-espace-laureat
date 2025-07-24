@@ -8,9 +8,10 @@ export async function middleware(request: NextRequest) {
   const user = session?.user;
 
   if (!user) {
-    return NextResponse.redirect(
-      new URL("/connexion?error=user_unknown", request.url),
-    );
+    const loginUrl = new URL("/connexion", request.url);
+    loginUrl.searchParams.set("error", "user_unknown");
+    loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();
