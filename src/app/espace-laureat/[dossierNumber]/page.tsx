@@ -1,6 +1,7 @@
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
+import Error from "@/components/error/Error";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
@@ -46,7 +47,12 @@ export default async function DossierPage({
   ]);
 
   if (!dossierSubventionResult.success) {
-    return <>Introuvable</>;
+    return (
+      <Error
+        title="Erreur de chargement"
+        description={dossierSubventionResult.error}
+      />
+    );
   }
 
   const dossierSubvention = dossierSubventionResult.data;
