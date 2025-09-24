@@ -2,7 +2,7 @@ import { requireEnv } from "@/utils/env";
 
 type GristImpactRecord = {
   fields: {
-    action: string;
+    action: string[];
     metriques_API_Field_Name: string;
     champ_id_ds: string;
     champ_type: string;
@@ -41,14 +41,22 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
 
   const prefillRecords = data.records.filter(
     (record: GristImpactRecord) =>
-      record.fields.action === "à préremplir en entrée" &&
+      record.fields.action.includes("à préremplir en entrée") &&
       record.fields.metriques_API_Field_Name !== "",
   );
 
-  const champNumeroDossier = data.records.find(
+  const champNumeroDossierRecord = data.records.find(
     (record: GristImpactRecord) =>
       record.fields.champ_type === "Lien vers un autre dossier",
-  ).fields.champ_id_ds;
+  );
+
+  if (!champNumeroDossierRecord) {
+    throw new Error(
+      "Impossible de trouver le champ numéro de dossier dans le mapping Grist",
+    );
+  }
+
+  const champNumeroDossier = champNumeroDossierRecord.fields.champ_id_ds;
 
   const champsMetriques = prefillRecords.reduce(
     (acc: Record<string, string>, record: GristImpactRecord) => {
