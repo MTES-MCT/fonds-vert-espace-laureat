@@ -2,7 +2,6 @@ import "./globals.css";
 
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { createGetHtmlAttributes } from "@codegouvfr/react-dsfr/next-app-router/getHtmlAttributes";
-import { ReactElement } from "react";
 
 import { DsfrProvider } from "@/components/dsfr";
 import { defaultColorScheme } from "@/components/dsfr/defaultColorScheme";
@@ -14,7 +13,7 @@ import { getSession } from "@/utils/session";
 export default async function RootLayout({
   children,
 }: {
-  children: ReactElement;
+  children: React.ReactNode;
 }) {
   const lang = "fr";
   const { getHtmlAttributes } = createGetHtmlAttributes({
