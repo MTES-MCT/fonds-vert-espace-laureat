@@ -115,7 +115,7 @@ export async function getDossierFondsVert({
   const filteredMetriqueSpecifique =
     data.metrique_specifique &&
     Object.entries(data.metrique_specifique).reduce((acc, [key, value]) => {
-      if (Array.isArray(value)) {
+      if (Array.isArray(value) || value === null) {
         return acc;
       }
 
