@@ -242,3 +242,50 @@ test("navigation links work correctly", async ({ page }) => {
   const footerBack = page.getByTestId("footer-back");
   await expect(footerBack).toHaveAttribute("href", backLink);
 });
+
+test("dossier page handles 422 error with retry without metrics and impact", async ({
+  page,
+  msw,
+}) => {
+  let requestCount = 0;
+
+  msw.use(
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      ({ request }) => {
+        const url = new URL(request.url);
+        const includeMetrics = url.searchParams.get("include_metrics");
+        const includeImpact = url.searchParams.get("include_impact");
+
+        requestCount++;
+
+        if (includeMetrics === "true" || includeImpact === "true") {
+          return HttpResponse.json(
+            { error: "Unprocessable Entity" },
+            { status: 422 },
+          );
+        }
+
+        return HttpResponse.json({
+          data: {
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+          },
+        });
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByTestId("subvention-amount")).toContainText(
+    "10 073 564,00 € attribué",
+  );
+
+  await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
+
+  const impactSection = page.getByTestId("impact-section");
+  await expect(impactSection).not.toBeAttached();
+
+  expect(requestCount).toBe(2);
+});

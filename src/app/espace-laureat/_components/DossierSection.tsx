@@ -102,10 +102,15 @@ export async function DossierSection({
             />
           </div>
 
-          <div className="mb-4 flex-1 border border-gray-300 bg-white p-4 sm:p-8">
-            <h3>Impact</h3>
-            <MetricsGrid metriques={metriques} />
-          </div>
+          {metriques && Object.keys(metriques).length > 0 && (
+            <div
+              className="mb-4 flex-1 border border-gray-300 bg-white p-4 sm:p-8"
+              data-testid="impact-section"
+            >
+              <h3>Impact</h3>
+              <MetricsGrid metriques={metriques} />
+            </div>
+          )}
 
           <Link
             className="fr-btn fr-btn--tertiary bg-white xl:mb-20"

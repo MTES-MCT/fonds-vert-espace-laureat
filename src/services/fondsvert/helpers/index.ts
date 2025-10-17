@@ -19,15 +19,14 @@ export async function fetchFondsVert<T>(
 > {
   try {
     const token = await login();
-    const dossiersResponse = await fetch(
-      new URL(`/fonds_vert/${path}`, endpoint),
-      {
-        method: "GET",
-        headers: {
-          ...defaultHeaders({ token }),
-        },
+    const url = new URL(`/fonds_vert/${path}`, endpoint);
+
+    const dossiersResponse = await fetch(url, {
+      method: "GET",
+      headers: {
+        ...defaultHeaders({ token }),
       },
-    );
+    });
 
     if (!dossiersResponse.ok) {
       return {

@@ -93,6 +93,27 @@ export async function getDossierFondsVert({
     }
 
     if (dossierResult.status === 422) {
+      const paramsWithoutMetricsAndImpact = new URLSearchParams({
+        ...defaultDossierSearchParams,
+        include_metrics: "false",
+        include_impact: "false",
+      });
+
+      const retryResult = await fetchFondsVert<{ data: DossierFondsVert }>(
+        `v2/dossiers/${numeroDossier}?${paramsWithoutMetricsAndImpact.toString()}`,
+      );
+
+      if (retryResult.success) {
+        const retryData = retryResult.data.data;
+        return {
+          success: true,
+          data: {
+            ...retryData,
+            metrique_specifique: undefined,
+          },
+        };
+      }
+
       return {
         success: false,
         error:
