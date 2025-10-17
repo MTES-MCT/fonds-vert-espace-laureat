@@ -1,3 +1,4 @@
+import { Metrics, SocleCommun } from "@/services/fondsvert/dossier";
 import { requireEnv } from "@/utils/env";
 
 type GristImpactRecord = {
@@ -99,4 +100,67 @@ export async function getPrefillMappingCached() {
     _prefillMappingCached = await fetchPrefillMapping();
   }
   return _prefillMappingCached;
+}
+
+export type ImpactPrefillParams = {
+  numeroDossier: number;
+  metriques?: Metrics;
+  socleCommun?: SocleCommun;
+  nocache?: boolean;
+};
+
+export async function buildImpactPrefillUrl({
+  numeroDossier,
+  metriques,
+  socleCommun,
+  nocache = false,
+}: ImpactPrefillParams) {
+  const [dsImpactUrl] = requireEnv("DS_IMPACT_URL");
+
+  const prefillMapping = nocache
+    ? await fetchPrefillMapping()
+    : await getPrefillMappingCached();
+
+  const metricValues = metriques
+    ? Object.fromEntries(
+        Object.entries(metriques)
+          .filter(([, m]) => m.valeur_estimee !== null)
+          .map(([key, m]) => [key, m.valeur_estimee]),
+      )
+    : {};
+
+  const socleValues = socleCommun
+    ? {
+        demarche_title: socleCommun.demarche_title,
+        date_engagement_premiere_depense: socleCommun.date_debut_execution,
+        date_achevement_depenses_financees: socleCommun.date_fin_execution,
+        total_des_depenses: socleCommun.total_des_depenses,
+      }
+    : {};
+
+  const allMappings = {
+    ...prefillMapping.champsMetriques,
+    ...prefillMapping.champsSocleCommun,
+  };
+
+  const allValues = { ...metricValues, ...socleValues };
+
+  const prefilledDsImpactUrl = new URL(dsImpactUrl);
+
+  for (const [fieldName, fieldValue] of Object.entries(allValues)) {
+    const champId = allMappings[fieldName];
+    if (champId && fieldValue !== null) {
+      prefilledDsImpactUrl.searchParams.append(
+        `champ_${champId}`,
+        String(fieldValue),
+      );
+    }
+  }
+
+  prefilledDsImpactUrl.searchParams.append(
+    `champ_${prefillMapping.champNumeroDossier}`,
+    String(numeroDossier),
+  );
+
+  return prefilledDsImpactUrl.toString();
 }
