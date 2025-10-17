@@ -12,6 +12,7 @@ type GristImpactRecord = {
 type Mapping = {
   champNumeroDossier: string;
   champsMetriques: Record<string, string>;
+  champsSocleCommun: Record<string, string>;
 };
 
 export async function fetchPrefillMapping(): Promise<Mapping> {
@@ -66,9 +67,28 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
     {},
   );
 
+  const socleCommunFieldNames = [
+    "demarche_title",
+    "date_engagement_premiere_depense",
+    "date_achevement_depenses_financees",
+    "total_des_depenses",
+  ];
+
+  const champsSocleCommun = data.records
+    .filter(
+      (record: GristImpactRecord) =>
+        record.fields.action.includes("à préremplir en entrée") &&
+        socleCommunFieldNames.includes(record.fields.metriques_API_Field_Name),
+    )
+    .reduce((acc: Record<string, string>, record: GristImpactRecord) => {
+      acc[record.fields.metriques_API_Field_Name] = record.fields.champ_id_ds;
+      return acc;
+    }, {});
+
   return {
     champNumeroDossier,
     champsMetriques,
+    champsSocleCommun,
   };
 }
 

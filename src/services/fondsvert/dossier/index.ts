@@ -64,9 +64,17 @@ export interface InformationFinanciere {
   informations_engagement: InformationsEngagement[];
 }
 
+export interface SocleCommun {
+  demarche_title: string;
+  date_debut_execution: string | null;
+  date_fin_execution: string | null;
+  total_des_depenses: number;
+}
+
 export interface DossierFondsVert {
   metrique_specifique?: Metrics;
   information_financiere?: InformationFinanciere;
+  socle_commun?: SocleCommun;
 }
 
 export async function getDossierFondsVert({

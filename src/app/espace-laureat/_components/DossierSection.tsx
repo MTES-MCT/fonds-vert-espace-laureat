@@ -27,18 +27,20 @@ export async function DossierSection({
 }) {
   const subvention = dossierSubvention.champs;
 
-  const { errorMessage, metriques, informationFinanciere } =
+  const { errorMessage, metriques, informationFinanciere, socleCommun } =
     dossierFondsVertResult.success
       ? {
           errorMessage: null,
           metriques: dossierFondsVertResult.data.metrique_specifique,
           informationFinanciere:
             dossierFondsVertResult.data.information_financiere,
+          socleCommun: dossierFondsVertResult.data.socle_commun,
         }
       : {
           errorMessage: dossierFondsVertResult.error,
           metriques: {},
           informationFinanciere: undefined,
+          socleCommun: undefined,
         };
 
   const backLink = isAdmin
@@ -134,6 +136,7 @@ export async function DossierSection({
           numeroDossier={dossierSubvention.numero}
           impact={impact}
           metriques={metriques}
+          socleCommun={socleCommun}
           nocache={nocache}
         />
       </div>

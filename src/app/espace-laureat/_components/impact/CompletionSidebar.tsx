@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
 import { ImpactReview } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/ImpactReview";
 import { Impact } from "@/services/ds/impact";
-import { Metrics } from "@/services/fondsvert/dossier";
+import { Metrics, SocleCommun } from "@/services/fondsvert/dossier";
 import {
   fetchPrefillMapping,
   getPrefillMappingCached,
@@ -14,11 +14,13 @@ export async function CompletionSidebar({
   numeroDossier,
   impact,
   metriques,
+  socleCommun,
   nocache,
 }: {
   numeroDossier: number;
   impact?: Impact;
   metriques?: Metrics;
+  socleCommun?: SocleCommun;
   nocache: boolean;
 }) {
   // Si le formulaire a déjà été rempli alors on affiche un bouton pour le consulter :
@@ -33,20 +35,38 @@ export async function CompletionSidebar({
     ? await fetchPrefillMapping()
     : await getPrefillMappingCached();
 
-  const metricEntries = metriques
-    ? Object.entries(metriques).filter(
-        ([, metricValue]) => metricValue.valeur_estimee !== null,
+  const metricValues = metriques
+    ? Object.fromEntries(
+        Object.entries(metriques)
+          .filter(([, m]) => m.valeur_estimee !== null)
+          .map(([key, m]) => [key, m.valeur_estimee]),
       )
-    : [];
+    : {};
+
+  const socleValues = socleCommun
+    ? {
+        demarche_title: socleCommun.demarche_title,
+        date_engagement_premiere_depense: socleCommun.date_debut_execution,
+        date_achevement_depenses_financees: socleCommun.date_fin_execution,
+        total_des_depenses: socleCommun.total_des_depenses,
+      }
+    : {};
+
+  const allMappings = {
+    ...prefillMapping.champsMetriques,
+    ...prefillMapping.champsSocleCommun,
+  };
+
+  const allValues = { ...metricValues, ...socleValues };
 
   const prefilledDsImpactUrl = new URL(dsImpactUrl);
 
-  for (const [metricKey, metricValue] of metricEntries) {
-    const champId = prefillMapping.champsMetriques[metricKey];
-    if (champId) {
+  for (const [fieldName, fieldValue] of Object.entries(allValues)) {
+    const champId = allMappings[fieldName];
+    if (champId && fieldValue !== null) {
       prefilledDsImpactUrl.searchParams.append(
         `champ_${champId}`,
-        String(metricValue.valeur_estimee),
+        String(fieldValue),
       );
     }
   }
