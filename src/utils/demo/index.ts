@@ -152,7 +152,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
       ],
       valeur_suivi: null,
     },
-    type_batiments: {
+    type_batiment: {
       label: "Types des bâtiments",
       unite: null,
       valeur_estimee: ["École (établissement public du premier degré)"],

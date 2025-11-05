@@ -151,7 +151,7 @@ export const gristChampsDS: { records: GristImpactRecord[] } = {
         label_champ_ds: "Type(s) de bâtiments concernés par l'opération",
         champ_type: "Choix multiple",
         action: ["L", "à préremplir en entrée", "à récupérer en sortie"],
-        metriques_API_Field_Name: "type_batiment_renovation",
+        metriques_API_Field_Name: "type_batiment",
       },
     },
     {
