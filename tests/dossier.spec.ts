@@ -292,3 +292,25 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
 
   expect(requestCount).toBe(2);
 });
+
+test("dossier page filters out metrics with 'Donnée non disponible' in label", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(
+    page.getByTestId("metric-surface-du-batiment-avant-projet"),
+  ).toBeVisible();
+
+  await expect(
+    page.getByTestId(
+      "metric-surface-du-batiment-apres-le-projet-donnee-non-disponible-en-2024",
+    ),
+  ).not.toBeAttached();
+
+  await expect(
+    page.getByTestId(
+      "metric-le-projet-modifie-t-il-la-surfaces-des-batiments-concernes-donnee-non-disponible-en-2024",
+    ),
+  ).not.toBeAttached();
+});

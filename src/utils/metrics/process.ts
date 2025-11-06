@@ -7,6 +7,10 @@ import {
 const AVANT_TRAVAUX = "avant travaux";
 const APRES_TRAVAUX = "après travaux";
 
+function hasUnavailableData(metric: MetricFields): boolean {
+  return metric.label.includes("Donnée non disponible");
+}
+
 function extractBaseMetricName(label: string): string {
   return label
     .replace(` ${AVANT_TRAVAUX}`, "")
@@ -43,7 +47,8 @@ export function processMetrics(
     if (
       processedKeys.has(apresKey) ||
       apresValue.valeur_estimee === null ||
-      !apresValue.label
+      !apresValue.label ||
+      hasUnavailableData(apresValue)
     )
       continue;
 
@@ -51,7 +56,7 @@ export function processMetrics(
       const baseLabel = extractBaseMetricName(apresValue.label);
       const avantMetric = findAvantTravauxMetric(baseLabel, metrics);
 
-      if (avantMetric) {
+      if (avantMetric && !hasUnavailableData(avantMetric.value)) {
         const newKey = baseLabel.toLowerCase().replace(/\s+/g, "_");
         processedMetrics[newKey] = {
           _typename: "AvantApresTravaux",
@@ -69,7 +74,12 @@ export function processMetrics(
   }
 
   for (const [key, value] of Object.entries(metrics)) {
-    if (processedKeys.has(key) || value.valeur_estimee === null || !value.label)
+    if (
+      processedKeys.has(key) ||
+      value.valeur_estimee === null ||
+      !value.label ||
+      hasUnavailableData(value)
+    )
       continue;
 
     processedMetrics[key] = {

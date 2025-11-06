@@ -52,7 +52,8 @@ export const demoDossierFondsVert: DossierFondsVert = {
       valeur_suivi: null,
     },
     surface_batiment_m2_apres_projet: {
-      label: "Surface du bâtiment après projet",
+      label:
+        "Surface du batiment après le projet. Donnée non disponible en 2024",
       unite: "m²",
       valeur_estimee: null,
       valeur_suivi: null,
@@ -64,7 +65,8 @@ export const demoDossierFondsVert: DossierFondsVert = {
       valeur_suivi: null,
     },
     modifie_surface_batiment: {
-      label: "Modification de la surface du bâtiment",
+      label:
+        "Le projet modifie-t-il la surfaces des bâtiments concernés? Donnée non disponible en 2024",
       unite: null,
       valeur_estimee: null,
       valeur_suivi: null,
