@@ -1,4 +1,9 @@
-import { Metrics, SocleCommun } from "@/services/fondsvert/dossier";
+import {
+  isMetricFields,
+  MetricFields,
+  Metrics,
+  SocleCommun,
+} from "@/services/fondsvert/dossier";
 import { requireEnv } from "@/utils/env";
 
 type GristImpactRecord = {
@@ -124,7 +129,9 @@ export async function buildImpactPrefillUrl({
   const metricValues = metriques
     ? Object.fromEntries(
         Object.entries(metriques)
-          .filter(([, m]) => m.valeur_estimee !== null)
+          .filter((entry): entry is [string, MetricFields] =>
+            isMetricFields(entry[1]),
+          )
           .map(([key, m]) => [key, m.valeur_estimee]),
       )
     : {};

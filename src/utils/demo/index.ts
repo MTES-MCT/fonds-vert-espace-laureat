@@ -163,6 +163,12 @@ export const demoDossierFondsVert: DossierFondsVert = {
       ],
       valeur_suivi: null,
     },
+    uais: [
+      {
+        code_uai: "01234ABC",
+        nom_uai: "Ecole primaire, Pierrepont (01234ABC)",
+      },
+    ],
   },
   information_financiere: {
     centre_financier_chorus: CHORUS_NUMBER,

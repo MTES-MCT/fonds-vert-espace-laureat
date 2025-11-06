@@ -37,7 +37,21 @@ export type AvantApresTravaux = {
 
 export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
 
-export type Metrics = Record<string, MetricFields>;
+export type Metrics = Record<string, MetricFields | unknown>;
+
+export function isMetricFields(value: unknown): value is MetricFields {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "label" in value &&
+    "unite" in value &&
+    "valeur_estimee" in value &&
+    "valeur_suivi" in value &&
+    typeof value.label === "string" &&
+    value.label.length > 0 &&
+    value.valeur_estimee !== null
+  );
+}
 
 interface DemandePaiement {
   numero_dp: string;

@@ -1,4 +1,5 @@
 import {
+  isMetricFields,
   MetricFields,
   Metrics,
   ProcessedMetric,
@@ -24,7 +25,7 @@ function findAvantTravauxMetric(
 ): { key: string; value: MetricFields } | null {
   for (const [key, value] of Object.entries(metrics)) {
     if (
-      value.label &&
+      isMetricFields(value) &&
       value.label.includes(` ${AVANT_TRAVAUX}`) &&
       extractBaseMetricName(value.label) === baseLabel
     ) {
@@ -45,10 +46,9 @@ export function processMetrics(
 
   for (const [apresKey, apresValue] of Object.entries(metrics)) {
     if (
-      processedKeys.has(apresKey) ||
-      apresValue.valeur_estimee === null ||
-      !apresValue.label ||
-      hasUnavailableData(apresValue)
+      !isMetricFields(apresValue) ||
+      hasUnavailableData(apresValue) ||
+      processedKeys.has(apresKey)
     )
       continue;
 
@@ -56,7 +56,11 @@ export function processMetrics(
       const baseLabel = extractBaseMetricName(apresValue.label);
       const avantMetric = findAvantTravauxMetric(baseLabel, metrics);
 
-      if (avantMetric && !hasUnavailableData(avantMetric.value)) {
+      if (
+        avantMetric &&
+        isMetricFields(avantMetric.value) &&
+        !hasUnavailableData(avantMetric.value)
+      ) {
         const newKey = baseLabel.toLowerCase().replace(/\s+/g, "_");
         processedMetrics[newKey] = {
           _typename: "AvantApresTravaux",
@@ -75,10 +79,9 @@ export function processMetrics(
 
   for (const [key, value] of Object.entries(metrics)) {
     if (
-      processedKeys.has(key) ||
-      value.valeur_estimee === null ||
-      !value.label ||
-      hasUnavailableData(value)
+      !isMetricFields(value) ||
+      hasUnavailableData(value) ||
+      processedKeys.has(key)
     )
       continue;
 
