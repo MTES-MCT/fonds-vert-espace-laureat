@@ -98,3 +98,24 @@ test("impact prefill link handles multi-value fields correctly", async ({
     "Établissement public du second degré",
   ]);
 });
+
+test("page loads in degraded mode when Grist is unavailable", async ({
+  page,
+  msw,
+}) => {
+  await msw.use(
+    http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
+      return new HttpResponse(null, { status: 503 });
+    }),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}?nocache=1`);
+
+  const evaluationLink = page.getByTestId("impact-evaluation-link");
+  await expect(evaluationLink).toBeVisible();
+
+  const href = await evaluationLink.getAttribute("href");
+  const url = new URL(href!);
+
+  expect(url.searchParams.toString()).toBe("");
+});

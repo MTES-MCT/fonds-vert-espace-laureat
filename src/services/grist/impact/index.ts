@@ -21,7 +21,12 @@ type Mapping = {
   champsSocleCommun: Record<string, string>;
 };
 
-export async function fetchPrefillMapping(): Promise<Mapping> {
+type MappingState =
+  | { status: "not-requested" }
+  | { status: "success"; data: Mapping }
+  | { status: "error"; error: string };
+
+export async function fetchPrefillMapping(): Promise<MappingState> {
   const [docId, apiKey, apiEndpoint] = requireEnv(
     "GRIST_DOC_ID",
     "GRIST_API_KEY",
@@ -39,9 +44,13 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Impossible de récupérer le mapping de pré-remplissage du formulaire d'impact (${response.status})`,
+    console.error(
+      `Impossible de récupérer le mapping de pré-remplissage du formulaire d'impact (${response.status}) - mode dégradé activé`,
     );
+    return {
+      status: "error",
+      error: `Service Grist indisponible (${response.status})`,
+    };
   }
 
   const data = await response.json();
@@ -92,16 +101,19 @@ export async function fetchPrefillMapping(): Promise<Mapping> {
     }, {});
 
   return {
-    champNumeroDossier,
-    champsMetriques,
-    champsSocleCommun,
+    status: "success",
+    data: {
+      champNumeroDossier,
+      champsMetriques,
+      champsSocleCommun,
+    },
   };
 }
 
-let _prefillMappingCached: Mapping | undefined;
+let _prefillMappingCached: MappingState = { status: "not-requested" };
 
 export async function getPrefillMappingCached() {
-  if (!_prefillMappingCached) {
+  if (_prefillMappingCached.status === "not-requested") {
     _prefillMappingCached = await fetchPrefillMapping();
   }
   return _prefillMappingCached;
@@ -126,6 +138,12 @@ export async function buildImpactPrefillUrl({
     ? await fetchPrefillMapping()
     : await getPrefillMappingCached();
 
+  const prefilledDsImpactUrl = new URL(dsImpactUrl);
+
+  if (prefillMapping.status !== "success") {
+    return prefilledDsImpactUrl.toString();
+  }
+
   const metricValues = metriques
     ? Object.fromEntries(
         Object.entries(metriques)
@@ -146,13 +164,11 @@ export async function buildImpactPrefillUrl({
     : {};
 
   const allMappings = {
-    ...prefillMapping.champsMetriques,
-    ...prefillMapping.champsSocleCommun,
+    ...prefillMapping.data.champsMetriques,
+    ...prefillMapping.data.champsSocleCommun,
   };
 
   const allValues = { ...metricValues, ...socleValues };
-
-  const prefilledDsImpactUrl = new URL(dsImpactUrl);
 
   for (const [fieldName, fieldValue] of Object.entries(allValues)) {
     const champId = allMappings[fieldName];
@@ -174,7 +190,7 @@ export async function buildImpactPrefillUrl({
   }
 
   prefilledDsImpactUrl.searchParams.append(
-    `champ_${prefillMapping.champNumeroDossier}`,
+    `champ_${prefillMapping.data.champNumeroDossier}`,
     String(numeroDossier),
   );
 
