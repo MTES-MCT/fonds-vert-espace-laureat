@@ -144,9 +144,12 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   await expect(typeBatiments).toContainText("Types des bâtiments");
 
   const typeBatimentsTags = typeBatiments.locator("li");
-  await expect(typeBatimentsTags).toHaveCount(1);
+  await expect(typeBatimentsTags).toHaveCount(2);
   await expect(typeBatimentsTags.nth(0)).toContainText(
     "École (établissement public du premier degré)",
+  );
+  await expect(typeBatimentsTags.nth(1)).toContainText(
+    "Établissement public du second degré",
   );
 
   await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();

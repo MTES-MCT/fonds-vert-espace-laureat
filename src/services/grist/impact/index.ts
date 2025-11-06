@@ -150,10 +150,19 @@ export async function buildImpactPrefillUrl({
   for (const [fieldName, fieldValue] of Object.entries(allValues)) {
     const champId = allMappings[fieldName];
     if (champId && fieldValue !== null) {
-      prefilledDsImpactUrl.searchParams.append(
-        `champ_${champId}`,
-        String(fieldValue),
-      );
+      if (Array.isArray(fieldValue)) {
+        fieldValue.forEach((value) => {
+          prefilledDsImpactUrl.searchParams.append(
+            `champ_${champId}[]`,
+            String(value),
+          );
+        });
+      } else {
+        prefilledDsImpactUrl.searchParams.append(
+          `champ_${champId}`,
+          String(fieldValue),
+        );
+      }
     }
   }
 

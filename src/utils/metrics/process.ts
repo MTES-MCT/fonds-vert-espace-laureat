@@ -20,6 +20,7 @@ function findAvantTravauxMetric(
 ): { key: string; value: MetricFields } | null {
   for (const [key, value] of Object.entries(metrics)) {
     if (
+      value.label &&
       value.label.includes(` ${AVANT_TRAVAUX}`) &&
       extractBaseMetricName(value.label) === baseLabel
     ) {
@@ -39,7 +40,11 @@ export function processMetrics(
   const processedKeys = new Set<string>();
 
   for (const [apresKey, apresValue] of Object.entries(metrics)) {
-    if (processedKeys.has(apresKey) || apresValue.valeur_estimee === null)
+    if (
+      processedKeys.has(apresKey) ||
+      apresValue.valeur_estimee === null ||
+      !apresValue.label
+    )
       continue;
 
     if (apresValue.label.includes(` ${APRES_TRAVAUX}`)) {
@@ -64,7 +69,8 @@ export function processMetrics(
   }
 
   for (const [key, value] of Object.entries(metrics)) {
-    if (processedKeys.has(key) || value.valeur_estimee === null) continue;
+    if (processedKeys.has(key) || value.valeur_estimee === null || !value.label)
+      continue;
 
     processedMetrics[key] = {
       _typename: "Simple",

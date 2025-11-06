@@ -78,3 +78,23 @@ test("impact prefill link is generated correctly with metrics", async ({
   // Champs qui ne doivent pas être dans l'URL car "à récupérer en sortie":
   expect(url.searchParams.has("champ_Q2hhbXAtNTQ1OTM1Nw")).toBe(false);
 });
+
+test("impact prefill link handles multi-value fields correctly", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const evaluationLink = page.getByTestId("impact-evaluation-link");
+
+  const href = await evaluationLink.getAttribute("href");
+  const url = new URL(href!);
+
+  // Vérifie que le champ multi-valeur type_batiments utilise la syntaxe avec []
+  const typeBatimentsValues = url.searchParams.getAll(
+    "champ_Q2hhbXAtNTQ1OTE2Nw[]",
+  );
+  expect(typeBatimentsValues).toEqual([
+    "École (établissement public du premier degré)",
+    "Établissement public du second degré",
+  ]);
+});

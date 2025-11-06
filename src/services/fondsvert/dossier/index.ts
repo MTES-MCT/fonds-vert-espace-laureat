@@ -140,11 +140,10 @@ export async function getDossierFondsVert({
 
   const data = dossierResult.data.data;
 
-  // Supprime les champs metriques avec du type Array (non supporté à ce jour)
   const filteredMetriqueSpecifique =
     data.metrique_specifique &&
     Object.entries(data.metrique_specifique).reduce((acc, [key, value]) => {
-      if (Array.isArray(value) || value === null) {
+      if (value === null) {
         return acc;
       }
 
