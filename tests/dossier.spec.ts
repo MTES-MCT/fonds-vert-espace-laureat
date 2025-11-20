@@ -314,3 +314,11 @@ test("dossier page filters out metrics with 'Donnée non disponible' in label", 
     ),
   ).not.toBeAttached();
 });
+
+test("dossier page displays year badge when annee_millesime is present", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByText("Édition 2023")).toBeVisible();
+});

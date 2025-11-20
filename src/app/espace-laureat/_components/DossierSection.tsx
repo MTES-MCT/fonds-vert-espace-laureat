@@ -78,6 +78,7 @@ export async function DossierSection({
             emailRepresentantLegal={subvention.emailRepresentantLegal}
             emailResponsableSuivi={subvention.emailResponsableSuivi}
             departementImplantation={subvention.departementImplantation}
+            socleCommun={socleCommun}
           />
         </div>
 

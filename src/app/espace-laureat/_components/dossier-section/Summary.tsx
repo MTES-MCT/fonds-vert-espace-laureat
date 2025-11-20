@@ -2,6 +2,7 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
+import { SocleCommun } from "@/services/fondsvert/dossier";
 
 export const Summary = ({
   intitule,
@@ -11,6 +12,7 @@ export const Summary = ({
   emailRepresentantLegal,
   emailResponsableSuivi,
   departementImplantation,
+  socleCommun,
 }: {
   intitule?: string;
   resume?: string;
@@ -19,6 +21,7 @@ export const Summary = ({
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
   departementImplantation?: string;
+  socleCommun?: SocleCommun;
 }) => {
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
@@ -35,6 +38,11 @@ export const Summary = ({
           {mesureFondsVert}
         </Tag>
       </h2>
+      {socleCommun?.annee_millesime && (
+        <Badge severity="info" small className="mb-4">
+          Édition {socleCommun.annee_millesime}
+        </Badge>
+      )}
       <div>
         {resume && (
           <p

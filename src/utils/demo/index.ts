@@ -43,6 +43,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
     date_debut_execution: "2024-01-15",
     date_fin_execution: "2025-12-31",
     total_des_depenses: 899700,
+    annee_millesime: 2023,
   },
   metrique_specifique: {
     surface_batiment_m2_avant_projet: {
