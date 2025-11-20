@@ -54,6 +54,20 @@ export const Summary = ({
           </p>
         )}
         <dl className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
+          {socleCommun?.entreprise_raison_sociale && (
+            <div>
+              <dt id="company-name-label">Raison sociale</dt>
+              <dd aria-labelledby="company-name-label">
+                {socleCommun.entreprise_raison_sociale}
+              </dd>
+            </div>
+          )}
+          {socleCommun?.siret && (
+            <div>
+              <dt id="siret-label">SIRET</dt>
+              <dd aria-labelledby="siret-label">{socleCommun.siret}</dd>
+            </div>
+          )}
           <div>
             <dt>Représentant légal</dt>
             <dd>

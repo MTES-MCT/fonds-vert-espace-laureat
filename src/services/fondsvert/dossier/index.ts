@@ -84,6 +84,8 @@ export interface SocleCommun {
   date_fin_execution: string | null;
   total_des_depenses: number;
   annee_millesime?: number;
+  entreprise_raison_sociale?: string;
+  siret?: string;
 }
 
 export interface DossierFondsVert {

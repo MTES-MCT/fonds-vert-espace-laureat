@@ -44,6 +44,8 @@ export const demoDossierFondsVert: DossierFondsVert = {
     date_fin_execution: "2025-12-31",
     total_des_depenses: 899700,
     annee_millesime: 2023,
+    entreprise_raison_sociale: "COMMUNE DE NANTES",
+    siret: "12345678910111",
   },
   metrique_specifique: {
     surface_batiment_m2_avant_projet: {

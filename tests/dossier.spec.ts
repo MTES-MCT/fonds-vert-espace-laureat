@@ -315,6 +315,18 @@ test("dossier page filters out metrics with 'Donnée non disponible' in label", 
   ).not.toBeAttached();
 });
 
+test("dossier page displays company information from socle_commun", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByLabel("Raison sociale")).toContainText(
+    "COMMUNE DE NANTES",
+  );
+
+  await expect(page.getByLabel("SIRET")).toContainText("12345678910111");
+});
+
 test("dossier page displays year badge when annee_millesime is present", async ({
   page,
 }) => {
