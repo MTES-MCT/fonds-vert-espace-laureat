@@ -86,6 +86,7 @@ export interface SocleCommun {
   annee_millesime?: number;
   entreprise_raison_sociale?: string;
   siret?: string;
+  nom_commune?: string;
 }
 
 export interface DossierFondsVert {

@@ -8,6 +8,7 @@ import {
 
 import {
   CHORUS_NUMBER,
+  COMMUNE,
   CONTACT_EMAIL,
   DEPARTMENT,
   DOSSIER_NUMBER,
@@ -79,7 +80,13 @@ test("dossier page displays project information correctly", async ({
 
   await expect(page.getByTestId("contact-email")).toContainText(CONTACT_EMAIL);
 
-  await expect(page.getByTestId("department")).toContainText(DEPARTMENT);
+  await expect(page.getByLabel("Département d'implantation")).toContainText(
+    DEPARTMENT,
+  );
+
+  await expect(page.getByLabel("Commune principale impactée")).toContainText(
+    COMMUNE,
+  );
 });
 
 test("dossier page displays subvention financial details correctly", async ({

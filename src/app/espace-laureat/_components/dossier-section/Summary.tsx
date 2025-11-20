@@ -87,13 +87,19 @@ export const Summary = ({
             </dd>
           </div>
           <div>
-            <dt>Département d'implantation</dt>
-            <dd data-testid="department">
+            <dt id="department-label">Département d'implantation</dt>
+            <dd aria-labelledby="department-label" data-testid="department">
               {departementImplantation
                 ? departementImplantation
                 : "Aucun département précisé"}
             </dd>
           </div>
+          {socleCommun?.nom_commune && (
+            <div>
+              <dt id="commune-label">Commune principale impactée</dt>
+              <dd aria-labelledby="commune-label">{socleCommun.nom_commune}</dd>
+            </div>
+          )}
           {numeroDossierAgenceEau && (
             <div data-testid="agency-container">
               <dt>Numéro de dossier agence de l'eau</dt>

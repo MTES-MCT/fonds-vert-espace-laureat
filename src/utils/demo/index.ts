@@ -3,6 +3,8 @@ import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 import {
   CHORUS_NUMBER,
+  COMMUNE,
+  DEPARTMENT,
   LEGAL_REPRESENTATIVE_EMAIL,
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
@@ -27,7 +29,7 @@ export const demoDossier1: Dossier = {
   champs: {
     intituleProjet: PROJECT_TITLE,
     resumeProjet: PROJECT_SUMMARY,
-    departementImplantation: "Nantes",
+    departementImplantation: DEPARTMENT,
     montantSubventionAttribuee: 10073574,
     emailRepresentantLegal: LEGAL_REPRESENTATIVE_EMAIL,
     emailResponsableSuivi: "bob.doe@example.com",
@@ -46,6 +48,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
     annee_millesime: 2023,
     entreprise_raison_sociale: "COMMUNE DE NANTES",
     siret: "12345678910111",
+    nom_commune: COMMUNE,
   },
   metrique_specifique: {
     surface_batiment_m2_avant_projet: {
