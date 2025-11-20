@@ -26,69 +26,32 @@ export const Summary = ({
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   return (
-    <div data-testid="dossier-summary">
-      <h2 className="flex flex-wrap items-center gap-4">
-        <span data-testid="project-title">{intitule ?? "N/A"}</span>
-        <Tag
-          small
-          className="bg-white shadow-sm"
-          iconId="fr-icon-award-fill"
-          data-testid="program-title"
-        >
-          {mesureFondsVert}
-        </Tag>
-      </h2>
-      {socleCommun?.annee_millesime && (
-        <Badge severity="info" small className="mb-4">
-          Édition {socleCommun.annee_millesime}
-        </Badge>
-      )}
+    <div className="space-y-8">
       <div>
+        <h2>
+          <span>{intitule ?? "N/A"}</span>{" "}
+          <Tag small className="bg-white shadow-sm" iconId="fr-icon-award-fill">
+            {mesureFondsVert}
+          </Tag>
+        </h2>
+        {socleCommun?.annee_millesime && (
+          <Badge severity="info" small>
+            Édition {socleCommun.annee_millesime}
+          </Badge>
+        )}
+      </div>
+
+      <section>
+        <h3>Présentation du projet</h3>
         {resume && (
-          <p
-            title={resume}
-            className="line-clamp-3 max-w-2xl text-sm text-gray-700"
-            data-testid="project-summary"
-          >
+          <p title={resume} className="line-clamp-3 max-w-2xl">
             {resume}
           </p>
         )}
-        <dl className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
-          {socleCommun?.entreprise_raison_sociale && (
-            <div>
-              <dt id="company-name-label">Raison sociale</dt>
-              <dd aria-labelledby="company-name-label">
-                {socleCommun.entreprise_raison_sociale}
-              </dd>
-            </div>
-          )}
-          {socleCommun?.siret && (
-            <div>
-              <dt id="siret-label">SIRET</dt>
-              <dd aria-labelledby="siret-label">{socleCommun.siret}</dd>
-            </div>
-          )}
-          <div>
-            <dt>Représentant légal</dt>
-            <dd>
-              <EmailLink
-                email={emailRepresentantLegal}
-                data-testid="legal-rep-email"
-              />
-            </dd>
-          </div>
-          <div>
-            <dt>Responsable de suivi</dt>
-            <dd>
-              <EmailLink
-                email={emailResponsableSuivi}
-                data-testid="contact-email"
-              />
-            </dd>
-          </div>
+        <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           <div>
             <dt id="department-label">Département d'implantation</dt>
-            <dd aria-labelledby="department-label" data-testid="department">
+            <dd aria-labelledby="department-label">
               {departementImplantation
                 ? departementImplantation
                 : "Aucun département précisé"}
@@ -101,20 +64,49 @@ export const Summary = ({
             </div>
           )}
           {numeroDossierAgenceEau && (
-            <div data-testid="agency-container">
+            <div>
               <dt>Numéro de dossier agence de l'eau</dt>
               <dd>
-                <Badge
-                  className="bg-white shadow-sm"
-                  data-testid="agency-dossier-number"
-                >
+                <Badge className="bg-white shadow-sm">
                   {numeroDossierAgenceEau}
                 </Badge>
               </dd>
             </div>
           )}
         </dl>
-      </div>
+      </section>
+
+      <section>
+        <h3>Identité du porteur de projet</h3>
+        <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+          {socleCommun?.entreprise_raison_sociale && (
+            <div>
+              <dt id="company-name-label">Nom du porteur</dt>
+              <dd aria-labelledby="company-name-label">
+                {socleCommun.entreprise_raison_sociale}
+              </dd>
+            </div>
+          )}
+          {socleCommun?.siret && (
+            <div>
+              <dt id="siret-label">SIRET</dt>
+              <dd aria-labelledby="siret-label">{socleCommun.siret}</dd>
+            </div>
+          )}
+          <div>
+            <dt id="legal-rep-label">Représentant légal</dt>
+            <dd aria-labelledby="legal-rep-label">
+              <EmailLink email={emailRepresentantLegal} />
+            </dd>
+          </div>
+          <div>
+            <dt id="contact-label">Responsable du suivi</dt>
+            <dd aria-labelledby="contact-label">
+              <EmailLink email={emailResponsableSuivi} />
+            </dd>
+          </div>
+        </dl>
+      </section>
     </div>
   );
 };

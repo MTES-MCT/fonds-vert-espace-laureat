@@ -1,4 +1,5 @@
 import {
+  AGENCE_EAU_NUMBER,
   CONTACT_EMAIL,
   DEPARTMENT,
   LEGAL_REPRESENTATIVE_EMAIL,
@@ -245,6 +246,11 @@ const dossier = {
       __typename: "TextChamp",
       champDescriptorId: "Q2hhbXAtMzAxOTI0NA==",
       stringValue: "",
+    },
+    {
+      __typename: "TextChamp",
+      champDescriptorId: "Q2hhbXAtMzAyNTQ3NQ==",
+      stringValue: AGENCE_EAU_NUMBER,
     },
     {
       __typename: "TextChamp",

@@ -2,6 +2,7 @@ import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
 
 import {
+  AGENCE_EAU_NUMBER,
   CHORUS_NUMBER,
   COMMUNE,
   DEPARTMENT,
@@ -36,6 +37,7 @@ export const demoDossier1: Dossier = {
     dateSignatureDecision: new Date(),
     numeroEngagementJuridique: "987654",
     autresNumerosEngagementJuridique: ["123456", "654321"],
+    numeroDossierAgenceEau: AGENCE_EAU_NUMBER,
   },
 };
 

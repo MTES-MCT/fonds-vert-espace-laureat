@@ -9,3 +9,6 @@ export const PROJECT_SUMMARY =
 export const PROJECT_TITLE = "Rénovation de la piscine Jaques Demy";
 export const PROGRAM_TITLE =
   "Rénovation énergétique des bâtiments publics locaux";
+export const COMPANY_NAME = "COMMUNE DE NANTES";
+export const SIRET = "12345678910111";
+export const AGENCE_EAU_NUMBER = "2023-ABC-123";

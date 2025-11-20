@@ -7,8 +7,10 @@ import {
 } from "next/experimental/testmode/playwright/msw";
 
 import {
+  AGENCE_EAU_NUMBER,
   CHORUS_NUMBER,
   COMMUNE,
+  COMPANY_NAME,
   CONTACT_EMAIL,
   DEPARTMENT,
   DOSSIER_NUMBER,
@@ -16,6 +18,7 @@ import {
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
   PROJECT_TITLE,
+  SIRET,
 } from "./fixtures/constants";
 import { getDemarcheDossiersData, getDossierData } from "./fixtures/ds";
 import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
@@ -58,35 +61,50 @@ test.use({
   ],
 });
 
-test("dossier page displays project information correctly", async ({
+test("dossier page displays project presentation correctly", async ({
   page,
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
-  await expect(page.getByTestId("breadcrumb-current")).toContainText(
-    "Dossier n°123456789",
+  await expect(page.getByRole("heading", { level: 2 })).toContainText(
+    PROJECT_TITLE,
   );
+  await expect(page.getByText(PROGRAM_TITLE)).toBeVisible();
+  await expect(page.getByText("Édition 2023")).toBeVisible();
 
-  await expect(page.getByTestId("project-title")).toHaveText(PROJECT_TITLE);
-  await expect(page.getByTestId("program-title")).toHaveText(PROGRAM_TITLE);
+  const projectSection = page.locator("section", {
+    has: page.getByRole("heading", { name: "Présentation du projet" }),
+  });
 
-  await expect(page.getByTestId("project-summary")).toContainText(
-    PROJECT_SUMMARY,
+  await expect(projectSection).toContainText(PROJECT_SUMMARY);
+  await expect(
+    projectSection.getByLabel("Département d'implantation"),
+  ).toContainText(DEPARTMENT);
+  await expect(
+    projectSection.getByLabel("Commune principale impactée"),
+  ).toContainText(COMMUNE);
+  await expect(projectSection.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
+});
+
+test("dossier page displays project owner identity correctly", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const identitySection = page.locator("section", {
+    has: page.getByRole("heading", { name: "Identité du porteur de projet" }),
+  });
+
+  await expect(identitySection.getByLabel("Nom du porteur")).toContainText(
+    COMPANY_NAME,
   );
-
-  await expect(page.getByTestId("legal-rep-email")).toContainText(
+  await expect(identitySection.getByLabel("SIRET")).toContainText(SIRET);
+  await expect(identitySection.getByLabel("Représentant légal")).toContainText(
     LEGAL_REPRESENTATIVE_EMAIL,
   );
-
-  await expect(page.getByTestId("contact-email")).toContainText(CONTACT_EMAIL);
-
-  await expect(page.getByLabel("Département d'implantation")).toContainText(
-    DEPARTMENT,
-  );
-
-  await expect(page.getByLabel("Commune principale impactée")).toContainText(
-    COMMUNE,
-  );
+  await expect(
+    identitySection.getByLabel("Responsable du suivi"),
+  ).toContainText(CONTACT_EMAIL);
 });
 
 test("dossier page displays subvention financial details correctly", async ({
@@ -320,24 +338,4 @@ test("dossier page filters out metrics with 'Donnée non disponible' in label", 
       "metric-le-projet-modifie-t-il-la-surfaces-des-batiments-concernes-donnee-non-disponible-en-2024",
     ),
   ).not.toBeAttached();
-});
-
-test("dossier page displays company information from socle_commun", async ({
-  page,
-}) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
-
-  await expect(page.getByLabel("Raison sociale")).toContainText(
-    "COMMUNE DE NANTES",
-  );
-
-  await expect(page.getByLabel("SIRET")).toContainText("12345678910111");
-});
-
-test("dossier page displays year badge when annee_millesime is present", async ({
-  page,
-}) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
-
-  await expect(page.getByText("Édition 2023")).toBeVisible();
 });
