@@ -53,7 +53,7 @@ export function LastPaymentInfo({ group, formatDate }: LastPaymentInfoProps) {
   }
 
   return (
-    <dl className="mb-4 flex flex-wrap gap-x-8 gap-y-4 text-sm">
+    <dl className="mb-4 grid grid-cols-3 text-sm">
       <div>
         <dt>Dernier paiement</dt>
         <dd>{formatEuros(lastPayment.montant_paye)}</dd>

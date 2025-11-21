@@ -1,6 +1,7 @@
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import { getTotalPayeFromHistorique } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
 
 import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
@@ -50,40 +51,61 @@ export function InformationFinanciereTimeline({
       {} as Record<string, GroupedEngagement>,
     );
 
+  const engagementsList = Object.values(groupedEngagements);
+
   return (
     <div>
-      {Object.values(groupedEngagements).map((group, index) => {
+      {engagementsList.map((group, index) => {
+        const isLast = index === engagementsList.length - 1;
         const sortedhistorique = [...group.historique].sort(
           (a, b) => b.annee - a.annee,
         );
 
+        const totalPaye = getTotalPayeFromHistorique(group.historique);
+        const montantRestant = group.montant_engage_initial - totalPaye;
+
         return (
-          <div key={index} className="mt-5 max-w-3xl">
-            <dl className="mb-4 flex flex-wrap gap-x-8 gap-y-4 text-sm">
+          <section
+            key={index}
+            aria-labelledby={`engagement-juridique-${index}-heading`}
+            className={`py-5 ${isLast ? "" : "border-b border-gray-200"}`}
+          >
+            <h4
+              id={`engagement-juridique-${index}-heading`}
+              className="mb-3 text-lg font-bold"
+            >
+              Engagement juridique n°{group.numero_ej}
+            </h4>
+
+            <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
               <div>
-                <dt>Engagés pour {sortedhistorique[0].annee}</dt>
-                <dd>{formatEuros(sortedhistorique[0].montant_engage)}</dd>
+                <dt id={`montant-attribue-ej-${index}-label`}>
+                  Montant attribué
+                </dt>
+                <dd aria-labelledby={`montant-attribue-ej-${index}-label`}>
+                  {formatEuros(group.montant_engage_initial)}
+                </dd>
               </div>
               <div>
-                <dt>Numéro d'engagement juridique</dt>
-                <dd>{group.numero_ej}</dd>
+                <dt id={`montant-restant-ej-${index}-label`}>Montant restant</dt>
+                <dd aria-labelledby={`montant-restant-ej-${index}-label`}>
+                  {formatEuros(montantRestant)}
+                </dd>
               </div>
             </dl>
 
-            <div>
-              <LastPaymentInfo group={group} formatDate={formatDate} />
+            <LastPaymentInfo group={group} formatDate={formatDate} />
 
-              <details>
-                <summary className="fr-link--sm fr-link fr-text--sm list-item">
-                  Voir l'historique des engagements
-                </summary>
-                <EngagementHistoryTable
-                  sortedhistorique={sortedhistorique}
-                  formatDate={formatDate}
-                />
-              </details>
-            </div>
-          </div>
+            <details>
+              <summary className="fr-link--sm fr-link fr-text--sm list-item">
+                Voir l'historique des engagements
+              </summary>
+              <EngagementHistoryTable
+                sortedhistorique={sortedhistorique}
+                formatDate={formatDate}
+              />
+            </details>
+          </section>
         );
       })}
     </div>

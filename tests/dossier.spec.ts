@@ -112,11 +112,36 @@ test("dossier page displays subvention financial details correctly", async ({
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
-  await expect(page.getByTestId("subvention-amount")).toContainText(
-    "10 073 564,00 € attribué",
+  await expect(
+    page.getByLabel("Montant total des dépenses du projet"),
+  ).toContainText("18 939 933,00 €");
+
+  const aideFondsVert = page.getByRole("region", {
+    name: "Aide du Fonds vert",
+  });
+  await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
+    "10 073 564,00 €",
+  );
+  await expect(aideFondsVert.getByLabel("Montant total payé")).toContainText(
+    "3 422 069,20 €",
   );
 
   await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
+
+  const engagementJuridique = page.getByRole("region", {
+    name: /Engagement juridique n°/,
+  });
+  await expect(
+    engagementJuridique.getByRole("heading", {
+      name: /Engagement juridique n°/,
+    }),
+  ).toContainText("2105212345");
+  await expect(
+    engagementJuridique.getByLabel("Montant attribué"),
+  ).toContainText("10 073 574,00 €");
+  await expect(engagementJuridique.getByLabel("Montant restant")).toContainText(
+    "6 651 504,80 €",
+  );
 
   await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 });
@@ -306,8 +331,11 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
 
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
-  await expect(page.getByTestId("subvention-amount")).toContainText(
-    "10 073 564,00 € attribué",
+  const aideFondsVert = page.getByRole("region", {
+    name: "Aide du Fonds vert",
+  });
+  await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
+    "10 073 564,00 €",
   );
 
   await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);

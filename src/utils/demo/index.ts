@@ -50,7 +50,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
     date_derniere_modification: "2024-03-10T14:12:00",
     date_debut_execution: "2024-01-15",
     date_fin_execution: "2099-12-31T23:59:59",
-    total_des_depenses: 899700,
+    total_des_depenses: 18_939_933,
     annee_millesime: 2023,
     entreprise_raison_sociale: "COMMUNE DE NANTES",
     siret: "12345678910111",

@@ -81,7 +81,7 @@ export async function DossierSection({
             socleCommun={socleCommun}
           />
 
-          <div className="bg-white p-6 shadow-sm">
+          <section className="bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-end justify-between">
               <h3 className="mb-0">Financement du projet</h3>
               {informationFinanciere && (
@@ -89,8 +89,7 @@ export async function DossierSection({
                   className="text-xs font-medium text-gray-400"
                   data-testid="chorus-number"
                 >
-                  Chorus n°
-                  {informationFinanciere.centre_financier_chorus}
+                  Chorus n°{informationFinanciere.centre_financier_chorus}
                 </div>
               )}
             </div>
@@ -99,9 +98,10 @@ export async function DossierSection({
             )}
             <SubventionDetails
               montantSubventionAttribuee={subvention.montantSubventionAttribuee}
+              totalDesDepenses={socleCommun?.total_des_depenses}
               informationFinanciere={informationFinanciere}
             />
-          </div>
+          </section>
 
           {metriques && Object.keys(metriques).length > 0 && (
             <div
