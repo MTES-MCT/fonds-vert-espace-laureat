@@ -83,7 +83,7 @@ export async function DossierSection({
 
           <div className="bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-end justify-between">
-              <h3 className="mb-0">Subvention</h3>
+              <h3 className="mb-0">Financement du projet</h3>
               {informationFinanciere && (
                 <div
                   className="text-xs font-medium text-gray-400"
@@ -108,7 +108,7 @@ export async function DossierSection({
               className="bg-white p-6 shadow-sm"
               data-testid="impact-section"
             >
-              <h3>Impact</h3>
+              <h3>Engagements écologiques</h3>
               <MetricsGrid metriques={metriques} />
             </div>
           )}
