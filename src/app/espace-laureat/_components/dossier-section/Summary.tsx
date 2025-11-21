@@ -4,44 +4,50 @@ import Tag from "@codegouvfr/react-dsfr/Tag";
 import { EmailLink } from "@/components/email-link/EmailLink";
 import { SocleCommun } from "@/services/fondsvert/dossier";
 
-export const Summary = ({
+export const SummaryHeader = ({
   intitule,
-  resume,
   titreDemarche,
+  anneeMillesime,
+}: {
+  intitule?: string;
+  titreDemarche: string;
+  anneeMillesime?: number;
+}) => {
+  const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <h2 className="mb-0">{intitule ?? "N/A"}</h2>
+      <Tag small className="bg-white shadow-sm" iconId="fr-icon-award-fill">
+        {mesureFondsVert}
+      </Tag>
+      {anneeMillesime && (
+        <Badge severity="info" small>
+          Édition {anneeMillesime}
+        </Badge>
+      )}
+    </div>
+  );
+};
+
+export const Summary = ({
+  resume,
   numeroDossierAgenceEau,
   emailRepresentantLegal,
   emailResponsableSuivi,
   departementImplantation,
   socleCommun,
 }: {
-  intitule?: string;
   resume?: string;
-  titreDemarche: string;
   numeroDossierAgenceEau?: string;
   emailRepresentantLegal?: string;
   emailResponsableSuivi?: string;
   departementImplantation?: string;
   socleCommun?: SocleCommun;
 }) => {
-  const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
-
   return (
-    <div className="space-y-8">
-      <div>
-        <h2>
-          <span>{intitule ?? "N/A"}</span>{" "}
-          <Tag small className="bg-white shadow-sm" iconId="fr-icon-award-fill">
-            {mesureFondsVert}
-          </Tag>
-        </h2>
-        {socleCommun?.annee_millesime && (
-          <Badge severity="info" small>
-            Édition {socleCommun.annee_millesime}
-          </Badge>
-        )}
-      </div>
-
-      <section>
+    <div className="space-y-6">
+      <section className="bg-white p-6 shadow-sm">
         <h3>Présentation du projet</h3>
         {resume && (
           <p title={resume} className="line-clamp-3 max-w-2xl">
@@ -76,7 +82,7 @@ export const Summary = ({
         </dl>
       </section>
 
-      <section>
+      <section className="bg-white p-6 shadow-sm">
         <h3>Identité du porteur de projet</h3>
         <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
           {socleCommun?.entreprise_raison_sociale && (
