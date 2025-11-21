@@ -70,7 +70,7 @@ export async function DossierSection({
         backLink={backLink}
       />
 
-      <div className="mt-8 flex flex-wrap items-start gap-8">
+      <div className="fr-container my-8 flex flex-wrap items-start gap-8">
         <div className="flex flex-1 flex-col gap-y-6">
           <Summary
             resume={subvention.resumeProjet}

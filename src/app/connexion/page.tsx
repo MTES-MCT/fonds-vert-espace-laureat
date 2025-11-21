@@ -15,24 +15,26 @@ export default async function ConnexionPage({
   const errorMessage = error && errorMessages[error];
 
   return (
-    <div className="max-w-xl pb-48">
-      {errorMessage && (
-        <Alert
-          className="mb-6"
-          severity="warning"
-          small
-          description={errorMessage}
+    <div className="fr-container my-8 pb-48">
+      <div className="max-w-xl">
+        {errorMessage && (
+          <Alert
+            className="mb-6"
+            severity="warning"
+            small
+            description={errorMessage}
+          />
+        )}
+        <h1>Espace lauréat</h1>
+        <p className="fr-text--lead">
+          Ce service est accessible aux porteurs d'un projet lauréat du Fonds
+          vert. Identifiez-vous pour suivre vos subventions et soumettre une
+          demande de versement.
+        </p>
+        <ProConnectButton
+          url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
         />
-      )}
-      <h1>Espace lauréat</h1>
-      <p className="fr-text--lead">
-        Ce service est accessible aux porteurs d'un projet lauréat du Fonds
-        vert. Identifiez-vous pour suivre vos subventions et soumettre une
-        demande de versement.
-      </p>
-      <ProConnectButton
-        url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
-      />
+      </div>
     </div>
   );
 }

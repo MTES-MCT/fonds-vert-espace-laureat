@@ -49,26 +49,28 @@ export default async function EspaceLaureat({
     "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
 
   return (
-    <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
-      <h1>
-        {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
-      </h1>
+    <div className="fr-container my-8">
+      <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
+        <h1>
+          {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
+        </h1>
 
-      {dossiersSubvention.length === 0 ? (
-        <AucunDossier
-          siret={siret}
-          email={user.email}
-          noResultMsg={noResultMsg}
-        />
-      ) : (
-        <DossiersTable dossiers={dossiersSubvention} />
-      )}
+        {dossiersSubvention.length === 0 ? (
+          <AucunDossier
+            siret={siret}
+            email={user.email}
+            noResultMsg={noResultMsg}
+          />
+        ) : (
+          <DossiersTable dossiers={dossiersSubvention} />
+        )}
 
-      {dossiersSubvention.length > 0 && (
-        <p className="my-6 max-w-lg text-sm">
-          Vous ne trouvez pas votre dossier ? {noResultMsg}
-        </p>
-      )}
+        {dossiersSubvention.length > 0 && (
+          <p className="my-6 max-w-lg text-sm">
+            Vous ne trouvez pas votre dossier ? {noResultMsg}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

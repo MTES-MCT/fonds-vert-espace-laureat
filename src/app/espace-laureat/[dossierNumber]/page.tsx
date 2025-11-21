@@ -46,7 +46,7 @@ export default async function DossierPage({
   ]);
 
   if (!dossierSubventionResult.success) {
-    return <>Introuvable</>;
+    return <div className="fr-container my-8">Introuvable</div>;
   }
 
   const dossierSubvention = dossierSubventionResult.data;

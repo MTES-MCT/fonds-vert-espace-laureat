@@ -21,7 +21,7 @@ export const SummaryHeader = ({
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   return (
-    <div className="full-bleed -mt-8 bg-[#efebe8]">
+    <div className="bg-[#efebe8]">
       <div className="fr-container pt-8 pb-12">
         <Breadcrumb
           className="mt-0 mb-4"

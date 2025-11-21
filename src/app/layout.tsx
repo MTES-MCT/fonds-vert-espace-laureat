@@ -57,7 +57,7 @@ export default async function RootLayout({
       <body>
         <DsfrProvider lang={lang}>
           <Header quickAccessItems={quickAccessItems} />
-          <main className="fr-container my-8 min-h-80">{children}</main>
+          <main className="min-h-80">{children}</main>
           <Footer />
         </DsfrProvider>
       </body>

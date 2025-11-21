@@ -24,7 +24,11 @@ export default async function ProjetsDepartement({
   const { codeCommune } = await getSearchParams({ searchParams });
 
   if (!projetsParDepartementsAnneesDemarches[codeDepartement]) {
-    return <h1>Département introuvable</h1>;
+    return (
+      <div className="fr-container my-8">
+        <h1>Département introuvable</h1>
+      </div>
+    );
   }
 
   const projetsGroupe = codeCommune
@@ -36,7 +40,7 @@ export default async function ProjetsDepartement({
   const communes = communesParDepartements[codeDepartement];
 
   return (
-    <div>
+    <div className="fr-container my-8">
       <h1 className="mb-4">{nomDepartements[codeDepartement]}</h1>
       <CommunesFilter
         communes={communes}
