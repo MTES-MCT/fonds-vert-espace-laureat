@@ -34,8 +34,8 @@ export async function CompletionSidebar({
   return (
     <>
       <Help>
-        Évaluez l'impact réel de votre projet, conformément aux engagements liés
-        à la subvention.
+        Actualisez régulièrement les données du projet pour assurer un suivi
+        précis et conforme aux engagements de la subvention.
       </Help>
       {socleCommun?.date_derniere_modification && (
         <p className="fr-text--xs fr-mb-2w text-[var(--text-mention-grey)]">
@@ -56,7 +56,7 @@ export async function CompletionSidebar({
         href={prefilledDsImpactUrl}
         data-testid="impact-evaluation-link"
       >
-        Compléter l'évaluation
+        Mettre à jour les données
       </Link>
     </>
   );

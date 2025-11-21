@@ -125,7 +125,7 @@ export async function DossierSection({
           </Link>
         </div>
       </div>
-      <div className={`sticky top-8 max-w-xs bg-white p-6 shadow-lg xl:w-80`}>
+      <div className={`sticky top-8 w-[22rem] bg-white p-6 shadow-lg`}>
         {socleCommun && (
           <Timeline
             steps={[
