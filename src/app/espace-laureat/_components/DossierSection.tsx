@@ -1,5 +1,4 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
 
 import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
@@ -63,22 +62,15 @@ export async function DossierSection({
 
   return (
     <div>
-      <Breadcrumb
-        className="mt-0 mb-4"
-        homeLinkProps={{
-          href: "/",
-        }}
-        segments={[backLink]}
-        currentPageLabel={`Dossier n°${dossierSubvention.numero}`}
-        data-testid="breadcrumb-current"
-      />
       <SummaryHeader
         intitule={subvention.intituleProjet}
         titreDemarche={dossierSubvention.demarche.title}
         anneeMillesime={socleCommun?.annee_millesime}
+        numeroDossier={dossierSubvention.numero}
+        backLink={backLink}
       />
 
-      <div className="mt-6 flex flex-wrap items-start gap-8">
+      <div className="mt-8 flex flex-wrap items-start gap-8">
         <div className="flex flex-1 flex-col gap-y-6">
           <Summary
             resume={subvention.resumeProjet}
@@ -154,7 +146,7 @@ export async function DossierSection({
             <h3
               id="evaluation-heading"
               className={`
-                mb-3 text-left text-base leading-snug font-medium text-[var(--text-label-grey)]
+                mb-3 text-left text-lg leading-snug font-medium text-[var(--text-label-grey)]
               `}
             >
               Les données de votre projet participent à la transition écologique

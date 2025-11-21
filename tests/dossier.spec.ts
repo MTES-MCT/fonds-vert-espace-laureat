@@ -66,7 +66,7 @@ test("dossier page displays project presentation correctly", async ({
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
-  await expect(page.getByRole("heading", { level: 2 })).toContainText(
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
     PROJECT_TITLE,
   );
   await expect(page.getByText(PROGRAM_TITLE)).toBeVisible();

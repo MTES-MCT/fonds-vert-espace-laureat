@@ -1,4 +1,5 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Tag from "@codegouvfr/react-dsfr/Tag";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
@@ -8,24 +9,53 @@ export const SummaryHeader = ({
   intitule,
   titreDemarche,
   anneeMillesime,
+  numeroDossier,
+  backLink,
 }: {
   intitule?: string;
   titreDemarche: string;
   anneeMillesime?: number;
+  numeroDossier: number;
+  backLink: { label: string; linkProps: { href: string } };
 }) => {
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-      <h2 className="mb-0">{intitule ?? "N/A"}</h2>
-      <Tag small className="bg-white shadow-sm" iconId="fr-icon-award-fill">
-        {mesureFondsVert}
-      </Tag>
-      {anneeMillesime && (
-        <Badge severity="info" small>
-          Édition {anneeMillesime}
-        </Badge>
-      )}
+    <div className="full-bleed -mt-8 bg-[#efebe8]">
+      <div className="fr-container pt-8 pb-12">
+        <Breadcrumb
+          className="mt-0 mb-4"
+          homeLinkProps={{
+            href: "/",
+          }}
+          segments={[backLink]}
+          currentPageLabel={`Dossier n°${numeroDossier}`}
+          data-testid="breadcrumb-current"
+        />
+        <div>
+          <h1 className="mb-3 max-w-3xl text-4xl font-bold">
+            {intitule ?? "N/A"}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <Tag
+              small
+              className="bg-white shadow-sm"
+              iconId="fr-icon-award-fill"
+            >
+              {mesureFondsVert}
+            </Tag>
+            {anneeMillesime && (
+              <Tag
+                small
+                className="bg-white shadow-sm"
+                iconId="fr-icon-calendar-2-line"
+              >
+                Édition {anneeMillesime}
+              </Tag>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
