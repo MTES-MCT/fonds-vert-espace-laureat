@@ -339,3 +339,68 @@ test("dossier page filters out metrics with 'Donnée non disponible' in label", 
     ),
   ).not.toBeAttached();
 });
+
+test("dossier page displays calendar timeline with correct dates and status", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const calendarSection = page.getByRole("region", {
+    name: "Calendrier",
+  });
+
+  await expect(calendarSection.getByText("Dépôt du dossier")).toBeVisible();
+  await expect(calendarSection.getByText("15 juin 2023")).toBeVisible();
+
+  await expect(calendarSection.getByText("Notification")).toBeVisible();
+  await expect(calendarSection.getByText("20 septembre 2023")).toBeVisible();
+
+  await expect(calendarSection.getByText("Début d'exécution")).toBeVisible();
+  await expect(calendarSection.getByText("15 janvier 2024")).toBeVisible();
+
+  await expect(calendarSection.getByText("Fin d'exécution")).toBeVisible();
+  await expect(calendarSection.getByText("31 décembre 2099")).toBeVisible();
+
+  const timelineItems = calendarSection.locator("li");
+  await expect(timelineItems.nth(0)).toContainText("terminé");
+  await expect(timelineItems.nth(1)).toContainText("terminé");
+  await expect(timelineItems.nth(2)).toContainText("terminé");
+  await expect(timelineItems.nth(3)).toContainText("à venir");
+});
+
+test("calendar timeline marks step as done when later step is done, even with missing date", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            ...fondsVertDossierData.data,
+            socle_commun: {
+              ...fondsVertDossierData.data.socle_commun,
+              date_notification: null,
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const calendarSection = page.getByRole("region", {
+    name: "Calendrier",
+  });
+
+  await expect(calendarSection.getByText("Date non renseignée")).toBeVisible();
+
+  const timelineItems = calendarSection.locator("li");
+
+  await expect(timelineItems.nth(0)).toContainText("terminé");
+  await expect(timelineItems.nth(1)).toContainText("terminé");
+  await expect(timelineItems.nth(2)).toContainText("terminé");
+  await expect(timelineItems.nth(3)).toContainText("à venir");
+});

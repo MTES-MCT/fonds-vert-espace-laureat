@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import { Summary } from "@/app/espace-laureat/_components/dossier-section/Summary";
+import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
 import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
@@ -124,13 +125,31 @@ export async function DossierSection({
           </Link>
         </div>
       </div>
-      <div
-        className={`
-          sticky top-8 max-w-xs bg-white p-6 pt-10 text-center text-balance shadow-lg
-          xl:w-80
-        `}
-      >
-        <p className="mb-2 text-xl font-semibold text-gray-900">
+      <div className={`sticky top-8 max-w-xs bg-white p-6 shadow-lg xl:w-80`}>
+        {socleCommun && (
+          <Timeline
+            steps={[
+              { label: "Dépôt du dossier", date: socleCommun.date_depot },
+              {
+                label: "Notification",
+                date: socleCommun.date_notification,
+              },
+              {
+                label: "Début d'exécution",
+                date: socleCommun.date_debut_execution,
+              },
+              {
+                label: "Fin d'exécution",
+                date: socleCommun.date_fin_execution,
+              },
+            ]}
+          />
+        )}
+        <p
+          className={`
+            mb-3 text-left text-base leading-snug font-medium text-[var(--text-label-grey)]
+          `}
+        >
           Les données de votre projet participent à la transition écologique
         </p>
         <CompletionSidebar
