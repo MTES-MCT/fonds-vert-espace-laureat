@@ -12,7 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "predev": "react-dsfr update-icons && npm run codegen",
-    "test": "NODE_ENV=test playwright test",
+    "test": "NODE_ENV=test playwright test --project=chromium",
     "test:ui": "NODE_ENV=test playwright test --ui",
     "prebuild": "react-dsfr update-icons && npm run codegen",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
