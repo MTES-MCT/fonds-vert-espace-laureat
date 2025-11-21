@@ -145,20 +145,21 @@ export async function DossierSection({
             ]}
           />
         )}
-        <p
-          className={`
-            mb-3 text-left text-base leading-snug font-medium text-[var(--text-label-grey)]
-          `}
-        >
-          Les données de votre projet participent à la transition écologique
-        </p>
-        <CompletionSidebar
+        <section aria-labelledby="evaluation-heading">
+          <h3
+            id="evaluation-heading"
+            className="mb-3 text-left text-base leading-snug font-medium text-[var(--text-label-grey)]"
+          >
+            Les données de votre projet participent à la transition écologique
+          </h3>
+          <CompletionSidebar
           numeroDossier={dossierSubvention.numero}
           impact={impact}
           metriques={metriques}
           socleCommun={socleCommun}
           nocache={nocache}
         />
+        </section>
       </div>
     </div>
   );

@@ -368,6 +368,20 @@ test("dossier page displays calendar timeline with correct dates and status", as
   await expect(timelineItems.nth(3)).toContainText("à venir");
 });
 
+test("impact evaluation sidebar displays last modification date", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const evaluationSection = page.getByRole("region", {
+    name: "Les données de votre projet participent à la transition écologique",
+  });
+
+  await expect(
+    evaluationSection.getByText("Dernière modification : 10 mars 2024"),
+  ).toBeVisible();
+});
+
 test("calendar timeline marks step as done when later step is done, even with missing date", async ({
   page,
   msw,
