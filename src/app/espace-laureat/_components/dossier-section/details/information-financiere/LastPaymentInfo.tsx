@@ -1,6 +1,6 @@
 import React from "react";
 
-import { formatEuros } from "@/utils/format";
+import { formatDate, formatEuros } from "@/utils/format";
 
 interface Payment {
   montant_paye: number;
@@ -26,10 +26,9 @@ interface GroupedEngagement {
 
 interface LastPaymentInfoProps {
   group: GroupedEngagement;
-  formatDate: (date: string) => string;
 }
 
-export function LastPaymentInfo({ group, formatDate }: LastPaymentInfoProps) {
+export function LastPaymentInfo({ group }: LastPaymentInfoProps) {
   const getLastPayment = (group: GroupedEngagement) => {
     return group.historique
       .flatMap((item) => item.demandes_paiement)
@@ -53,7 +52,7 @@ export function LastPaymentInfo({ group, formatDate }: LastPaymentInfoProps) {
   }
 
   return (
-    <dl className="mb-4 grid grid-cols-3 text-sm">
+    <dl className="grid grid-cols-3 text-sm">
       <div>
         <dt>Dernier paiement</dt>
         <dd>{formatEuros(lastPayment.montant_paye)}</dd>

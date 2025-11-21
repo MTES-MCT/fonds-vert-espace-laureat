@@ -1,6 +1,6 @@
 import React, { ReactNode } from "react";
 
-import { formatEuros } from "@/utils/format";
+import { formatDate, formatEuros } from "@/utils/format";
 
 interface Engagement {
   annee: number;
@@ -14,12 +14,11 @@ interface Engagement {
 
 interface EngagementHistoryTableProps {
   sortedhistorique: Engagement[];
-  formatDate: (date: string) => string;
 }
 
 function DsfrTable({ children }: { children: ReactNode }) {
   return (
-    <div className="fr-table mb-0 w-[80vw] sm:w-auto">
+    <div className="fr-table mb-0 mt-0 w-[80vw] sm:w-auto">
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>
@@ -31,7 +30,6 @@ function DsfrTable({ children }: { children: ReactNode }) {
 
 export function EngagementHistoryTable({
   sortedhistorique,
-  formatDate,
 }: EngagementHistoryTableProps) {
   return (
     <DsfrTable>

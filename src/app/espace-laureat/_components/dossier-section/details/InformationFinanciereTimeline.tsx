@@ -1,11 +1,13 @@
+"use client";
+
+import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
 import { getTotalPayeFromHistorique } from "@/utils/finance";
-import { formatDate, formatEuros } from "@/utils/format";
 
 import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
-import { LastPaymentInfo } from "./information-financiere/LastPaymentInfo";
+import { EngagementInfos } from "./information-financiere/EngagementInfos";
 
 interface Engagement {
   annee: number;
@@ -77,34 +79,28 @@ export function InformationFinanciereTimeline({
               Engagement juridique n°{group.numero_ej}
             </h4>
 
-            <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
-              <div>
-                <dt id={`montant-attribue-ej-${index}-label`}>
-                  Montant attribué
-                </dt>
-                <dd aria-labelledby={`montant-attribue-ej-${index}-label`}>
-                  {formatEuros(group.montant_engage_initial)}
-                </dd>
-              </div>
-              <div>
-                <dt id={`montant-restant-ej-${index}-label`}>Montant restant</dt>
-                <dd aria-labelledby={`montant-restant-ej-${index}-label`}>
-                  {formatEuros(montantRestant)}
-                </dd>
-              </div>
-            </dl>
-
-            <LastPaymentInfo group={group} formatDate={formatDate} />
-
-            <details>
-              <summary className="fr-link--sm fr-link fr-text--sm list-item">
-                Voir l'historique des engagements
-              </summary>
-              <EngagementHistoryTable
-                sortedhistorique={sortedhistorique}
-                formatDate={formatDate}
-              />
-            </details>
+            <Tabs
+              tabs={[
+                {
+                  label: "Informations",
+                  content: (
+                    <EngagementInfos
+                      group={group}
+                      montantRestant={montantRestant}
+                      index={index}
+                    />
+                  ),
+                },
+                {
+                  label: "Historique",
+                  content: (
+                    <EngagementHistoryTable
+                      sortedhistorique={sortedhistorique}
+                    />
+                  ),
+                },
+              ]}
+            />
           </section>
         );
       })}

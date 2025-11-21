@@ -146,6 +146,54 @@ test("dossier page displays subvention financial details correctly", async ({
   await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 });
 
+test("dossier page displays engagement history in tab", async ({ page }) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
+
+  const engagementJuridique = page.getByRole("region", {
+    name: /Engagement juridique n°/,
+  });
+
+  await expect(engagementJuridique).toBeVisible();
+
+  await engagementJuridique.getByRole("tab", { name: "Historique" }).click();
+
+  const rows = engagementJuridique.getByRole("row");
+  await expect(rows).toHaveCount(4); // 1 header + 3 data rows
+
+  const annee2025 = rows.nth(1);
+  await expect(annee2025.getByRole("cell").nth(0)).toContainText("2025");
+  await expect(annee2025.getByRole("cell").nth(1)).toContainText(
+    "6 651 494,80 €",
+  );
+  await expect(annee2025.getByRole("cell").nth(2)).toContainText(
+    "Aucun paiement",
+  );
+
+  const annee2024 = rows.nth(2);
+  await expect(annee2024.getByRole("cell").nth(0)).toContainText("2024");
+  await expect(annee2024.getByRole("cell").nth(1)).toContainText(
+    "10 073 574,00 €",
+  );
+  await expect(annee2024.getByRole("cell").nth(2)).toContainText(
+    "3 422 069,20 €",
+  );
+  await expect(annee2024.getByRole("cell").nth(3)).toContainText(
+    "7 octobre 2024",
+  );
+  await expect(annee2024.getByRole("cell").nth(4)).toContainText("1001234567");
+
+  const annee2023 = rows.nth(3);
+  await expect(annee2023.getByRole("cell").nth(0)).toContainText("2023");
+  await expect(annee2023.getByRole("cell").nth(1)).toContainText(
+    "10 073 574,00 €",
+  );
+  await expect(annee2023.getByRole("cell").nth(2)).toContainText(
+    "Aucun paiement",
+  );
+});
+
 test("dossier page displays impact metrics correctly", async ({ page }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
