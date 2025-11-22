@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const isTest = process.env.NODE_ENV === "test";
+
 const nextConfig: NextConfig = {
   webpack: (config) => {
     config.module.rules.push({
@@ -8,8 +10,9 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  distDir: isTest ? ".next-test" : ".next",
   experimental: {
-    testProxy: process.env.NODE_ENV === "test",
+    testProxy: isTest,
   },
   eslint: {
     dirs: ["src", "tests"],
