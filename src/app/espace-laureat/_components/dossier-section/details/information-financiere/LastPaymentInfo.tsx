@@ -26,9 +26,10 @@ interface GroupedEngagement {
 
 interface LastPaymentInfoProps {
   group: GroupedEngagement;
+  index: number;
 }
 
-export function LastPaymentInfo({ group }: LastPaymentInfoProps) {
+export function LastPaymentInfo({ group, index }: LastPaymentInfoProps) {
   const getLastPayment = (group: GroupedEngagement) => {
     return group.historique
       .flatMap((item) => item.demandes_paiement)
@@ -54,16 +55,22 @@ export function LastPaymentInfo({ group }: LastPaymentInfoProps) {
   return (
     <dl className="grid grid-cols-3 text-sm">
       <div>
-        <dt>Dernier paiement</dt>
-        <dd>{formatEuros(lastPayment.montant_paye)}</dd>
+        <dt id={`dernier-paiement-${index}-label`}>Dernier paiement</dt>
+        <dd aria-labelledby={`dernier-paiement-${index}-label`}>
+          {formatEuros(lastPayment.montant_paye)}
+        </dd>
       </div>
       <div>
-        <dt>Date de paiement</dt>
-        <dd>le {formatDate(lastPayment.date_dp)}</dd>
+        <dt id={`date-paiement-${index}-label`}>Date de paiement</dt>
+        <dd aria-labelledby={`date-paiement-${index}-label`}>
+          le {formatDate(lastPayment.date_dp)}
+        </dd>
       </div>
       <div>
-        <dt>Numéro de demande</dt>
-        <dd>{lastPayment.numero_dp}</dd>
+        <dt id={`numero-demande-${index}-label`}>Numéro de demande</dt>
+        <dd aria-labelledby={`numero-demande-${index}-label`}>
+          {lastPayment.numero_dp}
+        </dd>
       </div>
     </dl>
   );

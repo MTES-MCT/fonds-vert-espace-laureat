@@ -43,7 +43,7 @@ export function EngagementInfos({
           </dd>
         </div>
       </dl>
-      <LastPaymentInfo group={group} />
+      <LastPaymentInfo group={group} index={index} />
     </>
   );
 }

@@ -25,6 +25,10 @@ import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 
+async function waitForDsfrTabs(page: any) {
+  await page.waitForSelector("[data-fr-js-tab-button]");
+}
+
 const ds = graphql.link("https://www.demarches-simplifiees.fr/api/v2/graphql");
 
 test.beforeEach(async ({ page }) => {
@@ -123,19 +127,15 @@ test("dossier page displays subvention financial details correctly", async ({
     "10 073 564,00 €",
   );
   await expect(aideFondsVert.getByLabel("Montant total payé")).toContainText(
-    "3 422 069,20 €",
+    "5 922 069,20 €",
   );
 
   await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
 
   const engagementJuridique = page.getByRole("region", {
-    name: /Engagement juridique n°/,
+    name: "Engagement juridique n°2105212345",
   });
-  await expect(
-    engagementJuridique.getByRole("heading", {
-      name: /Engagement juridique n°/,
-    }),
-  ).toContainText("2105212345");
+  await expect(engagementJuridique).toBeVisible();
   await expect(
     engagementJuridique.getByLabel("Montant attribué"),
   ).toContainText("10 073 574,00 €");
@@ -146,21 +146,77 @@ test("dossier page displays subvention financial details correctly", async ({
   await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 });
 
-test("dossier page displays engagement history in tab", async ({ page }) => {
+test("displays two engagement juridique sections with tabs", async ({
+  page,
+}) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
   await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 
-  const engagementJuridique = page.getByRole("region", {
+  const allEngagements = page.getByRole("region", {
     name: /Engagement juridique n°/,
   });
+  await expect(allEngagements).toHaveCount(2);
 
-  await expect(engagementJuridique).toBeVisible();
+  const engagement1 = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(
+    engagement1.getByRole("tab", { name: "Informations" }),
+  ).toBeVisible();
+  await expect(
+    engagement1.getByRole("tab", { name: "Historique" }),
+  ).toBeVisible();
 
-  await engagementJuridique.getByRole("tab", { name: "Historique" }).click();
+  const engagement2 = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+  await expect(
+    engagement2.getByRole("tab", { name: "Informations" }),
+  ).toBeVisible();
+  await expect(
+    engagement2.getByRole("tab", { name: "Historique" }),
+  ).toBeVisible();
+});
 
-  const rows = engagementJuridique.getByRole("row");
-  await expect(rows).toHaveCount(4); // 1 header + 3 data rows
+test("engagement information tab shows amounts and last payment", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await waitForDsfrTabs(page);
+
+  const engagement1 = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(engagement1.getByLabel("Montant attribué")).toContainText(
+    "10 073 574,00 €",
+  );
+  await expect(engagement1.getByLabel("Montant restant")).toContainText(
+    "6 651 504,80 €",
+  );
+  await expect(engagement1.getByLabel("Dernier paiement")).toContainText(
+    "3 422 069,20 €",
+  );
+});
+
+test("engagement history tab displays yearly breakdown with payments", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await waitForDsfrTabs(page);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+
+  const historiqueTab = engagement.getByRole("tab", { name: "Historique" });
+  await historiqueTab.click();
+  await expect(
+    engagement.getByRole("tabpanel", { name: "Historique" }),
+  ).toBeVisible();
+
+  const rows = engagement.getByRole("row");
+  await expect(rows).toHaveCount(4);
 
   const annee2025 = rows.nth(1);
   await expect(annee2025.getByRole("cell").nth(0)).toContainText("2025");
@@ -191,6 +247,81 @@ test("dossier page displays engagement history in tab", async ({ page }) => {
   );
   await expect(annee2023.getByRole("cell").nth(2)).toContainText(
     "Aucun paiement",
+  );
+});
+
+test("engagement with multiple payments shows each payment as separate row", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await waitForDsfrTabs(page);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+
+  await expect(engagement.getByLabel("Montant attribué")).toContainText(
+    "2 500 000,00 €",
+  );
+  await expect(engagement.getByLabel("Dernier paiement")).toContainText(
+    "1 250 000,00 €",
+  );
+  await expect(engagement.getByLabel("Date de paiement")).toContainText(
+    "5 août 2024",
+  );
+
+  const historiqueTab = engagement.getByRole("tab", { name: "Historique" });
+  await historiqueTab.click();
+  await expect(
+    engagement.getByRole("tabpanel", { name: "Historique" }),
+  ).toBeVisible();
+
+  const rows = engagement.getByRole("row");
+  await expect(rows).toHaveCount(4);
+
+  const payment2024_1 = rows.nth(1);
+  await expect(payment2024_1.getByRole("cell").nth(0)).toContainText("2024");
+  await expect(payment2024_1.getByRole("cell").nth(1)).toContainText(
+    "2 000 000,00 €",
+  );
+  await expect(payment2024_1.getByRole("cell").nth(2)).toContainText(
+    "750 000,00 €",
+  );
+  await expect(payment2024_1.getByRole("cell").nth(3)).toContainText(
+    "22 mars 2024",
+  );
+  await expect(payment2024_1.getByRole("cell").nth(4)).toContainText(
+    "1009876544",
+  );
+
+  const payment2024_2 = rows.nth(2);
+  await expect(payment2024_2.getByRole("cell").nth(0)).toContainText("2024");
+  await expect(payment2024_2.getByRole("cell").nth(1)).toContainText(
+    "2 000 000,00 €",
+  );
+  await expect(payment2024_2.getByRole("cell").nth(2)).toContainText(
+    "1 250 000,00 €",
+  );
+  await expect(payment2024_2.getByRole("cell").nth(3)).toContainText(
+    "5 août 2024",
+  );
+  await expect(payment2024_2.getByRole("cell").nth(4)).toContainText(
+    "1009876545",
+  );
+
+  const payment2023 = rows.nth(3);
+  await expect(payment2023.getByRole("cell").nth(0)).toContainText("2023");
+  await expect(payment2023.getByRole("cell").nth(1)).toContainText(
+    "2 500 000,00 €",
+  );
+  await expect(payment2023.getByRole("cell").nth(2)).toContainText(
+    "500 000,00 €",
+  );
+  await expect(payment2023.getByRole("cell").nth(3)).toContainText(
+    "15 décembre 2023",
+  );
+  await expect(payment2023.getByRole("cell").nth(4)).toContainText(
+    "1009876543",
   );
 });
 

@@ -196,6 +196,20 @@ export const demoDossierFondsVert: DossierFondsVert = {
             montant_engage_initial: 10073574,
             demandes_paiement: [],
           },
+          {
+            numero_ej: "2106789012",
+            nom_demarche: PROGRAM_TITLE,
+            nom_axe: 1,
+            montant_engage: 2500000,
+            montant_engage_initial: 2500000,
+            demandes_paiement: [
+              {
+                numero_dp: "1009876543",
+                date_dp: "2023-12-15T00:00:00",
+                montant_paye: 500000,
+              },
+            ],
+          },
         ],
       },
       {
@@ -212,6 +226,25 @@ export const demoDossierFondsVert: DossierFondsVert = {
                 numero_dp: "1001234567",
                 date_dp: "2024-10-07T00:00:00",
                 montant_paye: 3422069.2,
+              },
+            ],
+          },
+          {
+            numero_ej: "2106789012",
+            nom_demarche: PROGRAM_TITLE,
+            nom_axe: 1,
+            montant_engage: 2000000,
+            montant_engage_initial: 2500000,
+            demandes_paiement: [
+              {
+                numero_dp: "1009876544",
+                date_dp: "2024-03-22T00:00:00",
+                montant_paye: 750000,
+              },
+              {
+                numero_dp: "1009876545",
+                date_dp: "2024-08-05T00:00:00",
+                montant_paye: 1250000,
               },
             ],
           },
