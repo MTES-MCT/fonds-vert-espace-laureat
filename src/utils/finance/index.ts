@@ -2,10 +2,13 @@ import { InformationFinanciere } from "@/services/fondsvert/dossier";
 
 interface DemandePaiement {
   montant_paye: number;
+  date_dp: string;
+  numero_dp: string;
 }
 
 interface HistoriqueEngagement {
   demandes_paiement: DemandePaiement[];
+  annee: number;
 }
 
 export function getMontantTotalPaye(
@@ -28,4 +31,17 @@ export function getTotalPayeFromHistorique(
   return historique
     .flatMap((h) => h.demandes_paiement)
     .reduce((sum, dp) => sum + dp.montant_paye, 0);
+}
+
+export function sortHistoriqueByYearAndPaymentDate<
+  T extends { annee: number; demandes_paiement: DemandePaiement[] },
+>(historique: T[]): T[] {
+  return [...historique]
+    .map((item) => ({
+      ...item,
+      demandes_paiement: [...item.demandes_paiement].sort((a, b) =>
+        b.date_dp.localeCompare(a.date_dp),
+      ),
+    }))
+    .sort((a, b) => b.annee - a.annee);
 }

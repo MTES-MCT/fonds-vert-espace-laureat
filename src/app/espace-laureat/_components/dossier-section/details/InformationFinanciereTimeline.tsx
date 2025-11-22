@@ -4,7 +4,10 @@ import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
-import { getTotalPayeFromHistorique } from "@/utils/finance";
+import {
+  getTotalPayeFromHistorique,
+  sortHistoriqueByYearAndPaymentDate,
+} from "@/utils/finance";
 
 import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
 import { EngagementInfos } from "./information-financiere/EngagementInfos";
@@ -59,8 +62,8 @@ export function InformationFinanciereTimeline({
     <div>
       {engagementsList.map((group, index) => {
         const isLast = index === engagementsList.length - 1;
-        const sortedhistorique = [...group.historique].sort(
-          (a, b) => b.annee - a.annee,
+        const sortedhistorique = sortHistoriqueByYearAndPaymentDate(
+          group.historique,
         );
 
         const totalPaye = getTotalPayeFromHistorique(group.historique);

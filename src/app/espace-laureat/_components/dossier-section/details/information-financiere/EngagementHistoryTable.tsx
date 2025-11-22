@@ -18,7 +18,7 @@ interface EngagementHistoryTableProps {
 
 function DsfrTable({ children }: { children: ReactNode }) {
   return (
-    <div className="fr-table mb-0 mt-0 w-[80vw] sm:w-auto">
+    <div className="fr-table mt-0 mb-0 w-[80vw] sm:w-auto">
       <div className="fr-table__wrapper">
         <div className="fr-table__container">
           <div className="fr-table__content">{children}</div>

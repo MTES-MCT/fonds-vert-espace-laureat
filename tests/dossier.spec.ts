@@ -3,6 +3,7 @@ import {
   graphql,
   http,
   HttpResponse,
+  type Page,
   test,
 } from "next/experimental/testmode/playwright/msw";
 
@@ -25,7 +26,7 @@ import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 
-async function waitForDsfrTabs(page: any) {
+async function waitForDsfrTabs(page: Page) {
   await page.waitForSelector("[data-fr-js-tab-button]");
 }
 
@@ -279,34 +280,38 @@ test("engagement with multiple payments shows each payment as separate row", asy
   const rows = engagement.getByRole("row");
   await expect(rows).toHaveCount(4);
 
-  const payment2024_1 = rows.nth(1);
-  await expect(payment2024_1.getByRole("cell").nth(0)).toContainText("2024");
-  await expect(payment2024_1.getByRole("cell").nth(1)).toContainText(
+  const payment2024_latest = rows.nth(1);
+  await expect(payment2024_latest.getByRole("cell").nth(0)).toContainText(
+    "2024",
+  );
+  await expect(payment2024_latest.getByRole("cell").nth(1)).toContainText(
     "2 000 000,00 €",
   );
-  await expect(payment2024_1.getByRole("cell").nth(2)).toContainText(
-    "750 000,00 €",
-  );
-  await expect(payment2024_1.getByRole("cell").nth(3)).toContainText(
-    "22 mars 2024",
-  );
-  await expect(payment2024_1.getByRole("cell").nth(4)).toContainText(
-    "1009876544",
-  );
-
-  const payment2024_2 = rows.nth(2);
-  await expect(payment2024_2.getByRole("cell").nth(0)).toContainText("2024");
-  await expect(payment2024_2.getByRole("cell").nth(1)).toContainText(
-    "2 000 000,00 €",
-  );
-  await expect(payment2024_2.getByRole("cell").nth(2)).toContainText(
+  await expect(payment2024_latest.getByRole("cell").nth(2)).toContainText(
     "1 250 000,00 €",
   );
-  await expect(payment2024_2.getByRole("cell").nth(3)).toContainText(
+  await expect(payment2024_latest.getByRole("cell").nth(3)).toContainText(
     "5 août 2024",
   );
-  await expect(payment2024_2.getByRole("cell").nth(4)).toContainText(
+  await expect(payment2024_latest.getByRole("cell").nth(4)).toContainText(
     "1009876545",
+  );
+
+  const payment2024_earlier = rows.nth(2);
+  await expect(payment2024_earlier.getByRole("cell").nth(0)).toContainText(
+    "2024",
+  );
+  await expect(payment2024_earlier.getByRole("cell").nth(1)).toContainText(
+    "2 000 000,00 €",
+  );
+  await expect(payment2024_earlier.getByRole("cell").nth(2)).toContainText(
+    "750 000,00 €",
+  );
+  await expect(payment2024_earlier.getByRole("cell").nth(3)).toContainText(
+    "22 mars 2024",
+  );
+  await expect(payment2024_earlier.getByRole("cell").nth(4)).toContainText(
+    "1009876544",
   );
 
   const payment2023 = rows.nth(3);
