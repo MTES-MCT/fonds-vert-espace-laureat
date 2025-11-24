@@ -54,7 +54,7 @@ export function Timeline({ steps }: TimelineProps) {
   return (
     <section
       aria-labelledby={headingId}
-      className="mb-6 border-b border-[var(--border-default-grey)]"
+      className="mb-6 border-b border-[var(--border-default-grey)] pb-3"
     >
       <h3
         id={headingId}
@@ -100,7 +100,9 @@ export function Timeline({ steps }: TimelineProps) {
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-0 pb-4">
+              <div
+                className={`flex flex-col gap-0 ${isLast ? "pb-0" : "pb-4"}`}
+              >
                 <p className="m-0 text-xs leading-tight font-medium text-[var(--text-default-grey)]">
                   {step.label}
                   <span className="sr-only">

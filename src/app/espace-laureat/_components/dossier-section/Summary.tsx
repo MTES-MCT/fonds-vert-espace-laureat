@@ -60,89 +60,168 @@ export const SummaryHeader = ({
   );
 };
 
-export const Summary = ({
+export const ProjectPresentation = ({
   resume,
   numeroDossierAgenceEau,
-  emailRepresentantLegal,
-  emailResponsableSuivi,
   departementImplantation,
   socleCommun,
 }: {
   resume?: string;
   numeroDossierAgenceEau?: string;
-  emailRepresentantLegal?: string;
-  emailResponsableSuivi?: string;
   departementImplantation?: string;
   socleCommun?: SocleCommun;
 }) => {
   return (
-    <div className="space-y-6">
-      <section className="bg-white p-6 shadow-sm">
-        <h3>Présentation du projet</h3>
-        {resume && (
-          <p title={resume} className="line-clamp-3 max-w-2xl">
-            {resume}
-          </p>
+    <section
+      aria-labelledby="project-presentation-heading"
+      className="mb-6 border-b border-[var(--border-default-grey)] pb-6"
+    >
+      <h3
+        id="project-presentation-heading"
+        className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
+      >
+        Présentation du projet
+      </h3>
+      {resume && (
+        <p
+          title={resume}
+          className="mb-4 line-clamp-3 text-xs text-[var(--text-default-grey)]"
+        >
+          {resume}
+        </p>
+      )}
+      <dl className="space-y-2">
+        <div>
+          <dt
+            id="department-label"
+            className="text-xs font-medium text-[var(--text-mention-grey)]"
+          >
+            Département d'implantation
+          </dt>
+          <dd
+            aria-labelledby="department-label"
+            className="text-sm text-[var(--text-default-grey)]"
+          >
+            {departementImplantation
+              ? departementImplantation
+              : "Aucun département précisé"}
+          </dd>
+        </div>
+        {socleCommun?.nom_commune && (
+          <div>
+            <dt
+              id="commune-label"
+              className="text-xs font-medium text-[var(--text-mention-grey)]"
+            >
+              Commune principale impactée
+            </dt>
+            <dd
+              aria-labelledby="commune-label"
+              className="text-sm text-[var(--text-default-grey)]"
+            >
+              {socleCommun.nom_commune}
+            </dd>
+          </div>
         )}
-        <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
+        {numeroDossierAgenceEau && (
           <div>
-            <dt id="department-label">Département d'implantation</dt>
-            <dd aria-labelledby="department-label">
-              {departementImplantation
-                ? departementImplantation
-                : "Aucun département précisé"}
+            <dt className="text-xs font-medium text-[var(--text-mention-grey)]">
+              Numéro de dossier agence de l'eau
+            </dt>
+            <dd className="text-sm">
+              <Badge className="bg-white shadow-sm">
+                {numeroDossierAgenceEau}
+              </Badge>
             </dd>
           </div>
-          {socleCommun?.nom_commune && (
-            <div>
-              <dt id="commune-label">Commune principale impactée</dt>
-              <dd aria-labelledby="commune-label">{socleCommun.nom_commune}</dd>
-            </div>
-          )}
-          {numeroDossierAgenceEau && (
-            <div>
-              <dt>Numéro de dossier agence de l'eau</dt>
-              <dd>
-                <Badge className="bg-white shadow-sm">
-                  {numeroDossierAgenceEau}
-                </Badge>
-              </dd>
-            </div>
-          )}
-        </dl>
-      </section>
+        )}
+      </dl>
+    </section>
+  );
+};
 
-      <section className="bg-white p-6 shadow-sm">
-        <h3>Identité du porteur de projet</h3>
-        <dl className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-          {socleCommun?.entreprise_raison_sociale && (
-            <div>
-              <dt id="company-name-label">Nom du porteur</dt>
-              <dd aria-labelledby="company-name-label">
-                {socleCommun.entreprise_raison_sociale}
-              </dd>
-            </div>
-          )}
-          {socleCommun?.siret && (
-            <div>
-              <dt id="siret-label">SIRET</dt>
-              <dd aria-labelledby="siret-label">{socleCommun.siret}</dd>
-            </div>
-          )}
+export const ProjectHolder = ({
+  emailRepresentantLegal,
+  emailResponsableSuivi,
+  socleCommun,
+}: {
+  emailRepresentantLegal?: string;
+  emailResponsableSuivi?: string;
+  socleCommun?: SocleCommun;
+}) => {
+  return (
+    <section
+      aria-labelledby="project-holder-heading"
+      className="mb-6 border-b border-[var(--border-default-grey)] pb-6"
+    >
+      <h3
+        id="project-holder-heading"
+        className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
+      >
+        Identité du porteur de projet
+      </h3>
+      <dl className="space-y-2">
+        {socleCommun?.entreprise_raison_sociale && (
           <div>
-            <dt id="legal-rep-label">Représentant légal</dt>
-            <dd aria-labelledby="legal-rep-label">
-              <EmailLink email={emailRepresentantLegal} />
+            <dt
+              id="company-name-label"
+              className="text-xs font-medium text-[var(--text-mention-grey)]"
+            >
+              Nom du porteur
+            </dt>
+            <dd
+              aria-labelledby="company-name-label"
+              className="text-sm text-[var(--text-default-grey)]"
+            >
+              {socleCommun.entreprise_raison_sociale}
             </dd>
           </div>
+        )}
+        {socleCommun?.siret && (
           <div>
-            <dt id="contact-label">Responsable du suivi</dt>
-            <dd aria-labelledby="contact-label">
-              <EmailLink email={emailResponsableSuivi} />
+            <dt
+              id="siret-label"
+              className="text-xs font-medium text-[var(--text-mention-grey)]"
+            >
+              SIRET
+            </dt>
+            <dd
+              aria-labelledby="siret-label"
+              className="text-sm text-[var(--text-default-grey)]"
+            >
+              {socleCommun.siret}
             </dd>
           </div>
-        </dl>
-      </section>
-    </div>
+        )}
+        <div>
+          <dt
+            id="legal-rep-label"
+            className="text-xs font-medium text-[var(--text-mention-grey)]"
+          >
+            Représentant légal
+          </dt>
+          <dd
+            aria-labelledby="legal-rep-label"
+            className="text-sm text-[var(--text-default-grey)]"
+          >
+            <EmailLink email={emailRepresentantLegal} />
+          </dd>
+        </div>
+        <div>
+          <dt
+            id="contact-label"
+            className="text-xs font-medium text-[var(--text-mention-grey)]"
+          >
+            Responsable du suivi
+          </dt>
+          <dd
+            aria-labelledby="contact-label"
+            className="text-sm text-[var(--text-default-grey)]"
+          >
+            <EmailLink email={emailResponsableSuivi} />
+          </dd>
+        </div>
+      </dl>
+    </section>
   );
 };

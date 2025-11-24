@@ -4,7 +4,8 @@ import Link from "next/link";
 import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import {
-  Summary,
+  ProjectHolder,
+  ProjectPresentation,
   SummaryHeader,
 } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
@@ -72,15 +73,6 @@ export async function DossierSection({
 
       <div className="fr-container my-8 flex flex-wrap items-start gap-8">
         <div className="flex flex-1 flex-col gap-y-6">
-          <Summary
-            resume={subvention.resumeProjet}
-            numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-            emailRepresentantLegal={subvention.emailRepresentantLegal}
-            emailResponsableSuivi={subvention.emailResponsableSuivi}
-            departementImplantation={subvention.departementImplantation}
-            socleCommun={socleCommun}
-          />
-
           <section className="bg-white p-6 shadow-sm">
             <div className="mb-3 flex items-end justify-between">
               <h3 className="mb-0">Financement du projet</h3>
@@ -142,12 +134,21 @@ export async function DossierSection({
               ]}
             />
           )}
+          <ProjectPresentation
+            resume={subvention.resumeProjet}
+            numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+            departementImplantation={subvention.departementImplantation}
+            socleCommun={socleCommun}
+          />
+          <ProjectHolder
+            emailRepresentantLegal={subvention.emailRepresentantLegal}
+            emailResponsableSuivi={subvention.emailResponsableSuivi}
+            socleCommun={socleCommun}
+          />
           <section aria-labelledby="evaluation-heading">
             <h3
               id="evaluation-heading"
-              className={`
-                mb-3 text-left text-lg leading-snug font-medium text-[var(--text-label-grey)]
-              `}
+              className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
             >
               Les données de votre projet participent à la transition écologique
             </h3>
