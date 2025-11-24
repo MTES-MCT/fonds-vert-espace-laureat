@@ -71,9 +71,9 @@ export async function DossierSection({
         backLink={backLink}
       />
 
-      <div className="fr-container my-8 flex flex-wrap items-start gap-8">
-        <div className="flex flex-1 flex-col gap-y-6">
-          <section className="bg-white p-6 shadow-sm">
+      <div className="fr-container -mt-32 mb-8 flex flex-wrap items-start gap-8">
+        <div className="flex min-w-0 flex-1 flex-col gap-y-8">
+          <section className="bg-white p-8 shadow-lg">
             <div className="mb-3 flex items-end justify-between">
               <h3 className="mb-0">Financement du projet</h3>
               {informationFinanciere && (
@@ -97,7 +97,7 @@ export async function DossierSection({
 
           {metriques && Object.keys(metriques).length > 0 && (
             <div
-              className="bg-white p-6 shadow-sm"
+              className="bg-white p-8 shadow-lg"
               data-testid="impact-section"
             >
               <h3>Engagements écologiques</h3>
@@ -114,7 +114,7 @@ export async function DossierSection({
           </Link>
         </div>
 
-        <div className="w-[22rem] bg-white p-6 shadow-sm">
+        <div className="w-[22rem] shrink-0 bg-white p-6 shadow-lg">
           {socleCommun && (
             <Timeline
               steps={[

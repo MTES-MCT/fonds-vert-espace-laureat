@@ -22,7 +22,7 @@ export const SummaryHeader = ({
 
   return (
     <div className="bg-[#efebe8]">
-      <div className="fr-container pt-8 pb-12">
+      <div className="fr-container pt-8 pb-40">
         <Breadcrumb
           className="mt-0 mb-4"
           homeLinkProps={{
