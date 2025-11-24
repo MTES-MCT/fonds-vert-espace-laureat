@@ -13,22 +13,19 @@ export function SubventionDetails({
   informationFinanciere?: InformationFinanciere;
 }) {
   return (
-    <div>
-      <dl className="mb-4">
+    <div className="space-y-8">
+      <dl>
         <dt id="total-depenses-label">Montant total des dépenses du projet</dt>
         <dd aria-labelledby="total-depenses-label" className="font-semibold">
           {formatEuros(totalDesDepenses)}
         </dd>
       </dl>
 
-      <section
-        aria-labelledby="aide-fonds-vert-heading"
-        className="border-y border-gray-200 py-5"
-      >
-        <h4 id="aide-fonds-vert-heading" className="mb-3 text-lg font-bold">
+      <section aria-labelledby="aide-fonds-vert-heading">
+        <h4 id="aide-fonds-vert-heading" className="mb-2 text-lg font-bold">
           Aide du Fonds vert
         </h4>
-        <dl className="grid grid-cols-3">
+        <dl className="grid grid-cols-3 border border-gray-200 px-8 py-6">
           <div>
             <dt id="subvention-attribuee-label">Montant attribué</dt>
             <dd
@@ -47,14 +44,12 @@ export function SubventionDetails({
         </dl>
       </section>
 
-      <div data-testid="financial-timeline-container">
-        {informationFinanciere &&
-          informationFinanciere.informations_engagement?.length > 0 && (
-            <InformationFinanciereTimeline
-              informationFinanciere={informationFinanciere}
-            />
-          )}
-      </div>
+      {informationFinanciere &&
+        informationFinanciere.informations_engagement?.length > 0 && (
+          <InformationFinanciereTimeline
+            informationFinanciere={informationFinanciere}
+          />
+        )}
     </div>
   );
 }

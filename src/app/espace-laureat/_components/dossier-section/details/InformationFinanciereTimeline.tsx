@@ -59,9 +59,8 @@ export function InformationFinanciereTimeline({
   const engagementsList = Object.values(groupedEngagements);
 
   return (
-    <div>
+    <div className="space-y-8">
       {engagementsList.map((group, index) => {
-        const isLast = index === engagementsList.length - 1;
         const sortedhistorique = sortHistoriqueByYearAndPaymentDate(
           group.historique,
         );
@@ -73,7 +72,6 @@ export function InformationFinanciereTimeline({
           <section
             key={index}
             aria-labelledby={`engagement-juridique-${index}-heading`}
-            className={`py-5 ${isLast ? "" : "border-b border-gray-200"}`}
           >
             <h4
               id={`engagement-juridique-${index}-heading`}

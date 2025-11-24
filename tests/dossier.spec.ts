@@ -143,16 +143,12 @@ test("dossier page displays subvention financial details correctly", async ({
   await expect(engagementJuridique.getByLabel("Montant restant")).toContainText(
     "6 651 504,80 €",
   );
-
-  await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 });
 
 test("displays two engagement juridique sections with tabs", async ({
   page,
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
-
-  await expect(page.getByTestId("financial-timeline-container")).toBeVisible();
 
   const allEngagements = page.getByRole("region", {
     name: /Engagement juridique n°/,
