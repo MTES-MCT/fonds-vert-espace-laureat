@@ -1,11 +1,8 @@
-import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import {
+  DemandePaiement,
+  InformationFinanciere,
+} from "@/services/fondsvert/dossier";
 import { FinancesEJData, PosteEJ } from "@/services/fondsvert/finances";
-
-interface DemandePaiement {
-  montant_paye: number;
-  date_dp: string;
-  numero_dp: string;
-}
 
 export interface HistoriqueEngagement {
   demandes_paiement: DemandePaiement[];

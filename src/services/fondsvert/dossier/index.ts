@@ -53,13 +53,13 @@ export function isMetricFields(value: unknown): value is MetricFields {
   );
 }
 
-interface DemandePaiement {
+export interface DemandePaiement {
   numero_dp: string;
   date_dp: string;
   montant_paye: number;
 }
 
-interface EngagementJuridiques {
+export interface EngagementJuridiques {
   numero_ej: string;
   nom_demarche: string;
   nom_axe: number;
@@ -68,7 +68,7 @@ interface EngagementJuridiques {
   demandes_paiement: DemandePaiement[];
 }
 
-interface InformationsEngagement {
+export interface InformationsEngagement {
   annee_information_financiere: number;
   engagements_juridiques: EngagementJuridiques[];
 }
