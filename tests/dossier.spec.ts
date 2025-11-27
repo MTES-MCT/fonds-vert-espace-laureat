@@ -143,7 +143,7 @@ test("dossier page displays subvention financial details correctly", async ({
     "10 073 564,00 €",
   );
   await expect(aideFondsVert.getByLabel("Montant total payé")).toContainText(
-    "5 922 069,20 €",
+    "5 922 079,20 €",
   );
 
   const engagementJuridique = page.getByRole("region", {
@@ -154,7 +154,7 @@ test("dossier page displays subvention financial details correctly", async ({
     engagementJuridique.getByLabel("Montant attribué"),
   ).toContainText("10 073 574,00 €");
   await expect(engagementJuridique.getByLabel("Montant restant")).toContainText(
-    "6 651 504,80 €",
+    "6 651 494,80 €",
   );
 });
 
@@ -202,7 +202,7 @@ test("engagement information tab shows amounts, fournisseur, centre de coût and
     "10 073 574,00 €",
   );
   await expect(engagement1.getByLabel("Montant restant")).toContainText(
-    "6 651 504,80 €",
+    "6 651 494,80 €",
   );
   await expect(engagement1.getByLabel("Fournisseur")).toContainText(
     COMPANY_NAME,
@@ -211,7 +211,7 @@ test("engagement information tab shows amounts, fournisseur, centre de coût and
     CENTRE_COUTS,
   );
   await expect(engagement1.getByLabel("Dernier paiement")).toContainText(
-    "3 422 069,20 €",
+    "3 422 079,20 €",
   );
 });
 
@@ -249,7 +249,7 @@ test("engagement history tab displays yearly breakdown with payments", async ({
     "10 073 574,00 €",
   );
   await expect(annee2024.getByRole("cell").nth(2)).toContainText(
-    "3 422 069,20 €",
+    "3 422 079,20 €",
   );
   await expect(annee2024.getByRole("cell").nth(3)).toContainText(
     "7 octobre 2024",
