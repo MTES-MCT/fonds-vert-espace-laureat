@@ -1,4 +1,5 @@
 import { FinancesEJData } from "@/services/fondsvert/finances";
+import { getLatestYearPostesField } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
 import { LastPaymentInfo } from "./LastPaymentInfo";
@@ -19,14 +20,27 @@ interface GroupedEngagement {
   historique: Engagement[];
 }
 
-function getCentresFinanciers(financesEJ?: FinancesEJData): string | undefined {
-  if (!financesEJ?.annees_informations_financieres?.length) return undefined;
-  const allCentres = financesEJ.annees_informations_financieres
-    .flatMap((annee) => annee.postes)
-    .map((poste) => poste.centre_financier)
-    .filter(Boolean);
-  const uniqueCentres = [...new Set(allCentres)];
-  return uniqueCentres.length > 0 ? uniqueCentres.join(", ") : undefined;
+function FinanceField({
+  id,
+  values,
+  singular,
+  plural,
+}: {
+  id: string;
+  values: string[];
+  singular: string;
+  plural: string;
+}) {
+  if (values.length === 0) return null;
+
+  const label = values.length > 1 ? plural : singular;
+
+  return (
+    <div>
+      <dt id={`${id}-label`}>{label}</dt>
+      <dd aria-labelledby={`${id}-label`}>{values.join(", ")}</dd>
+    </div>
+  );
 }
 
 export function EngagementInfos({
@@ -40,7 +54,15 @@ export function EngagementInfos({
   index: number;
   financesEJ?: FinancesEJData;
 }) {
-  const centresFinanciers = getCentresFinanciers(financesEJ);
+  const centresFinanciers = getLatestYearPostesField(
+    financesEJ,
+    "centre_financier",
+  );
+  const fournisseurs = getLatestYearPostesField(
+    financesEJ,
+    "fournisseur_titulaire_nom",
+  );
+  const centresCouts = getLatestYearPostesField(financesEJ, "centre_couts");
 
   return (
     <>
@@ -57,14 +79,24 @@ export function EngagementInfos({
             {formatEuros(montantRestant)}
           </dd>
         </div>
-        {centresFinanciers && (
-          <div>
-            <dt id={`centre-financier-ej-${index}-label`}>Centre financier</dt>
-            <dd aria-labelledby={`centre-financier-ej-${index}-label`}>
-              {centresFinanciers}
-            </dd>
-          </div>
-        )}
+        <FinanceField
+          id={`centre-financier-ej-${index}`}
+          values={centresFinanciers}
+          singular="Centre financier"
+          plural="Centres financiers"
+        />
+        <FinanceField
+          id={`fournisseur-ej-${index}`}
+          values={fournisseurs}
+          singular="Fournisseur"
+          plural="Fournisseurs"
+        />
+        <FinanceField
+          id={`centre-cout-ej-${index}`}
+          values={centresCouts}
+          singular="Centre de coût"
+          plural="Centres de coût"
+        />
       </dl>
       <LastPaymentInfo group={group} index={index} />
     </>
