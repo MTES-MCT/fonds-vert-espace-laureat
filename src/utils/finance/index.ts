@@ -10,6 +10,7 @@ interface DemandePaiement {
 interface HistoriqueEngagement {
   demandes_paiement: DemandePaiement[];
   annee: number;
+  montant_engage: number;
 }
 
 /**
@@ -32,15 +33,22 @@ export function getMontantTotalPaye(
 }
 
 /**
- * Calcule le montant total payé à partir de l'historique d'un engagement groupé.
- * Utilisé dans l'onglet "Informations" d'un EJ pour afficher le total payé.
+ * Calcule le montant restant pour un engagement juridique.
+ * Basé sur le montant engagé de l'année la plus récente moins les paiements de cette année.
  */
-export function getTotalPayeFromHistorique(
+export function getMontantRestant(
   historique: HistoriqueEngagement[],
+  latestYear: number,
+  latestMontantEngage: number,
 ): number {
-  return historique
-    .flatMap((h) => h.demandes_paiement)
-    .reduce((sum, dp) => sum + dp.montant_paye, 0);
+  const latestYearHistorique = historique.find((h) => h.annee === latestYear);
+  const latestYearPayments = latestYearHistorique
+    ? latestYearHistorique.demandes_paiement.reduce(
+        (sum, dp) => sum + dp.montant_paye,
+        0,
+      )
+    : 0;
+  return latestMontantEngage - latestYearPayments;
 }
 
 /**

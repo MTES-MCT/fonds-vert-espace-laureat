@@ -143,7 +143,7 @@ test("dossier page displays subvention financial details correctly", async ({
     "10 073 564,00 €",
   );
   await expect(aideFondsVert.getByLabel("Montant total payé")).toContainText(
-    "5 922 079,20 €",
+    "6 122 079,20 €",
   );
 
   const engagementJuridique = page.getByRole("region", {
@@ -151,8 +151,11 @@ test("dossier page displays subvention financial details correctly", async ({
   });
   await expect(engagementJuridique).toBeVisible();
   await expect(
-    engagementJuridique.getByLabel("Montant attribué"),
+    engagementJuridique.getByLabel("Montant attribué initial"),
   ).toContainText("10 073 574,00 €");
+  await expect(
+    engagementJuridique.getByLabel("Montant attribué en 2025"),
+  ).toContainText("6 651 494,80 €");
   await expect(engagementJuridique.getByLabel("Montant restant")).toContainText(
     "6 651 494,80 €",
   );
@@ -198,9 +201,12 @@ test("engagement information tab shows amounts, fournisseur, centre de coût and
   const engagement1 = page.getByRole("region", {
     name: "Engagement juridique n°2105212345",
   });
-  await expect(engagement1.getByLabel("Montant attribué")).toContainText(
-    "10 073 574,00 €",
-  );
+  await expect(
+    engagement1.getByLabel("Montant attribué initial"),
+  ).toContainText("10 073 574,00 €");
+  await expect(
+    engagement1.getByLabel("Montant attribué en 2025"),
+  ).toContainText("6 651 494,80 €");
   await expect(engagement1.getByLabel("Montant restant")).toContainText(
     "6 651 494,80 €",
   );
@@ -276,8 +282,14 @@ test("engagement with multiple payments shows each payment as separate row", asy
     name: "Engagement juridique n°2106789012",
   });
 
-  await expect(engagement.getByLabel("Montant attribué")).toContainText(
+  await expect(engagement.getByLabel("Montant attribué initial")).toContainText(
     "2 500 000,00 €",
+  );
+  await expect(engagement.getByLabel("Montant attribué en 2025")).toContainText(
+    "500 000,00 €",
+  );
+  await expect(engagement.getByLabel("Montant restant")).toContainText(
+    "300 000,00 €",
   );
   await expect(engagement.getByLabel("Fournisseur")).toContainText(
     COMPANY_NAME,
@@ -286,10 +298,10 @@ test("engagement with multiple payments shows each payment as separate row", asy
     `${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`,
   );
   await expect(engagement.getByLabel("Dernier paiement")).toContainText(
-    "1 250 000,00 €",
+    "200 000,00 €",
   );
   await expect(engagement.getByLabel("Date de paiement")).toContainText(
-    "5 août 2024",
+    "10 février 2025",
   );
 
   const historiqueTab = engagement.getByRole("tab", { name: "Historique" });
@@ -299,9 +311,22 @@ test("engagement with multiple payments shows each payment as separate row", asy
   ).toBeVisible();
 
   const rows = engagement.getByRole("row");
-  await expect(rows).toHaveCount(4);
+  await expect(rows).toHaveCount(5);
 
-  const payment2024_latest = rows.nth(1);
+  const annee2025 = rows.nth(1);
+  await expect(annee2025.getByRole("cell").nth(0)).toContainText("2025");
+  await expect(annee2025.getByRole("cell").nth(1)).toContainText(
+    "500 000,00 €",
+  );
+  await expect(annee2025.getByRole("cell").nth(2)).toContainText(
+    "200 000,00 €",
+  );
+  await expect(annee2025.getByRole("cell").nth(3)).toContainText(
+    "10 février 2025",
+  );
+  await expect(annee2025.getByRole("cell").nth(4)).toContainText("1009876546");
+
+  const payment2024_latest = rows.nth(2);
   await expect(payment2024_latest.getByRole("cell").nth(0)).toContainText(
     "2024",
   );
@@ -318,7 +343,7 @@ test("engagement with multiple payments shows each payment as separate row", asy
     "1009876545",
   );
 
-  const payment2024_earlier = rows.nth(2);
+  const payment2024_earlier = rows.nth(3);
   await expect(payment2024_earlier.getByRole("cell").nth(0)).toContainText(
     "2024",
   );
@@ -335,7 +360,7 @@ test("engagement with multiple payments shows each payment as separate row", asy
     "1009876544",
   );
 
-  const payment2023 = rows.nth(3);
+  const payment2023 = rows.nth(4);
   await expect(payment2023.getByRole("cell").nth(0)).toContainText("2023");
   await expect(payment2023.getByRole("cell").nth(1)).toContainText(
     "2 500 000,00 €",
@@ -542,6 +567,13 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
   await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
     "10 073 564,00 €",
   );
+
+  const engagementJuridique = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(
+    engagementJuridique.getByLabel("Montant attribué initial"),
+  ).toContainText("10 073 574,00 €");
 
   const impactSection = page.getByTestId("impact-section");
   await expect(impactSection).not.toBeAttached();

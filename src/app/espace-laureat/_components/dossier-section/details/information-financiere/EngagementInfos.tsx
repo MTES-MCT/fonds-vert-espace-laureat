@@ -17,6 +17,8 @@ interface Engagement {
 interface GroupedEngagement {
   numero_ej: string;
   montant_engage_initial: number;
+  latest_montant_engage: number;
+  latest_year: number;
   historique: Engagement[];
 }
 
@@ -64,9 +66,19 @@ export function EngagementInfos({
     <>
       <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
         <div>
-          <dt id={`montant-attribue-ej-${index}-label`}>Montant attribué</dt>
-          <dd aria-labelledby={`montant-attribue-ej-${index}-label`}>
+          <dt id={`montant-attribue-initial-ej-${index}-label`}>
+            Montant attribué initial
+          </dt>
+          <dd aria-labelledby={`montant-attribue-initial-ej-${index}-label`}>
             {formatEuros(group.montant_engage_initial)}
+          </dd>
+        </div>
+        <div>
+          <dt id={`montant-attribue-ej-${index}-label`}>
+            Montant attribué en {group.latest_year}
+          </dt>
+          <dd aria-labelledby={`montant-attribue-ej-${index}-label`}>
+            {formatEuros(group.latest_montant_engage)}
           </dd>
         </div>
         <div>

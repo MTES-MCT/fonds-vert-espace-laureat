@@ -21,6 +21,8 @@ interface Engagement {
 interface GroupedEngagement {
   numero_ej: string;
   montant_engage_initial: number;
+  latest_montant_engage: number;
+  latest_year: number;
   historique: Engagement[];
 }
 

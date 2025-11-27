@@ -6,7 +6,7 @@ import React from "react";
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
 import { FinancesEJData } from "@/services/fondsvert/finances";
 import {
-  getTotalPayeFromHistorique,
+  getMontantRestant,
   sortHistoriqueByYearAndPaymentDate,
 } from "@/utils/finance";
 
@@ -26,6 +26,8 @@ interface Engagement {
 interface GroupedEngagement {
   numero_ej: string;
   montant_engage_initial: number;
+  latest_montant_engage: number;
+  latest_year: number;
   historique: Engagement[];
 }
 
@@ -45,8 +47,15 @@ export function InformationFinanciereTimeline({
             acc[key] = {
               numero_ej: eng.numero_ej,
               montant_engage_initial: eng.montant_engage_initial,
+              latest_montant_engage: eng.montant_engage,
+              latest_year: info.annee_information_financiere,
               historique: [],
             } as GroupedEngagement;
+          }
+          // Update latest values if this year is more recent
+          if (info.annee_information_financiere > acc[key].latest_year) {
+            acc[key].latest_montant_engage = eng.montant_engage;
+            acc[key].latest_year = info.annee_information_financiere;
           }
           acc[key].historique.push({
             annee: info.annee_information_financiere,
@@ -68,8 +77,11 @@ export function InformationFinanciereTimeline({
           group.historique,
         );
 
-        const totalPaye = getTotalPayeFromHistorique(group.historique);
-        const montantRestant = group.montant_engage_initial - totalPaye;
+        const montantRestant = getMontantRestant(
+          group.historique,
+          group.latest_year,
+          group.latest_montant_engage,
+        );
 
         return (
           <section
