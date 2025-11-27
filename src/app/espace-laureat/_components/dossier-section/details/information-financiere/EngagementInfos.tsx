@@ -54,10 +54,6 @@ export function EngagementInfos({
   index: number;
   financesEJ?: FinancesEJData;
 }) {
-  const centresFinanciers = getLatestYearPostesField(
-    financesEJ,
-    "centre_financier",
-  );
   const fournisseurs = getLatestYearPostesField(
     financesEJ,
     "fournisseur_titulaire_nom",
@@ -79,12 +75,6 @@ export function EngagementInfos({
             {formatEuros(montantRestant)}
           </dd>
         </div>
-        <FinanceField
-          id={`centre-financier-ej-${index}`}
-          values={centresFinanciers}
-          singular="Centre financier"
-          plural="Centres financiers"
-        />
         <FinanceField
           id={`fournisseur-ej-${index}`}
           values={fournisseurs}

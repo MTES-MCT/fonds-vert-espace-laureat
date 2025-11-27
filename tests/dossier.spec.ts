@@ -12,9 +12,6 @@ import {
   CENTRE_COUTS,
   CENTRE_COUTS_2C,
   CENTRE_COUTS_2D,
-  CENTRE_FINANCIER,
-  CENTRE_FINANCIER_2C,
-  CENTRE_FINANCIER_2D,
   COMMUNE,
   COMPANY_NAME,
   CONTACT_EMAIL,
@@ -192,7 +189,7 @@ test("displays two engagement juridique sections with tabs", async ({
   ).toBeVisible();
 });
 
-test("engagement information tab shows amounts, centre financier, fournisseur, centre de coût and last payment", async ({
+test("engagement information tab shows amounts, fournisseur, centre de coût and last payment", async ({
   page,
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
@@ -206,9 +203,6 @@ test("engagement information tab shows amounts, centre financier, fournisseur, c
   );
   await expect(engagement1.getByLabel("Montant restant")).toContainText(
     "6 651 504,80 €",
-  );
-  await expect(engagement1.getByLabel("Centre financier")).toContainText(
-    CENTRE_FINANCIER,
   );
   await expect(engagement1.getByLabel("Fournisseur")).toContainText(
     COMPANY_NAME,
@@ -284,9 +278,6 @@ test("engagement with multiple payments shows each payment as separate row", asy
 
   await expect(engagement.getByLabel("Montant attribué")).toContainText(
     "2 500 000,00 €",
-  );
-  await expect(engagement.getByLabel("Centres financiers")).toContainText(
-    `${CENTRE_FINANCIER_2C}, ${CENTRE_FINANCIER_2D}`,
   );
   await expect(engagement.getByLabel("Fournisseur")).toContainText(
     COMPANY_NAME,
