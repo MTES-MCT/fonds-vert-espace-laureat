@@ -7,10 +7,18 @@ interface DemandePaiement {
   numero_dp: string;
 }
 
-interface HistoriqueEngagement {
+export interface HistoriqueEngagement {
   demandes_paiement: DemandePaiement[];
   annee: number;
   montant_engage: number;
+}
+
+export interface GroupedEngagement {
+  numero_ej: string;
+  montant_engage_initial: number;
+  latest_montant_engage: number;
+  latest_year: number;
+  historique: HistoriqueEngagement[];
 }
 
 /**
@@ -30,6 +38,44 @@ export function getMontantTotalPaye(
       info.engagements_juridiques.flatMap((eng) => eng.demandes_paiement),
     )
     .reduce((sum, dp) => sum + dp.montant_paye, 0);
+}
+
+/**
+ * Groupe les engagements juridiques par numéro EJ et montant initial.
+ * Pour chaque groupe, calcule les valeurs de l'année la plus récente.
+ */
+export function groupEngagementsByEJ(
+  informationFinanciere: InformationFinanciere,
+): GroupedEngagement[] {
+  const grouped = informationFinanciere.informations_engagement.reduce(
+    (acc, info) => {
+      info.engagements_juridiques.forEach((eng) => {
+        const key = `${eng.numero_ej}-${eng.montant_engage_initial}`;
+        if (!acc[key]) {
+          acc[key] = {
+            numero_ej: eng.numero_ej,
+            montant_engage_initial: eng.montant_engage_initial,
+            latest_montant_engage: eng.montant_engage,
+            latest_year: info.annee_information_financiere,
+            historique: [],
+          };
+        }
+        if (info.annee_information_financiere > acc[key].latest_year) {
+          acc[key].latest_montant_engage = eng.montant_engage;
+          acc[key].latest_year = info.annee_information_financiere;
+        }
+        acc[key].historique.push({
+          annee: info.annee_information_financiere,
+          montant_engage: eng.montant_engage,
+          demandes_paiement: eng.demandes_paiement,
+        });
+      });
+      return acc;
+    },
+    {} as Record<string, GroupedEngagement>,
+  );
+
+  return Object.values(grouped);
 }
 
 /**

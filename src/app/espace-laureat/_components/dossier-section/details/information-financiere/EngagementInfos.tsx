@@ -1,26 +1,8 @@
 import { FinancesEJData } from "@/services/fondsvert/finances";
-import { getLatestYearPostesField } from "@/utils/finance";
+import { getLatestYearPostesField, GroupedEngagement } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
 import { LastPaymentInfo } from "./LastPaymentInfo";
-
-interface Engagement {
-  annee: number;
-  montant_engage: number;
-  demandes_paiement: {
-    numero_dp: string;
-    date_dp: string;
-    montant_paye: number;
-  }[];
-}
-
-interface GroupedEngagement {
-  numero_ej: string;
-  montant_engage_initial: number;
-  latest_montant_engage: number;
-  latest_year: number;
-  historique: Engagement[];
-}
 
 function FinanceField({
   id,

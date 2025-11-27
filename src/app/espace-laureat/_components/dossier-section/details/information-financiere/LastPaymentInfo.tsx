@@ -1,29 +1,12 @@
 import React from "react";
 
+import { GroupedEngagement } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
 
 interface Payment {
   montant_paye: number;
   date_dp: string;
   numero_dp: string;
-}
-
-interface Engagement {
-  annee: number;
-  montant_engage: number;
-  demandes_paiement: {
-    numero_dp: string;
-    date_dp: string;
-    montant_paye: number;
-  }[];
-}
-
-interface GroupedEngagement {
-  numero_ej: string;
-  montant_engage_initial: number;
-  latest_montant_engage: number;
-  latest_year: number;
-  historique: Engagement[];
 }
 
 interface LastPaymentInfoProps {
