@@ -74,7 +74,6 @@ interface InformationsEngagement {
 }
 
 export interface InformationFinanciere {
-  centre_financier_chorus: string;
   informations_engagement: InformationsEngagement[];
 }
 

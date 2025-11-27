@@ -1,5 +1,6 @@
 import { InformationFinanciereTimeline } from "@/app/espace-laureat/_components/dossier-section/details/InformationFinanciereTimeline";
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import { FinancesEJData } from "@/services/fondsvert/finances";
 import { getMontantTotalPaye } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
@@ -7,10 +8,12 @@ export function SubventionDetails({
   montantSubventionAttribuee,
   totalDesDepenses,
   informationFinanciere,
+  financesEJMap,
 }: {
   montantSubventionAttribuee?: number;
   totalDesDepenses?: number;
   informationFinanciere?: InformationFinanciere;
+  financesEJMap: Record<string, FinancesEJData>;
 }) {
   return (
     <div className="space-y-8">
@@ -48,6 +51,7 @@ export function SubventionDetails({
         informationFinanciere.informations_engagement?.length > 0 && (
           <InformationFinanciereTimeline
             informationFinanciere={informationFinanciere}
+            financesEJMap={financesEJMap}
           />
         )}
     </div>

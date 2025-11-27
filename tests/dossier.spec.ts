@@ -9,7 +9,11 @@ import {
 
 import {
   AGENCE_EAU_NUMBER,
-  CHORUS_NUMBER,
+  CENTRE_FINANCIER,
+  CENTRE_FINANCIER_2A,
+  CENTRE_FINANCIER_2B,
+  CENTRE_FINANCIER_2C,
+  CENTRE_FINANCIER_2D,
   COMMUNE,
   COMPANY_NAME,
   CONTACT_EMAIL,
@@ -22,7 +26,12 @@ import {
   SIRET,
 } from "./fixtures/constants";
 import { getDemarcheDossiersData, getDossierData } from "./fixtures/ds";
-import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
+import {
+  fondsVertDossierData,
+  fondsVertFinancesEJ1Data,
+  fondsVertFinancesEJ2Data,
+  fondsVertLoginData,
+} from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 
@@ -60,6 +69,14 @@ test.use({
 
       http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
         return HttpResponse.json(gristChampsDS);
+      }),
+
+      http.get("http://fondsvert/fonds_vert/v2/finances/2105212345", () => {
+        return HttpResponse.json(fondsVertFinancesEJ1Data);
+      }),
+
+      http.get("http://fondsvert/fonds_vert/v2/finances/2106789012", () => {
+        return HttpResponse.json(fondsVertFinancesEJ2Data);
       }),
     ],
     { scope: "test" },
@@ -131,8 +148,6 @@ test("dossier page displays subvention financial details correctly", async ({
     "5 922 069,20 €",
   );
 
-  await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
-
   const engagementJuridique = page.getByRole("region", {
     name: "Engagement juridique n°2105212345",
   });
@@ -176,7 +191,7 @@ test("displays two engagement juridique sections with tabs", async ({
   ).toBeVisible();
 });
 
-test("engagement information tab shows amounts and last payment", async ({
+test("engagement information tab shows amounts, centre financier and last payment", async ({
   page,
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
@@ -190,6 +205,9 @@ test("engagement information tab shows amounts and last payment", async ({
   );
   await expect(engagement1.getByLabel("Montant restant")).toContainText(
     "6 651 504,80 €",
+  );
+  await expect(engagement1.getByLabel("Centre financier")).toContainText(
+    CENTRE_FINANCIER,
   );
   await expect(engagement1.getByLabel("Dernier paiement")).toContainText(
     "3 422 069,20 €",
@@ -259,6 +277,9 @@ test("engagement with multiple payments shows each payment as separate row", asy
 
   await expect(engagement.getByLabel("Montant attribué")).toContainText(
     "2 500 000,00 €",
+  );
+  await expect(engagement.getByLabel("Centre financier")).toContainText(
+    `${CENTRE_FINANCIER_2A}, ${CENTRE_FINANCIER_2B}, ${CENTRE_FINANCIER_2C}, ${CENTRE_FINANCIER_2D}`,
   );
   await expect(engagement.getByLabel("Dernier paiement")).toContainText(
     "1 250 000,00 €",
@@ -517,8 +538,6 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
   await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
     "10 073 564,00 €",
   );
-
-  await expect(page.getByTestId("chorus-number")).toContainText(CHORUS_NUMBER);
 
   const impactSection = page.getByTestId("impact-section");
   await expect(impactSection).not.toBeAttached();

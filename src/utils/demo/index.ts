@@ -1,15 +1,22 @@
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
+import { FinancesEJData } from "@/services/fondsvert/finances";
 
 import {
   AGENCE_EAU_NUMBER,
-  CHORUS_NUMBER,
+  CENTRE_FINANCIER,
+  CENTRE_FINANCIER_2A,
+  CENTRE_FINANCIER_2B,
+  CENTRE_FINANCIER_2C,
+  CENTRE_FINANCIER_2D,
   COMMUNE,
+  COMPANY_NAME,
   DEPARTMENT,
   LEGAL_REPRESENTATIVE_EMAIL,
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
   PROJECT_TITLE,
+  SIRET,
 } from "../../../tests/fixtures/constants";
 
 const demandeur = {
@@ -183,7 +190,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
     ],
   },
   information_financiere: {
-    centre_financier_chorus: CHORUS_NUMBER,
     informations_engagement: [
       {
         annee_information_financiere: 2023,
@@ -265,4 +271,134 @@ export const demoDossierFondsVert: DossierFondsVert = {
       },
     ],
   },
+};
+
+export const demoFinancesEJ1: FinancesEJData = {
+  numero_ej: "2105212345",
+  date_creation_ej: "2023-06-20T00:00:00",
+  montant_engage_initial: 10073574,
+  annees_informations_financieres: [
+    {
+      annee_information_financiere: 2023,
+      montant_engage_total: 10073574,
+      postes: [
+        {
+          numero_poste_ej: 1,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER,
+          centre_couts: "PRFSPCL044",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 10073574,
+        },
+      ],
+    },
+    {
+      annee_information_financiere: 2024,
+      montant_engage_total: 10073574,
+      postes: [
+        {
+          numero_poste_ej: 1,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER,
+          centre_couts: "PRFSPCL044",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 10073574,
+        },
+      ],
+    },
+    {
+      annee_information_financiere: 2025,
+      montant_engage_total: 6651494.8,
+      postes: [
+        {
+          numero_poste_ej: 1,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER,
+          centre_couts: "PRFSPCL044",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 6651494.8,
+        },
+      ],
+    },
+  ],
+};
+
+export const demoFinancesEJ2: FinancesEJData = {
+  numero_ej: "2106789012",
+  date_creation_ej: "2023-09-15T00:00:00",
+  montant_engage_initial: 2500000,
+  annees_informations_financieres: [
+    {
+      annee_information_financiere: 2023,
+      montant_engage_total: 2500000,
+      postes: [
+        {
+          numero_poste_ej: 1,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER_2A,
+          centre_couts: "PRFSPCL075",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 1250000,
+        },
+        {
+          numero_poste_ej: 2,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER_2B,
+          centre_couts: "PRFSPCL013",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 1250000,
+        },
+      ],
+    },
+    {
+      annee_information_financiere: 2024,
+      montant_engage_total: 2000000,
+      postes: [
+        {
+          numero_poste_ej: 1,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER_2C,
+          centre_couts: "PRFSPCL031",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 1000000,
+        },
+        {
+          numero_poste_ej: 2,
+          numero_dossier_ds: 12345678,
+          centre_financier: CENTRE_FINANCIER_2D,
+          centre_couts: "PRFSPCL069",
+          referentiel_programmation: "038001010102",
+          referentiel_programmation_label: PROGRAM_TITLE,
+          fournisseur_titulaire_nom: COMPANY_NAME,
+          fournisseur_titulaire_numero: "2100012345",
+          fournisseur_titulaire_siren: SIRET.slice(0, 9),
+          montant_engage: 1000000,
+        },
+      ],
+    },
+  ],
 };

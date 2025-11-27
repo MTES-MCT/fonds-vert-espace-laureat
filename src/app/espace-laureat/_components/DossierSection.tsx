@@ -13,11 +13,13 @@ import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/Compl
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
+import { FinancesEJData } from "@/services/fondsvert/finances";
 
 export async function DossierSection({
   isAdmin,
   dossierSubvention,
   dossierFondsVertResult,
+  financesEJMap,
   impact,
   nocache,
 }: {
@@ -26,6 +28,7 @@ export async function DossierSection({
   dossierFondsVertResult:
     | { success: false; error: string }
     | { success: true; data: DossierFondsVert };
+  financesEJMap: Record<string, FinancesEJData>;
   impact?: Impact;
   nocache: boolean;
 }) {
@@ -74,17 +77,7 @@ export async function DossierSection({
       <div className="fr-container -mt-32 mb-8 flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-1 flex-col gap-y-8">
           <section className="bg-white p-8 shadow-lg">
-            <div className="mb-3 flex items-end justify-between">
-              <h3 className="mb-0">Financement du projet</h3>
-              {informationFinanciere && (
-                <div
-                  className="text-xs font-medium text-gray-400"
-                  data-testid="chorus-number"
-                >
-                  Chorus n°{informationFinanciere.centre_financier_chorus}
-                </div>
-              )}
-            </div>
+            <h3 className="mb-3">Financement du projet</h3>
             {errorMessage && (
               <Alert severity="error" small description={errorMessage} />
             )}
@@ -92,6 +85,7 @@ export async function DossierSection({
               montantSubventionAttribuee={subvention.montantSubventionAttribuee}
               totalDesDepenses={socleCommun?.total_des_depenses}
               informationFinanciere={informationFinanciere}
+              financesEJMap={financesEJMap}
             />
           </section>
 

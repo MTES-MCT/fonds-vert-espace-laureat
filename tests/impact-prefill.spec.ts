@@ -8,7 +8,12 @@ import {
 
 import { DOSSIER_NUMBER } from "./fixtures/constants";
 import { getDossierData } from "./fixtures/ds";
-import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
+import {
+  fondsVertDossierData,
+  fondsVertFinancesEJ1Data,
+  fondsVertFinancesEJ2Data,
+  fondsVertLoginData,
+} from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 
@@ -38,6 +43,14 @@ test.use({
 
       http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
         return HttpResponse.json(gristChampsDS);
+      }),
+
+      http.get("http://fondsvert/fonds_vert/v2/finances/2105212345", () => {
+        return HttpResponse.json(fondsVertFinancesEJ1Data);
+      }),
+
+      http.get("http://fondsvert/fonds_vert/v2/finances/2106789012", () => {
+        return HttpResponse.json(fondsVertFinancesEJ2Data);
       }),
     ],
     { scope: "test" },

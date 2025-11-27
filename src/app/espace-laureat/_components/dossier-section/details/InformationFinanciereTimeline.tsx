@@ -4,6 +4,7 @@ import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
+import { FinancesEJData } from "@/services/fondsvert/finances";
 import {
   getTotalPayeFromHistorique,
   sortHistoriqueByYearAndPaymentDate,
@@ -30,8 +31,10 @@ interface GroupedEngagement {
 
 export function InformationFinanciereTimeline({
   informationFinanciere,
+  financesEJMap,
 }: {
   informationFinanciere: InformationFinanciere;
+  financesEJMap: Record<string, FinancesEJData>;
 }) {
   const groupedEngagements =
     informationFinanciere.informations_engagement.reduce(
@@ -89,6 +92,7 @@ export function InformationFinanciereTimeline({
                       group={group}
                       montantRestant={montantRestant}
                       index={index}
+                      financesEJ={financesEJMap[group.numero_ej]}
                     />
                   ),
                 },

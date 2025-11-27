@@ -3,6 +3,7 @@ import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarch
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
+import { FinancesEJData, getFinancesEJ } from "@/services/fondsvert/finances";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
 
@@ -56,6 +57,37 @@ export default async function DossierPage({
     ? dossiersImpactResult.data
     : [];
 
+  let financesEJMap: Record<string, FinancesEJData> = {};
+
+  if (
+    dossierFondsVertResult.success &&
+    dossierFondsVertResult.data.information_financiere
+  ) {
+    const allEJs =
+      dossierFondsVertResult.data.information_financiere.informations_engagement
+        .flatMap((info) => info.engagements_juridiques)
+        .map((ej) => ej.numero_ej);
+
+    const uniqueEJs = [...new Set(allEJs)];
+
+    const financesResults = await Promise.all(
+      uniqueEJs.map(async (numeroEJ) => {
+        const result = await getFinancesEJ({ numeroEJ });
+        return { numeroEJ, result };
+      }),
+    );
+
+    financesEJMap = financesResults.reduce(
+      (acc, { numeroEJ, result }) => {
+        if (result.success) {
+          acc[numeroEJ] = result.data.data;
+        }
+        return acc;
+      },
+      {} as Record<string, FinancesEJData>,
+    );
+  }
+
   return (
     <>
       <StartDsfrOnHydration />
@@ -63,6 +95,7 @@ export default async function DossierPage({
         isAdmin={isAdmin({ userEmail: user.email })}
         dossierSubvention={dossierSubvention}
         dossierFondsVertResult={dossierFondsVertResult}
+        financesEJMap={financesEJMap}
         impact={dossiersImpact.find(
           (impact) =>
             impact.champs.numeroDossierSubvention === dossierSubvention.numero,

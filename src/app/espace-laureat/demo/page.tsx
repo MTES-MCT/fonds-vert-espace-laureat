@@ -1,9 +1,19 @@
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import { demoDossier1, demoDossierFondsVert } from "@/utils/demo";
+import {
+  demoDossier1,
+  demoDossierFondsVert,
+  demoFinancesEJ1,
+  demoFinancesEJ2,
+} from "@/utils/demo";
 
 export default async function EspaceLaureatDemo() {
   const dossiers = [demoDossier1];
+
+  const financesEJMap = {
+    [demoFinancesEJ1.numero_ej]: demoFinancesEJ1,
+    [demoFinancesEJ2.numero_ej]: demoFinancesEJ2,
+  };
 
   return (
     <>
@@ -18,6 +28,7 @@ export default async function EspaceLaureatDemo() {
               success: true,
               data: demoDossierFondsVert,
             }}
+            financesEJMap={financesEJMap}
             nocache={false}
           />
         ))}
