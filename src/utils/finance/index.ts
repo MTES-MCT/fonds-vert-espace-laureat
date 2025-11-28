@@ -4,18 +4,18 @@ import {
 } from "@/services/fondsvert/dossier";
 import { FinancesEJData, PosteEJ } from "@/services/fondsvert/finances";
 
-export interface HistoriqueEngagement {
+export interface EngagementJuridiqueAnnee {
   demandes_paiement: DemandePaiement[];
   annee: number;
   montant_engage: number;
 }
 
-export interface GroupedEngagement {
+export interface EngagementJuridiqueGroupe {
   numero_ej: string;
   montant_engage_initial: number;
   latest_montant_engage: number;
   latest_year: number;
-  historique: HistoriqueEngagement[];
+  historique: EngagementJuridiqueAnnee[];
 }
 
 /**
@@ -43,7 +43,7 @@ export function getMontantTotalPaye(
  */
 export function groupEngagementsByEJ(
   informationFinanciere: InformationFinanciere,
-): GroupedEngagement[] {
+): EngagementJuridiqueGroupe[] {
   const grouped = informationFinanciere.informations_engagement.reduce(
     (acc, info) => {
       info.engagements_juridiques.forEach((eng) => {
@@ -69,7 +69,7 @@ export function groupEngagementsByEJ(
       });
       return acc;
     },
-    {} as Record<string, GroupedEngagement>,
+    {} as Record<string, EngagementJuridiqueGroupe>,
   );
 
   return Object.values(grouped);
@@ -80,7 +80,7 @@ export function groupEngagementsByEJ(
  * Basé sur le montant engagé de l'année la plus récente moins les paiements de cette année.
  */
 export function getMontantRestant(
-  historique: HistoriqueEngagement[],
+  historique: EngagementJuridiqueAnnee[],
   latestYear: number,
   latestMontantEngage: number,
 ): number {
@@ -98,9 +98,9 @@ export function getMontantRestant(
  * Trie les entrées de l'historique d'engagement par année (décroissant)
  * et par date de paiement (décroissant). Les années et paiements les plus récents apparaissent en premier.
  */
-export function sortHistoriqueByYearAndPaymentDate<
-  T extends { annee: number; demandes_paiement: DemandePaiement[] },
->(historique: T[]): T[] {
+export function sortEngagementJuridiqueAnnees(
+  historique: EngagementJuridiqueAnnee[],
+): EngagementJuridiqueAnnee[] {
   return [...historique]
     .map((item) => ({
       ...item,

@@ -1,5 +1,8 @@
 import { FinancesEJData } from "@/services/fondsvert/finances";
-import { getLatestYearPostesField, GroupedEngagement } from "@/utils/finance";
+import {
+  EngagementJuridiqueGroupe,
+  getLatestYearPostesField,
+} from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
 import { DernierPaiement } from "./DernierPaiement";
@@ -33,7 +36,7 @@ export function EngagementJuridiqueDetails({
   index,
   financesEJ,
 }: {
-  group: GroupedEngagement;
+  group: EngagementJuridiqueGroupe;
   montantRestant: number;
   index: number;
   financesEJ?: FinancesEJData;

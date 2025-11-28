@@ -1,6 +1,6 @@
 import React from "react";
 
-import { GroupedEngagement } from "@/utils/finance";
+import { EngagementJuridiqueGroupe } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
 
 interface Payment {
@@ -10,12 +10,12 @@ interface Payment {
 }
 
 interface DernierPaiementProps {
-  group: GroupedEngagement;
+  group: EngagementJuridiqueGroupe;
   index: number;
 }
 
 export function DernierPaiement({ group, index }: DernierPaiementProps) {
-  const getLastPayment = (group: GroupedEngagement) => {
+  const getLastPayment = (group: EngagementJuridiqueGroupe) => {
     return group.historique
       .flatMap((item) => item.demandes_paiement)
       .reduce(
