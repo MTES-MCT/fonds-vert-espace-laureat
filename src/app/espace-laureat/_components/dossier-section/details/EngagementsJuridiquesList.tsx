@@ -1,10 +1,9 @@
 "use client";
 
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
-import React from "react";
+import React, { ReactNode } from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
-import { FinancesEJData } from "@/services/fondsvert/finances";
 import { getMontantRestant, groupEngagementsByEJ } from "@/utils/finance";
 
 import { EngagementJuridiqueDetails } from "./engagement-juridique/EngagementJuridiqueDetails";
@@ -12,10 +11,10 @@ import { EngagementJuridiqueHistorique } from "./engagement-juridique/Engagement
 
 export function EngagementsJuridiquesList({
   informationFinanciere,
-  financesEJMap,
+  financeFieldsSlots,
 }: {
   informationFinanciere: InformationFinanciere;
-  financesEJMap: Record<string, FinancesEJData>;
+  financeFieldsSlots: ReactNode[];
 }) {
   const engagementsList = groupEngagementsByEJ(informationFinanciere);
 
@@ -49,7 +48,7 @@ export function EngagementsJuridiquesList({
                       group={group}
                       montantRestant={montantRestant}
                       index={index}
-                      financesEJ={financesEJMap[group.numero_ej]}
+                      financeFieldsSlot={financeFieldsSlots[index]}
                     />
                   ),
                 },

@@ -681,3 +681,69 @@ test("calendar timeline marks step as done when later step is done, even with mi
   await expect(timelineItems.nth(2)).toContainText("terminé");
   await expect(timelineItems.nth(3)).toContainText("à venir");
 });
+
+test("access denied shows error page and does not render FV/EJ data", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json({
+        data: { dossier: null },
+      });
+    }),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByText("Introuvable")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Aide du Fonds vert" }),
+  ).not.toBeAttached();
+  await expect(
+    page.getByRole("region", { name: /Engagement juridique/ }),
+  ).not.toBeAttached();
+});
+
+test("EJ finances error shows alert but rest of page remains intact", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/v2/finances/2105212345", () => {
+      return HttpResponse.json({ error: "Server Error" }, { status: 500 });
+    }),
+    http.get("http://fondsvert/fonds_vert/v2/finances/2106789012", () => {
+      return HttpResponse.json({ error: "Server Error" }, { status: 500 });
+    }),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(
+    page.getByText(
+      "Les détails des engagements juridiques (fournisseur, centre de coût) sont temporairement indisponibles.",
+    ),
+  ).toBeVisible();
+
+  const aideFondsVert = page.getByRole("region", {
+    name: "Aide du Fonds vert",
+  });
+  await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
+    "10 073 564,00 €",
+  );
+
+  const engagementJuridique = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(
+    engagementJuridique.getByLabel("Montant attribué initial"),
+  ).toContainText("10 073 574,00 €");
+
+  await expect(
+    engagementJuridique.getByLabel("Fournisseur"),
+  ).not.toBeAttached();
+  await expect(
+    engagementJuridique.getByLabel("Centre de coût"),
+  ).not.toBeAttached();
+});

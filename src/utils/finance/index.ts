@@ -171,3 +171,21 @@ export function getLatestYearPostesField(
 
   return [...new Set(values)];
 }
+
+/**
+ * Extrait les numéros EJ uniques depuis les informations financières.
+ * Utilisé pour déclencher les appels `/finances/{ej}` en parallèle.
+ */
+export function extractEJNumbers(
+  informationFinanciere?: InformationFinanciere,
+): string[] {
+  if (!informationFinanciere?.informations_engagement) {
+    return [];
+  }
+
+  const allEJs = informationFinanciere.informations_engagement
+    .flatMap((info) => info.engagements_juridiques)
+    .map((ej) => ej.numero_ej);
+
+  return [...new Set(allEJs)];
+}

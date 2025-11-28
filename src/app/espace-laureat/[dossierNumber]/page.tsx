@@ -4,8 +4,35 @@ import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { FinancesEJData, getFinancesEJ } from "@/services/fondsvert/finances";
+import { extractEJNumbers } from "@/utils/finance";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
+
+export type EJFinanceResult =
+  | { success: true; data: FinancesEJData }
+  | { success: false; error: string };
+
+export type FinancesEJResult = Record<string, EJFinanceResult>;
+
+async function loadFinancesEJ(
+  numeroEJ: string,
+): Promise<{ numeroEJ: string; result: EJFinanceResult }> {
+  const response = await getFinancesEJ({ numeroEJ });
+  return {
+    numeroEJ,
+    result: response.success
+      ? { success: true, data: response.data.data }
+      : { success: false, error: `${response.status} ${response.statusText}` },
+  };
+}
+
+function buildFinancesResult(
+  results: { numeroEJ: string; result: EJFinanceResult }[],
+): FinancesEJResult {
+  return Object.fromEntries(
+    results.map(({ numeroEJ, result }) => [numeroEJ, result]),
+  );
+}
 
 export default async function DossierPage({
   params,
@@ -29,64 +56,44 @@ export default async function DossierPage({
     );
   }
 
-  const [
-    dossierSubventionResult,
-    dossiersImpactResult,
-    dossierFondsVertResult,
-  ] = await Promise.all([
-    getDossier({
-      numeroDossier,
-      userEmail: user.email,
-    }),
-    getDemarcheDossiers({
-      demarcheNumber: demarcheImpactNumber,
-      userEmail: user.email,
-    }),
-    getDossierFondsVert({
-      numeroDossier,
-    }),
-  ]);
+  // 1. Start all initial fetches in parallel
+  const dossierSubventionPromise = getDossier({
+    numeroDossier,
+    userEmail: user.email,
+  });
+  const dossierFondsVertPromise = getDossierFondsVert({ numeroDossier });
+  const dossiersImpactPromise = getDemarcheDossiers({
+    demarcheNumber: demarcheImpactNumber,
+    userEmail: user.email,
+  });
+
+  // 2. Chain EJ finances loading from FV promise immediately
+  const financesEJPromise = dossierFondsVertPromise.then(async (fvResult) => {
+    if (!fvResult.success || !fvResult.data.information_financiere) {
+      return {};
+    }
+    const ejNumbers = extractEJNumbers(fvResult.data.information_financiere);
+    const results = await Promise.all(ejNumbers.map(loadFinancesEJ));
+    return buildFinancesResult(results);
+  });
+
+  // 3. Authorization guard: await getDossier
+  const dossierSubventionResult = await dossierSubventionPromise;
 
   if (!dossierSubventionResult.success) {
     return <div className="fr-container my-8">Introuvable</div>;
   }
 
-  const dossierSubvention = dossierSubventionResult.data;
+  // 4. Await remaining promises
+  const [dossiersImpactResult, dossierFondsVertResult] = await Promise.all([
+    dossiersImpactPromise,
+    dossierFondsVertPromise,
+  ]);
 
+  const dossierSubvention = dossierSubventionResult.data;
   const dossiersImpact = dossiersImpactResult.success
     ? dossiersImpactResult.data
     : [];
-
-  let financesEJMap: Record<string, FinancesEJData> = {};
-
-  if (
-    dossierFondsVertResult.success &&
-    dossierFondsVertResult.data.information_financiere
-  ) {
-    const allEJs =
-      dossierFondsVertResult.data.information_financiere.informations_engagement
-        .flatMap((info) => info.engagements_juridiques)
-        .map((ej) => ej.numero_ej);
-
-    const uniqueEJs = [...new Set(allEJs)];
-
-    const financesResults = await Promise.all(
-      uniqueEJs.map(async (numeroEJ) => {
-        const result = await getFinancesEJ({ numeroEJ });
-        return { numeroEJ, result };
-      }),
-    );
-
-    financesEJMap = financesResults.reduce(
-      (acc, { numeroEJ, result }) => {
-        if (result.success) {
-          acc[numeroEJ] = result.data.data;
-        }
-        return acc;
-      },
-      {} as Record<string, FinancesEJData>,
-    );
-  }
 
   return (
     <>
@@ -95,7 +102,7 @@ export default async function DossierPage({
         isAdmin={isAdmin({ userEmail: user.email })}
         dossierSubvention={dossierSubvention}
         dossierFondsVertResult={dossierFondsVertResult}
-        financesEJMap={financesEJMap}
+        financesEJPromise={financesEJPromise}
         impact={dossiersImpact.find(
           (impact) =>
             impact.champs.numeroDossierSubvention === dossierSubvention.numero,

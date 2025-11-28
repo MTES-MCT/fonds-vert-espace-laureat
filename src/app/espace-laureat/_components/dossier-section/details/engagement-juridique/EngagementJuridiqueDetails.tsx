@@ -1,52 +1,21 @@
-import { FinancesEJData } from "@/services/fondsvert/finances";
-import {
-  EngagementJuridiqueGroupe,
-  getLatestYearPostesField,
-} from "@/utils/finance";
+import { ReactNode } from "react";
+
+import { EngagementJuridiqueGroupe } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
 import { DernierPaiement } from "./DernierPaiement";
-
-function FinanceField({
-  id,
-  values,
-  singular,
-  plural,
-}: {
-  id: string;
-  values: string[];
-  singular: string;
-  plural: string;
-}) {
-  if (values.length === 0) return null;
-
-  const label = values.length > 1 ? plural : singular;
-
-  return (
-    <div>
-      <dt id={`${id}-label`}>{label}</dt>
-      <dd aria-labelledby={`${id}-label`}>{values.join(", ")}</dd>
-    </div>
-  );
-}
 
 export function EngagementJuridiqueDetails({
   group,
   montantRestant,
   index,
-  financesEJ,
+  financeFieldsSlot,
 }: {
   group: EngagementJuridiqueGroupe;
   montantRestant: number;
   index: number;
-  financesEJ?: FinancesEJData;
+  financeFieldsSlot: ReactNode;
 }) {
-  const fournisseurs = getLatestYearPostesField(
-    financesEJ,
-    "fournisseur_titulaire_nom",
-  );
-  const centresCouts = getLatestYearPostesField(financesEJ, "centre_couts");
-
   return (
     <>
       <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
@@ -72,18 +41,7 @@ export function EngagementJuridiqueDetails({
             {formatEuros(montantRestant)}
           </dd>
         </div>
-        <FinanceField
-          id={`fournisseur-ej-${index}`}
-          values={fournisseurs}
-          singular="Fournisseur"
-          plural="Fournisseurs"
-        />
-        <FinanceField
-          id={`centre-cout-ej-${index}`}
-          values={centresCouts}
-          singular="Centre de coût"
-          plural="Centres de coût"
-        />
+        {financeFieldsSlot}
       </dl>
       <DernierPaiement group={group} index={index} />
     </>

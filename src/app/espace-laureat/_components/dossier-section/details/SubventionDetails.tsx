@@ -1,6 +1,6 @@
-import { EngagementsJuridiquesList } from "@/app/espace-laureat/_components/dossier-section/details/EngagementsJuridiquesList";
+import { ReactNode } from "react";
+
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
-import { FinancesEJData } from "@/services/fondsvert/finances";
 import { getMontantTotalPaye } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
@@ -8,12 +8,12 @@ export function SubventionDetails({
   montantSubventionAttribuee,
   totalDesDepenses,
   informationFinanciere,
-  financesEJMap,
+  engagementsSection,
 }: {
   montantSubventionAttribuee?: number;
   totalDesDepenses?: number;
   informationFinanciere?: InformationFinanciere;
-  financesEJMap: Record<string, FinancesEJData>;
+  engagementsSection?: ReactNode;
 }) {
   return (
     <div className="space-y-8">
@@ -47,13 +47,7 @@ export function SubventionDetails({
         </dl>
       </section>
 
-      {informationFinanciere &&
-        informationFinanciere.informations_engagement?.length > 0 && (
-          <EngagementsJuridiquesList
-            informationFinanciere={informationFinanciere}
-            financesEJMap={financesEJMap}
-          />
-        )}
+      {engagementsSection}
     </div>
   );
 }

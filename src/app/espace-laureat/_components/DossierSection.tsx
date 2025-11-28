@@ -1,6 +1,8 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Link from "next/link";
+import { ReactNode } from "react";
 
+import { EngagementsSection } from "@/app/espace-laureat/_components/dossier-section/details/EngagementsSection";
 import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
 import {
@@ -10,16 +12,38 @@ import {
 } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
 import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
+import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
-import { DossierFondsVert } from "@/services/fondsvert/dossier";
-import { FinancesEJData } from "@/services/fondsvert/finances";
+import {
+  DossierFondsVert,
+  InformationFinanciere,
+} from "@/services/fondsvert/dossier";
+
+function buildEngagementsSection(
+  informationFinanciere: InformationFinanciere | undefined,
+  financesEJPromise: Promise<FinancesEJResult>,
+): ReactNode {
+  if (
+    !informationFinanciere ||
+    !informationFinanciere.informations_engagement?.length
+  ) {
+    return null;
+  }
+
+  return (
+    <EngagementsSection
+      informationFinanciere={informationFinanciere}
+      financesEJPromise={financesEJPromise}
+    />
+  );
+}
 
 export async function DossierSection({
   isAdmin,
   dossierSubvention,
   dossierFondsVertResult,
-  financesEJMap,
+  financesEJPromise,
   impact,
   nocache,
 }: {
@@ -28,7 +52,7 @@ export async function DossierSection({
   dossierFondsVertResult:
     | { success: false; error: string }
     | { success: true; data: DossierFondsVert };
-  financesEJMap: Record<string, FinancesEJData>;
+  financesEJPromise: Promise<FinancesEJResult>;
   impact?: Impact;
   nocache: boolean;
 }) {
@@ -85,7 +109,10 @@ export async function DossierSection({
               montantSubventionAttribuee={subvention.montantSubventionAttribuee}
               totalDesDepenses={socleCommun?.total_des_depenses}
               informationFinanciere={informationFinanciere}
-              financesEJMap={financesEJMap}
+              engagementsSection={buildEngagementsSection(
+                informationFinanciere,
+                financesEJPromise,
+              )}
             />
           </section>
 
