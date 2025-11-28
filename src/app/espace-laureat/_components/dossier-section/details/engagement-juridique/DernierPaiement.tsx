@@ -1,13 +1,7 @@
 import React from "react";
 
-import { EngagementJuridiqueGroupe } from "@/utils/finance";
+import { EngagementJuridiqueGroupe, getLastPayment } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
-
-interface Payment {
-  montant_paye: number;
-  date_dp: string;
-  numero_dp: string;
-}
 
 interface DernierPaiementProps {
   group: EngagementJuridiqueGroupe;
@@ -15,18 +9,6 @@ interface DernierPaiementProps {
 }
 
 export function DernierPaiement({ group, index }: DernierPaiementProps) {
-  const getLastPayment = (group: EngagementJuridiqueGroupe) => {
-    return group.historique
-      .flatMap((item) => item.demandes_paiement)
-      .reduce(
-        (mostRecent, current) =>
-          !mostRecent || current.date_dp > mostRecent.date_dp
-            ? current
-            : mostRecent,
-        null as null | Payment,
-      );
-  };
-
   const lastPayment = getLastPayment(group);
 
   if (!lastPayment) {

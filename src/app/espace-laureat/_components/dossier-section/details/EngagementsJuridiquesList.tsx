@@ -5,11 +5,7 @@ import React from "react";
 
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
 import { FinancesEJData } from "@/services/fondsvert/finances";
-import {
-  getMontantRestant,
-  groupEngagementsByEJ,
-  sortEngagementJuridiqueAnnees,
-} from "@/utils/finance";
+import { getMontantRestant, groupEngagementsByEJ } from "@/utils/finance";
 
 import { EngagementJuridiqueDetails } from "./engagement-juridique/EngagementJuridiqueDetails";
 import { EngagementJuridiqueHistorique } from "./engagement-juridique/EngagementJuridiqueHistorique";
@@ -26,10 +22,6 @@ export function EngagementsJuridiquesList({
   return (
     <div className="space-y-8">
       {engagementsList.map((group, index) => {
-        const sortedhistorique = sortEngagementJuridiqueAnnees(
-          group.historique,
-        );
-
         const montantRestant = getMontantRestant(
           group.historique,
           group.latest_year,
@@ -65,7 +57,7 @@ export function EngagementsJuridiquesList({
                   label: "Historique",
                   content: (
                     <EngagementJuridiqueHistorique
-                      sortedhistorique={sortedhistorique}
+                      sortedhistorique={group.historique}
                     />
                   ),
                 },

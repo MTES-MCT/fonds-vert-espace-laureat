@@ -1,8 +1,20 @@
+/**
+ * Ce module transforme les données financières de l'API Fonds Vert pour l'affichage.
+ * Ces données proviennent de deux endpoints :
+ *
+ * - `/dossier/{numero}` : infos financières par année/EJ avec les demandes de paiement.
+ * - `/finances/{numeroEJ}` : détails des postes d'un EJ (fournisseur, centre de coûts, etc).
+ */
+
 import {
   DemandePaiement,
   InformationFinanciere,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJData, PosteEJ } from "@/services/fondsvert/finances";
+
+// ============================================================================
+// 1. Données financières issues de `/dossier/{numero}`
+// ============================================================================
 
 export interface EngagementJuridiqueAnnee {
   demandes_paiement: DemandePaiement[];
@@ -19,9 +31,9 @@ export interface EngagementJuridiqueGroupe {
 }
 
 /**
- * Calcule le montant total payé à partir de toutes les demandes de paiement
- * de tous les engagements juridiques dans les informations financières.
- * Utilisé pour afficher le montant total versé pour un dossier.
+ * Calcule le montant total payé pour afficher le "montant versé".
+ * L'API ne fournit pas ce total directement, on parcourt donc toutes les demandes
+ * de paiement (années → EJ → demandes_paiement) et on somme les montant_paye.
  */
 export function getMontantTotalPaye(
   informationFinanciere?: InformationFinanciere,
@@ -38,8 +50,26 @@ export function getMontantTotalPaye(
 }
 
 /**
- * Groupe les engagements juridiques par numéro EJ et montant initial.
- * Pour chaque groupe, calcule les valeurs de l'année la plus récente.
+ * Trie les années par ordre décroissant et les paiements par date décroissante,
+ * pour afficher les plus récents en premier.
+ */
+function sortHistoriqueByDate(
+  historique: EngagementJuridiqueAnnee[],
+): EngagementJuridiqueAnnee[] {
+  return [...historique]
+    .map((item) => ({
+      ...item,
+      demandes_paiement: [...item.demandes_paiement].sort((a, b) =>
+        b.date_dp.localeCompare(a.date_dp),
+      ),
+    }))
+    .sort((a, b) => b.annee - a.annee);
+}
+
+/**
+ * Regroupe les engagements par numéro EJ. L'API retournant les données par année,
+ * on les réorganise ici par EJ avec l'historique complet des montant_engage.
+ * L'historique est trié par année décroissante (plus récent en premier).
  */
 export function groupEngagementsByEJ(
   informationFinanciere: InformationFinanciere,
@@ -72,12 +102,15 @@ export function groupEngagementsByEJ(
     {} as Record<string, EngagementJuridiqueGroupe>,
   );
 
-  return Object.values(grouped);
+  return Object.values(grouped).map((group) => ({
+    ...group,
+    historique: sortHistoriqueByDate(group.historique),
+  }));
 }
 
 /**
- * Calcule le montant restant pour un engagement juridique.
- * Basé sur le montant engagé de l'année la plus récente moins les paiements de cette année.
+ * Calcule le montant restant à verser pour un engagement (montant_engage - paiements).
+ * Utilise l'année la plus récente, car le montant_engage peut évoluer dans le temps.
  */
 export function getMontantRestant(
   historique: EngagementJuridiqueAnnee[],
@@ -95,26 +128,29 @@ export function getMontantRestant(
 }
 
 /**
- * Trie les entrées de l'historique d'engagement par année (décroissant)
- * et par date de paiement (décroissant). Les années et paiements les plus récents apparaissent en premier.
+ * Trouve le paiement le plus récent parmi tous les paiements d'un engagement.
  */
-export function sortEngagementJuridiqueAnnees(
-  historique: EngagementJuridiqueAnnee[],
-): EngagementJuridiqueAnnee[] {
-  return [...historique]
-    .map((item) => ({
-      ...item,
-      demandes_paiement: [...item.demandes_paiement].sort((a, b) =>
-        b.date_dp.localeCompare(a.date_dp),
-      ),
-    }))
-    .sort((a, b) => b.annee - a.annee);
+export function getLastPayment(
+  group: EngagementJuridiqueGroupe,
+): DemandePaiement | null {
+  return group.historique
+    .flatMap((item) => item.demandes_paiement)
+    .reduce(
+      (mostRecent, current) =>
+        !mostRecent || current.date_dp > mostRecent.date_dp
+          ? current
+          : mostRecent,
+      null as DemandePaiement | null,
+    );
 }
 
+// ============================================================================
+// 2. Détails financiers de l'EJ issus de `/finances/{numeroEJ}`
+// ============================================================================
+
 /**
- * Extrait les valeurs uniques d'un champ depuis tous les postes de l'année la plus récente.
- * Utilisé pour afficher les détails financiers (centre financier, fournisseur, centre de coût).
- * Retourne un tableau de valeurs uniques.
+ * Extrait les valeurs uniques d'un champ depuis les postes de l'année la plus récente.
+ * Utilisé par exemple pour afficher les fournisseurs ou les centres de coûts.
  */
 export function getLatestYearPostesField(
   financesEJ: FinancesEJData | undefined,
