@@ -1,4 +1,4 @@
-import { InformationFinanciereTimeline } from "@/app/espace-laureat/_components/dossier-section/details/InformationFinanciereTimeline";
+import { EngagementsJuridiquesList } from "@/app/espace-laureat/_components/dossier-section/details/EngagementsJuridiquesList";
 import { InformationFinanciere } from "@/services/fondsvert/dossier";
 import { FinancesEJData } from "@/services/fondsvert/finances";
 import { getMontantTotalPaye } from "@/utils/finance";
@@ -49,7 +49,7 @@ export function SubventionDetails({
 
       {informationFinanciere &&
         informationFinanciere.informations_engagement?.length > 0 && (
-          <InformationFinanciereTimeline
+          <EngagementsJuridiquesList
             informationFinanciere={informationFinanciere}
             financesEJMap={financesEJMap}
           />

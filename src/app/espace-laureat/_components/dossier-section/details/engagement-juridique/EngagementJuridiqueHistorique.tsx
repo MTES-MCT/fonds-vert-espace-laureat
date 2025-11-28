@@ -28,7 +28,7 @@ function DsfrTable({ children }: { children: ReactNode }) {
   );
 }
 
-export function EngagementHistoryTable({
+export function EngagementJuridiqueHistorique({
   sortedhistorique,
 }: EngagementHistoryTableProps) {
   return (

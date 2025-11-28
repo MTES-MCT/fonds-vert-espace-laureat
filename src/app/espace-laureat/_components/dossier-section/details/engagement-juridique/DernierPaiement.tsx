@@ -9,12 +9,12 @@ interface Payment {
   numero_dp: string;
 }
 
-interface LastPaymentInfoProps {
+interface DernierPaiementProps {
   group: GroupedEngagement;
   index: number;
 }
 
-export function LastPaymentInfo({ group, index }: LastPaymentInfoProps) {
+export function DernierPaiement({ group, index }: DernierPaiementProps) {
   const getLastPayment = (group: GroupedEngagement) => {
     return group.historique
       .flatMap((item) => item.demandes_paiement)

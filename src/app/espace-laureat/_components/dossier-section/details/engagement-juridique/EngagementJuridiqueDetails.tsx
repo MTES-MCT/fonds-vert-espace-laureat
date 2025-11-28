@@ -2,7 +2,7 @@ import { FinancesEJData } from "@/services/fondsvert/finances";
 import { getLatestYearPostesField, GroupedEngagement } from "@/utils/finance";
 import { formatEuros } from "@/utils/format";
 
-import { LastPaymentInfo } from "./LastPaymentInfo";
+import { DernierPaiement } from "./DernierPaiement";
 
 function FinanceField({
   id,
@@ -27,7 +27,7 @@ function FinanceField({
   );
 }
 
-export function EngagementInfos({
+export function EngagementJuridiqueDetails({
   group,
   montantRestant,
   index,
@@ -82,7 +82,7 @@ export function EngagementInfos({
           plural="Centres de coût"
         />
       </dl>
-      <LastPaymentInfo group={group} index={index} />
+      <DernierPaiement group={group} index={index} />
     </>
   );
 }

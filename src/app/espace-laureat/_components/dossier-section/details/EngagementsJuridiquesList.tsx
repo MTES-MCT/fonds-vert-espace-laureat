@@ -11,10 +11,10 @@ import {
   sortHistoriqueByYearAndPaymentDate,
 } from "@/utils/finance";
 
-import { EngagementHistoryTable } from "./information-financiere/EngagementHistoryTable";
-import { EngagementInfos } from "./information-financiere/EngagementInfos";
+import { EngagementJuridiqueHistorique } from "./engagement-juridique/EngagementJuridiqueHistorique";
+import { EngagementJuridiqueDetails } from "./engagement-juridique/EngagementJuridiqueDetails";
 
-export function InformationFinanciereTimeline({
+export function EngagementsJuridiquesList({
   informationFinanciere,
   financesEJMap,
 }: {
@@ -53,7 +53,7 @@ export function InformationFinanciereTimeline({
                 {
                   label: "Informations",
                   content: (
-                    <EngagementInfos
+                    <EngagementJuridiqueDetails
                       group={group}
                       montantRestant={montantRestant}
                       index={index}
@@ -64,7 +64,7 @@ export function InformationFinanciereTimeline({
                 {
                   label: "Historique",
                   content: (
-                    <EngagementHistoryTable
+                    <EngagementJuridiqueHistorique
                       sortedhistorique={sortedhistorique}
                     />
                   ),
