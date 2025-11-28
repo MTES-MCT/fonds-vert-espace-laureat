@@ -3,12 +3,12 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import { getDossierNumbers } from "@/services/fondsvert/dossiers";
 import { getAuthenticatedUser } from "@/utils/session";
 
-import { AucunDossier } from "./_components/AucunDossier";
-import { compareDateSignatureDecision } from "./_components/compareDateSignatureDecision";
-import DossiersTable from "./_components/DossiersTable";
-import { getDossier } from "./_components/getDossier";
-import { getPageTitle } from "./_components/getPageTitle";
-import { getSearchParams, SearchParams } from "./_components/getParams";
+import { AucunDossier } from "../_components/AucunDossier";
+import { compareDateSignatureDecision } from "../_components/compareDateSignatureDecision";
+import DossiersTable from "../_components/DossiersTable";
+import { getDossier } from "../_components/getDossier";
+import { getPageTitle } from "../_components/getPageTitle";
+import { getSearchParams, SearchParams } from "../_components/getParams";
 
 export default async function EspaceLaureat({
   searchParams,
