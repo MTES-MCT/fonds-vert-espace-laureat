@@ -24,7 +24,6 @@ export interface EngagementJuridiqueAnnee {
 
 export interface EngagementJuridiqueGroupe {
   numero_ej: string;
-  montant_engage_initial: number;
   latest_montant_engage: number;
   latest_year: number;
   historique: EngagementJuridiqueAnnee[];
@@ -77,11 +76,10 @@ export function groupEngagementsByEJ(
   const grouped = informationFinanciere.informations_engagement.reduce(
     (acc, info) => {
       info.engagements_juridiques.forEach((eng) => {
-        const key = `${eng.numero_ej}-${eng.montant_engage_initial}`;
+        const key = eng.numero_ej;
         if (!acc[key]) {
           acc[key] = {
             numero_ej: eng.numero_ej,
-            montant_engage_initial: eng.montant_engage_initial,
             latest_montant_engage: eng.montant_engage,
             latest_year: info.annee_information_financiere,
             historique: [],

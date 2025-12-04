@@ -204,7 +204,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 10073574,
-            montant_engage_initial: 10073574,
             demandes_paiement: [],
           },
           {
@@ -212,7 +211,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 2500000,
-            montant_engage_initial: 2500000,
             demandes_paiement: [
               {
                 numero_dp: "1009876543",
@@ -231,7 +229,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 10073574,
-            montant_engage_initial: 10073574,
             demandes_paiement: [
               {
                 numero_dp: "1001234567",
@@ -245,7 +242,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 2000000,
-            montant_engage_initial: 2500000,
             demandes_paiement: [
               {
                 numero_dp: "1009876544",
@@ -269,7 +265,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 6651494.8,
-            montant_engage_initial: 10073574,
             demandes_paiement: [],
           },
           {
@@ -277,7 +272,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
             nom_demarche: PROGRAM_TITLE,
             nom_axe: 1,
             montant_engage: 500000,
-            montant_engage_initial: 2500000,
             demandes_paiement: [
               {
                 numero_dp: "1009876546",

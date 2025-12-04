@@ -64,7 +64,6 @@ export interface EngagementJuridiques {
   nom_demarche: string;
   nom_axe: number;
   montant_engage: number;
-  montant_engage_initial: number;
   demandes_paiement: DemandePaiement[];
 }
 

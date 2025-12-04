@@ -1,5 +1,6 @@
 import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { getLatestYearPostesField } from "@/utils/finance";
+import { formatEuros } from "@/utils/format";
 
 function FinanceField({
   id,
@@ -53,6 +54,14 @@ export async function FinanceFieldsSection({
 
   return (
     <>
+      <div className="order-first">
+        <dt id={`montant-attribue-initial-ej-${index}-label`}>
+          Montant attribué initial
+        </dt>
+        <dd aria-labelledby={`montant-attribue-initial-ej-${index}-label`}>
+          {formatEuros(ejResult.data.montant_engage_initial)}
+        </dd>
+      </div>
       <FinanceField
         id={`fournisseur-ej-${index}`}
         values={fournisseurs}

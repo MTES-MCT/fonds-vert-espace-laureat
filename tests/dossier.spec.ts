@@ -727,7 +727,7 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
 
   await expect(
     page.getByText(
-      "Les détails des engagements juridiques (fournisseur, centre de coût) sont temporairement indisponibles.",
+      "Les détails des engagements juridiques (montant attribué initial, fournisseur, centre de coût) sont temporairement indisponibles.",
     ),
   ).toBeVisible();
 
@@ -743,8 +743,7 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
   });
   await expect(
     engagementJuridique.getByLabel("Montant attribué initial"),
-  ).toContainText("10 073 574,00 €");
-
+  ).not.toBeAttached();
   await expect(
     engagementJuridique.getByLabel("Fournisseur"),
   ).not.toBeAttached();

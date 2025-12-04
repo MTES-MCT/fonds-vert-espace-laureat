@@ -25,7 +25,7 @@ export async function FinanceFieldsErrorAlert({
       severity="warning"
       small
       className="mb-4"
-      description="Les détails des engagements juridiques (fournisseur, centre de coût) sont temporairement indisponibles."
+      description="Les détails des engagements juridiques (montant attribué initial, fournisseur, centre de coût) sont temporairement indisponibles."
     />
   );
 }

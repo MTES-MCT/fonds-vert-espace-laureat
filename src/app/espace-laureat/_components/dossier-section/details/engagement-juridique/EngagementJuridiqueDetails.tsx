@@ -20,14 +20,6 @@ export function EngagementJuridiqueDetails({
     <>
       <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
         <div>
-          <dt id={`montant-attribue-initial-ej-${index}-label`}>
-            Montant attribué initial
-          </dt>
-          <dd aria-labelledby={`montant-attribue-initial-ej-${index}-label`}>
-            {formatEuros(group.montant_engage_initial)}
-          </dd>
-        </div>
-        <div>
           <dt id={`montant-attribue-ej-${index}-label`}>
             Montant attribué en {group.latest_year}
           </dt>
