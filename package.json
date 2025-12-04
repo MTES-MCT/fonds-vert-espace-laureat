@@ -6,15 +6,13 @@
     "npm": ">=10"
   },
   "scripts": {
-    "dev": "next dev",
-    "dev:test": "NODE_ENV=test npx next dev -p 4000",
-    "build": "next build",
+    "dev": "react-dsfr update-icons && npm run codegen && next dev",
+    "dev:test": "react-dsfr update-icons && npm run codegen && NODE_ENV=test npx next dev -p 4000",
+    "build": "react-dsfr update-icons && npm run codegen && next build",
     "start": "next start",
     "lint": "next lint",
-    "predev": "react-dsfr update-icons && npm run codegen",
     "test": "NODE_ENV=test playwright test --project=chromium",
     "test:ui": "NODE_ENV=test playwright test --ui",
-    "prebuild": "react-dsfr update-icons && npm run codegen",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "npm run codegen -- --watch"
   },
