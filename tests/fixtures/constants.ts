@@ -16,6 +16,8 @@ export const DOSSIER_NUMBER = "12345679";
 export const PROJECT_SUMMARY =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
 export const PROJECT_TITLE = "Rénovation de la piscine Jaques Demy";
+export const PROJECT_TITLE_LONG =
+  "Rénovation énergétique complète du complexe sportif municipal comprenant la piscine olympique, le gymnase polyvalent et les vestiaires collectifs de la ville";
 export const PROGRAM_TITLE =
   "Rénovation énergétique des bâtiments publics locaux";
 export const COMPANY_NAME = "COMMUNE DE NANTES";

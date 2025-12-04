@@ -32,9 +32,11 @@ export const SummaryHeader = ({
           currentPageLabel={`Dossier n°${numeroDossier}`}
           data-testid="breadcrumb-current"
         />
-        <div>
-          <h1 className="mb-3 h-20 max-w-3xl text-4xl font-bold text-pretty">
-            {intitule ?? "N/A"}
+        <div className="flex h-[116px] flex-col justify-center">
+          <h1 className="mb-3 max-w-4xl text-4xl font-bold text-balance">
+            {intitule && intitule.length > 80
+              ? `${intitule.slice(0, 80)}...`
+              : (intitule ?? "N/A")}
           </h1>
           <div className="flex flex-wrap items-center gap-3">
             <Tag

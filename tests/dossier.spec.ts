@@ -21,9 +21,14 @@ import {
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
   PROJECT_TITLE,
+  PROJECT_TITLE_LONG,
   SIRET,
 } from "./fixtures/constants";
-import { getDemarcheDossiersData, getDossierData } from "./fixtures/ds";
+import {
+  getDemarcheDossiersData,
+  getDossierData,
+  makeDossierDataWithTitle,
+} from "./fixtures/ds";
 import {
   fondsVertDossierData,
   fondsVertFinancesEJ1Data,
@@ -746,4 +751,22 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
   await expect(
     engagementJuridique.getByLabel("Centre de coût"),
   ).not.toBeAttached();
+});
+
+test("long project titles are truncated with ellipsis", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(makeDossierDataWithTitle(PROJECT_TITLE_LONG));
+    }),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const heading = page.getByRole("heading", { level: 1 });
+  await expect(heading).toContainText("...");
+  await expect(heading).not.toContainText(PROJECT_TITLE_LONG);
+  await expect(heading).toContainText(PROJECT_TITLE_LONG.slice(0, 80));
 });

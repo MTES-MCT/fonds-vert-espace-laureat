@@ -759,6 +759,19 @@ const dossier = {
 
 export const getDossierData = { data: { dossier } };
 
+export const makeDossierDataWithTitle = (title: string) => ({
+  data: {
+    dossier: {
+      ...dossier,
+      champs: dossier.champs.map((champ) =>
+        champ.champDescriptorId === "Q2hhbXAtMjk3MTQ0NA=="
+          ? { ...champ, stringValue: title }
+          : champ,
+      ),
+    },
+  },
+});
+
 export const getDemarcheDossiersData = {
   data: {
     demarche: {

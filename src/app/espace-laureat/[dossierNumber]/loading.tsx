@@ -26,7 +26,7 @@ export default function Loading() {
             ]}
             currentPageLabel="Chargement..."
           />
-          <div>
+          <div className="flex h-[116px] flex-col justify-center">
             <Skeleton className="mb-3 h-20 w-full max-w-2xl bg-gray-300" />
             <div className="flex flex-wrap items-center gap-3">
               <Skeleton className="h-6 w-96 rounded-full bg-gray-300" />
