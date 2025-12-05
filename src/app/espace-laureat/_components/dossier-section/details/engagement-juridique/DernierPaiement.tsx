@@ -12,8 +12,8 @@ export function DernierPaiement({ group, scope }: DernierPaiementProps) {
 
   if (!lastPayment) {
     return (
-      <div className="mb-4 text-sm font-medium text-gray-400">
-        Aucun paiement n'a été réalisé pour ce projet.
+      <div className="text-sm font-medium text-gray-400">
+        Aucun paiement n'a été réalisé.
       </div>
     );
   }
