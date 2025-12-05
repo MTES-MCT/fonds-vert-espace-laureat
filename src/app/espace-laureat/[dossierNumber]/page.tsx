@@ -77,6 +77,9 @@ export default async function DossierPage({
     return buildFinancesResult(results);
   });
 
+  // Note: all 3 API calls run in parallel and respond at roughly the same time
+  // (~500-600ms), so awaiting all results (3. and 4.) is fine.
+
   // 3. Authorization guard: await getDossier
   const dossierSubventionResult = await dossierSubventionPromise;
 
