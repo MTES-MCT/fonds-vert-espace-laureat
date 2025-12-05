@@ -1,7 +1,8 @@
 import React from "react";
 
+import { MoneyField } from "@/components/money-field/MoneyField";
 import { EngagementJuridiqueGroupe, getLastPayment } from "@/utils/finance";
-import { formatDate, formatEuros } from "@/utils/format";
+import { formatDate } from "@/utils/format";
 
 interface DernierPaiementProps {
   group: EngagementJuridiqueGroupe;
@@ -21,12 +22,11 @@ export function DernierPaiement({ group, index }: DernierPaiementProps) {
 
   return (
     <dl className="grid grid-cols-3 text-sm">
-      <div>
-        <dt id={`dernier-paiement-${index}-label`}>Dernier paiement</dt>
-        <dd aria-labelledby={`dernier-paiement-${index}-label`}>
-          {formatEuros(lastPayment.montant_paye)}
-        </dd>
-      </div>
+      <MoneyField
+        id={`dernier-paiement-${index}`}
+        label="Dernier paiement"
+        value={lastPayment.montant_paye}
+      />
       <div>
         <dt id={`date-paiement-${index}-label`}>Date de paiement</dt>
         <dd aria-labelledby={`date-paiement-${index}-label`}>
