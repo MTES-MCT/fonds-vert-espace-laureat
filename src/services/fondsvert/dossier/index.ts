@@ -69,6 +69,7 @@ export interface EngagementJuridiques {
 
 export interface InformationsEngagement {
   annee_information_financiere: number;
+  montant_paye_per_dossier: number | null;
   engagements_juridiques: EngagementJuridiques[];
 }
 

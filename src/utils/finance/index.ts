@@ -31,8 +31,7 @@ export interface EngagementJuridiqueGroupe {
 
 /**
  * Calcule le montant total payé pour afficher le "montant versé".
- * L'API ne fournit pas ce total directement, on parcourt donc toutes les demandes
- * de paiement (années → EJ → demandes_paiement) et on somme les montant_paye.
+ * L'API fournit un total agrégé par année (`montant_paye_per_dossier`).
  */
 export function getMontantTotalPaye(
   informationFinanciere?: InformationFinanciere,
@@ -41,11 +40,10 @@ export function getMontantTotalPaye(
     return 0;
   }
 
-  return informationFinanciere.informations_engagement
-    .flatMap((info) =>
-      info.engagements_juridiques.flatMap((eng) => eng.demandes_paiement),
-    )
-    .reduce((sum, dp) => sum + dp.montant_paye, 0);
+  return informationFinanciere.informations_engagement.reduce(
+    (sum, info) => sum + (info.montant_paye_per_dossier ?? 0),
+    0,
+  );
 }
 
 /**
