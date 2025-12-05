@@ -1,25 +1,25 @@
-import { formatEuros } from "@/utils/format";
+import { formatEuros, slugify } from "@/utils/format";
 
 export function MoneyField({
-  id,
   label,
   value,
   className,
   bold,
+  scope,
 }: {
-  id: string;
   label: string;
   value?: number;
   className?: string;
   bold?: boolean;
+  scope?: string;
 }) {
+  const baseId = slugify(label);
+  const id = scope ? `${baseId}-${scope}-label` : `${baseId}-label`;
+
   return (
     <div className={className}>
-      <dt id={`${id}-label`}>{label}</dt>
-      <dd
-        aria-labelledby={`${id}-label`}
-        className={bold ? "font-semibold" : undefined}
-      >
+      <dt id={id}>{label}</dt>
+      <dd aria-labelledby={id} className={bold ? "font-semibold" : undefined}>
         {formatEuros(value)}
       </dd>
     </div>

@@ -19,7 +19,6 @@ export function SubventionDetails({
     <div className="space-y-8">
       <dl>
         <MoneyField
-          id="total-depenses"
           label="Montant total des dépenses du projet"
           value={totalDesDepenses}
           bold
@@ -32,13 +31,11 @@ export function SubventionDetails({
         </h4>
         <dl className="grid grid-cols-3 border border-gray-200 px-8 py-6">
           <MoneyField
-            id="subvention-attribuee"
             label="Montant attribué"
             value={montantSubventionAttribuee}
             bold
           />
           <MoneyField
-            id="montant-paye"
             label="Montant total payé"
             value={getMontantTotalPaye(informationFinanciere)}
             bold

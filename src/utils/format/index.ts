@@ -66,3 +66,15 @@ export function formatDate(date?: Date | string | null): string {
     year: "numeric",
   });
 }
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/œ/g, "oe")
+    .replace(/æ/g, "ae")
+    .replace(/ß/g, "ss")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}

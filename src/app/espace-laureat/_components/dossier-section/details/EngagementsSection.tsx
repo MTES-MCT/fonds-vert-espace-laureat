@@ -20,11 +20,10 @@ export function EngagementsSection({
 }: EngagementsSectionProps) {
   const engagementsList = groupEngagementsByEJ(informationFinanciere);
 
-  const financeFieldsSlots = engagementsList.map((group, index) => (
-    <Suspense key={index} fallback={<FinanceFieldsSkeleton index={index} />}>
+  const financeFieldsSlots = engagementsList.map((group) => (
+    <Suspense key={group.numero_ej} fallback={<FinanceFieldsSkeleton />}>
       <FinanceFieldsSection
         numeroEJ={group.numero_ej}
-        index={index}
         financesEJPromise={financesEJPromise}
       />
     </Suspense>

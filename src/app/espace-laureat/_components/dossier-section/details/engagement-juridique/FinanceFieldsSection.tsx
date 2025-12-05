@@ -1,27 +1,30 @@
 import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { MoneyField } from "@/components/money-field/MoneyField";
 import { getLatestYearPostesField } from "@/utils/finance";
+import { slugify } from "@/utils/format";
 
 function FinanceField({
-  id,
   values,
   singular,
   plural,
+  scope,
 }: {
-  id: string;
   values: string[];
   singular: string;
   plural: string;
+  scope: string;
 }) {
   if (values.length === 0) return null;
 
   const label = values.length > 1 ? plural : singular;
   const text = values.join(", ");
+  const baseId = slugify(singular);
+  const id = `${baseId}-${scope}-label`;
 
   return (
     <div className="max-w-[220px]">
-      <dt id={`${id}-label`}>{label}</dt>
-      <dd aria-labelledby={`${id}-label`} className="truncate" title={text}>
+      <dt id={id}>{label}</dt>
+      <dd aria-labelledby={id} className="truncate" title={text}>
         {text}
       </dd>
     </div>
@@ -30,13 +33,11 @@ function FinanceField({
 
 interface FinanceFieldsSectionProps {
   numeroEJ: string;
-  index: number;
   financesEJPromise: Promise<FinancesEJResult>;
 }
 
 export async function FinanceFieldsSection({
   numeroEJ,
-  index,
   financesEJPromise,
 }: FinanceFieldsSectionProps) {
   const results = await financesEJPromise;
@@ -55,22 +56,22 @@ export async function FinanceFieldsSection({
   return (
     <>
       <MoneyField
-        id={`montant-attribue-initial-ej-${index}`}
         label="Montant attribué initial"
         value={ejResult.data.montant_engage_initial}
         className="order-first"
+        scope={numeroEJ}
       />
       <FinanceField
-        id={`fournisseur-ej-${index}`}
         values={fournisseurs}
         singular="Fournisseur"
         plural="Fournisseurs"
+        scope={numeroEJ}
       />
       <FinanceField
-        id={`centre-cout-ej-${index}`}
         values={centresCouts}
         singular="Centre de coût"
         plural="Centres de coût"
+        scope={numeroEJ}
       />
     </>
   );

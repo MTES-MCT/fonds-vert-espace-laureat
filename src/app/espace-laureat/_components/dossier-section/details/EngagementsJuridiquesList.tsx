@@ -47,7 +47,6 @@ export function EngagementsJuridiquesList({
                     <EngagementJuridiqueDetails
                       group={group}
                       montantRestant={montantRestant}
-                      index={index}
                       financeFieldsSlot={financeFieldsSlots[index]}
                     />
                   ),

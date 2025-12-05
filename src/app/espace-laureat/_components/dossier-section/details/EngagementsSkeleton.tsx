@@ -7,7 +7,7 @@ function SkeletonBox({ className }: { className?: string }) {
   );
 }
 
-export function FinanceFieldsSkeleton({ index }: { index: number }) {
+export function FinanceFieldsSkeleton() {
   return (
     <>
       <div
@@ -15,10 +15,8 @@ export function FinanceFieldsSkeleton({ index }: { index: number }) {
         role="status"
         aria-label="Chargement du montant attribué initial"
       >
-        <dt id={`montant-attribue-initial-ej-${index}-label`}>
-          Montant attribué initial
-        </dt>
-        <dd aria-labelledby={`montant-attribue-initial-ej-${index}-label`}>
+        <dt id="montant-attribue-initial-label">Montant attribué initial</dt>
+        <dd aria-labelledby="montant-attribue-initial-label">
           <SkeletonBox className="h-5 w-24" />
         </dd>
       </div>
@@ -27,8 +25,8 @@ export function FinanceFieldsSkeleton({ index }: { index: number }) {
         role="status"
         aria-label="Chargement du fournisseur"
       >
-        <dt id={`fournisseur-ej-${index}-label`}>Fournisseur</dt>
-        <dd aria-labelledby={`fournisseur-ej-${index}-label`}>
+        <dt id="fournisseur-label">Fournisseur</dt>
+        <dd aria-labelledby="fournisseur-label">
           <SkeletonBox className="h-5 w-32" />
         </dd>
       </div>
@@ -37,8 +35,8 @@ export function FinanceFieldsSkeleton({ index }: { index: number }) {
         role="status"
         aria-label="Chargement du centre de coût"
       >
-        <dt id={`centre-cout-ej-${index}-label`}>Centre de coût</dt>
-        <dd aria-labelledby={`centre-cout-ej-${index}-label`}>
+        <dt id="centre-de-cout-label">Centre de coût</dt>
+        <dd aria-labelledby="centre-de-cout-label">
           <SkeletonBox className="h-5 w-32" />
         </dd>
       </div>
