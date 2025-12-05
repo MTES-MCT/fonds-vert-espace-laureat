@@ -106,7 +106,9 @@ export async function DossierSection({
               <Alert severity="error" small description={errorMessage} />
             )}
             <SubventionDetails
-              montantSubventionAttribuee={subvention.montantSubventionAttribuee}
+              montantSubventionAttribuee={
+                socleCommun?.montant_subvention_attribuee
+              }
               totalDesDepenses={socleCommun?.total_des_depenses}
               informationFinanciere={informationFinanciere}
               engagementsSection={buildEngagementsSection(

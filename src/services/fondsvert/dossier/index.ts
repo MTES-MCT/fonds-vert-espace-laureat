@@ -85,6 +85,7 @@ export interface SocleCommun {
   date_debut_execution: string | null;
   date_fin_execution: string | null;
   total_des_depenses: number;
+  montant_subvention_attribuee?: number;
   annee_millesime?: number;
   entreprise_raison_sociale?: string;
   siret?: string;

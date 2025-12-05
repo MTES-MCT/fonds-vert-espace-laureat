@@ -558,6 +558,7 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
           data: {
             information_financiere:
               fondsVertDossierData.data.information_financiere,
+            socle_commun: fondsVertDossierData.data.socle_commun,
           },
         });
       },
