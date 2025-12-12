@@ -150,7 +150,7 @@ export async function buildImpactPrefillUrl({
           .filter((entry): entry is [string, MetricFields] =>
             isMetricFields(entry[1]),
           )
-          .map(([key, m]) => [key, m.valeur_estimee]),
+          .map(([key, m]) => [key, m.valeur_suivi ?? m.valeur_estimee]),
       )
     : {};
 

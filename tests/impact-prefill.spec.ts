@@ -84,9 +84,11 @@ test("impact prefill link is generated correctly with metrics", async ({
   const url = new URL(href!);
 
   expect(url.searchParams.get("champ_Q2hhbXAtNDgwMTY1OA")).toBe("2055650");
-  expect(url.searchParams.get("champ_Q2hhbXAtNDgwMTY1OQ")).toBe("1235863");
+  // Utilise valeur_suivi (1935960) au lieu de valeur_estimee (1235863)
+  expect(url.searchParams.get("champ_Q2hhbXAtNDgwMTY1OQ")).toBe("1935960");
   expect(url.searchParams.get("champ_Q2hhbXAtNTA4NTE4Nw")).toBe("448");
-  expect(url.searchParams.get("champ_Q2hhbXAtNTA4NTE4OA")).toBe("312");
+  // Utilise valeur_suivi (383) au lieu de valeur_estimee (312)
+  expect(url.searchParams.get("champ_Q2hhbXAtNTA4NTE4OA")).toBe("383");
 
   // Champs qui ne doivent pas être dans l'URL car "à récupérer en sortie":
   expect(url.searchParams.has("champ_Q2hhbXAtNTQ1OTM1Nw")).toBe(false);
