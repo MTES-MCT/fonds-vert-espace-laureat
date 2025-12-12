@@ -59,6 +59,14 @@ export function EngagementsJuridiquesList({
                     />
                   ),
                 },
+                {
+                  label: "Contact",
+                  content: (
+                    <p className="mb-0">
+                      Voir les informations dans votre convention / arrêté.
+                    </p>
+                  ),
+                },
               ]}
             />
           </section>
