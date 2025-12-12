@@ -8,6 +8,7 @@ import { getMontantRestant, groupEngagementsByEJ } from "@/utils/finance";
 
 import { EngagementJuridiqueDetails } from "./engagement-juridique/EngagementJuridiqueDetails";
 import { EngagementJuridiqueHistorique } from "./engagement-juridique/EngagementJuridiqueHistorique";
+import { EtatEngagementBadge } from "./engagement-juridique/EtatEngagementBadge";
 
 export function EngagementsJuridiquesList({
   informationFinanciere,
@@ -32,12 +33,17 @@ export function EngagementsJuridiquesList({
             key={index}
             aria-labelledby={`engagement-juridique-${index}-heading`}
           >
-            <h4
-              id={`engagement-juridique-${index}-heading`}
-              className="mb-3 text-lg font-bold"
-            >
-              Engagement juridique n°{group.numero_ej}
-            </h4>
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-4">
+              <h4
+                id={`engagement-juridique-${index}-heading`}
+                className="text-lg font-bold"
+              >
+                Engagement juridique n°{group.numero_ej}
+              </h4>
+              <EtatEngagementBadge
+                etatEngagement={group.latest_etat_engagement}
+              />
+            </div>
 
             <Tabs
               tabs={[

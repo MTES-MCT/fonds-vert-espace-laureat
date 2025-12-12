@@ -200,6 +200,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
       {
         annee_information_financiere: 2023,
         montant_paye_per_dossier: 500000,
+        etat_engagement: "clos",
         engagements_juridiques: [
           {
             numero_ej: "2105212345",
@@ -226,6 +227,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
       {
         annee_information_financiere: 2024,
         montant_paye_per_dossier: 5422079.2,
+        etat_engagement: "clos",
         engagements_juridiques: [
           {
             numero_ej: "2105212345",
@@ -263,6 +265,7 @@ export const demoDossierFondsVert: DossierFondsVert = {
       {
         annee_information_financiere: 2025,
         montant_paye_per_dossier: 200000,
+        etat_engagement: "en cours",
         engagements_juridiques: [
           {
             numero_ej: "2105212345",

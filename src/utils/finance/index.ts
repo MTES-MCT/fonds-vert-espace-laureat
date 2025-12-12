@@ -8,6 +8,7 @@
 
 import {
   DemandePaiement,
+  EtatEngagement,
   InformationFinanciere,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJData, PosteEJ } from "@/services/fondsvert/finances";
@@ -20,12 +21,14 @@ export interface EngagementJuridiqueAnnee {
   demandes_paiement: DemandePaiement[];
   annee: number;
   montant_engage: number;
+  etat_engagement: EtatEngagement;
 }
 
 export interface EngagementJuridiqueGroupe {
   numero_ej: string;
   latest_montant_engage: number;
   latest_year: number;
+  latest_etat_engagement: EtatEngagement;
   historique: EngagementJuridiqueAnnee[];
 }
 
@@ -80,17 +83,20 @@ export function groupEngagementsByEJ(
             numero_ej: eng.numero_ej,
             latest_montant_engage: eng.montant_engage,
             latest_year: info.annee_information_financiere,
+            latest_etat_engagement: info.etat_engagement,
             historique: [],
           };
         }
         if (info.annee_information_financiere > acc[key].latest_year) {
           acc[key].latest_montant_engage = eng.montant_engage;
           acc[key].latest_year = info.annee_information_financiere;
+          acc[key].latest_etat_engagement = info.etat_engagement;
         }
         acc[key].historique.push({
           annee: info.annee_information_financiere,
           montant_engage: eng.montant_engage,
           demandes_paiement: eng.demandes_paiement,
+          etat_engagement: info.etat_engagement,
         });
       });
       return acc;

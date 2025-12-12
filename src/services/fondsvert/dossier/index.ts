@@ -67,9 +67,17 @@ export interface EngagementJuridiques {
   demandes_paiement: DemandePaiement[];
 }
 
+export type EtatEngagement =
+  | "en cours"
+  | "inconnu"
+  | "non démarré"
+  | "soldé"
+  | "clos";
+
 export interface InformationsEngagement {
   annee_information_financiere: number;
   montant_paye_per_dossier: number | null;
+  etat_engagement: EtatEngagement;
   engagements_juridiques: EngagementJuridiques[];
 }
 
