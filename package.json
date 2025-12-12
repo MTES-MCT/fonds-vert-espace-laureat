@@ -24,7 +24,7 @@
     "graphql": "^16.10.0",
     "graphql-request": "^7.1.2",
     "iron-session": "^8.0.4",
-    "next": "^15.5.7",
+    "next": "^15.5.9",
     "openid-client": "^5.7.0",
     "postcss-import": "^16.1.0",
     "postcss-url": "^10.1.3",
