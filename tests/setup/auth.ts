@@ -6,16 +6,19 @@ import { Page } from "next/experimental/testmode/playwright/msw";
 const projectDir = process.cwd();
 loadEnvConfig(projectDir);
 
-const mockUser = {
-  id: "test-user-id",
-  isProConnectIdentityProvider: true,
-  email: "alice.doe@example.com",
-  isSiretVerifiedForEmailDomain: true,
-  siret: "12345678910111",
-};
+const DEFAULT_EMAIL = "alice.doe@example.com";
+const DEFAULT_SIRET = "12345678910111";
+
+interface MockUser {
+  id: string;
+  isProConnectIdentityProvider: boolean;
+  email: string;
+  isSiretVerifiedForEmailDomain: boolean;
+  siret: string;
+}
 
 interface SessionData {
-  user: typeof mockUser;
+  user: MockUser;
   returnTo?: string;
 }
 
@@ -34,14 +37,26 @@ const getSessionOptions = (): SessionOptions => {
   };
 };
 
-async function createAuthCookie(): Promise<{
+async function createAuthCookie({
+  email = DEFAULT_EMAIL,
+  siret = DEFAULT_SIRET,
+}: {
+  email?: string;
+  siret?: string;
+} = {}): Promise<{
   name: string;
   value: string;
 }> {
   const options = getSessionOptions();
 
   const sessionData: SessionData = {
-    user: mockUser,
+    user: {
+      id: "test-user-id",
+      isProConnectIdentityProvider: true,
+      email,
+      isSiretVerifiedForEmailDomain: true,
+      siret,
+    },
   };
 
   const seal = await sealData(sessionData, {
@@ -55,8 +70,11 @@ async function createAuthCookie(): Promise<{
   };
 }
 
-export async function authenticatePage(page: Page): Promise<void> {
-  const cookie = await createAuthCookie();
+export async function authenticatePage(
+  page: Page,
+  { email, siret }: { email?: string; siret?: string } = {},
+): Promise<void> {
+  const cookie = await createAuthCookie({ email, siret });
 
   await page.context().addCookies([
     {

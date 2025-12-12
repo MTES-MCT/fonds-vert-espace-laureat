@@ -1,6 +1,6 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 
-import { getDossierNumbers } from "@/services/fondsvert/dossiers";
+import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
 import { getAuthenticatedUser } from "@/utils/session";
 
 import { AucunDossier } from "../_components/AucunDossier";
@@ -20,7 +20,10 @@ export default async function EspaceLaureat({
   const params = await getSearchParams({ searchParams });
   const siret = params.siret ?? user.siret;
 
-  const dossierNumbersResult = await getDossierNumbers({ siret });
+  const dossierNumbersResult = await getAllDossierNumbers({
+    siret,
+    email: user.email,
+  });
 
   if (!dossierNumbersResult.success) {
     return (

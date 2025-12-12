@@ -2,6 +2,7 @@ import {
   AGENCE_EAU_NUMBER,
   CONTACT_EMAIL,
   DEPARTMENT,
+  DOSSIER_NUMBER,
   LEGAL_REPRESENTATIVE_EMAIL,
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
@@ -10,7 +11,7 @@ import {
 
 const dossier = {
   id: "ABCDEFGHg==",
-  number: 123456789,
+  number: DOSSIER_NUMBER,
   state: "accepte",
   dateTraitement: "2024-02-11T10:46:18+01:00",
   demandeur: {
@@ -27,7 +28,7 @@ const dossier = {
   groupeInstructeur: {
     instructeurs: [
       {
-        email: "instructeur@example.com",
+        email: "autre-instructeur@example.com",
       },
     ],
   },
@@ -758,6 +759,21 @@ const dossier = {
 };
 
 export const getDossierData = { data: { dossier } };
+
+export const makeDossierDataForInstructeur = (
+  dossierNumber: number,
+  instructeurEmail: string,
+) => ({
+  data: {
+    dossier: {
+      ...dossier,
+      number: dossierNumber,
+      groupeInstructeur: {
+        instructeurs: [{ email: instructeurEmail }],
+      },
+    },
+  },
+});
 
 export const makeDossierDataWithTitle = (title: string) => ({
   data: {
