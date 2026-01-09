@@ -72,7 +72,8 @@ export type EtatEngagement =
   | "inconnu"
   | "non démarré"
   | "soldé"
-  | "clos";
+  | "clos"
+  | "sans paiement";
 
 export interface InformationsEngagement {
   annee_information_financiere: number;

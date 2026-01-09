@@ -11,6 +11,7 @@ const ETAT_ENGAGEMENT_CONFIG: Record<
   soldé: { label: "Soldé", severity: "success" },
   clos: { label: "Clos", severity: "info" },
   inconnu: { label: "Inconnu", severity: "error" },
+  "sans paiement": { label: "Sans paiement", severity: "warning" },
 };
 
 export function EtatEngagementBadge({
@@ -19,6 +20,10 @@ export function EtatEngagementBadge({
   etatEngagement: EtatEngagement;
 }) {
   const config = ETAT_ENGAGEMENT_CONFIG[etatEngagement];
+
+  if (!config) {
+    return null;
+  }
 
   return (
     <div className="flex items-baseline gap-2">
