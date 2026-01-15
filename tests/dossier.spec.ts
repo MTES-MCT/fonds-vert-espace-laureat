@@ -876,6 +876,66 @@ test("dossier page displays statut de réalisation from impact demarche", async 
   ).toBeVisible();
 });
 
+test("dossier page falls back to Fonds Vert when impact is stale", async ({
+  page,
+  msw,
+}) => {
+  const staleUpdatedAt = "2020-01-01T10:00:00.000Z";
+  const fondsVertUpdatedAt = "2024-02-14T08:30:00.000Z";
+  const fondsVertStatut = "Bloqué";
+
+  msw.use(
+    ds.query("getDemarcheDossiers", () => {
+      return HttpResponse.json(
+        makeDemarcheDossiersData({
+          statutRealisation: "Terminé",
+          updatedAt: staleUpdatedAt,
+        }),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            ...fondsVertDossierData.data,
+            socle_commun: {
+              ...fondsVertDossierData.data.socle_commun,
+              date_derniere_modification: fondsVertUpdatedAt,
+              statut_realisation_projet: fondsVertStatut,
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const statusSection = page.getByRole("region", {
+    name: "Avancement du projet",
+  });
+
+  await expect(
+    statusSection.locator(".fr-badge--warning", { hasText: fondsVertStatut }),
+  ).toBeVisible();
+  await expect(
+    statusSection.getByText(
+      `Dernière modification : ${formatImpactDate(fondsVertUpdatedAt)}`,
+    ),
+  ).toBeVisible();
+
+  const evaluationSection = page.getByRole("region", {
+    name: "Les données de votre projet participent à la transition écologique",
+  });
+
+  await expect(
+    evaluationSection.getByText(
+      `Dernière modification : ${formatImpactDate(fondsVertUpdatedAt)}`,
+    ),
+  ).toBeVisible();
+});
+
 const STATUT_REALISATION_CASES = [
   { statut: "Non-commencé", badgeClass: ".fr-badge--new" },
   { statut: "En cours de réalisation", badgeClass: ".fr-badge--info" },

@@ -91,6 +91,7 @@ export interface SocleCommun {
   date_depot: string | null;
   date_notification: string | null;
   date_derniere_modification: string | null;
+  statut_realisation_projet?: string | null;
   date_debut_execution: string | null;
   date_fin_execution: string | null;
   total_des_depenses: number;

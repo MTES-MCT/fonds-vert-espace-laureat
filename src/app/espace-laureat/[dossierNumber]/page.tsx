@@ -2,12 +2,12 @@ import { DossierSection } from "@/app/espace-laureat/_components/DossierSection"
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import { selectRecentImpact } from "@/services/ds/impact/selectRecentImpact";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
   buildFinancesResult,
   loadFinancesEJ,
 } from "@/services/fondsvert/finances";
+import { resolveImpactStatus } from "@/services/impact/status";
 import { extractEJNumbers } from "@/utils/finance";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
@@ -75,6 +75,14 @@ export default async function DossierPage({
   const dossiersImpact = dossiersImpactResult.success
     ? dossiersImpactResult.data
     : [];
+  const dossierFondsVert = dossierFondsVertResult.success
+    ? dossierFondsVertResult.data
+    : undefined;
+  const impactStatus = resolveImpactStatus({
+    dossierSubventionNumero: dossierSubvention.numero,
+    dossiersImpact,
+    dossierFondsVert,
+  });
 
   return (
     <>
@@ -84,10 +92,7 @@ export default async function DossierPage({
         dossierSubvention={dossierSubvention}
         dossierFondsVertResult={dossierFondsVertResult}
         financesEJPromise={financesEJPromise}
-        impact={selectRecentImpact({
-          dossierSubventionNumero: dossierSubvention.numero,
-          dossiersImpact,
-        })}
+        impactStatus={impactStatus}
         nocache={["", "1"].includes(nocache)}
       />
     </>

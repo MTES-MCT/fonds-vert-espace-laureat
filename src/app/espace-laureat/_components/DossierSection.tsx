@@ -13,7 +13,6 @@ import {
 } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
 import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
-import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
@@ -21,6 +20,7 @@ import {
 } from "@/services/fondsvert/dossier";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { buildImpactPrefillUrl } from "@/services/grist/impact";
+import { ImpactStatus } from "@/services/impact/status";
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,
@@ -46,7 +46,7 @@ export async function DossierSection({
   dossierSubvention,
   dossierFondsVertResult,
   financesEJPromise,
-  impact,
+  impactStatus,
   nocache,
 }: {
   isAdmin: boolean;
@@ -55,7 +55,7 @@ export async function DossierSection({
     | { success: false; error: string }
     | { success: true; data: DossierFondsVert };
   financesEJPromise: Promise<FinancesEJResult>;
-  impact?: Impact;
+  impactStatus: ImpactStatus;
   nocache: boolean;
 }) {
   const subvention = dossierSubvention.champs;
@@ -149,8 +149,8 @@ export async function DossierSection({
         <div className="w-[22rem] shrink-0 bg-white p-6 shadow-lg">
           <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
             <StatutRealisation
-              statut={impact?.champs.statutRealisationProjet}
-              updatedAt={impact?.champs.updatedAt}
+              statut={impactStatus.statut}
+              updatedAt={impactStatus.updatedAt}
               impactPrefillUrl={prefilledDsImpactUrl}
             />
           </div>
@@ -193,7 +193,7 @@ export async function DossierSection({
             </h3>
             <CompletionSidebar
               prefilledDsImpactUrl={prefilledDsImpactUrl}
-              updatedAt={impact?.champs.updatedAt}
+              updatedAt={impactStatus.updatedAt}
             />
           </section>
         </div>
