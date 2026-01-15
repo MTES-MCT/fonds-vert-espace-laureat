@@ -1,4 +1,5 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
+import Link from "next/link";
 
 const severityByStatut: Record<
   string,
@@ -28,9 +29,11 @@ function formatDate(isoDate: string): string {
 export function StatutRealisation({
   statut,
   updatedAt,
+  impactPrefillUrl,
 }: {
   statut?: string;
   updatedAt?: string;
+  impactPrefillUrl: string;
 }) {
   const severity = statut ? (severityByStatut[statut] ?? "warning") : "warning";
   const label = statut ?? "INCONNU";
@@ -48,15 +51,26 @@ export function StatutRealisation({
           <dt className="text-xs font-medium text-[var(--text-mention-grey)]">
             État d'avancement
           </dt>
-          <dd className="mb-1 text-sm">
-            <Badge
-              small
-              noIcon
-              className="whitespace-nowrap"
-              severity={severity}
-            >
-              {label}
-            </Badge>
+          <dd className="text-sm">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                small
+                noIcon
+                className="whitespace-nowrap"
+                severity={severity}
+              >
+                {label}
+              </Badge>
+              <Link
+                className="fr-btn fr-btn--tertiary fr-btn--sm"
+                href={impactPrefillUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Mettre à jour l'avancement du projet"
+              >
+                Mettre à jour
+              </Link>
+            </div>
           </dd>
         </div>
         {updatedAt && (

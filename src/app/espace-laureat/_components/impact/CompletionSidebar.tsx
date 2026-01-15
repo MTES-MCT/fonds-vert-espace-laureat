@@ -1,27 +1,15 @@
 import Link from "next/link";
 
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
-import { Metrics, SocleCommun } from "@/services/fondsvert/dossier";
-import { buildImpactPrefillUrl } from "@/services/grist/impact";
+import { SocleCommun } from "@/services/fondsvert/dossier";
 
-export async function CompletionSidebar({
-  numeroDossier,
-  metriques,
+export function CompletionSidebar({
+  prefilledDsImpactUrl,
   socleCommun,
-  nocache,
 }: {
-  numeroDossier: number;
-  metriques?: Metrics;
+  prefilledDsImpactUrl: string;
   socleCommun?: SocleCommun;
-  nocache: boolean;
 }) {
-  const prefilledDsImpactUrl = await buildImpactPrefillUrl({
-    numeroDossier,
-    metriques,
-    socleCommun,
-    nocache,
-  });
-
   return (
     <>
       <Help>

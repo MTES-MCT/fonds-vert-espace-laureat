@@ -20,6 +20,7 @@ import {
   InformationFinanciere,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
+import { buildImpactPrefillUrl } from "@/services/grist/impact";
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,
@@ -89,6 +90,13 @@ export async function DossierSection({
         },
       };
 
+  const prefilledDsImpactUrl = await buildImpactPrefillUrl({
+    numeroDossier: dossierSubvention.numero,
+    metriques,
+    socleCommun,
+    nocache,
+  });
+
   return (
     <div>
       <SummaryHeader
@@ -143,6 +151,7 @@ export async function DossierSection({
             <StatutRealisation
               statut={impact?.champs.statutRealisationProjet}
               updatedAt={impact?.champs.updatedAt}
+              impactPrefillUrl={prefilledDsImpactUrl}
             />
           </div>
           {socleCommun && (
@@ -183,10 +192,8 @@ export async function DossierSection({
               Les données de votre projet participent à la transition écologique
             </h3>
             <CompletionSidebar
-              numeroDossier={dossierSubvention.numero}
-              metriques={metriques}
+              prefilledDsImpactUrl={prefilledDsImpactUrl}
               socleCommun={socleCommun}
-              nocache={nocache}
             />
           </section>
         </div>
