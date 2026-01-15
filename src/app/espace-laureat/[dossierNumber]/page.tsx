@@ -1,6 +1,7 @@
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
+import { RefreshOnVisibility } from "@/app/espace-laureat/_components/RefreshOnVisibility";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
@@ -87,6 +88,7 @@ export default async function DossierPage({
   return (
     <>
       <StartDsfrOnHydration />
+      <RefreshOnVisibility />
       <DossierSection
         isAdmin={isAdmin({ userEmail: user.email })}
         dossierSubvention={dossierSubvention}
