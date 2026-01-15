@@ -29,6 +29,7 @@ export const getDemarcheDossiersQuery = graphql(`
     __typename
     champDescriptorId
     stringValue
+    updatedAt
     ... on DecimalNumberChamp {
       decimalNumber: value
     }

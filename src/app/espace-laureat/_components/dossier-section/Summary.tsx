@@ -32,29 +32,31 @@ export const SummaryHeader = ({
           currentPageLabel={`Dossier n°${numeroDossier}`}
           data-testid="breadcrumb-current"
         />
-        <div className="flex h-[116px] flex-col justify-center">
-          <h1 className="mb-3 max-w-4xl text-4xl font-bold text-balance">
-            {intitule && intitule.length > 80
-              ? `${intitule.slice(0, 80)}...`
-              : (intitule ?? "N/A")}
-          </h1>
-          <div className="flex flex-wrap items-center gap-3">
-            <Tag
-              small
-              className="bg-white shadow-sm"
-              iconId="fr-icon-award-fill"
-            >
-              {mesureFondsVert}
-            </Tag>
-            {anneeMillesime && (
+        <div className="flex min-h-[116px] items-start justify-between gap-8">
+          <div className="flex flex-col justify-center">
+            <h1 className="mb-3 max-w-4xl text-4xl font-bold text-balance">
+              {intitule && intitule.length > 80
+                ? `${intitule.slice(0, 80)}...`
+                : (intitule ?? "N/A")}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
               <Tag
                 small
                 className="bg-white shadow-sm"
-                iconId="fr-icon-calendar-2-line"
+                iconId="fr-icon-award-fill"
               >
-                Édition {anneeMillesime}
+                {mesureFondsVert}
               </Tag>
-            )}
+              {anneeMillesime && (
+                <Tag
+                  small
+                  className="bg-white shadow-sm"
+                  iconId="fr-icon-calendar-2-line"
+                >
+                  Édition {anneeMillesime}
+                </Tag>
+              )}
+            </div>
           </div>
         </div>
       </div>

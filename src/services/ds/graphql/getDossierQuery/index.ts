@@ -37,6 +37,7 @@ export const getDossierQuery = graphql(`
     __typename
     champDescriptorId
     stringValue
+    updatedAt
     ... on DecimalNumberChamp {
       decimalNumber: value
     }

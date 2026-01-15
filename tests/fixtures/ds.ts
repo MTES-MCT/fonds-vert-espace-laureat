@@ -788,12 +788,66 @@ export const makeDossierDataWithTitle = (title: string) => ({
   },
 });
 
-export const getDemarcheDossiersData = {
+export const DEFAULT_STATUT_REALISATION = "En cours de réalisation";
+export const DEFAULT_STATUT_UPDATED_AT = "2023-11-15T17:13:00+01:00";
+
+const makeDemarcheChamp = ({
+  champDescriptorId,
+  stringValue,
+  updatedAt,
+  __typename = "TextChamp",
+}: {
+  champDescriptorId: string;
+  stringValue?: string;
+  updatedAt?: string;
+  __typename?: "TextChamp" | "DossierLinkChamp";
+}) => ({
+  __typename,
+  champDescriptorId,
+  stringValue,
+  updatedAt,
+});
+
+const makeDemarcheDossier = (
+  champs: ReturnType<typeof makeDemarcheChamp>[],
+) => ({
+  __typename: "Dossier",
+  id: "impact-dossier-1",
+  number: 99999,
+  dateTraitement: DEFAULT_STATUT_UPDATED_AT,
+  state: "en_construction",
+  usager: {
+    email: LEGAL_REPRESENTATIVE_EMAIL,
+  },
+  champs,
+});
+
+export const makeDemarcheDossiersData = ({
+  statutRealisation = DEFAULT_STATUT_REALISATION,
+  updatedAt = DEFAULT_STATUT_UPDATED_AT,
+  includeImpactDossier = true,
+} = {}) => ({
   data: {
     demarche: {
       dossiers: {
-        nodes: [],
+        nodes: includeImpactDossier
+          ? [
+              makeDemarcheDossier([
+                makeDemarcheChamp({
+                  __typename: "DossierLinkChamp",
+                  champDescriptorId: "Q2hhbXAtNDc2OTEyOQ==",
+                  stringValue: String(DOSSIER_NUMBER),
+                  updatedAt,
+                }),
+                makeDemarcheChamp({
+                  champDescriptorId: "Q2hhbXAtNTQ1OTM1Nw==",
+                  stringValue: statutRealisation,
+                  updatedAt,
+                }),
+              ]),
+            ]
+          : [],
       },
     },
   },
-};
+});

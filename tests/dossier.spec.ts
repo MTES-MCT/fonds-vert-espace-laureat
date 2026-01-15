@@ -25,8 +25,8 @@ import {
   SIRET,
 } from "./fixtures/constants";
 import {
-  getDemarcheDossiersData,
   getDossierData,
+  makeDemarcheDossiersData,
   makeDossierDataWithTitle,
 } from "./fixtures/ds";
 import {
@@ -56,7 +56,7 @@ test.use({
       }),
 
       ds.query("getDemarcheDossiers", () => {
-        return HttpResponse.json(getDemarcheDossiersData);
+        return HttpResponse.json(makeDemarcheDossiersData());
       }),
 
       http.post("http://fondsvert/fonds_vert/login", () => {
@@ -437,7 +437,9 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     "Établissement public du second degré",
   );
 
-  await expect(page.getByTestId("impact-evaluation-link")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Consulter l'évaluation" }),
+  ).toBeVisible();
 });
 
 test("dossier page organizes metrics by thematic groups correctly", async ({
@@ -639,7 +641,16 @@ test("dossier page displays calendar timeline with correct dates and status", as
 
 test("impact evaluation sidebar displays last modification date", async ({
   page,
+  msw,
 }) => {
+  msw.use(
+    ds.query("getDemarcheDossiers", () => {
+      return HttpResponse.json(
+        makeDemarcheDossiersData({ includeImpactDossier: false }),
+      );
+    }),
+  );
+
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
   const evaluationSection = page.getByRole("region", {
@@ -648,6 +659,9 @@ test("impact evaluation sidebar displays last modification date", async ({
 
   await expect(
     evaluationSection.getByText("Dernière modification : 10 mars 2024"),
+  ).toBeVisible();
+  await expect(
+    evaluationSection.getByRole("link", { name: "Mettre à jour les données" }),
   ).toBeVisible();
 });
 
@@ -769,4 +783,130 @@ test("long project titles are truncated with ellipsis", async ({
   await expect(heading).toContainText("...");
   await expect(heading).not.toContainText(PROJECT_TITLE_LONG);
   await expect(heading).toContainText(PROJECT_TITLE_LONG.slice(0, 80));
+});
+
+test("engagement juridique displays etat engagement badge", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+
+  await expect(
+    engagement.getByText("Statut des paiements de la subvention"),
+  ).toBeVisible();
+  await expect(engagement.getByText("En cours")).toBeVisible();
+});
+
+test("engagement juridique hides badge for unknown etat engagement", async ({
+  page,
+  msw,
+}) => {
+  const dataWithUnknownEtat = {
+    data: {
+      ...fondsVertDossierData.data,
+      information_financiere: {
+        informations_engagement: [
+          {
+            annee_information_financiere: 2025,
+            montant_paye_per_dossier: null,
+            etat_engagement: "nouveau statut inconnu",
+            engagements_juridiques: [
+              {
+                numero_ej: "2105212345",
+                nom_demarche: PROGRAM_TITLE,
+                nom_axe: 1,
+                montant_engage: 10000,
+                demandes_paiement: [],
+              },
+            ],
+          },
+        ],
+      },
+    },
+  };
+
+  msw.use(
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      () => {
+        return HttpResponse.json(dataWithUnknownEtat);
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+
+  await expect(engagement).toBeVisible();
+  await expect(
+    engagement.getByText("Statut des paiements de la subvention"),
+  ).not.toBeAttached();
+});
+
+test("dossier page displays statut de réalisation from impact demarche", async ({
+  page,
+}) => {
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByText("Avancement du projet")).toBeVisible();
+  await expect(
+    page.locator(".fr-badge--info", { hasText: "En cours de réalisation" }),
+  ).toBeVisible();
+  await expect(page.getByText("Le 15 novembre 2023 à 17:13")).toBeVisible();
+});
+
+const STATUT_REALISATION_CASES = [
+  { statut: "Non-commencé", badgeClass: ".fr-badge--new" },
+  { statut: "En cours de réalisation", badgeClass: ".fr-badge--info" },
+  { statut: "Bloqué", badgeClass: ".fr-badge--warning" },
+  { statut: "Abandonné", badgeClass: ".fr-badge--error" },
+  { statut: "Terminé", badgeClass: ".fr-badge--success" },
+] as const;
+
+for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
+  test(`dossier page displays statut de réalisation "${statut}" with correct badge severity`, async ({
+    page,
+    msw,
+  }) => {
+    msw.use(
+      ds.query("getDemarcheDossiers", () => {
+        return HttpResponse.json(
+          makeDemarcheDossiersData({
+            statutRealisation: statut,
+            updatedAt: "2023-11-15T17:13:00+01:00",
+          }),
+        );
+      }),
+    );
+
+    await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+    await expect(page.locator(badgeClass, { hasText: statut })).toBeVisible();
+  });
+}
+
+test("dossier page displays INCONNU status when no impact dossier", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    ds.query("getDemarcheDossiers", () => {
+      return HttpResponse.json(
+        makeDemarcheDossiersData({ includeImpactDossier: false }),
+      );
+    }),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  await expect(page.getByText("Avancement du projet")).toBeVisible();
+  await expect(
+    page.locator(".fr-badge--warning", { hasText: "INCONNU" }),
+  ).toBeVisible();
 });

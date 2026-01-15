@@ -5,6 +5,7 @@ import { ReactNode } from "react";
 import { EngagementsSection } from "@/app/espace-laureat/_components/dossier-section/details/EngagementsSection";
 import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
 import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
+import { StatutRealisation } from "@/app/espace-laureat/_components/dossier-section/StatutRealisation";
 import {
   ProjectHolder,
   ProjectPresentation,
@@ -138,6 +139,12 @@ export async function DossierSection({
         </div>
 
         <div className="w-[22rem] shrink-0 bg-white p-6 shadow-lg">
+          <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
+            <StatutRealisation
+              statut={impact?.champs.statutRealisationProjet}
+              updatedAt={impact?.champs.updatedAt}
+            />
+          </div>
           {socleCommun && (
             <Timeline
               steps={[
