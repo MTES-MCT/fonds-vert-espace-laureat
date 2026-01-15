@@ -453,7 +453,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
 
   await expect(
     page.getByRole("link", { name: "Mettre à jour les données" }),
-  ).toBeVisible();
+  ).toHaveCount(2);
 });
 
 test("dossier page organizes metrics by thematic groups correctly", async ({
@@ -873,7 +873,9 @@ test("dossier page displays statut de réalisation from impact demarche", async 
     page.locator(".fr-badge--info", { hasText: "En cours de réalisation" }),
   ).toBeVisible();
   await expect(
-    page.getByText(`Le ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`),
+    page.getByText(
+      `Dernière modification : ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`,
+    ),
   ).toBeVisible();
 });
 

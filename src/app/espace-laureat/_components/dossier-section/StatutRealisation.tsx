@@ -39,51 +39,31 @@ export function StatutRealisation({
   const label = statut ?? "INCONNU";
 
   return (
-    <section aria-labelledby="status-heading" className="text-left">
+    <section aria-labelledby="status-heading" className="space-y-3 text-left">
       <h3
         id="status-heading"
-        className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
+        className="text-left text-base font-medium text-[var(--text-label-grey)]"
       >
         Avancement du projet
       </h3>
-      <dl className="space-y-2">
-        <div>
-          <dt className="text-xs font-medium text-[var(--text-mention-grey)]">
-            État d'avancement
-          </dt>
-          <dd className="text-sm">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                small
-                noIcon
-                className="whitespace-nowrap"
-                severity={severity}
-              >
-                {label}
-              </Badge>
-              <Link
-                className="fr-btn fr-btn--tertiary fr-btn--sm"
-                href={impactPrefillUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Mettre à jour l'avancement du projet"
-              >
-                Mettre à jour
-              </Link>
-            </div>
-          </dd>
-        </div>
+      <div className="space-y-2">
+        <Badge small noIcon className="whitespace-nowrap" severity={severity}>
+          {label}
+        </Badge>
         {updatedAt && (
-          <div>
-            <dt className="text-xs font-medium text-[var(--text-mention-grey)]">
-              Dernière mise à jour
-            </dt>
-            <dd className="text-sm text-[var(--text-default-grey)]">
-              Le {formatDate(updatedAt)}
-            </dd>
-          </div>
+          <p className="fr-text--xs text-[var(--text-mention-grey)]">
+            Dernière modification : {formatDate(updatedAt)}
+          </p>
         )}
-      </dl>
+        <Link
+          className="fr-btn fr-btn--secondary fr-btn--sm w-full justify-center"
+          href={impactPrefillUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Mettre à jour les données
+        </Link>
+      </div>
     </section>
   );
 }
