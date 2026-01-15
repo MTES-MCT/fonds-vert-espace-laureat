@@ -13,6 +13,7 @@ import {
 } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
 import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
+import { RefreshIndicator } from "@/app/espace-laureat/_components/RefreshIndicator";
 import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
@@ -146,7 +147,8 @@ export async function DossierSection({
           </Link>
         </div>
 
-        <div className="w-[22rem] shrink-0 bg-white p-6 shadow-lg">
+        <div className="relative w-[22rem] shrink-0 bg-white p-6 shadow-lg">
+          <RefreshIndicator />
           <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
             <StatutRealisation
               statut={impactStatus.statut}
