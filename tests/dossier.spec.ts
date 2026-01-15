@@ -655,16 +655,7 @@ test("dossier page displays calendar timeline with correct dates and status", as
 
 test("impact evaluation sidebar displays last modification date", async ({
   page,
-  msw,
 }) => {
-  msw.use(
-    ds.query("getDemarcheDossiers", () => {
-      return HttpResponse.json(
-        makeDemarcheDossiersData({ includeImpactDossier: false }),
-      );
-    }),
-  );
-
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
   const evaluationSection = page.getByRole("region", {
@@ -672,7 +663,9 @@ test("impact evaluation sidebar displays last modification date", async ({
   });
 
   await expect(
-    evaluationSection.getByText("Dernière modification : 10 mars 2024"),
+    evaluationSection.getByText(
+      `Dernière modification : ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`,
+    ),
   ).toBeVisible();
   await expect(
     evaluationSection.getByRole("link", { name: "Mettre à jour les données" }),
@@ -868,12 +861,16 @@ test("dossier page displays statut de réalisation from impact demarche", async 
 }) => {
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
 
+  const statusSection = page.getByRole("region", {
+    name: "Avancement du projet",
+  });
+
   await expect(page.getByText("Avancement du projet")).toBeVisible();
   await expect(
     page.locator(".fr-badge--info", { hasText: "En cours de réalisation" }),
   ).toBeVisible();
   await expect(
-    page.getByText(
+    statusSection.getByText(
       `Dernière modification : ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`,
     ),
   ).toBeVisible();

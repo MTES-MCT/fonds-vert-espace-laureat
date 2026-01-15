@@ -1,14 +1,27 @@
 import Link from "next/link";
 
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
-import { SocleCommun } from "@/services/fondsvert/dossier";
+
+const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  dateStyle: "long",
+  timeStyle: "short",
+  timeZone: "Europe/Paris",
+});
+
+function formatDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return isoDate;
+  }
+  return dateFormatter.format(date);
+}
 
 export function CompletionSidebar({
   prefilledDsImpactUrl,
-  socleCommun,
+  updatedAt,
 }: {
   prefilledDsImpactUrl: string;
-  socleCommun?: SocleCommun;
+  updatedAt?: string;
 }) {
   return (
     <>
@@ -16,17 +29,9 @@ export function CompletionSidebar({
         Actualisez régulièrement les données du projet pour assurer un suivi
         précis et conforme aux engagements de la subvention.
       </Help>
-      {socleCommun?.date_derniere_modification && (
+      {updatedAt && (
         <p className="fr-text--xs fr-mb-2w text-[var(--text-mention-grey)]">
-          Dernière modification :{" "}
-          {new Date(socleCommun.date_derniere_modification).toLocaleDateString(
-            "fr-FR",
-            {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            },
-          )}
+          Dernière modification : {formatDate(updatedAt)}
         </p>
       )}
       <Link

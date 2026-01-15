@@ -193,7 +193,7 @@ export async function DossierSection({
             </h3>
             <CompletionSidebar
               prefilledDsImpactUrl={prefilledDsImpactUrl}
-              socleCommun={socleCommun}
+              updatedAt={impact?.champs.updatedAt}
             />
           </section>
         </div>
