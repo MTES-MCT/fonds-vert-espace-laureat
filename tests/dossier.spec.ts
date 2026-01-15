@@ -25,6 +25,7 @@ import {
   SIRET,
 } from "./fixtures/constants";
 import {
+  DEFAULT_STATUT_UPDATED_AT,
   getDossierData,
   makeDemarcheDossiersData,
   makeDossierDataWithTitle,
@@ -43,6 +44,19 @@ async function waitForDsfrTabs(page: Page) {
 }
 
 const ds = graphql.link("https://www.demarches-simplifiees.fr/api/v2/graphql");
+const impactDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  dateStyle: "long",
+  timeStyle: "short",
+  timeZone: "Europe/Paris",
+});
+
+function formatImpactDate(isoDate: string) {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) {
+    return isoDate;
+  }
+  return impactDateFormatter.format(date);
+}
 
 test.beforeEach(async ({ page }) => {
   await authenticatePage(page);
@@ -858,7 +872,9 @@ test("dossier page displays statut de réalisation from impact demarche", async 
   await expect(
     page.locator(".fr-badge--info", { hasText: "En cours de réalisation" }),
   ).toBeVisible();
-  await expect(page.getByText("Le 15 novembre 2023 à 17:13")).toBeVisible();
+  await expect(
+    page.getByText(`Le ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`),
+  ).toBeVisible();
 });
 
 const STATUT_REALISATION_CASES = [
@@ -879,7 +895,7 @@ for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
         return HttpResponse.json(
           makeDemarcheDossiersData({
             statutRealisation: statut,
-            updatedAt: "2023-11-15T17:13:00+01:00",
+            updatedAt: DEFAULT_STATUT_UPDATED_AT,
           }),
         );
       }),

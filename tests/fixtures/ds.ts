@@ -789,7 +789,9 @@ export const makeDossierDataWithTitle = (title: string) => ({
 });
 
 export const DEFAULT_STATUT_REALISATION = "En cours de réalisation";
-export const DEFAULT_STATUT_UPDATED_AT = "2023-11-15T17:13:00+01:00";
+export const DEFAULT_STATUT_UPDATED_AT = new Date(
+  Date.now() - 60 * 60 * 1000,
+).toISOString();
 
 const makeDemarcheChamp = ({
   champDescriptorId,

@@ -2,6 +2,7 @@ import { DossierSection } from "@/app/espace-laureat/_components/DossierSection"
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { Impact } from "@/services/ds/impact";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import { FinancesEJData, getFinancesEJ } from "@/services/fondsvert/finances";
 import { extractEJNumbers } from "@/utils/finance";
@@ -13,6 +14,37 @@ export type EJFinanceResult =
   | { success: false; error: string };
 
 export type FinancesEJResult = Record<string, EJFinanceResult>;
+
+const MAX_IMPACT_AGE_MS = 4 * 60 * 60 * 1000;
+
+function selectRecentImpact({
+  dossierSubventionNumero,
+  dossiersImpact,
+}: {
+  dossierSubventionNumero: number;
+  dossiersImpact: Impact[];
+}) {
+  const now = Date.now();
+
+  const recentCandidates = dossiersImpact
+    .filter(
+      (impact) =>
+        impact.champs.numeroDossierSubvention === dossierSubventionNumero,
+    )
+    .map((impact) => {
+      const updatedAtMs = impact.champs.updatedAt
+        ? Date.parse(impact.champs.updatedAt)
+        : NaN;
+      return { impact, updatedAtMs };
+    })
+    .filter(
+      ({ updatedAtMs }) =>
+        !Number.isNaN(updatedAtMs) && now - updatedAtMs <= MAX_IMPACT_AGE_MS,
+    )
+    .sort((a, b) => b.updatedAtMs - a.updatedAtMs);
+
+  return recentCandidates[0]?.impact;
+}
 
 async function loadFinancesEJ(
   numeroEJ: string,
@@ -106,10 +138,10 @@ export default async function DossierPage({
         dossierSubvention={dossierSubvention}
         dossierFondsVertResult={dossierFondsVertResult}
         financesEJPromise={financesEJPromise}
-        impact={dossiersImpact.find(
-          (impact) =>
-            impact.champs.numeroDossierSubvention === dossierSubvention.numero,
-        )}
+        impact={selectRecentImpact({
+          dossierSubventionNumero: dossierSubvention.numero,
+          dossiersImpact,
+        })}
         nocache={["", "1"].includes(nocache)}
       />
     </>
