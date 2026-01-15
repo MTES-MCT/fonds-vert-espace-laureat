@@ -438,7 +438,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   );
 
   await expect(
-    page.getByRole("link", { name: "Consulter l'évaluation" }),
+    page.getByRole("link", { name: "Mettre à jour les données" }),
   ).toBeVisible();
 });
 

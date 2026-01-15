@@ -1,29 +1,20 @@
 import Link from "next/link";
 
 import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
-import { ImpactReview } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/ImpactReview";
-import { Impact } from "@/services/ds/impact";
 import { Metrics, SocleCommun } from "@/services/fondsvert/dossier";
 import { buildImpactPrefillUrl } from "@/services/grist/impact";
 
 export async function CompletionSidebar({
   numeroDossier,
-  impact,
   metriques,
   socleCommun,
   nocache,
 }: {
   numeroDossier: number;
-  impact?: Impact;
   metriques?: Metrics;
   socleCommun?: SocleCommun;
   nocache: boolean;
 }) {
-  // Si le formulaire a déjà été rempli alors on affiche un bouton pour le consulter :
-  if (impact?.numero) {
-    return <ImpactReview impact={impact} />;
-  }
-
   const prefilledDsImpactUrl = await buildImpactPrefillUrl({
     numeroDossier,
     metriques,

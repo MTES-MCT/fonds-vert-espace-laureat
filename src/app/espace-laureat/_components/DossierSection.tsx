@@ -184,7 +184,6 @@ export async function DossierSection({
             </h3>
             <CompletionSidebar
               numeroDossier={dossierSubvention.numero}
-              impact={impact}
               metriques={metriques}
               socleCommun={socleCommun}
               nocache={nocache}
