@@ -33,6 +33,32 @@ interface FinancesEJApiResponse {
   data: FinancesEJData;
 }
 
+export type EJFinanceResult =
+  | { success: true; data: FinancesEJData }
+  | { success: false; error: string };
+
+export type FinancesEJResult = Record<string, EJFinanceResult>;
+
 export async function getFinancesEJ({ numeroEJ }: { numeroEJ: string }) {
   return fetchFondsVert<FinancesEJApiResponse>(`v2/finances/${numeroEJ}`);
+}
+
+export async function loadFinancesEJ(
+  numeroEJ: string,
+): Promise<{ numeroEJ: string; result: EJFinanceResult }> {
+  const response = await getFinancesEJ({ numeroEJ });
+  return {
+    numeroEJ,
+    result: response.success
+      ? { success: true, data: response.data.data }
+      : { success: false, error: `${response.status} ${response.statusText}` },
+  };
+}
+
+export function buildFinancesResult(
+  results: { numeroEJ: string; result: EJFinanceResult }[],
+): FinancesEJResult {
+  return Object.fromEntries(
+    results.map(({ numeroEJ, result }) => [numeroEJ, result]),
+  );
 }

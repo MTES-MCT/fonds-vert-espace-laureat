@@ -2,69 +2,15 @@ import { DossierSection } from "@/app/espace-laureat/_components/DossierSection"
 import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
 import { getDossier } from "@/app/espace-laureat/_components/getDossier";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import { Impact } from "@/services/ds/impact";
+import { selectRecentImpact } from "@/services/ds/impact/selectRecentImpact";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
-import { FinancesEJData, getFinancesEJ } from "@/services/fondsvert/finances";
+import {
+  buildFinancesResult,
+  loadFinancesEJ,
+} from "@/services/fondsvert/finances";
 import { extractEJNumbers } from "@/utils/finance";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
-
-export type EJFinanceResult =
-  | { success: true; data: FinancesEJData }
-  | { success: false; error: string };
-
-export type FinancesEJResult = Record<string, EJFinanceResult>;
-
-const MAX_IMPACT_AGE_MS = 4 * 60 * 60 * 1000;
-
-function selectRecentImpact({
-  dossierSubventionNumero,
-  dossiersImpact,
-}: {
-  dossierSubventionNumero: number;
-  dossiersImpact: Impact[];
-}) {
-  const now = Date.now();
-
-  const recentCandidates = dossiersImpact
-    .filter(
-      (impact) =>
-        impact.champs.numeroDossierSubvention === dossierSubventionNumero,
-    )
-    .map((impact) => {
-      const updatedAtMs = impact.champs.updatedAt
-        ? Date.parse(impact.champs.updatedAt)
-        : NaN;
-      return { impact, updatedAtMs };
-    })
-    .filter(
-      ({ updatedAtMs }) =>
-        !Number.isNaN(updatedAtMs) && now - updatedAtMs <= MAX_IMPACT_AGE_MS,
-    )
-    .sort((a, b) => b.updatedAtMs - a.updatedAtMs);
-
-  return recentCandidates[0]?.impact;
-}
-
-async function loadFinancesEJ(
-  numeroEJ: string,
-): Promise<{ numeroEJ: string; result: EJFinanceResult }> {
-  const response = await getFinancesEJ({ numeroEJ });
-  return {
-    numeroEJ,
-    result: response.success
-      ? { success: true, data: response.data.data }
-      : { success: false, error: `${response.status} ${response.statusText}` },
-  };
-}
-
-function buildFinancesResult(
-  results: { numeroEJ: string; result: EJFinanceResult }[],
-): FinancesEJResult {
-  return Object.fromEntries(
-    results.map(({ numeroEJ, result }) => [numeroEJ, result]),
-  );
-}
 
 export default async function DossierPage({
   params,

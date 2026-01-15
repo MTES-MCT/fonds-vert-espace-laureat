@@ -13,13 +13,13 @@ import {
 } from "@/app/espace-laureat/_components/dossier-section/Summary";
 import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
 import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
-import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { Impact } from "@/services/ds/impact";
 import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
   InformationFinanciere,
 } from "@/services/fondsvert/dossier";
+import { FinancesEJResult } from "@/services/fondsvert/finances";
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,

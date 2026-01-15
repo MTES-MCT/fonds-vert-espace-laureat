@@ -1,6 +1,6 @@
 import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
-import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { FinancesEJResult } from "@/services/fondsvert/finances";
 import {
   demoDossier1,
   demoDossierFondsVert,

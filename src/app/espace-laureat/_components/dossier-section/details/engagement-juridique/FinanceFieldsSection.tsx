@@ -1,5 +1,5 @@
-import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
 import { MoneyField } from "@/components/money-field/MoneyField";
+import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { getLatestYearPostesField } from "@/utils/finance";
 import { slugify } from "@/utils/format";
 

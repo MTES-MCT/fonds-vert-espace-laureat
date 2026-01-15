@@ -1,6 +1,6 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 
-import { FinancesEJResult } from "@/app/espace-laureat/[dossierNumber]/page";
+import { FinancesEJResult } from "@/services/fondsvert/finances";
 
 interface FinanceFieldsErrorAlertProps {
   financesEJPromise: Promise<FinancesEJResult>;
