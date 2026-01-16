@@ -1,6 +1,6 @@
 import { Impact } from "@/services/ds/impact";
 
-const MAX_IMPACT_AGE_MS = 4 * 60 * 60 * 1000;
+export const MAX_IMPACT_AGE_MS = 4 * 60 * 60 * 1000;
 
 export function selectRecentImpact({
   dossierSubventionNumero,
@@ -9,9 +9,7 @@ export function selectRecentImpact({
   dossierSubventionNumero: number;
   dossiersImpact: Impact[];
 }) {
-  const now = Date.now();
-
-  const recentCandidates = dossiersImpact
+  const candidates = dossiersImpact
     .filter(
       (impact) =>
         impact.champs.numeroDossierSubvention === dossierSubventionNumero,
@@ -22,11 +20,8 @@ export function selectRecentImpact({
         : NaN;
       return { impact, updatedAtMs };
     })
-    .filter(
-      ({ updatedAtMs }) =>
-        !Number.isNaN(updatedAtMs) && now - updatedAtMs <= MAX_IMPACT_AGE_MS,
-    )
+    .filter(({ updatedAtMs }) => !Number.isNaN(updatedAtMs))
     .sort((a, b) => b.updatedAtMs - a.updatedAtMs);
 
-  return recentCandidates[0]?.impact;
+  return candidates[0]?.impact;
 }

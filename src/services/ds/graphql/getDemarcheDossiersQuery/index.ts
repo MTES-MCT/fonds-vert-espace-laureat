@@ -1,9 +1,12 @@
 import { graphql } from "@/generated";
 
 export const getDemarcheDossiersQuery = graphql(`
-  query getDemarcheDossiers($demarcheNumber: Int!) {
+  query getDemarcheDossiers(
+    $demarcheNumber: Int!
+    $createdSince: ISO8601DateTime
+  ) {
     demarche(number: $demarcheNumber) {
-      dossiers {
+      dossiers(createdSince: $createdSince) {
         nodes {
           ...NodeFragment
         }

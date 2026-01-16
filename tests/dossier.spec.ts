@@ -876,21 +876,19 @@ test("dossier page displays statut de réalisation from impact demarche", async 
   ).toBeVisible();
 });
 
-test("dossier page falls back to Fonds Vert when impact is stale", async ({
+test("dossier page falls back to Fonds Vert when DS returns no recent impact", async ({
   page,
   msw,
 }) => {
-  const staleUpdatedAt = "2020-01-01T10:00:00.000Z";
   const fondsVertUpdatedAt = "2024-02-14T08:30:00.000Z";
   const fondsVertStatut = "Bloqué";
+  let receivedCreatedSince: string | undefined;
 
   msw.use(
-    ds.query("getDemarcheDossiers", () => {
+    ds.query("getDemarcheDossiers", ({ variables }) => {
+      receivedCreatedSince = variables.createdSince ?? undefined;
       return HttpResponse.json(
-        makeDemarcheDossiersData({
-          statutRealisation: "Terminé",
-          updatedAt: staleUpdatedAt,
-        }),
+        makeDemarcheDossiersData({ includeImpactDossier: false }),
       );
     }),
     http.get(
@@ -911,6 +909,8 @@ test("dossier page falls back to Fonds Vert when impact is stale", async ({
   );
 
   await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  expect(receivedCreatedSince).toBeTruthy();
 
   const statusSection = page.getByRole("region", {
     name: "Avancement du projet",

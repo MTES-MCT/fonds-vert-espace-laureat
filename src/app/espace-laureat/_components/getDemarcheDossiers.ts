@@ -2,6 +2,7 @@ import { createGraphqlClient } from "@/services/ds/graphql";
 import { getDemarcheDossiersQuery } from "@/services/ds/graphql/getDemarcheDossiersQuery";
 import { Impact } from "@/services/ds/impact";
 import { getChamps } from "@/services/ds/impact/champs";
+import { MAX_IMPACT_AGE_MS } from "@/services/ds/impact/selectRecentImpact";
 import { logException } from "@/utils/error";
 import { isAdmin } from "@/utils/roles";
 
@@ -17,8 +18,10 @@ export async function getDemarcheDossiers({
   { success: true; data: Impact[] } | { success: false; error: string }
 > {
   try {
+    const createdSince = new Date(Date.now() - MAX_IMPACT_AGE_MS).toISOString();
     const { demarche } = await graphqlClient.request(getDemarcheDossiersQuery, {
       demarcheNumber,
+      createdSince,
     });
 
     const nodes = demarche.dossiers.nodes ?? [];
