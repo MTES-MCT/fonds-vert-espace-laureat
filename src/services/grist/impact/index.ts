@@ -8,7 +8,7 @@ import { requireEnv } from "@/utils/env";
 
 type GristImpactRecord = {
   fields: {
-    action: string[];
+    action: string[] | null;
     metriques_API_Field_Name: string;
     champ_id_ds: string;
     champ_type: string;
@@ -57,7 +57,7 @@ export async function fetchPrefillMapping(): Promise<MappingState> {
 
   const prefillRecords = data.records.filter(
     (record: GristImpactRecord) =>
-      record.fields.action.includes("à préremplir en entrée") &&
+      record.fields.action?.includes("à préremplir en entrée") &&
       record.fields.metriques_API_Field_Name !== "",
   );
 
@@ -92,7 +92,7 @@ export async function fetchPrefillMapping(): Promise<MappingState> {
   const champsSocleCommun = data.records
     .filter(
       (record: GristImpactRecord) =>
-        record.fields.action.includes("à préremplir en entrée") &&
+        record.fields.action?.includes("à préremplir en entrée") &&
         socleCommunFieldNames.includes(record.fields.metriques_API_Field_Name),
     )
     .reduce((acc: Record<string, string>, record: GristImpactRecord) => {
