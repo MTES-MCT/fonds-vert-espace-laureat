@@ -7,6 +7,7 @@ import {
 import { requireEnv } from "@/utils/env";
 
 type GristImpactRecord = {
+  id: number;
   fields: {
     action: string[] | null;
     metriques_API_Field_Name: string;
@@ -54,6 +55,22 @@ export async function fetchPrefillMapping(): Promise<MappingState> {
   }
 
   const data = await response.json();
+
+  const invalidRecords = data.records.filter(
+    (record: GristImpactRecord) => !Array.isArray(record.fields.action),
+  );
+  if (invalidRecords.length > 0) {
+    console.warn(
+      `Grist: ${invalidRecords.length} enregistrement(s) avec un champ "action" invalide (null ou non-tableau) :`,
+      invalidRecords.map((r: GristImpactRecord) => ({
+        id: r.id,
+        champ_id_ds: r.fields.champ_id_ds,
+        champ_type: r.fields.champ_type,
+        metriques_API_Field_Name: r.fields.metriques_API_Field_Name,
+        action: r.fields.action,
+      })),
+    );
+  }
 
   const prefillRecords = data.records.filter(
     (record: GristImpactRecord) =>
