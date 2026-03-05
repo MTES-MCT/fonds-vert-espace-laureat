@@ -16,6 +16,11 @@
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "npm run codegen -- --watch"
   },
+  "overrides": {
+    "postcss-url": {
+      "minimatch": "^5.1.6"
+    }
+  },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.22.4",
     "@tidyjs/tidy": "^2.5.2",
