@@ -40,7 +40,20 @@ const renaturation: DemarcheChamps = {
   dateSignatureDecision: "Q2hhbXAtMjk4NjgwMg==",
 };
 
-const demarches = [renovationEnergetique, renaturation];
+// Recyclage foncier (DS 68862)
+const recyclageFoncier: DemarcheChamps = {
+  intituleProjet: "Q2hhbXAtMjk4Nzg0Ng==",
+  resumeProjet: "Q2hhbXAtMjk4Nzg1MA==",
+  departementImplantation: "Q2hhbXAtMzM0OTA4Nw==",
+  emailRepresentantLegal: "Q2hhbXAtMzc5NjMzNg==",
+  emailResponsableSuivi: "Q2hhbXAtMjk4Nzc5Mg==",
+  montantSubventionAttribuee: "Q2hhbXAtMzAyNTA1Ng==",
+  numeroEngagementJuridique: "Q2hhbXAtNDA2MTgxMQ==",
+  autresNumerosEngagementJuridique: "Q2hhbXAtNDA2MTgxMA==",
+  dateSignatureDecision: "Q2hhbXAtMzAyNTA1NQ==",
+};
+
+const demarches = [renovationEnergetique, renaturation, recyclageFoncier];
 
 function demarchesToDescriptorIds(
   demarches: DemarcheChamps[],
