@@ -1040,6 +1040,45 @@ test("dossier page displays metrics without valeur_suivi", async ({
   ).not.toBeAttached();
 });
 
+test("dossier page displays boolean metric as Oui/Non", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {
+              sol_eau_pollues: {
+                label:
+                  "Les sols et eaux souterraines de la friche sont-ils pollués ?",
+                unite: null,
+                valeur_estimee: false,
+              },
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const impactSection = page.getByTestId("impact-section");
+  await expect(impactSection).toBeVisible();
+
+  const solPollue = impactSection.getByTestId(
+    "metric-les-sols-et-eaux-souterraines-de-la-friche-sont-ils-pollues",
+  );
+  await expect(solPollue).toBeVisible();
+  await expect(solPollue.getByTestId("valeur-estimee")).toContainText("Non");
+});
+
 test("dossier page displays INCONNU status when no impact dossier", async ({
   page,
   msw,

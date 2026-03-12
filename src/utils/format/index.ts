@@ -36,11 +36,15 @@ export function formatEuros(
 }
 
 export function formatMetric(
-  value: number | string | string[] | undefined | null,
+  value: number | string | boolean | string[] | undefined | null,
   options?: Partial<Intl.NumberFormatOptions>,
 ): string | string[] {
   if (Array.isArray(value)) {
     return value;
+  }
+
+  if (typeof value === "boolean") {
+    return value ? "Oui" : "Non";
   }
 
   if (typeof value === "string") {

@@ -9,7 +9,7 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
-export type MetricValue = number | string | string[] | null;
+export type MetricValue = number | string | boolean | string[] | null;
 
 export type MetricFields = {
   label: string;
