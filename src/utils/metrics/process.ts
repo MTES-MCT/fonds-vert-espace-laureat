@@ -68,7 +68,7 @@ export function processMetrics(
           unite: apresValue.unite,
           valeur_avant_travaux: avantMetric.value.valeur_estimee,
           valeur_apres_travaux_estimee: apresValue.valeur_estimee,
-          valeur_apres_travaux_reelle: apresValue.valeur_suivi,
+          valeur_apres_travaux_reelle: apresValue.valeur_suivi ?? null,
         };
 
         processedKeys.add(apresKey);

@@ -966,6 +966,80 @@ for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
   });
 }
 
+test("dossier page displays metrics without valeur_suivi", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {
+              nombre_logements_sociaux: {
+                label: "Nb de logements sociaux sur les secteurs de friches",
+                unite: null,
+                valeur_estimee: 25,
+              },
+              emprise_fonciere_friche: {
+                label: "Emprise foncière des secteurs en friche",
+                unite: "ha",
+                valeur_estimee: 2441,
+              },
+              natures_friche: {
+                label: "Nature de la friche",
+                unite: null,
+                valeur_estimee: [
+                  "Friche commerciale",
+                  "Friche urbaine – îlots anciens dégradés",
+                ],
+              },
+              activite_bureaux_surface: {
+                label: "Activités de bureaux - Surface de plancher",
+                unite: "m²",
+                valeur_estimee: null,
+              },
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+
+  const impactSection = page.getByTestId("impact-section");
+  await expect(impactSection).toBeVisible();
+
+  const logements = impactSection.getByTestId(
+    "metric-nb-de-logements-sociaux-sur-les-secteurs-de-friches",
+  );
+  await expect(logements).toBeVisible();
+  await expect(logements.getByTestId("valeur-estimee")).toContainText("25");
+
+  const emprise = impactSection.getByTestId(
+    "metric-emprise-fonciere-des-secteurs-en-friche",
+  );
+  await expect(emprise).toBeVisible();
+  await expect(emprise.getByTestId("valeur-estimee")).toContainText("2 441");
+
+  const natures = impactSection.getByTestId("metric-nature-de-la-friche");
+  await expect(natures).toBeVisible();
+  const tags = natures.locator("li");
+  await expect(tags).toHaveCount(2);
+  await expect(tags.nth(0)).toContainText("Friche commerciale");
+
+  await expect(
+    impactSection.getByTestId(
+      "metric-activites-de-bureaux---surface-de-plancher",
+    ),
+  ).not.toBeAttached();
+});
+
 test("dossier page displays INCONNU status when no impact dossier", async ({
   page,
   msw,
