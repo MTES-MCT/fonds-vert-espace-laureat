@@ -22,7 +22,8 @@
     },
     "@ardatan/relay-compiler": {
       "immutable": "^4.3.8"
-    }
+    },
+    "brace-expansion": ">=1.1.13"
   },
   "dependencies": {
     "@codegouvfr/react-dsfr": "^1.22.4",
