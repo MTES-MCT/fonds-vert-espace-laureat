@@ -559,11 +559,10 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
       ({ request }) => {
         const url = new URL(request.url);
         const includeMetrics = url.searchParams.get("include_metrics");
-        const includeImpact = url.searchParams.get("include_impact");
 
         requestCount++;
 
-        if (includeMetrics === "true" || includeImpact === "true") {
+        if (includeMetrics === "true") {
           return HttpResponse.json(
             { error: "Unprocessable Entity" },
             { status: 422 },

@@ -5,7 +5,6 @@ import { fetchFondsVert } from "@/services/fondsvert/helpers";
 const defaultDossierSearchParams = {
   include_metrics: "true",
   include_finances: "true",
-  include_impact: "true",
   type_export: "JSON",
 };
 
@@ -132,14 +131,13 @@ export async function getDossierFondsVert({
     }
 
     if (dossierResult.status === 422) {
-      const paramsWithoutMetricsAndImpact = new URLSearchParams({
+      const paramsWithoutMetrics = new URLSearchParams({
         ...defaultDossierSearchParams,
         include_metrics: "false",
-        include_impact: "false",
       });
 
       const retryResult = await fetchFondsVert<{ data: DossierFondsVert }>(
-        `v2/dossiers/${numeroDossier}?${paramsWithoutMetricsAndImpact.toString()}`,
+        `v2/dossiers/${numeroDossier}?${paramsWithoutMetrics.toString()}`,
       );
 
       if (retryResult.success) {
