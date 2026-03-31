@@ -26,7 +26,6 @@ const SimpleMetricCard = ({
 
   const metricId = labelToTestId(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
-  const suivi = metric.valeur_suivi ?? undefined;
 
   return (
     <div
@@ -38,34 +37,12 @@ const SimpleMetricCard = ({
         {metric.label}
       </h5>
 
-      {estimee !== undefined && suivi !== undefined ? (
-        <ArrowedValues
-          values={[estimee, suivi]}
-          labels={["Valeur estimée", "Valeur réelle"]}
+      {estimee !== undefined && (
+        <MetricValue
+          value={estimee}
           unite={metric.unite}
+          testId="valeur-estimee"
         />
-      ) : (
-        <>
-          {estimee !== undefined && (
-            <MetricValue
-              value={estimee}
-              label="Valeur estimée"
-              unite={metric.unite}
-              testId="valeur-estimee"
-            />
-          )}
-
-          {suivi !== undefined && (
-            <div className="mt-2">
-              <MetricValue
-                value={suivi}
-                label="Valeur réelle"
-                unite={metric.unite}
-                testId="valeur-reelle"
-              />
-            </div>
-          )}
-        </>
       )}
     </div>
   );
@@ -97,16 +74,8 @@ const AvantApresTravauxCard = ({
       </div>
 
       <ArrowedValues
-        values={[
-          metric.valeur_avant_travaux,
-          metric.valeur_apres_travaux_estimee,
-          metric.valeur_apres_travaux_reelle,
-        ]}
-        labels={[
-          "Avant travaux",
-          "Après travaux (estimée)",
-          "Après travaux (réelle)",
-        ]}
+        values={[metric.valeur_avant_travaux, metric.valeur_apres_travaux]}
+        labels={["Avant travaux", "Après travaux"]}
         unite={metric.unite}
       />
     </div>

@@ -406,9 +406,6 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     "2 055 650",
   );
   await expect(consoEnergetique.getByTestId("valeur-1")).toContainText(
-    "1 235 863",
-  );
-  await expect(consoEnergetique.getByTestId("valeur-2")).toContainText(
     "1 935 960",
   );
 
@@ -419,8 +416,9 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
 
   const gainEnergetique = page.getByTestId("metric-gain-energetique-estime");
   await expect(gainEnergetique).toContainText("Gain énergétique estimé");
-  await expect(gainEnergetique.getByTestId("valeur-0")).toContainText("39%");
-  await expect(gainEnergetique.getByTestId("valeur-1")).toContainText("32%");
+  await expect(gainEnergetique.getByTestId("valeur-estimee")).toContainText(
+    "32%",
+  );
 
   // Métriques de type Array
 
@@ -965,10 +963,7 @@ for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
   });
 }
 
-test("dossier page displays metrics without valeur_suivi", async ({
-  page,
-  msw,
-}) => {
+test("dossier page displays metrics", async ({ page, msw }) => {
   msw.use(
     http.get(
       `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,

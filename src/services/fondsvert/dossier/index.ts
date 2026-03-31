@@ -14,7 +14,6 @@ export type MetricFields = {
   label: string;
   unite: string | null;
   valeur_estimee: MetricValue;
-  valeur_suivi?: MetricValue;
 };
 
 export type SimpleMetric = {
@@ -22,7 +21,6 @@ export type SimpleMetric = {
   label: string;
   unite: string | null;
   valeur_estimee: MetricValue;
-  valeur_suivi?: MetricValue;
 };
 
 export type AvantApresTravaux = {
@@ -30,8 +28,7 @@ export type AvantApresTravaux = {
   label: string;
   unite: string | null;
   valeur_avant_travaux: MetricValue;
-  valeur_apres_travaux_estimee: MetricValue;
-  valeur_apres_travaux_reelle: MetricValue;
+  valeur_apres_travaux: MetricValue;
 };
 
 export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
@@ -47,8 +44,7 @@ export function isMetricFields(value: unknown): value is MetricFields {
     "valeur_estimee" in value &&
     typeof value.label === "string" &&
     value.label.length > 0 &&
-    (value.valeur_estimee !== null ||
-      ("valeur_suivi" in value && value.valeur_suivi !== null))
+    value.valeur_estimee !== null
   );
 }
 

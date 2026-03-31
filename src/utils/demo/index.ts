@@ -74,100 +74,84 @@ export const demoDossierFondsVert: DossierFondsVert = {
       label: "Surface du bâtiment avant projet",
       unite: "m²",
       valeur_estimee: 4968,
-      valeur_suivi: null,
     },
     surface_batiment_m2_apres_projet: {
       label:
         "Surface du batiment après le projet. Donnée non disponible en 2024",
       unite: "m²",
       valeur_estimee: null,
-      valeur_suivi: null,
     },
     type_surface: {
       label: "Type de surface",
       unite: null,
       valeur_estimee: "Surface habitable",
-      valeur_suivi: null,
     },
     modifie_surface_batiment: {
       label:
         "Le projet modifie-t-il la surfaces des bâtiments concernés? Donnée non disponible en 2024",
       unite: null,
       valeur_estimee: null,
-      valeur_suivi: null,
     },
     systeme_chauffage_avant_travaux: {
       label: "Système de chauffage avant travaux",
       unite: null,
       valeur_estimee:
         "Chauffage électrique à effet Joule (radiateurs électriques)",
-      valeur_suivi: null,
     },
     systeme_chauffage_apres_travaux: {
       label: "Système de chauffage après travaux",
       unite: null,
       valeur_estimee: null,
-      valeur_suivi: null,
     },
     nombre_habitant_collecte_separee: {
       label: "Nombre d'habitants concernés par la collecte séparée",
       unite: null,
       valeur_estimee: 66469.0,
-      valeur_suivi: null,
     },
     nombre_habitant_gestion_proximite: {
       label: "Nombre d'habitants pratiquant la gestion de proximité",
       unite: null,
       valeur_estimee: 13450.0,
-      valeur_suivi: null,
     },
     tonnage_annuel_entrant_gestion_proximite: {
       label: "Tonnage annuel entrant pour la gestion de proximité",
       unite: "t",
       valeur_estimee: 172.0,
-      valeur_suivi: null,
     },
     quantite_globale_annuel_biodechets_collectes: {
       label: "Quantité annuelle globale de biodéchets collectés",
       unite: "t",
       valeur_estimee: 308.0,
-      valeur_suivi: null,
     },
     conso_energetique_avant_travaux: {
       label: "Consommation énergétique avant travaux",
       unite: "kWh",
       valeur_estimee: 2055650,
-      valeur_suivi: null,
     },
     conso_energetique_apres_travaux: {
       label: "Consommation énergétique après travaux",
       unite: "kWh",
-      valeur_estimee: 1235863,
-      valeur_suivi: 1935960,
+      valeur_estimee: 1935960,
     },
     emission_ges_avant_travaux: {
       label: "Émissions de GES avant travaux",
       unite: "kgCO₂e",
       valeur_estimee: 448,
-      valeur_suivi: null,
     },
     emission_ges_apres_travaux: {
       label: "Émissions de GES après travaux",
       unite: "kgCO₂e",
-      valeur_estimee: 312,
-      valeur_suivi: 383,
+      valeur_estimee: 383,
     },
     gain_energetique_estime_percentage: {
       label: "Gain énergétique estimé",
       unite: "%",
-      valeur_estimee: 39,
-      valeur_suivi: 32,
+      valeur_estimee: 32,
     },
     emission_ges_evitees_percentage: {
       label: "Émissions de GES évitées",
       unite: "%",
       valeur_estimee: 38,
-      valeur_suivi: null,
     },
     nature_operations: {
       label: "Nature des opérations",
@@ -177,7 +161,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
         "Travaux de rénovation énergétique",
         "Travaux de mise en conformité",
       ],
-      valeur_suivi: null,
     },
     type_batiment: {
       label: "Types des bâtiments",
@@ -186,7 +169,6 @@ export const demoDossierFondsVert: DossierFondsVert = {
         "École (établissement public du premier degré)",
         "Établissement public du second degré",
       ],
-      valeur_suivi: null,
     },
     uais: [
       {
