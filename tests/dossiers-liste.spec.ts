@@ -183,3 +183,19 @@ test("displays empty state when no dossiers in any source", async ({
     page.getByText("Assurez-vous de vous connecter avec l'adresse e-mail"),
   ).toBeVisible();
 });
+
+test("displays authenticated header quick access", async ({ page, msw }) => {
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
+  msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
+
+  await page.goto("/espace-laureat");
+
+  await expect(page.locator("#fr-header-quick-access-item-0")).toContainText(
+    DEMANDEUR_EMAIL,
+  );
+  await expect(
+    page.locator("#fr-header-quick-access-item-0").getByRole("link", {
+      name: "Se déconnecter",
+    }),
+  ).toHaveAttribute("href", "/api/auth/proconnect/logout");
+});

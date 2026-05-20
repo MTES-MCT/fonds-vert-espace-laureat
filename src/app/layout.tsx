@@ -1,6 +1,5 @@
 import "./globals.css";
 
-import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { createGetHtmlAttributes } from "@codegouvfr/react-dsfr/next-app-router/getHtmlAttributes";
 
 import { DsfrProvider } from "@/components/dsfr";
@@ -22,33 +21,6 @@ export default async function RootLayout({
   const session = await getSession();
   const user = session?.user;
 
-  const quickAccessItems = user
-    ? [
-        <div key={0} className="mb-4 items-center gap-x-2 sm:flex">
-          <div className="text-sm font-medium">{user.email}</div>
-          <HeaderQuickAccessItem
-            quickAccessItem={{
-              iconId: "fr-icon-logout-box-r-line",
-              text: "Se déconnecter",
-              linkProps: {
-                className: "mb-0",
-                href: "/api/auth/proconnect/logout",
-              },
-            }}
-          />
-        </div>,
-      ]
-    : [
-        <HeaderQuickAccessItem
-          key={0}
-          quickAccessItem={{
-            iconId: "ri-account-box-line",
-            text: "Espace lauréat",
-            linkProps: { href: "/espace-laureat" },
-          }}
-        />,
-      ];
-
   return (
     <html {...getHtmlAttributes({ lang })}>
       <head>
@@ -56,7 +28,7 @@ export default async function RootLayout({
       </head>
       <body>
         <DsfrProvider lang={lang}>
-          <Header quickAccessItems={quickAccessItems} />
+          <Header userEmail={user?.email} />
           <main className="min-h-80">{children}</main>
           <Footer />
         </DsfrProvider>
