@@ -50,7 +50,7 @@ export default function DossiersTable({ dossiers }: DossiersTableProps) {
                 <div className="flex justify-end">
                   <a
                     className="fr-btn fr-btn--secondary"
-                    href={`/espace-laureat/${dossier.numero}`}
+                    href={`/projets/${dossier.numero}`}
                   >
                     Ouvrir
                   </a>

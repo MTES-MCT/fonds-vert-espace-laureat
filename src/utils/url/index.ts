@@ -8,6 +8,6 @@ export const buildUrl = (path: string): URL => {
 
 export const welcomeUrl = buildUrl("/");
 
-export const dashboardUrl = buildUrl("/espace-laureat");
+export const dashboardUrl = buildUrl("/projets");
 
 export const errorUrl = buildUrl("/connexion/echec");

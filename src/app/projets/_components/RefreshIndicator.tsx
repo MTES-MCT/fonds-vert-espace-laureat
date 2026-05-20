@@ -1,6 +1,6 @@
 "use client";
 
-import { useRefreshStatus } from "@/app/espace-laureat/_components/RefreshStatusContext";
+import { useRefreshStatus } from "@/app/projets/_components/RefreshStatusContext";
 
 export function RefreshIndicator() {
   const { isRefreshing } = useRefreshStatus();

@@ -29,8 +29,8 @@ export const Header = ({ userEmail }: { userEmail?: string }) => {
           key={0}
           quickAccessItem={{
             iconId: "ri-account-box-line",
-            text: "Espace lauréat",
-            linkProps: { href: "/espace-laureat" },
+            text: "Vert impact",
+            linkProps: { href: "/projets" },
           }}
         />,
       ];
@@ -48,12 +48,12 @@ export const Header = ({ userEmail }: { userEmail?: string }) => {
           LOGEMENT <span className="sr-only">Liberté, Égalité, Fraternité</span>
         </>
       }
-      serviceTitle="Fonds vert"
+      serviceTitle="Vert impact"
       serviceTagline="Accélérer la transition écologique dans les territoires"
       homeLinkProps={{
         href: "/",
         title:
-          "Accueil - Fonds vert (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
+          "Accueil - Vert impact (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
       }}
       quickAccessItems={quickAccessItems}
       navigation={<Navigation />}

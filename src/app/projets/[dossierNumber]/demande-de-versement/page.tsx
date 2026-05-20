@@ -24,7 +24,11 @@ export default async function Versement({
         <div className="flex justify-between">
           <Link
             className="fr-btn fr-btn--tertiary"
-            href={`/espace-laureat${dossierNumber.startsWith("12345") ? "/demo" : ""}#dossier-${dossierNumber}`}
+            href={
+              dossierNumber.startsWith("12345")
+                ? `/projets/demo#dossier-${dossierNumber}`
+                : `/projets/${dossierNumber}`
+            }
           >
             Retour
           </Link>

@@ -1,4 +1,4 @@
-import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
+import { DossierSection } from "@/app/projets/_components/DossierSection";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { resolveImpactStatus } from "@/services/impact/status";

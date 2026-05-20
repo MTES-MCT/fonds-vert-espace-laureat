@@ -8,7 +8,7 @@ export default function ConnexionEchec() {
         Veuillez nous contacter si le problème se reproduit.
       </p>
       <p>
-        <Link href="/espace-laureat">← Réessayer</Link>
+        <Link href="/projets">← Réessayer</Link>
       </p>
     </div>
   );

@@ -17,9 +17,11 @@ export function CommunesFilter({
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedCommune = event.target.value;
     if (selectedCommune) {
-      router.push(`/projets/${codeDepartement}?commune=${selectedCommune}`);
+      router.push(
+        `/departements/${codeDepartement}?commune=${selectedCommune}`,
+      );
     } else {
-      router.push(`/projets/${codeDepartement}`);
+      router.push(`/departements/${codeDepartement}`);
     }
   };
 
@@ -47,7 +49,10 @@ export function CommunesFilter({
           ))}
         </select>
         {codeCommune && (
-          <a className="fr-link block" href={`/projets/${codeDepartement}`}>
+          <a
+            className="fr-link block"
+            href={`/departements/${codeDepartement}`}
+          >
             Réinitialiser
           </a>
         )}

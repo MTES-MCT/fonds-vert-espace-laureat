@@ -60,7 +60,7 @@ test.use({
 test("impact prefill link includes dossier number from DS", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
@@ -76,7 +76,7 @@ test("impact prefill link includes dossier number from DS", async ({
 test("impact prefill link is generated correctly with metrics", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
@@ -95,7 +95,7 @@ test("impact prefill link is generated correctly with metrics", async ({
 test("impact prefill link handles multi-value fields correctly", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
@@ -122,7 +122,7 @@ test("page loads in degraded mode when Grist is unavailable", async ({
     }),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}?nocache=1`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}?nocache=1`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
   await expect(evaluationLink).toBeVisible();

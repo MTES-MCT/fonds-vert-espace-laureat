@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useTransition } from "react";
 
-import { useRefreshStatus } from "@/app/espace-laureat/_components/RefreshStatusContext";
+import { useRefreshStatus } from "@/app/projets/_components/RefreshStatusContext";
 
 export function RefreshOnVisibility() {
   const router = useRouter();

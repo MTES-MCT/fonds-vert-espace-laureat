@@ -25,11 +25,11 @@ export default async function ConnexionPage({
             description={errorMessage}
           />
         )}
-        <h1>Espace lauréat</h1>
+        <h1>Vert impact</h1>
         <p className="fr-text--lead">
-          Ce service est accessible aux porteurs d'un projet lauréat du Fonds
-          vert. Identifiez-vous pour suivre vos subventions et soumettre une
-          demande de versement.
+          Ce service est accessible aux porteurs et aux instructeurs d'un projet
+          Fonds vert. Identifiez-vous pour suivre les subventions et l'impact
+          des projets.
         </p>
         <ProConnectButton
           url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}

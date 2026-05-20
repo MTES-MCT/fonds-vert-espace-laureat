@@ -101,7 +101,7 @@ test("demandeur sees dossiers from SIRET", async ({ page, msw }) => {
   await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(makeDossiersHandler({ siret: siretList, instructeur: emptyList }));
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
   await expect(
@@ -136,7 +136,7 @@ test("demandeur sees dossiers regardless of status", async ({ page, msw }) => {
     ),
   );
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
   expect(requestedStates).toEqual([null, null]);
@@ -152,7 +152,7 @@ test("instructeur sees dossiers filtered by DS authorization", async ({
     makeDossiersHandler({ siret: siretList, instructeur: instructeurList }),
   );
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(page.getByText(String(DOSSIER_NUMBER))).not.toBeVisible();
   await expect(
@@ -169,7 +169,7 @@ test("displays only SIRET dossiers when instructeur API fails", async ({
     makeDossiersHandler({ siret: siretList, instructeur: errorResponse }),
   );
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
 });
@@ -183,7 +183,7 @@ test("displays only instructeur dossiers when SIRET API fails", async ({
     makeDossiersHandler({ siret: errorResponse, instructeur: instructeurList }),
   );
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(
     page.getByText(String(INSTRUCTEUR_DOSSIER_NUMBER)),
@@ -196,7 +196,7 @@ test("displays error when both APIs fail", async ({ page, msw }) => {
     makeDossiersHandler({ siret: errorResponse, instructeur: errorResponse }),
   );
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(
     page.getByText("La liste de vos dossiers est temporairement indisponible"),
@@ -210,7 +210,7 @@ test("displays empty state when no dossiers in any source", async ({
   await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(
     page.getByText("Assurez-vous de vous connecter avec l'adresse e-mail"),
@@ -221,7 +221,7 @@ test("displays authenticated header quick access", async ({ page, msw }) => {
   await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
 
-  await page.goto("/espace-laureat");
+  await page.goto("/projets");
 
   await expect(page.locator("#fr-header-quick-access-item-0")).toContainText(
     DEMANDEUR_EMAIL,

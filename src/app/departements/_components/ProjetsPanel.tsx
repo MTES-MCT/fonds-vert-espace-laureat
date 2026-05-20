@@ -1,4 +1,4 @@
-import { ProjetSection } from "@/app/projets/_components/ProjetSection";
+import { ProjetSection } from "@/app/departements/_components/ProjetSection";
 import { Projets, ProjetsParDemarches } from "@/utils/projets";
 import { Projet } from "@/utils/projets/projet";
 

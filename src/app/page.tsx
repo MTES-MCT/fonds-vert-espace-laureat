@@ -17,8 +17,8 @@ export default function Home() {
           </a>
         </p>
         <p>
-          Vous êtes porteur d'un projet lauréat du Fonds vert ? Accédez à votre{" "}
-          <Link href="/espace-laureat">espace lauréat</Link>.
+          Vous portez ou suivez un projet du Fonds vert ? Accédez à{" "}
+          <Link href="/projets">Vert impact</Link>.
         </p>
       </div>
     </div>

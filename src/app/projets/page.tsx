@@ -1,16 +1,18 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 
+import { AucunDossier } from "@/app/projets/_components/AucunDossier";
+import { compareDateSignatureDecision } from "@/app/projets/_components/compareDateSignatureDecision";
+import DossiersTable from "@/app/projets/_components/DossiersTable";
+import { getDossier } from "@/app/projets/_components/getDossier";
+import { getPageTitle } from "@/app/projets/_components/getPageTitle";
+import {
+  getSearchParams,
+  SearchParams,
+} from "@/app/projets/_components/getParams";
 import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
 import { getAuthenticatedUser } from "@/utils/session";
 
-import { AucunDossier } from "../_components/AucunDossier";
-import { compareDateSignatureDecision } from "../_components/compareDateSignatureDecision";
-import DossiersTable from "../_components/DossiersTable";
-import { getDossier } from "../_components/getDossier";
-import { getPageTitle } from "../_components/getPageTitle";
-import { getSearchParams, SearchParams } from "../_components/getParams";
-
-export default async function EspaceLaureat({
+export default async function Projets({
   searchParams,
 }: {
   searchParams: SearchParams;

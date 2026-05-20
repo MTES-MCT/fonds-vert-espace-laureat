@@ -21,7 +21,7 @@ export default function Loading() {
             segments={[
               {
                 label: "Tous les dossiers",
-                linkProps: { href: "/espace-laureat" },
+                linkProps: { href: "/projets" },
               },
             ]}
             currentPageLabel="Chargement..."

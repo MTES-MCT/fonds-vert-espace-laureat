@@ -103,7 +103,7 @@ test.use({
 test("dossier page displays project presentation correctly", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     PROJECT_TITLE,
@@ -128,7 +128,7 @@ test("dossier page displays project presentation correctly", async ({
 test("dossier page displays project owner identity correctly", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const identitySection = page.locator("section", {
     has: page.getByRole("heading", { name: "Identité du porteur de projet" }),
@@ -149,7 +149,7 @@ test("dossier page displays project owner identity correctly", async ({
 test("dossier page displays subvention financial details correctly", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(
     page.getByLabel("Montant total des dépenses du projet"),
@@ -183,7 +183,7 @@ test("dossier page displays subvention financial details correctly", async ({
 test("displays two engagement juridique sections with tabs", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const allEngagements = page.getByRole("region", {
     name: /Engagement juridique n°/,
@@ -214,7 +214,7 @@ test("displays two engagement juridique sections with tabs", async ({
 test("engagement information tab shows amounts, fournisseur, centre de coût and last payment", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
   await waitForDsfrTabs(page);
 
   const engagement1 = page.getByRole("region", {
@@ -243,7 +243,7 @@ test("engagement information tab shows amounts, fournisseur, centre de coût and
 test("engagement history tab displays yearly breakdown with payments", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
   await waitForDsfrTabs(page);
 
   const engagement = page.getByRole("region", {
@@ -294,7 +294,7 @@ test("engagement history tab displays yearly breakdown with payments", async ({
 test("engagement with multiple payments shows each payment as separate row", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
   await waitForDsfrTabs(page);
 
   const engagement = page.getByRole("region", {
@@ -396,7 +396,7 @@ test("engagement with multiple payments shows each payment as separate row", asy
 });
 
 test("dossier page displays impact metrics correctly", async ({ page }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   // Métriques avant/après travaux
 
@@ -457,7 +457,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
 test("dossier page organizes metrics by thematic groups correctly", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   // 1- Vérification des titres de chaque groupe de métriques
 
@@ -529,13 +529,13 @@ test("dossier page organizes metrics by thematic groups correctly", async ({
 });
 
 test("navigation links work correctly", async ({ page }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(
     page.locator('[data-testid="breadcrumb-current"] ol > li:first-child > a'),
   ).toHaveAttribute("href", "/");
 
-  const backLink = "/espace-laureat?siret=12345678910111";
+  const backLink = "/projets?siret=12345678910111";
 
   await expect(
     page.locator('[data-testid="breadcrumb-current"] ol > li:nth-child(2) > a'),
@@ -578,7 +578,7 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const aideFondsVert = page.getByRole("region", {
     name: "Aide du Fonds vert",
@@ -603,7 +603,7 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
 test("dossier page filters out metrics with 'Donnée non disponible' in label", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(
     page.getByTestId("metric-surface-du-batiment-avant-projet"),
@@ -625,7 +625,7 @@ test("dossier page filters out metrics with 'Donnée non disponible' in label", 
 test("dossier page displays calendar timeline with correct dates and status", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const calendarSection = page.getByRole("region", {
     name: "Calendrier",
@@ -653,7 +653,7 @@ test("dossier page displays calendar timeline with correct dates and status", as
 test("impact evaluation sidebar displays last modification date", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const evaluationSection = page.getByRole("region", {
     name: "Les données de votre projet participent à la transition écologique",
@@ -690,7 +690,7 @@ test("calendar timeline marks step as done when later step is done, even with mi
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const calendarSection = page.getByRole("region", {
     name: "Calendrier",
@@ -718,7 +718,7 @@ test("access denied shows error page and does not render FV/EJ data", async ({
     }),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(page.getByText("Introuvable")).toBeVisible();
   await expect(
@@ -742,7 +742,7 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
     }),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(
     page.getByText(
@@ -781,7 +781,7 @@ test("long project titles are truncated with ellipsis", async ({
     }),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const heading = page.getByRole("heading", { level: 1 });
   await expect(heading).toContainText("...");
@@ -792,7 +792,7 @@ test("long project titles are truncated with ellipsis", async ({
 test("engagement juridique displays etat engagement badge", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const engagement = page.getByRole("region", {
     name: "Engagement juridique n°2105212345",
@@ -841,7 +841,7 @@ test("engagement juridique hides badge for unknown etat engagement", async ({
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const engagement = page.getByRole("region", {
     name: "Engagement juridique n°2105212345",
@@ -856,7 +856,7 @@ test("engagement juridique hides badge for unknown etat engagement", async ({
 test("dossier page displays statut de réalisation from impact demarche", async ({
   page,
 }) => {
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const statusSection = page.getByRole("region", {
     name: "Avancement du projet",
@@ -905,7 +905,7 @@ test("dossier page falls back to Fonds Vert when DS returns no recent impact", a
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   expect(receivedCreatedSince).toBeTruthy();
 
@@ -957,7 +957,7 @@ for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
       }),
     );
 
-    await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+    await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
     await expect(page.locator(badgeClass, { hasText: statut })).toBeVisible();
   });
@@ -1004,7 +1004,7 @@ test("dossier page displays metrics", async ({ page, msw }) => {
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const impactSection = page.getByTestId("impact-section");
   await expect(impactSection).toBeVisible();
@@ -1061,7 +1061,7 @@ test("dossier page displays boolean metric as Oui/Non", async ({
     ),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   const impactSection = page.getByTestId("impact-section");
   await expect(impactSection).toBeVisible();
@@ -1085,7 +1085,7 @@ test("dossier page displays INCONNU status when no impact dossier", async ({
     }),
   );
 
-  await page.goto(`/espace-laureat/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
   await expect(page.getByText("Avancement du projet")).toBeVisible();
   await expect(

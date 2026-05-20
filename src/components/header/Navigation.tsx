@@ -15,13 +15,12 @@ export function Navigation() {
           isActive: segment === null,
         },
         {
-          text: "Espace lauréat",
+          text: "Dossiers",
           linkProps: {
-            href: "/espace-laureat",
+            href: "/projets",
           },
           isActive:
-            segment !== null &&
-            ["espace-laureat", "connexion"].includes(segment),
+            segment !== null && ["projets", "connexion"].includes(segment),
         },
       ]}
     />

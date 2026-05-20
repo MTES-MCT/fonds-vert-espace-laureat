@@ -6,6 +6,6 @@ export const Footer = () => (
   <DsfrFooter
     accessibility="non compliant"
     className="bg-white"
-    contentDescription={"Fonds vert / Espace lauréat"}
+    contentDescription={"Vert impact"}
   />
 );

@@ -19,6 +19,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!connexion|api|espace-laureat/demo|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|$).*)",
+    "/((?!connexion|api|projets/demo|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|$).*)",
   ],
 };

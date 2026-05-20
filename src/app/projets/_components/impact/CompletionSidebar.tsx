@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Help } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/Help";
+import { Help } from "@/app/projets/_components/dossier-section/details/impact-details/Help";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",

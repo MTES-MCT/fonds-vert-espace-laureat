@@ -1,8 +1,8 @@
-import { DossierSection } from "@/app/espace-laureat/_components/DossierSection";
-import { getDemarcheDossiers } from "@/app/espace-laureat/_components/getDemarcheDossiers";
-import { getDossier } from "@/app/espace-laureat/_components/getDossier";
-import { RefreshOnVisibility } from "@/app/espace-laureat/_components/RefreshOnVisibility";
-import { RefreshStatusProvider } from "@/app/espace-laureat/_components/RefreshStatusContext";
+import { DossierSection } from "@/app/projets/_components/DossierSection";
+import { getDemarcheDossiers } from "@/app/projets/_components/getDemarcheDossiers";
+import { getDossier } from "@/app/projets/_components/getDossier";
+import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
+import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
@@ -14,19 +14,18 @@ import { extractEJNumbers } from "@/utils/finance";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser } from "@/utils/session";
 
-export default async function DossierPage({
-  params,
+export async function DossierPage({
+  dossierNumber,
   searchParams,
 }: {
-  params: Promise<{ dossierNumber: string }>;
-  searchParams: Promise<{ nocache: string }>;
+  dossierNumber: string;
+  searchParams: Promise<{ nocache?: string | string[] }>;
 }) {
   const user = await getAuthenticatedUser();
 
-  const { dossierNumber: dossierNumberString } = await params;
   const { nocache } = await searchParams;
 
-  const numeroDossier = Number(dossierNumberString);
+  const numeroDossier = Number(dossierNumber);
 
   const demarcheImpactNumber = Number(process.env.DEMARCHE_IMPACT_NUMBER);
 
@@ -97,7 +96,7 @@ export default async function DossierPage({
           dossierFondsVertResult={dossierFondsVertResult}
           financesEJPromise={financesEJPromise}
           impactStatus={impactStatus}
-          nocache={["", "1"].includes(nocache)}
+          nocache={nocache === "" || nocache === "1"}
         />
       </RefreshStatusProvider>
     </>

@@ -1,10 +1,10 @@
-import { CommunesFilter } from "@/app/projets/_components/CommunesFilter";
+import { CommunesFilter } from "@/app/departements/_components/CommunesFilter";
 import {
   getSearchParams,
   SearchParams,
-} from "@/app/projets/_components/getParams";
-import { ProjetsPanel } from "@/app/projets/_components/ProjetsPanel";
-import { TabButton } from "@/app/projets/_components/TabButton";
+} from "@/app/departements/_components/getParams";
+import { ProjetsPanel } from "@/app/departements/_components/ProjetsPanel";
+import { TabButton } from "@/app/departements/_components/TabButton";
 import {
   communesParDepartements,
   nomDepartements,

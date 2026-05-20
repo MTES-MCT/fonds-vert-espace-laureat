@@ -2,18 +2,18 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-import { EngagementsSection } from "@/app/espace-laureat/_components/dossier-section/details/EngagementsSection";
-import { MetricsGrid } from "@/app/espace-laureat/_components/dossier-section/details/impact-details/MetricsGrid";
-import { SubventionDetails } from "@/app/espace-laureat/_components/dossier-section/details/SubventionDetails";
-import { StatutRealisation } from "@/app/espace-laureat/_components/dossier-section/StatutRealisation";
+import { EngagementsSection } from "@/app/projets/_components/dossier-section/details/EngagementsSection";
+import { MetricsGrid } from "@/app/projets/_components/dossier-section/details/impact-details/MetricsGrid";
+import { SubventionDetails } from "@/app/projets/_components/dossier-section/details/SubventionDetails";
+import { StatutRealisation } from "@/app/projets/_components/dossier-section/StatutRealisation";
 import {
   ProjectHolder,
   ProjectPresentation,
   SummaryHeader,
-} from "@/app/espace-laureat/_components/dossier-section/Summary";
-import { Timeline } from "@/app/espace-laureat/_components/dossier-section/Timeline";
-import { CompletionSidebar } from "@/app/espace-laureat/_components/impact/CompletionSidebar";
-import { RefreshIndicator } from "@/app/espace-laureat/_components/RefreshIndicator";
+} from "@/app/projets/_components/dossier-section/Summary";
+import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
+import { CompletionSidebar } from "@/app/projets/_components/impact/CompletionSidebar";
+import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
 import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
@@ -81,13 +81,13 @@ export async function DossierSection({
     ? {
         label: `Tous les dossiers`,
         linkProps: {
-          href: `/espace-laureat?siret=${dossierSubvention.demandeur.siret}`,
+          href: `/projets?siret=${dossierSubvention.demandeur.siret}`,
         },
       }
     : {
         label: "Tous mes dossiers",
         linkProps: {
-          href: "/espace-laureat",
+          href: "/projets",
         },
       };
 
