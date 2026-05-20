@@ -3,7 +3,6 @@ import { URLSearchParams } from "url";
 import { fetchFondsVert } from "@/services/fondsvert/helpers";
 
 const defaultDossierSearchParams = {
-  state: "Accepté",
   include_metrics: "false",
   type_export: "JSON",
   page: "1",

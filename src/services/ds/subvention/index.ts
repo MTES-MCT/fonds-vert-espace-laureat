@@ -2,7 +2,7 @@ import { Champs } from "@/services/ds/subvention/champs";
 
 export interface Dossier {
   numero: number;
-  dateTraitement: Date;
+  dateTraitement: Date | null;
   demandeur: {
     email: string;
     siret: string;

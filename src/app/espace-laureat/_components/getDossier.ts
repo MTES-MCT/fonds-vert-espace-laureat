@@ -1,11 +1,9 @@
 import { ClientError } from "graphql-request";
 
-import { DossierState } from "@/generated/graphql";
 import { createGraphqlClient } from "@/services/ds/graphql";
 import { getDossierQuery } from "@/services/ds/graphql/getDossierQuery";
 import { Dossier } from "@/services/ds/subvention";
 import { getChamps } from "@/services/ds/subvention/champs";
-import { stateToLongLabel } from "@/services/ds/subvention/state";
 import { logException } from "@/utils/error";
 import { isAdmin } from "@/utils/roles";
 
@@ -29,13 +27,6 @@ export async function getDossier({
       return {
         success: false,
         error: "Seules les personnes morales peuvent accéder à cet espace",
-      };
-    }
-
-    if (dossier.state !== DossierState.Accepte) {
-      return {
-        success: false,
-        error: stateToLongLabel(dossier.state),
       };
     }
 

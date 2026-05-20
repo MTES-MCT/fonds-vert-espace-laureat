@@ -8,8 +8,8 @@ export function getPageTitle({
   }
 
   if (successDossiersLength === 1) {
-    return "Dossier accepté";
+    return "Dossier";
   }
 
-  return "Dossiers acceptés";
+  return "Dossiers";
 }

@@ -109,6 +109,39 @@ test("demandeur sees dossiers from SIRET", async ({ page, msw }) => {
   ).not.toBeVisible();
 });
 
+test("demandeur sees dossiers regardless of status", async ({ page, msw }) => {
+  const requestedStates: (string | null)[] = [];
+
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/dossiers", ({ request }) => {
+      const url = new URL(request.url);
+      requestedStates.push(url.searchParams.get("state"));
+
+      if (url.searchParams.get("siret")) {
+        return HttpResponse.json(siretList);
+      }
+
+      return HttpResponse.json(emptyList);
+    }),
+    ds.query("getDossier", () =>
+      HttpResponse.json({
+        data: {
+          dossier: {
+            ...getDossierData.data.dossier,
+            state: "en_instruction",
+          },
+        },
+      }),
+    ),
+  );
+
+  await page.goto("/espace-laureat");
+
+  await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
+  expect(requestedStates).toEqual([null, null]);
+});
+
 test("instructeur sees dossiers filtered by DS authorization", async ({
   page,
   msw,
