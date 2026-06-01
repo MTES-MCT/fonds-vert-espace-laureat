@@ -49,6 +49,7 @@ export async function DossierSection({
   financesEJPromise,
   impactStatus,
   nocache,
+  anomaliesSection,
 }: {
   isAdmin: boolean;
   dossierSubvention: Dossier;
@@ -58,6 +59,7 @@ export async function DossierSection({
   financesEJPromise: Promise<FinancesEJResult>;
   impactStatus: ImpactStatus;
   nocache: boolean;
+  anomaliesSection?: ReactNode;
 }) {
   const subvention = dossierSubvention.champs;
 
@@ -110,6 +112,8 @@ export async function DossierSection({
 
       <div className="fr-container -mt-32 mb-8 flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-1 flex-col gap-y-8">
+          {anomaliesSection}
+
           <section className="bg-white p-8 shadow-lg">
             <h3 className="mb-3">Financement du projet</h3>
             {errorMessage && (
