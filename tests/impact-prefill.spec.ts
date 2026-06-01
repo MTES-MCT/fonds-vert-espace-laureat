@@ -17,7 +17,7 @@ import {
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 
-const ds = graphql.link("https://www.demarches-simplifiees.fr/api/v2/graphql");
+const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 
 test.beforeEach(async ({ page }) => {
   await authenticatePage(page);

@@ -43,7 +43,7 @@ async function waitForDsfrTabs(page: Page) {
   await page.waitForSelector("[data-fr-js-tab-button]");
 }
 
-const ds = graphql.link("https://www.demarches-simplifiees.fr/api/v2/graphql");
+const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const impactDateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
   timeStyle: "short",
