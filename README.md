@@ -5,7 +5,7 @@
 Ce projet repose sur 4 services externes :
 
 - [ProConnect](https://github.com/numerique-gouv/proconnect-documentation/tree/main/doc_fs) : identité des utilisateurs et authentification
-- [Demarches Simplifiée](https://doc.demarches-simplifiees.fr/api-graphql) : dossiers de subvention et d'évaluation
+- [Démarche Numérique](https://doc.demarche.numerique.gouv.fr/api-graphql) : dossiers de subvention et d'évaluation
 - [API Fonds Vert](https://api-fonds-vert.datahub.din.developpement-durable.gouv.fr/docs) : données financières et consolidation des indicateurs
 - [Grist](https://grist.numerique.gouv.fr/) : mapping entre les champs des différentes APIs
 

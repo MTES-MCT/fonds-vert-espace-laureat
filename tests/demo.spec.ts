@@ -64,6 +64,6 @@ test("demo page displays the mocked anomalies section", async ({ page }) => {
     }),
   ).toHaveAttribute(
     "href",
-    "https://www.demarches-simplifiees.fr/dossiers/12345678",
+    "https://demarche.numerique.gouv.fr/dossiers/12345678",
   );
 });

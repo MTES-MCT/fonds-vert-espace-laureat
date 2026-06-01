@@ -76,7 +76,7 @@ export default async function EspaceLaureatDemo() {
               anomaliesSection={
                 <AnomaliesSection
                   anomalies={demoAnomalies}
-                  correctionUrl={`https://www.demarches-simplifiees.fr/dossiers/${dossier.numero}`}
+                  correctionUrl={`https://demarche.numerique.gouv.fr/dossiers/${dossier.numero}`}
                 />
               }
             />

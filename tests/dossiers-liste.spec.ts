@@ -18,7 +18,7 @@ import {
 } from "./fixtures/fondsvert";
 import { authenticatePage } from "./setup/auth";
 
-const ds = graphql.link("https://www.demarches-simplifiees.fr/api/v2/graphql");
+const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 
 type DossiersResponse =
   | { success: true; data: { socle_commun: { dossier_number: number } }[] }
