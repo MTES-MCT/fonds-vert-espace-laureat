@@ -3,6 +3,21 @@ import Tag from "@codegouvfr/react-dsfr/Tag";
 import { MetricValue as MetricValueType } from "@/services/fondsvert/dossier";
 import { formatMetric } from "@/utils/format";
 
+export type ScalarMetricValue = Exclude<MetricValueType, string[] | null>;
+
+export const MetricValueContent = ({
+  value,
+  unite,
+}: {
+  value: ScalarMetricValue;
+  unite?: string | null;
+}) => (
+  <>
+    {formatMetric(value)}
+    {unite && <span className="ml-1 text-sm font-normal">{unite}</span>}
+  </>
+);
+
 export type MetricValueProps = {
   value: MetricValueType;
   label?: string;
@@ -40,8 +55,7 @@ export const MetricValue = ({
           className={`font-semibold ${isStringValue ? "max-w-[18rem] text-sm" : "text-lg"}`}
           data-testid={testId}
         >
-          {formatMetric(value)}
-          {unite && <span className="ml-1 text-sm font-normal">{unite}</span>}
+          <MetricValueContent value={value} unite={unite} />
         </div>
       )}
     </div>
