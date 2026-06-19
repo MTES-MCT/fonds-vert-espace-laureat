@@ -12,18 +12,19 @@
     "build": "react-dsfr update-icons && bun run codegen && next build",
     "start": "next start",
     "lint": "eslint src tests",
-    "test": "bun run db:migrate:test && NODE_ENV=test playwright test --project=chromium",
-    "test:ui": "NODE_ENV=test playwright test --ui",
+    "test": "bun run test:e2e",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:ui": "playwright test --ui",
+    "test:db:setup": "bun tests/setup-test-db.mjs",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "bun run codegen --watch",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
+    "db:setup": "bun scripts/setup-dev-db.mjs",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:migrate:deploy": "node scripts/migrate-production.mjs",
-    "db:migrate:test": "drizzle-kit migrate --config drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
-    "db:setup": "bun scripts/setup-dev-db.mjs"
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts"
   },
   "overrides": {
     "postcss-url": {
