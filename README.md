@@ -9,23 +9,31 @@ Ce projet repose sur 4 services externes :
 - [API Fonds Vert](https://api-fonds-vert.datahub.din.developpement-durable.gouv.fr/docs) : données financières et consolidation des indicateurs
 - [Grist](https://grist.numerique.gouv.fr/) : mapping entre les champs des différentes APIs
 
-Toutes les données sont hébergées sur ces services, aucune base de données n'est donc nécessaire.
+Les données projet, financières et d'identité restent hébergées sur ces services. La base PostgreSQL locale sert uniquement à stocker les métriques d'impact consolidées par dossier.
 
 ### Installation
 
 ```bash
-npm i
+bun install
 ```
 
 Copiez le fichier `.env.example` en `.env` et complétez les variables d'environnement.
 
+Lancez PostgreSQL avec Docker Compose :
+
+```bash
+bun run db:up
+bun run db:migrate
+```
+
+Vous pouvez aussi utiliser votre propre PostgreSQL en renseignant `DATABASE_URL`.
 
 ### Développement
 
 Lancez le serveur de développement :
 
 ```bash
-npm run dev
+bun run dev
 ```
 Ouvrez [http://localhost:3000](http://localhost:3000) avec votre navigateur pour voir le résultat.
 
@@ -35,7 +43,7 @@ En activant le mode `testProxy` de Next, les appels API côté serveur peuvent �
 Lancez le serveur de développement en activant ce proxy :
 
 ```bash
-npm run dev:test
+bun run dev:test
 ```
 
 Cette commande est optionnelle. Elle permettra notamment d'exécuter plus rapidement les tests par la suite.
@@ -43,7 +51,7 @@ Cette commande est optionnelle. Elle permettra notamment d'exécuter plus rapide
 Lancez les tests avec Playwright :
 
 ```bash
-npm run test
+bun run test
 ```
 
 Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `npm run dev:test` avant.
@@ -51,7 +59,7 @@ Playwright réutilisera un serveur éventuellement déjà disponible sur le port
 Lancez un test spécifique :
 
 ```bash
-npm run test -- tests/dossier.spec.ts
+bun run test tests/dossier.spec.ts
 ```
 
 ### Guide
