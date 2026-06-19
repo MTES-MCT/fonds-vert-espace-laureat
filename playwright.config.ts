@@ -38,7 +38,9 @@ export default defineConfig({
     url: "http://localhost:4000",
     reuseExistingServer: !process.env.CI,
     env: {
-      NODE_ENV: "test",
+      NEXT_DIST_DIR: ".next-test",
+      NEXT_TEST_PROXY: "1",
+      NODE_ENV: "development",
     },
   },
 });

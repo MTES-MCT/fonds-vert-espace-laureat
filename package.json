@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "react-dsfr update-icons && npm run codegen && next dev",
-    "dev:test": "react-dsfr update-icons && npm run codegen && NODE_ENV=test next dev -p 4000",
+    "dev:test": "react-dsfr update-icons && npm run codegen && NEXT_DIST_DIR=.next-test NEXT_TEST_PROXY=1 NODE_ENV=development dotenv -e .env.test -- next dev -p 4000",
     "build": "react-dsfr update-icons && npm run codegen && next build",
     "start": "next start",
     "lint": "eslint src tests",
