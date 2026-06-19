@@ -25,6 +25,23 @@ export async function deleteStoredDossierMetrics(dossierNumber: number) {
   }
 }
 
+export async function getStoredDossierMetrics(dossierNumber: number) {
+  const sql = postgres(getTestDatabaseUrl(), { max: 1 });
+
+  try {
+    const [row] = await sql<{ metrics: Metrics }[]>`
+      select metrics
+      from dossier_metrics
+      where dossier_number = ${dossierNumber}
+      limit 1
+    `;
+
+    return row?.metrics;
+  } finally {
+    await sql.end();
+  }
+}
+
 export async function upsertStoredDossierMetrics({
   dossierNumber,
   metrics,

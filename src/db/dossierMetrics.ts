@@ -4,6 +4,26 @@ import { getDb, hasDatabaseUrl } from "@/db";
 import { dossierMetrics } from "@/db/schema";
 import { Metrics } from "@/services/fondsvert/dossier";
 
+export async function createDossierMetricsIfMissing({
+  numeroDossier,
+  metrics,
+}: {
+  numeroDossier: number;
+  metrics: Metrics;
+}) {
+  if (!hasDatabaseUrl() || Object.keys(metrics).length === 0) {
+    return;
+  }
+
+  await getDb()
+    .insert(dossierMetrics)
+    .values({
+      dossierNumber: numeroDossier,
+      metrics,
+    })
+    .onConflictDoNothing();
+}
+
 export async function getStoredDossierMetrics({
   numeroDossier,
 }: {

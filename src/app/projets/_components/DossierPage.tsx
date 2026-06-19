@@ -4,7 +4,10 @@ import { getDossier } from "@/app/projets/_components/getDossier";
 import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import { getStoredDossierMetrics } from "@/db/dossierMetrics";
+import {
+  createDossierMetricsIfMissing,
+  getStoredDossierMetrics,
+} from "@/db/dossierMetrics";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
   buildFinancesResult,
@@ -83,6 +86,15 @@ export async function DossierPage({
   const dossierFondsVert = dossierFondsVertResult.success
     ? dossierFondsVertResult.data
     : undefined;
+  if (
+    dossierFondsVertResult.success &&
+    dossierFondsVertResult.data.metrique_specifique
+  ) {
+    await createDossierMetricsIfMissing({
+      numeroDossier,
+      metrics: dossierFondsVertResult.data.metrique_specifique,
+    });
+  }
   const displayedDossierFondsVertResult =
     dossierFondsVertResult.success && storedMetrics
       ? {
