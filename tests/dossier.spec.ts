@@ -41,6 +41,7 @@ import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 import {
   deleteStoredDossierMetrics,
+  getStoredDossierMetrics,
   upsertStoredDossierMetrics,
 } from "./setup/db";
 
@@ -525,8 +526,75 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
     await expect(
       page.getByLabel("Montant total des dépenses du projet"),
     ).toContainText("18 939 933,00 €");
+
+    await expect
+      .poll(() => getStoredDossierMetrics(storedMetricsDossierNumber))
+      .toMatchObject({
+        stored_metric: {
+          label: "Métrique stockée en base",
+          unite: "ha",
+          valeur_estimee: 42,
+        },
+      });
   } finally {
     await deleteStoredDossierMetrics(storedMetricsDossierNumber);
+  }
+});
+
+test("dossier page stores Fonds Vert API metrics when no stored metrics exist", async ({
+  page,
+  msw,
+}) => {
+  const apiMetricsDossierNumber = 89000002;
+
+  await deleteStoredDossierMetrics(apiMetricsDossierNumber);
+
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(apiMetricsDossierNumber),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${apiMetricsDossierNumber}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {
+              api_created_metric: {
+                label: "Métrique créée depuis Fonds Vert",
+                unite: "m²",
+                valeur_estimee: 99,
+              },
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  try {
+    await page.goto(`/projets/${apiMetricsDossierNumber}`);
+
+    const apiMetric = page
+      .getByTestId("impact-section")
+      .getByTestId("metric-metrique-creee-depuis-fonds-vert");
+    await expect(apiMetric).toBeVisible();
+
+    await expect
+      .poll(() => getStoredDossierMetrics(apiMetricsDossierNumber))
+      .toMatchObject({
+        api_created_metric: {
+          label: "Métrique créée depuis Fonds Vert",
+          unite: "m²",
+          valeur_estimee: 99,
+        },
+      });
+  } finally {
+    await deleteStoredDossierMetrics(apiMetricsDossierNumber);
   }
 });
 
@@ -625,11 +693,19 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
   page,
   msw,
 }) => {
+  const retryWithoutMetricsDossierNumber = 89000005;
   let requestCount = 0;
 
+  await deleteStoredDossierMetrics(retryWithoutMetricsDossierNumber);
+
   msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(retryWithoutMetricsDossierNumber),
+      );
+    }),
     http.get(
-      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      `http://fondsvert/fonds_vert/v2/dossiers/${retryWithoutMetricsDossierNumber}`,
       ({ request }) => {
         const url = new URL(request.url);
         const includeMetrics = url.searchParams.get("include_metrics");
@@ -654,26 +730,30 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
     ),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  try {
+    await page.goto(`/projets/${retryWithoutMetricsDossierNumber}`);
 
-  const aideFondsVert = page.getByRole("region", {
-    name: "Aide du Fonds vert",
-  });
-  await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
-    "10 073 564,00 €",
-  );
+    const aideFondsVert = page.getByRole("region", {
+      name: "Aide du Fonds vert",
+    });
+    await expect(aideFondsVert.getByLabel("Montant attribué")).toContainText(
+      "10 073 564,00 €",
+    );
 
-  const engagementJuridique = page.getByRole("region", {
-    name: "Engagement juridique n°2105212345",
-  });
-  await expect(
-    engagementJuridique.getByLabel("Montant attribué initial"),
-  ).toContainText("10 073 574,00 €");
+    const engagementJuridique = page.getByRole("region", {
+      name: "Engagement juridique n°2105212345",
+    });
+    await expect(
+      engagementJuridique.getByLabel("Montant attribué initial"),
+    ).toContainText("10 073 574,00 €");
 
-  const impactSection = page.getByTestId("impact-section");
-  await expect(impactSection).not.toBeAttached();
+    const impactSection = page.getByTestId("impact-section");
+    await expect(impactSection).not.toBeAttached();
 
-  expect(requestCount).toBe(2);
+    expect(requestCount).toBe(2);
+  } finally {
+    await deleteStoredDossierMetrics(retryWithoutMetricsDossierNumber);
+  }
 });
 
 test("dossier page filters out metrics with 'Donnée non disponible' in label", async ({
@@ -1040,9 +1120,16 @@ for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
 }
 
 test("dossier page displays metrics", async ({ page, msw }) => {
+  const metricsDossierNumber = 89000003;
+
+  await deleteStoredDossierMetrics(metricsDossierNumber);
+
   msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(makeDossierDataWithNumber(metricsDossierNumber));
+    }),
     http.get(
-      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      `http://fondsvert/fonds_vert/v2/dossiers/${metricsDossierNumber}`,
       () => {
         return HttpResponse.json({
           data: {
@@ -1080,43 +1167,56 @@ test("dossier page displays metrics", async ({ page, msw }) => {
     ),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  try {
+    await page.goto(`/projets/${metricsDossierNumber}`);
 
-  const impactSection = page.getByTestId("impact-section");
-  await expect(impactSection).toBeVisible();
+    const impactSection = page.getByTestId("impact-section");
+    await expect(impactSection).toBeVisible();
 
-  const logements = impactSection.getByTestId(
-    "metric-nb-de-logements-sociaux-sur-les-secteurs-de-friches",
-  );
-  await expect(logements).toBeVisible();
-  await expect(logements.getByTestId("valeur-estimee")).toContainText("25");
+    const logements = impactSection.getByTestId(
+      "metric-nb-de-logements-sociaux-sur-les-secteurs-de-friches",
+    );
+    await expect(logements).toBeVisible();
+    await expect(logements.getByTestId("valeur-estimee")).toContainText("25");
 
-  const emprise = impactSection.getByTestId(
-    "metric-emprise-fonciere-des-secteurs-en-friche",
-  );
-  await expect(emprise).toBeVisible();
-  await expect(emprise.getByTestId("valeur-estimee")).toContainText("2 441");
+    const emprise = impactSection.getByTestId(
+      "metric-emprise-fonciere-des-secteurs-en-friche",
+    );
+    await expect(emprise).toBeVisible();
+    await expect(emprise.getByTestId("valeur-estimee")).toContainText("2 441");
 
-  const natures = impactSection.getByTestId("metric-nature-de-la-friche");
-  await expect(natures).toBeVisible();
-  const tags = natures.locator("li");
-  await expect(tags).toHaveCount(2);
-  await expect(tags.nth(0)).toContainText("Friche commerciale");
+    const natures = impactSection.getByTestId("metric-nature-de-la-friche");
+    await expect(natures).toBeVisible();
+    const tags = natures.locator("li");
+    await expect(tags).toHaveCount(2);
+    await expect(tags.nth(0)).toContainText("Friche commerciale");
 
-  await expect(
-    impactSection.getByTestId(
-      "metric-activites-de-bureaux---surface-de-plancher",
-    ),
-  ).not.toBeAttached();
+    await expect(
+      impactSection.getByTestId(
+        "metric-activites-de-bureaux---surface-de-plancher",
+      ),
+    ).not.toBeAttached();
+  } finally {
+    await deleteStoredDossierMetrics(metricsDossierNumber);
+  }
 });
 
 test("dossier page displays boolean metric as Oui/Non", async ({
   page,
   msw,
 }) => {
+  const booleanMetricDossierNumber = 89000004;
+
+  await deleteStoredDossierMetrics(booleanMetricDossierNumber);
+
   msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(booleanMetricDossierNumber),
+      );
+    }),
     http.get(
-      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+      `http://fondsvert/fonds_vert/v2/dossiers/${booleanMetricDossierNumber}`,
       () => {
         return HttpResponse.json({
           data: {
@@ -1137,16 +1237,20 @@ test("dossier page displays boolean metric as Oui/Non", async ({
     ),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  try {
+    await page.goto(`/projets/${booleanMetricDossierNumber}`);
 
-  const impactSection = page.getByTestId("impact-section");
-  await expect(impactSection).toBeVisible();
+    const impactSection = page.getByTestId("impact-section");
+    await expect(impactSection).toBeVisible();
 
-  const solPollue = impactSection.getByTestId(
-    "metric-les-sols-et-eaux-souterraines-de-la-friche-sont-ils-pollues",
-  );
-  await expect(solPollue).toBeVisible();
-  await expect(solPollue.getByTestId("valeur-estimee")).toContainText("Non");
+    const solPollue = impactSection.getByTestId(
+      "metric-les-sols-et-eaux-souterraines-de-la-friche-sont-ils-pollues",
+    );
+    await expect(solPollue).toBeVisible();
+    await expect(solPollue.getByTestId("valeur-estimee")).toContainText("Non");
+  } finally {
+    await deleteStoredDossierMetrics(booleanMetricDossierNumber);
+  }
 });
 
 test("dossier page displays INCONNU status when no impact dossier", async ({
