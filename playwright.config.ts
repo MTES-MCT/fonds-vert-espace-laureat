@@ -1,10 +1,24 @@
 import { defineConfig, devices } from "next/experimental/testmode/playwright";
 
+import { loadTestEnv } from "./tests/setup/load-test-env";
+
+loadTestEnv();
+
+const defaultTestDatabaseUrl =
+  "postgres://vert_impact:vert_impact@localhost:5432/vert_impact_test";
+const testDatabaseUrl =
+  process.env.TEST_DATABASE_URL ??
+  process.env.DATABASE_URL ??
+  defaultTestDatabaseUrl;
+process.env.DATABASE_URL = testDatabaseUrl;
+delete process.env.NO_COLOR;
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testMatch: "tests/*.spec.ts",
+  globalSetup: "./tests/playwright-global-setup.mjs",
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -38,6 +52,7 @@ export default defineConfig({
     url: "http://localhost:4000",
     reuseExistingServer: !process.env.CI,
     env: {
+      DATABASE_URL: testDatabaseUrl,
       NEXT_DIST_DIR: ".next-test",
       NEXT_TEST_PROXY: "1",
       NODE_ENV: "development",
