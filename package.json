@@ -12,7 +12,7 @@
     "build": "react-dsfr update-icons && bun run codegen && next build",
     "start": "next start",
     "lint": "eslint src tests",
-    "test": "NODE_ENV=test playwright test --project=chromium",
+    "test": "bun run db:migrate:test && NODE_ENV=test playwright test --project=chromium",
     "test:ui": "NODE_ENV=test playwright test --ui",
     "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
     "codegen:watch": "bun run codegen --watch",
@@ -20,6 +20,7 @@
     "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
+    "db:migrate:test": "dotenv -e .env.test -- drizzle-kit migrate --config drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config drizzle.config.ts"
   },
   "overrides": {
