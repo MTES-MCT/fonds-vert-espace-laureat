@@ -13,7 +13,7 @@ Les données projet, financières et d'identité restent hébergées sur ces ser
 
 ### Prérequis
 
-- Node.js 22.22.1
+- Node.js 24
 - npm 11.16.0
 - Docker Desktop avec le moteur Docker démarré, ou une base PostgreSQL accessible via `DATABASE_URL`.
 

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "packageManager": "npm@11.16.0",
   "engines": {
-    "node": "22.22.1",
+    "node": "24",
     "npm": "11.16.0"
   },
   "scripts": {
