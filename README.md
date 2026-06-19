@@ -54,13 +54,30 @@ Lancez les tests avec Playwright :
 bun run test
 ```
 
-Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `npm run dev:test` avant.
+Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `bun run dev:test` avant.
 
 Lancez un test spécifique :
 
 ```bash
 bun run test tests/dossier.spec.ts
 ```
+
+### Déploiement Scalingo
+
+Le projet est prêt pour le buildpack Node.js Scalingo. Le runtime Node est fixé dans `package.json` via `engines.node`.
+
+Le fichier `Procfile` définit deux processus :
+
+```Procfile
+web: npm run start -- -p $PORT
+postdeploy: npm run db:migrate:deploy
+```
+
+`web` lance Next.js sur le port injecté par Scalingo. `postdeploy` applique les migrations Drizzle après un déploiement réussi, dans le conteneur de la nouvelle version, avant la bascule du trafic.
+
+Le hook Scalingo utilise `db:migrate:deploy`, un script Node basé sur `drizzle-orm/postgres-js/migrator`. Il ne dépend pas de `drizzle-kit`, car Scalingo peut retirer les `devDependencies` après le build.
+
+Ajouter l'addon PostgreSQL Scalingo suffit pour exposer `DATABASE_URL` à l'application. Scalingo crée aussi `SCALINGO_POSTGRESQL_URL`, dont `DATABASE_URL` est l'alias PostgreSQL standard.
 
 ### Guide
 
