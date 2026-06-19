@@ -9,16 +9,24 @@ Ce projet repose sur 4 services externes :
 - [API Fonds Vert](https://api-fonds-vert.datahub.din.developpement-durable.gouv.fr/docs) : données financières et consolidation des indicateurs
 - [Grist](https://grist.numerique.gouv.fr/) : mapping entre les champs des différentes APIs
 
-Toutes les données sont hébergées sur ces services, aucune base de données n'est donc nécessaire.
+Les données projet, financières et d'identité restent hébergées sur ces services. La base PostgreSQL locale sert uniquement à stocker les métriques d'impact consolidées par dossier.
 
 ### Installation
 
 ```bash
-npm i
+npm ci
 ```
 
 Copiez le fichier `.env.example` en `.env` et complétez les variables d'environnement.
 
+Lancez PostgreSQL avec Docker Compose :
+
+```bash
+npm run db:up
+npm run db:migrate
+```
+
+Vous pouvez aussi utiliser votre propre PostgreSQL en renseignant `DATABASE_URL`.
 
 ### Développement
 
