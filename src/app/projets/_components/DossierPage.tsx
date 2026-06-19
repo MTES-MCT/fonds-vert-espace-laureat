@@ -4,6 +4,7 @@ import { getDossier } from "@/app/projets/_components/getDossier";
 import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { getStoredDossierMetrics } from "@/db/dossierMetrics";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
   buildFinancesResult,
@@ -41,6 +42,7 @@ export async function DossierPage({
     userEmail: user.email,
   });
   const dossierFondsVertPromise = getDossierFondsVert({ numeroDossier });
+  const storedMetricsPromise = getStoredDossierMetrics({ numeroDossier });
   const dossiersImpactPromise = getDemarcheDossiers({
     demarcheNumber: demarcheImpactNumber,
     userEmail: user.email,
@@ -67,10 +69,12 @@ export async function DossierPage({
   }
 
   // 4. Await remaining promises
-  const [dossiersImpactResult, dossierFondsVertResult] = await Promise.all([
-    dossiersImpactPromise,
-    dossierFondsVertPromise,
-  ]);
+  const [dossiersImpactResult, dossierFondsVertResult, storedMetrics] =
+    await Promise.all([
+      dossiersImpactPromise,
+      dossierFondsVertPromise,
+      storedMetricsPromise,
+    ]);
 
   const dossierSubvention = dossierSubventionResult.data;
   const dossiersImpact = dossiersImpactResult.success
@@ -79,6 +83,16 @@ export async function DossierPage({
   const dossierFondsVert = dossierFondsVertResult.success
     ? dossierFondsVertResult.data
     : undefined;
+  const displayedDossierFondsVertResult =
+    dossierFondsVertResult.success && storedMetrics
+      ? {
+          success: true as const,
+          data: {
+            ...dossierFondsVertResult.data,
+            metrique_specifique: storedMetrics,
+          },
+        }
+      : dossierFondsVertResult;
   const impactStatus = resolveImpactStatus({
     dossierSubventionNumero: dossierSubvention.numero,
     dossiersImpact,
@@ -93,7 +107,7 @@ export async function DossierPage({
         <DossierSection
           isAdmin={isAdmin({ userEmail: user.email })}
           dossierSubvention={dossierSubvention}
-          dossierFondsVertResult={dossierFondsVertResult}
+          dossierFondsVertResult={displayedDossierFondsVertResult}
           financesEJPromise={financesEJPromise}
           impactStatus={impactStatus}
           nocache={nocache === "" || nocache === "1"}
