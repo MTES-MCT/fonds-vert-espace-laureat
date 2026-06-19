@@ -1,5 +1,5 @@
 // Documentation ProConnect
-// https://github.com/numerique-gouv/proconnect-documentation/blob/main/doc_fs/implementation_technique.md
+// https://partenaires.proconnect.gouv.fr/docs/fournisseur-service/implementation_technique
 
 import { BaseClient, generators, Issuer } from "openid-client";
 
