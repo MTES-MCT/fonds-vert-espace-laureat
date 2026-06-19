@@ -22,7 +22,8 @@
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:migrate:deploy": "node scripts/migrate-production.mjs",
     "db:migrate:test": "dotenv -e .env.test -- drizzle-kit migrate --config drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config drizzle.config.ts"
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "db:setup": "bun scripts/setup-dev-db.mjs"
   },
   "overrides": {
     "postcss-url": {
