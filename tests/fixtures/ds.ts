@@ -760,6 +760,15 @@ const dossier = {
 
 export const getDossierData = { data: { dossier } };
 
+export const makeDossierDataWithNumber = (dossierNumber: number) => ({
+  data: {
+    dossier: {
+      ...dossier,
+      number: dossierNumber,
+    },
+  },
+});
+
 export const makeDossierDataForInstructeur = (
   dossierNumber: number,
   instructeurEmail: string,

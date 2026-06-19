@@ -28,6 +28,7 @@ import {
   DEFAULT_STATUT_UPDATED_AT,
   getDossierData,
   makeDemarcheDossiersData,
+  makeDossierDataWithNumber,
   makeDossierDataWithTitle,
 } from "./fixtures/ds";
 import {
@@ -38,6 +39,10 @@ import {
 } from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
+import {
+  deleteStoredDossierMetrics,
+  upsertStoredDossierMetrics,
+} from "./setup/db";
 
 async function waitForDsfrTabs(page: Page) {
   await page.waitForSelector("[data-fr-js-tab-button]");
@@ -59,6 +64,7 @@ function formatImpactDate(isoDate: string) {
 }
 
 test.beforeEach(async ({ page }) => {
+  await deleteStoredDossierMetrics(DOSSIER_NUMBER);
   await authenticatePage(page);
 });
 
@@ -452,6 +458,76 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "Mettre à jour les données" }),
   ).toHaveCount(2);
+});
+
+test("dossier page displays stored metrics before Fonds Vert API metrics", async ({
+  page,
+  msw,
+}) => {
+  const storedMetricsDossierNumber = 89000001;
+
+  await deleteStoredDossierMetrics(storedMetricsDossierNumber);
+  await upsertStoredDossierMetrics({
+    dossierNumber: storedMetricsDossierNumber,
+    metrics: {
+      stored_metric: {
+        label: "Métrique stockée en base",
+        unite: "ha",
+        valeur_estimee: 42,
+      },
+    },
+  });
+
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(storedMetricsDossierNumber),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${storedMetricsDossierNumber}`,
+      () => {
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {
+              api_metric: {
+                label: "Métrique Fonds Vert API",
+                unite: "m²",
+                valeur_estimee: 99,
+              },
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  try {
+    await page.goto(`/projets/${storedMetricsDossierNumber}`);
+
+    const impactSection = page.getByTestId("impact-section");
+    await expect(impactSection).toBeVisible();
+
+    const storedMetric = impactSection.getByTestId(
+      "metric-metrique-stockee-en-base",
+    );
+    await expect(storedMetric).toBeVisible();
+    await expect(storedMetric.getByTestId("valeur-estimee")).toContainText(
+      "42ha",
+    );
+
+    await expect(
+      impactSection.getByTestId("metric-metrique-fonds-vert-api"),
+    ).not.toBeAttached();
+    await expect(
+      page.getByLabel("Montant total des dépenses du projet"),
+    ).toContainText("18 939 933,00 €");
+  } finally {
+    await deleteStoredDossierMetrics(storedMetricsDossierNumber);
+  }
 });
 
 test("dossier page organizes metrics by thematic groups correctly", async ({

@@ -16,10 +16,12 @@ import {
 } from "./fixtures/fondsvert";
 import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
+import { deleteStoredDossierMetrics } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 
 test.beforeEach(async ({ page }) => {
+  await deleteStoredDossierMetrics(DOSSIER_NUMBER);
   await authenticatePage(page);
 });
 
