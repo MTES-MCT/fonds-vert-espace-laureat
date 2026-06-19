@@ -1,11 +1,9 @@
 import type { NextConfig } from "next";
 
-const isTest = process.env.NODE_ENV === "test";
-
 const nextConfig: NextConfig = {
-  distDir: isTest ? ".next-test" : ".next",
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   experimental: {
-    testProxy: isTest,
+    testProxy: Boolean(process.env.NEXT_TEST_PROXY),
   },
 };
 

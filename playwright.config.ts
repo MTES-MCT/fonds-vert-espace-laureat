@@ -34,11 +34,13 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "npm run dev:test",
+    command: "bun run dev:test",
     url: "http://localhost:4000",
     reuseExistingServer: !process.env.CI,
     env: {
-      NODE_ENV: "test",
+      NEXT_DIST_DIR: ".next-test",
+      NEXT_TEST_PROXY: "1",
+      NODE_ENV: "development",
     },
   },
 });
