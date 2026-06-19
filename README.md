@@ -54,13 +54,19 @@ Lancez les tests avec Playwright :
 npm run test
 ```
 
-Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `npm run dev:test` avant.
+Playwright réutilisera un serveur éventuellement déjà disponible sur le port 4000, sinon il lancera `bun run dev:test` avant.
 
 Lancez un test spécifique :
 
 ```bash
 npm run test -- tests/dossier.spec.ts
 ```
+
+### Déploiement Scalingo
+
+Le projet fournit un buildpack Node.js pour Scalingo.
+
+Note : un script `postdeploy` applique les migrations Drizzle après déploiement.
 
 ### Guide
 
