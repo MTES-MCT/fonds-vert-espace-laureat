@@ -39,13 +39,15 @@ export const Header = ({ userEmail }: { userEmail?: string }) => {
     <DsfrHeader
       brandTop={
         <>
-          MINISTÈRES
+          Ministères
           <br />
-          TERRITOIRES
+          transition écologique
           <br />
-          ÉCOLOGIE
+          aménagement du territoire
           <br />
-          LOGEMENT <span className="sr-only">Liberté, Égalité, Fraternité</span>
+          transports
+          <br />
+          ville et logement
         </>
       }
       serviceTitle="Vert impact"
