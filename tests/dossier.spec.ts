@@ -466,6 +466,7 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
   msw,
 }) => {
   const storedMetricsDossierNumber = 89000001;
+  const includeMetricsRequests: Array<string | null> = [];
 
   await deleteStoredDossierMetrics(storedMetricsDossierNumber);
   await importStoredDossierMetricsIfMissing({
@@ -487,7 +488,10 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
     }),
     http.get(
       `http://fondsvert/fonds_vert/v2/dossiers/${storedMetricsDossierNumber}`,
-      () => {
+      ({ request }) => {
+        includeMetricsRequests.push(
+          new URL(request.url).searchParams.get("include_metrics"),
+        );
         return HttpResponse.json({
           data: {
             socle_commun: fondsVertDossierData.data.socle_commun,
@@ -526,6 +530,7 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
     await expect(
       page.getByLabel("Montant total des dépenses du projet"),
     ).toContainText("18 939 933,00 €");
+    expect(includeMetricsRequests).toEqual(["false"]);
 
     await expect
       .poll(() => getStoredDossierMetrics(storedMetricsDossierNumber))
@@ -546,6 +551,7 @@ test("dossier page stores Fonds Vert API metrics when no stored metrics exist", 
   msw,
 }) => {
   const apiMetricsDossierNumber = 89000002;
+  const includeMetricsRequests: Array<string | null> = [];
 
   await deleteStoredDossierMetrics(apiMetricsDossierNumber);
 
@@ -557,17 +563,27 @@ test("dossier page stores Fonds Vert API metrics when no stored metrics exist", 
     }),
     http.get(
       `http://fondsvert/fonds_vert/v2/dossiers/${apiMetricsDossierNumber}`,
-      () => {
+      ({ request }) => {
+        const includeMetrics = new URL(request.url).searchParams.get(
+          "include_metrics",
+        );
+        includeMetricsRequests.push(includeMetrics);
+
         return HttpResponse.json({
           data: {
             socle_commun: fondsVertDossierData.data.socle_commun,
             information_financiere:
               fondsVertDossierData.data.information_financiere,
             metrique_specifique: {
-              api_created_metric: {
-                label: "Métrique créée depuis Fonds Vert",
+              [includeMetrics === "true"
+                ? "api_created_metric"
+                : "remote_replacement"]: {
+                label:
+                  includeMetrics === "true"
+                    ? "Métrique créée depuis Fonds Vert"
+                    : "Remplacement distant",
                 unite: "m²",
-                valeur_estimee: 99,
+                valeur_estimee: includeMetrics === "true" ? 99 : 999,
               },
             },
           },
@@ -593,8 +609,69 @@ test("dossier page stores Fonds Vert API metrics when no stored metrics exist", 
           valeur_estimee: 99,
         },
       });
+
+    await page.reload();
+
+    await expect(apiMetric).toBeVisible();
+    await expect(
+      page.getByText("Remplacement distant", { exact: true }),
+    ).not.toBeAttached();
+    expect(includeMetricsRequests).toEqual(["true", "false"]);
   } finally {
     await deleteStoredDossierMetrics(apiMetricsDossierNumber);
+  }
+});
+
+test("dossier page retries an empty metric import on the next load", async ({
+  page,
+  msw,
+}) => {
+  const emptyMetricsDossierNumber = 89000006;
+  const includeMetricsRequests: Array<string | null> = [];
+
+  await deleteStoredDossierMetrics(emptyMetricsDossierNumber);
+
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(emptyMetricsDossierNumber),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${emptyMetricsDossierNumber}`,
+      ({ request }) => {
+        const includeMetrics = new URL(request.url).searchParams.get(
+          "include_metrics",
+        );
+        includeMetricsRequests.push(includeMetrics);
+
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {},
+          },
+        });
+      },
+    ),
+  );
+
+  try {
+    await page.goto(`/projets/${emptyMetricsDossierNumber}`);
+
+    await expect
+      .poll(() => getStoredDossierMetrics(emptyMetricsDossierNumber))
+      .toBeUndefined();
+
+    await page.reload();
+
+    expect(
+      await getStoredDossierMetrics(emptyMetricsDossierNumber),
+    ).toBeUndefined();
+    expect(includeMetricsRequests).toEqual(["true", "true"]);
+  } finally {
+    await deleteStoredDossierMetrics(emptyMetricsDossierNumber);
   }
 });
 
@@ -694,7 +771,8 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
   msw,
 }) => {
   const retryWithoutMetricsDossierNumber = 89000005;
-  let requestCount = 0;
+  const includeMetricsRequests: Array<string | null> = [];
+  let metricsAttemptCount = 0;
 
   await deleteStoredDossierMetrics(retryWithoutMetricsDossierNumber);
 
@@ -710,13 +788,31 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
         const url = new URL(request.url);
         const includeMetrics = url.searchParams.get("include_metrics");
 
-        requestCount++;
+        includeMetricsRequests.push(includeMetrics);
 
         if (includeMetrics === "true") {
-          return HttpResponse.json(
-            { error: "Unprocessable Entity" },
-            { status: 422 },
-          );
+          metricsAttemptCount++;
+          if (metricsAttemptCount === 1) {
+            return HttpResponse.json(
+              { error: "Unprocessable Entity" },
+              { status: 422 },
+            );
+          }
+
+          return HttpResponse.json({
+            data: {
+              information_financiere:
+                fondsVertDossierData.data.information_financiere,
+              socle_commun: fondsVertDossierData.data.socle_commun,
+              metrique_specifique: {
+                retry_metric: {
+                  label: "Métrique chargée au nouvel essai",
+                  unite: null,
+                  valeur_estimee: 7,
+                },
+              },
+            },
+          });
         }
 
         return HttpResponse.json({
@@ -750,7 +846,25 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
     const impactSection = page.getByTestId("impact-section");
     await expect(impactSection).not.toBeAttached();
 
-    expect(requestCount).toBe(2);
+    expect(includeMetricsRequests).toEqual(["true", "false"]);
+    expect(
+      await getStoredDossierMetrics(retryWithoutMetricsDossierNumber),
+    ).toBeUndefined();
+
+    await page.reload();
+
+    await expect(
+      page.getByText("Métrique chargée au nouvel essai", { exact: true }),
+    ).toBeVisible();
+    expect(includeMetricsRequests).toEqual(["true", "false", "true"]);
+    await expect
+      .poll(() => getStoredDossierMetrics(retryWithoutMetricsDossierNumber))
+      .toMatchObject({
+        retry_metric: {
+          label: "Métrique chargée au nouvel essai",
+          valeur_estimee: 7,
+        },
+      });
   } finally {
     await deleteStoredDossierMetrics(retryWithoutMetricsDossierNumber);
   }

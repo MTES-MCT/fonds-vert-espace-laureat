@@ -39,13 +39,19 @@ export async function DossierPage({
     );
   }
 
-  // 1. Start all initial fetches in parallel
+  // 1. Start independent lookups in parallel
   const dossierSubventionPromise = getDossier({
     numeroDossier,
     userEmail: user.email,
   });
-  const dossierFondsVertPromise = getDossierFondsVert({ numeroDossier });
   const storedMetricsPromise = getDossierMetricsState({ numeroDossier });
+  // Fonds Vert metric inclusion depends on whether local revisions exist.
+  const dossierFondsVertPromise = storedMetricsPromise.then((metricsState) =>
+    getDossierFondsVert({
+      numeroDossier,
+      includeMetrics: metricsState.status !== "imported",
+    }),
+  );
   const dossiersImpactPromise = getDemarcheDossiers({
     demarcheNumber: demarcheImpactNumber,
     userEmail: user.email,
@@ -60,9 +66,6 @@ export async function DossierPage({
     const results = await Promise.all(ejNumbers.map(loadFinancesEJ));
     return buildFinancesResult(results);
   });
-
-  // Note: all 3 API calls run in parallel and respond at roughly the same time
-  // (~500-600ms), so awaiting all results (3. and 4.) is fine.
 
   // 3. Authorization guard: await getDossier
   const dossierSubventionResult = await dossierSubventionPromise;
@@ -86,23 +89,35 @@ export async function DossierPage({
   const dossierFondsVert = dossierFondsVertResult.success
     ? dossierFondsVertResult.data
     : undefined;
+  let localMetrics =
+    metricsState.status === "imported" ? metricsState.metrics : undefined;
+
   if (
     metricsState.status === "not-imported" &&
     dossierFondsVertResult.success &&
-    dossierFondsVertResult.data.metrique_specifique
+    dossierFondsVertResult.metricsStatus === "loaded"
   ) {
     await importDossierMetricsIfMissing({
       numeroDossier,
-      metrics: dossierFondsVertResult.data.metrique_specifique,
+      metrics: dossierFondsVertResult.data.metrique_specifique ?? {},
     });
+
+    const importedMetricsState = await getDossierMetricsState({
+      numeroDossier,
+    });
+    localMetrics =
+      importedMetricsState.status === "imported"
+        ? importedMetricsState.metrics
+        : undefined;
   }
+
   const displayedDossierFondsVertResult =
-    dossierFondsVertResult.success && metricsState.status === "imported"
+    dossierFondsVertResult.success && localMetrics
       ? {
           success: true as const,
           data: {
             ...dossierFondsVertResult.data,
-            metrique_specifique: metricsState.metrics,
+            metrique_specifique: localMetrics,
           },
         }
       : dossierFondsVertResult;

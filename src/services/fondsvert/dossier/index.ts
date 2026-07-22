@@ -3,7 +3,6 @@ import { URLSearchParams } from "url";
 import { fetchFondsVert } from "@/services/fondsvert/helpers";
 
 const defaultDossierSearchParams = {
-  include_metrics: "true",
   include_finances: "true",
   type_export: "JSON",
 };
@@ -116,15 +115,43 @@ export interface DossierFondsVert {
   socle_commun?: SocleCommun;
 }
 
+function requestedMetrics({
+  metrics,
+  includeMetrics,
+}: {
+  metrics: Metrics | undefined;
+  includeMetrics: boolean;
+}): Metrics | undefined {
+  if (!includeMetrics) {
+    return undefined;
+  }
+
+  if (!metrics) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(metrics).filter(([, value]) => value !== null),
+  );
+}
+
 export async function getDossierFondsVert({
   numeroDossier,
+  includeMetrics,
 }: {
   numeroDossier: number;
+  includeMetrics: boolean;
 }): Promise<
-  { success: false; error: string } | { success: true; data: DossierFondsVert }
+  | { success: false; error: string }
+  | {
+      success: true;
+      data: DossierFondsVert;
+      metricsStatus: "loaded" | "unavailable" | "not-requested";
+    }
 > {
   const params = new URLSearchParams({
     ...defaultDossierSearchParams,
+    include_metrics: String(includeMetrics),
   });
 
   const dossierResult = await fetchFondsVert<{ data: DossierFondsVert }>(
@@ -139,7 +166,7 @@ export async function getDossierFondsVert({
       };
     }
 
-    if (dossierResult.status === 422) {
+    if (dossierResult.status === 422 && includeMetrics) {
       const paramsWithoutMetrics = new URLSearchParams({
         ...defaultDossierSearchParams,
         include_metrics: "false",
@@ -157,6 +184,7 @@ export async function getDossierFondsVert({
             ...retryData,
             metrique_specifique: undefined,
           },
+          metricsStatus: "unavailable",
         };
       }
 
@@ -178,22 +206,15 @@ export async function getDossierFondsVert({
 
   const data = dossierResult.data.data;
 
-  const filteredMetriqueSpecifique =
-    data.metrique_specifique &&
-    Object.entries(data.metrique_specifique).reduce((acc, [key, value]) => {
-      if (value === null) {
-        return acc;
-      }
-
-      acc[key] = value;
-      return acc;
-    }, {} as Metrics);
-
   return {
     success: true,
     data: {
       ...data,
-      metrique_specifique: filteredMetriqueSpecifique,
+      metrique_specifique: requestedMetrics({
+        metrics: data.metrique_specifique,
+        includeMetrics,
+      }),
     },
+    metricsStatus: includeMetrics ? "loaded" : "not-requested",
   };
 }
