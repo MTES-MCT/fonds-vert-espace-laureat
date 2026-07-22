@@ -1,5 +1,9 @@
-import postgres, { type JSONValue } from "postgres";
+import postgres from "postgres";
 
+import {
+  getDossierMetricsState,
+  importDossierMetricsIfMissing,
+} from "@/db/dossierMetrics";
 import { Metrics } from "@/services/fondsvert/dossier";
 
 function getTestDatabaseUrl() {
@@ -12,12 +16,16 @@ function getTestDatabaseUrl() {
   return databaseUrl;
 }
 
+export function createTestDatabaseClient(): postgres.Sql {
+  return postgres(getTestDatabaseUrl(), { max: 1 });
+}
+
 export async function deleteStoredDossierMetrics(dossierNumber: number) {
-  const sql = postgres(getTestDatabaseUrl(), { max: 1 });
+  const sql = createTestDatabaseClient();
 
   try {
     await sql`
-      delete from dossier_metrics
+      delete from dossier_metric_revisions
       where dossier_number = ${dossierNumber}
     `;
   } finally {
@@ -26,41 +34,22 @@ export async function deleteStoredDossierMetrics(dossierNumber: number) {
 }
 
 export async function getStoredDossierMetrics(dossierNumber: number) {
-  const sql = postgres(getTestDatabaseUrl(), { max: 1 });
+  const state = await getDossierMetricsState({
+    numeroDossier: dossierNumber,
+  });
 
-  try {
-    const [row] = await sql<{ metrics: Metrics }[]>`
-      select metrics
-      from dossier_metrics
-      where dossier_number = ${dossierNumber}
-      limit 1
-    `;
-
-    return row?.metrics;
-  } finally {
-    await sql.end();
-  }
+  return state.status === "imported" ? state.metrics : undefined;
 }
 
-export async function upsertStoredDossierMetrics({
+export async function importStoredDossierMetricsIfMissing({
   dossierNumber,
   metrics,
 }: {
   dossierNumber: number;
   metrics: Metrics;
 }) {
-  const sql = postgres(getTestDatabaseUrl(), { max: 1 });
-
-  try {
-    await sql`
-      insert into dossier_metrics (dossier_number, metrics)
-      values (${dossierNumber}, ${sql.json(metrics as JSONValue)})
-      on conflict (dossier_number)
-      do update set
-        metrics = excluded.metrics,
-        updated_at = now()
-    `;
-  } finally {
-    await sql.end();
-  }
+  await importDossierMetricsIfMissing({
+    numeroDossier: dossierNumber,
+    metrics,
+  });
 }

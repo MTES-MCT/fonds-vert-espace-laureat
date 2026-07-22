@@ -35,7 +35,18 @@ export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
 
 export type Metrics = Record<string, MetricFields | unknown>;
 
-export function isMetricFields(value: unknown): value is MetricFields {
+function isMetricValue(value: unknown): value is MetricValue {
+  return (
+    (typeof value === "number" && Number.isFinite(value)) ||
+    typeof value === "string" ||
+    typeof value === "boolean" ||
+    (Array.isArray(value) && value.every((item) => typeof item === "string"))
+  );
+}
+
+export function isMetricFields(
+  value: unknown,
+): value is MetricFields & { valeur_estimee: Exclude<MetricValue, null> } {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -44,7 +55,9 @@ export function isMetricFields(value: unknown): value is MetricFields {
     "valeur_estimee" in value &&
     typeof value.label === "string" &&
     value.label.length > 0 &&
-    value.valeur_estimee !== null
+    (value.unite === null || typeof value.unite === "string") &&
+    value.valeur_estimee !== null &&
+    isMetricValue(value.valeur_estimee)
   );
 }
 

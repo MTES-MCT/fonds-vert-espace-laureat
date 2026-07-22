@@ -42,7 +42,7 @@ import { authenticatePage } from "./setup/auth";
 import {
   deleteStoredDossierMetrics,
   getStoredDossierMetrics,
-  upsertStoredDossierMetrics,
+  importStoredDossierMetricsIfMissing,
 } from "./setup/db";
 
 async function waitForDsfrTabs(page: Page) {
@@ -468,7 +468,7 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
   const storedMetricsDossierNumber = 89000001;
 
   await deleteStoredDossierMetrics(storedMetricsDossierNumber);
-  await upsertStoredDossierMetrics({
+  await importStoredDossierMetricsIfMissing({
     dossierNumber: storedMetricsDossierNumber,
     metrics: {
       stored_metric: {

@@ -5,8 +5,8 @@ import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibili
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import {
-  createDossierMetricsIfMissing,
-  getStoredDossierMetrics,
+  getDossierMetricsState,
+  importDossierMetricsIfMissing,
 } from "@/db/dossierMetrics";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
@@ -45,7 +45,7 @@ export async function DossierPage({
     userEmail: user.email,
   });
   const dossierFondsVertPromise = getDossierFondsVert({ numeroDossier });
-  const storedMetricsPromise = getStoredDossierMetrics({ numeroDossier });
+  const storedMetricsPromise = getDossierMetricsState({ numeroDossier });
   const dossiersImpactPromise = getDemarcheDossiers({
     demarcheNumber: demarcheImpactNumber,
     userEmail: user.email,
@@ -72,7 +72,7 @@ export async function DossierPage({
   }
 
   // 4. Await remaining promises
-  const [dossiersImpactResult, dossierFondsVertResult, storedMetrics] =
+  const [dossiersImpactResult, dossierFondsVertResult, metricsState] =
     await Promise.all([
       dossiersImpactPromise,
       dossierFondsVertPromise,
@@ -87,21 +87,22 @@ export async function DossierPage({
     ? dossierFondsVertResult.data
     : undefined;
   if (
+    metricsState.status === "not-imported" &&
     dossierFondsVertResult.success &&
     dossierFondsVertResult.data.metrique_specifique
   ) {
-    await createDossierMetricsIfMissing({
+    await importDossierMetricsIfMissing({
       numeroDossier,
       metrics: dossierFondsVertResult.data.metrique_specifique,
     });
   }
   const displayedDossierFondsVertResult =
-    dossierFondsVertResult.success && storedMetrics
+    dossierFondsVertResult.success && metricsState.status === "imported"
       ? {
           success: true as const,
           data: {
             ...dossierFondsVertResult.data,
-            metrique_specifique: storedMetrics,
+            metrique_specifique: metricsState.metrics,
           },
         }
       : dossierFondsVertResult;
