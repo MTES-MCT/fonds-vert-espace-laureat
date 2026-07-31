@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 
+import { closeDb } from "@/db";
 import {
   getDossierMetricsState,
   importDossierMetricsIfMissing,
@@ -11,6 +12,43 @@ import {
 } from "./setup/db";
 
 const BASE_DOSSIER_NUMBER = 89990000;
+
+test("requires PostgreSQL to read the metric import state", async () => {
+  const databaseUrl = process.env.DATABASE_URL;
+  await closeDb();
+  delete process.env.DATABASE_URL;
+
+  try {
+    await expect(
+      getDossierMetricsState({ numeroDossier: BASE_DOSSIER_NUMBER }),
+    ).rejects.toThrow("DATABASE_URL is required");
+  } finally {
+    process.env.DATABASE_URL = databaseUrl;
+  }
+});
+
+test("requires PostgreSQL to import metrics", async () => {
+  const databaseUrl = process.env.DATABASE_URL;
+  await closeDb();
+  delete process.env.DATABASE_URL;
+
+  try {
+    await expect(
+      importDossierMetricsIfMissing({
+        numeroDossier: BASE_DOSSIER_NUMBER,
+        metrics: {
+          metric: {
+            label: "Métrique",
+            unite: null,
+            valeur_estimee: 1,
+          },
+        },
+      }),
+    ).rejects.toThrow("DATABASE_URL is required");
+  } finally {
+    process.env.DATABASE_URL = databaseUrl;
+  }
+});
 
 test.afterEach(async ({}, testInfo) => {
   await deleteStoredDossierMetrics(

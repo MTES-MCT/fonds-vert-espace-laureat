@@ -1,6 +1,6 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
 
-import { getDb, hasDatabaseUrl } from "@/db";
+import { getDb } from "@/db";
 import { dossierMetricRevisions } from "@/db/schema";
 import {
   isMetricFields,
@@ -27,7 +27,6 @@ type DisplayableMetricFields = MetricFields & {
 };
 
 export type DossierMetricsState =
-  | { status: "database-unavailable" }
   | { status: "not-imported" }
   | { status: "imported"; metrics: Metrics };
 
@@ -128,9 +127,7 @@ export async function importDossierMetricsIfMissing({
   numeroDossier: number;
   metrics: Metrics;
 }): Promise<void> {
-  if (!hasDatabaseUrl()) {
-    return;
-  }
+  const db = getDb();
 
   const revisions = Object.entries(metrics)
     .filter((entry): entry is [string, DisplayableMetricFields] =>
@@ -148,7 +145,7 @@ export async function importDossierMetricsIfMissing({
     return;
   }
 
-  await getDb().transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
 
     const [storedRevision] = await tx
@@ -173,10 +170,6 @@ export async function getDossierMetricsState({
 }: {
   numeroDossier: number;
 }): Promise<DossierMetricsState> {
-  if (!hasDatabaseUrl()) {
-    return { status: "database-unavailable" };
-  }
-
   const rows = await getDb()
     .selectDistinctOn(
       [dossierMetricRevisions.dossierNumber, dossierMetricRevisions.metricCode],

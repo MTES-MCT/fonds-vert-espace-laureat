@@ -8,10 +8,6 @@ const globalForDb = globalThis as typeof globalThis & {
   vertImpactDb?: Database;
 };
 
-export function hasDatabaseUrl() {
-  return Boolean(process.env.DATABASE_URL);
-}
-
 export function getDb() {
   if (!globalForDb.vertImpactDb) {
     const databaseUrl = process.env.DATABASE_URL;
