@@ -2,7 +2,7 @@ import { DossierSection } from "@/app/projets/_components/DossierSection";
 import { DemoAnomaliesSection } from "@/app/projets/demo/DemoAnomaliesSection";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
-import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
+import { getDemoDossierMetricsSnapshot } from "@/db/demoMetrics";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { resolveImpactStatus } from "@/services/impact/status";
 import {
@@ -11,37 +11,16 @@ import {
   demoFinancesEJ1,
   demoFinancesEJ2,
 } from "@/utils/demo";
-import {
-  classifyMetricValue,
-  isDisplayableMetricFields,
-} from "@/utils/metrics/guards";
-
-const demoMetricRevisionTargets: Record<string, DossierMetricRevisionTarget> =
-  Object.fromEntries(
-    Object.entries(demoDossierFondsVert.metrique_specifique ?? {}).flatMap(
-      ([metricCode, metric]) =>
-        isDisplayableMetricFields(metric)
-          ? [
-              [
-                metricCode,
-                {
-                  metricCode,
-                  revision: 1,
-                  label: metric.label,
-                  unit: metric.unite,
-                  valueType: classifyMetricValue(metric.valeur_estimee)
-                    .valueType,
-                  sourceValue: metric.valeur_estimee,
-                  effectiveValue: metric.valeur_estimee,
-                },
-              ],
-            ]
-          : [],
-    ),
-  );
 
 export default async function EspaceLaureatDemo() {
   const dossiers = [demoDossier1];
+  const metricsSnapshot = await getDemoDossierMetricsSnapshot();
+  const storedMetrics =
+    metricsSnapshot.status === "imported" ? metricsSnapshot.metrics : {};
+  const dossierFondsVert = {
+    ...demoDossierFondsVert,
+    metrique_specifique: storedMetrics,
+  };
 
   const financesEJResult: FinancesEJResult = {
     [demoFinancesEJ1.numero_ej]: { success: true, data: demoFinancesEJ1 },
@@ -65,15 +44,15 @@ export default async function EspaceLaureatDemo() {
             <MetricRevisionProvider
               key={index}
               dossierNumber={dossier.numero}
-              initialTargets={demoMetricRevisionTargets}
-              demo
+              initialTargets={metricsSnapshot.targets}
+              correctionApiPath="/api/projets/demo/metrics"
             >
               <DossierSection
                 isAdmin={false}
                 dossierSubvention={dossier}
                 dossierFondsVertResult={{
                   success: true,
-                  data: demoDossierFondsVert,
+                  data: dossierFondsVert,
                 }}
                 financesEJPromise={financesEJPromise}
                 impactStatus={impactStatus}

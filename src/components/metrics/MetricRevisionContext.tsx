@@ -12,7 +12,6 @@ import {
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
 import { keepNewestMetricRevision } from "@/utils/metrics/revisions";
-import { metricValuesEqual } from "@/utils/metrics/values";
 
 type MetricRevisionContextValue = {
   targets: Record<string, DossierMetricRevisionTarget>;
@@ -29,12 +28,12 @@ const MetricRevisionContext = createContext<MetricRevisionContextValue | null>(
 export function MetricRevisionProvider({
   dossierNumber,
   initialTargets,
-  demo,
+  correctionApiPath,
   children,
 }: {
   dossierNumber: number;
   initialTargets: Record<string, DossierMetricRevisionTarget>;
-  demo?: boolean;
+  correctionApiPath?: string;
   children: ReactNode;
 }) {
   const [correctedTargets, setCorrectedTargets] = useState<
@@ -61,42 +60,28 @@ export function MetricRevisionProvider({
         throw new Error("Métrique inconnue pour ce dossier");
       }
 
-      let updatedTarget: DossierMetricRevisionTarget;
+      const apiPath =
+        correctionApiPath ?? `/api/projets/${dossierNumber}/metrics`;
+      const response = await fetch(
+        `${apiPath}/${encodeURIComponent(metricCode)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ value }),
+        },
+      );
+      const body = (await response.json().catch(() => ({}))) as {
+        target?: DossierMetricRevisionTarget;
+        error?: string;
+      };
 
-      if (demo) {
-        const unchanged = metricValuesEqual(
-          currentTarget.effectiveValue,
-          value,
+      if (!response.ok || !body.target) {
+        throw new Error(
+          body.error ?? "La correction n’a pas pu être enregistrée.",
         );
-        updatedTarget = {
-          ...currentTarget,
-          revision: unchanged
-            ? currentTarget.revision
-            : currentTarget.revision + 1,
-          effectiveValue: value,
-        };
-      } else {
-        const response = await fetch(
-          `/api/projets/${dossierNumber}/metrics/${encodeURIComponent(metricCode)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ value }),
-          },
-        );
-        const body = (await response.json().catch(() => ({}))) as {
-          target?: DossierMetricRevisionTarget;
-          error?: string;
-        };
-
-        if (!response.ok || !body.target) {
-          throw new Error(
-            body.error ?? "La correction n’a pas pu être enregistrée.",
-          );
-        }
-
-        updatedTarget = body.target;
       }
+
+      const updatedTarget = body.target;
 
       setCorrectedTargets((current) => {
         const currentTarget = current[metricCode] ?? targets[metricCode];
@@ -109,7 +94,7 @@ export function MetricRevisionProvider({
 
       return updatedTarget;
     },
-    [demo, dossierNumber, targets],
+    [correctionApiPath, dossierNumber, targets],
   );
 
   const value = useMemo(

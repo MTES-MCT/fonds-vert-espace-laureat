@@ -316,6 +316,38 @@ export async function importDossierMetricsIfMissing({
   });
 }
 
+export async function resetDossierMetrics({
+  numeroDossier,
+  metrics,
+}: {
+  numeroDossier: number;
+  metrics: Metrics;
+}): Promise<void> {
+  const db = getDb();
+  const revisions = Object.entries(metrics)
+    .filter((entry): entry is [string, MetricFields] =>
+      isDisplayableMetricFields(entry[1]),
+    )
+    .map(([metricCode, metric]) =>
+      toRevisionInsert({
+        dossierNumber: numeroDossier,
+        metricCode,
+        metric,
+      }),
+    );
+
+  await db.transaction(async (tx) => {
+    await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
+    await tx
+      .delete(dossierMetricRevisions)
+      .where(eq(dossierMetricRevisions.dossierNumber, numeroDossier));
+
+    if (revisions.length > 0) {
+      await tx.insert(dossierMetricRevisions).values(revisions);
+    }
+  });
+}
+
 export async function getDossierMetricsState({
   numeroDossier,
 }: {

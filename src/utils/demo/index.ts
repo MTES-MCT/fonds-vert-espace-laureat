@@ -32,8 +32,10 @@ const demandeur = {
   },
 };
 
+export const DEMO_DOSSIER_NUMBER = 99999999;
+
 export const demoDossier1: Dossier = {
-  numero: 12345678,
+  numero: DEMO_DOSSIER_NUMBER,
   dateTraitement: new Date(),
   ...demandeur,
   demarche: {
@@ -286,7 +288,7 @@ export const demoFinancesEJ1: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER,
           centre_couts: CENTRE_COUTS,
           referentiel_programmation: "038001010102",
@@ -304,7 +306,7 @@ export const demoFinancesEJ1: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER,
           centre_couts: CENTRE_COUTS,
           referentiel_programmation: "038001010102",
@@ -322,7 +324,7 @@ export const demoFinancesEJ1: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER,
           centre_couts: CENTRE_COUTS,
           referentiel_programmation: "038001010102",
@@ -348,7 +350,7 @@ export const demoFinancesEJ2: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2A,
           centre_couts: CENTRE_COUTS_2A,
           referentiel_programmation: "038001010102",
@@ -360,7 +362,7 @@ export const demoFinancesEJ2: FinancesEJData = {
         },
         {
           numero_poste_ej: 2,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2B,
           centre_couts: CENTRE_COUTS_2B,
           referentiel_programmation: "038001010102",
@@ -378,7 +380,7 @@ export const demoFinancesEJ2: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2C,
           centre_couts: CENTRE_COUTS_2C,
           referentiel_programmation: "038001010102",
@@ -390,7 +392,7 @@ export const demoFinancesEJ2: FinancesEJData = {
         },
         {
           numero_poste_ej: 2,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2D,
           centre_couts: CENTRE_COUTS_2D,
           referentiel_programmation: "038001010102",
@@ -408,7 +410,7 @@ export const demoFinancesEJ2: FinancesEJData = {
       postes: [
         {
           numero_poste_ej: 1,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2C,
           centre_couts: CENTRE_COUTS_2C,
           referentiel_programmation: "038001010102",
@@ -420,7 +422,7 @@ export const demoFinancesEJ2: FinancesEJData = {
         },
         {
           numero_poste_ej: 2,
-          numero_dossier_ds: 12345678,
+          numero_dossier_ds: DEMO_DOSSIER_NUMBER,
           centre_financier: CENTRE_FINANCIER_2D,
           centre_couts: CENTRE_COUTS_2D,
           referentiel_programmation: "038001010102",

@@ -5,6 +5,8 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
+import { resetDemoDossierMetrics } from "@/db/demoMetrics";
+
 import { gristChampsDS } from "./fixtures/grist";
 
 test.use({
@@ -18,10 +20,12 @@ test.use({
   ],
 });
 
-test("demo page displays the mocked anomalies section without loading Grist", async ({
+test("demo page loads, corrects and persists its database-backed metrics", async ({
   page,
   msw,
 }) => {
+  await resetDemoDossierMetrics();
+
   let gristRequestCount = 0;
   msw.use(
     http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
@@ -46,7 +50,6 @@ test("demo page displays the mocked anomalies section without loading Grist", as
       "Ces vérifications sont automatiques et s'appuient sur les données du dossier.",
     ),
   ).toBeVisible();
-
   await expect(
     anomaliesSection.getByRole("heading", {
       name: "Consommation énergétique avant travaux",
@@ -69,15 +72,90 @@ test("demo page displays the mocked anomalies section without loading Grist", as
     anomaliesSection.getByText("Inférieur au seuil attendu de"),
   ).toBeVisible();
   await expect(anomaliesSection.getByText("40%")).toBeVisible();
-
   await expect(
     anomaliesSection.getByRole("link", {
       name: "Corriger dans Démarches Numériques",
     }),
   ).toHaveAttribute(
     "href",
-    "https://demarche.numerique.gouv.fr/dossiers/12345678",
+    "https://demarche.numerique.gouv.fr/dossiers/99999999",
   );
+
+  let anomaly = anomaliesSection
+    .getByRole("listitem")
+    .filter({ hasText: "Consommation énergétique avant travaux" });
+
+  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+  await expect(dialog).toBeVisible();
+  await expect(
+    dialog.getByText("Consommation énergétique avant travaux"),
+  ).toBeVisible();
+  await expect(dialog.getByLabel("Valeur source")).toHaveValue("2055650");
+  await expect(dialog.getByLabel("Valeur source")).toHaveAttribute(
+    "readonly",
+    "",
+  );
+  await expect(dialog.getByLabel("Valeur corrigée")).toBeFocused();
+  await expect(dialog.getByText("Unité : kWh", { exact: true })).toBeVisible();
+
+  await dialog.getByRole("button", { name: "Annuler" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(
+    anomaly.getByRole("button", { name: "Modifier la valeur" }),
+  ).toBeFocused();
+
+  const anomalyHeading = anomaliesSection.getByRole("heading", {
+    name: "Consommation énergétique avant travaux",
+  });
+  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+  await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
+  await dialog
+    .getByRole("button", { name: "Enregistrer la correction" })
+    .click();
+
+  await expect(dialog).toBeHidden();
+  await expect(
+    anomaliesSection.getByRole("status").filter({
+      hasText: "Correction enregistrée",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
+  ).toHaveCount(1);
+  await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
+  await expect(anomalyHeading).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Consommation énergétique" }),
+  ).toContainText(/1\s*900\s*000,5/);
+
+  await page.reload();
+  await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Consommation énergétique" }),
+  ).toContainText(/1\s*900\s*000,5/);
+
+  anomaly = anomaliesSection
+    .getByRole("listitem")
+    .filter({ hasText: "Émissions GES avant travaux" });
+  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+  await dialog.getByLabel("Valeur corrigée").fill("420");
+  await dialog
+    .getByRole("button", { name: "Enregistrer la correction" })
+    .click();
+
+  await expect(dialog).toBeHidden();
+  await expect(anomaly.getByText("420kgCO₂e")).toBeVisible();
+  await expect(anomaly.getByText("Valeur supérieure à")).toBeVisible();
+  await expect(anomaly.getByText("400kgCO₂e")).toBeVisible();
+  await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
+
+  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+  await expect(dialog.getByLabel("Valeur source")).toHaveValue("448");
+  await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("420");
 });
 
 test("fits before/after metric values and actions on mobile", async ({
@@ -122,107 +200,4 @@ test("fits before/after metric values and actions on mobile", async ({
       }),
     )
     .toBe(true);
-});
-
-test("opens and cancels a metric correction with accessible controls", async ({
-  page,
-}) => {
-  await page.goto("/projets/demo");
-
-  const anomaliesSection = page.getByRole("region", {
-    name: "Données à vérifier",
-  });
-  const anomaly = anomaliesSection
-    .getByRole("listitem")
-    .filter({ hasText: "Consommation énergétique avant travaux" });
-
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
-
-  const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await expect(dialog).toBeVisible();
-  await expect(
-    dialog.getByText("Consommation énergétique avant travaux"),
-  ).toBeVisible();
-  await expect(dialog.getByLabel("Valeur source")).toHaveValue("2055650");
-  await expect(dialog.getByLabel("Valeur source")).toHaveAttribute(
-    "readonly",
-    "",
-  );
-  await expect(dialog.getByLabel("Valeur corrigée")).toBeFocused();
-  await expect(dialog.getByText("Unité : kWh", { exact: true })).toBeVisible();
-
-  await dialog.getByRole("button", { name: "Annuler" }).click();
-  await expect(dialog).toBeHidden();
-  await expect(
-    anomaly.getByRole("button", { name: "Modifier la valeur" }),
-  ).toBeFocused();
-});
-
-test("removes a resolved anomaly after a French numeric correction", async ({
-  page,
-}) => {
-  await page.goto("/projets/demo");
-
-  const anomaliesSection = page.getByRole("region", {
-    name: "Données à vérifier",
-  });
-  const anomalyHeading = anomaliesSection.getByRole("heading", {
-    name: "Consommation énergétique avant travaux",
-  });
-  const anomaly = anomaliesSection
-    .getByRole("listitem")
-    .filter({ hasText: "Consommation énergétique avant travaux" });
-
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
-  const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
-  await dialog
-    .getByRole("button", { name: "Enregistrer la correction" })
-    .click();
-
-  await expect(dialog).toBeHidden();
-  await expect(
-    anomaliesSection.getByRole("status").filter({
-      hasText: "Correction enregistrée",
-    }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
-  ).toHaveCount(1);
-  await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
-  await expect(anomalyHeading).toHaveCount(0);
-  await expect(
-    page.getByRole("region", { name: "Consommation énergétique" }),
-  ).toContainText(/1\s*900\s*000,5/);
-});
-
-test("updates an unresolved anomaly and keeps its source value", async ({
-  page,
-}) => {
-  await page.goto("/projets/demo");
-
-  const anomaliesSection = page.getByRole("region", {
-    name: "Données à vérifier",
-  });
-  const anomaly = anomaliesSection
-    .getByRole("listitem")
-    .filter({ hasText: "Émissions GES avant travaux" });
-
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
-  let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await dialog.getByLabel("Valeur corrigée").fill("420");
-  await dialog
-    .getByRole("button", { name: "Enregistrer la correction" })
-    .click();
-
-  await expect(dialog).toBeHidden();
-  await expect(anomaly.getByText("420kgCO₂e")).toBeVisible();
-  await expect(anomaly.getByText("Valeur supérieure à")).toBeVisible();
-  await expect(anomaly.getByText("400kgCO₂e")).toBeVisible();
-  await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
-
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
-  dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await expect(dialog.getByLabel("Valeur source")).toHaveValue("448");
-  await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("420");
 });
