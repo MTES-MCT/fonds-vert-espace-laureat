@@ -187,7 +187,9 @@ test("dossier page displays subvention financial details correctly", async ({
   });
   await expect(engagementJuridique).toBeVisible();
   await expect(
-    engagementJuridique.getByLabel("Montant attribué initial"),
+    engagementJuridique.getByLabel("Montant attribué initial", {
+      exact: true,
+    }),
   ).toContainText("10 073 574,00 €");
   await expect(
     engagementJuridique.getByLabel("Montant attribué en 2025"),
