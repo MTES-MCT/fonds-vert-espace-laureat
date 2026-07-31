@@ -57,6 +57,14 @@ export function isMetricFields(value: unknown): value is MetricFields {
   );
 }
 
+export function isDisplayableMetricFields(
+  value: unknown,
+): value is MetricFields {
+  return (
+    isMetricFields(value) && !value.label.includes("Donnée non disponible")
+  );
+}
+
 export interface DemandePaiement {
   numero_dp: string;
   date_dp: string;

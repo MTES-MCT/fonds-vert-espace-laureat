@@ -675,6 +675,65 @@ test("dossier page retries an empty metric import on the next load", async ({
   }
 });
 
+test("dossier page retries when Fonds Vert only returns unavailable metrics", async ({
+  page,
+  msw,
+}) => {
+  const unavailableMetricsDossierNumber = 89000007;
+  const includeMetricsRequests: Array<string | null> = [];
+
+  await deleteStoredDossierMetrics(unavailableMetricsDossierNumber);
+
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(unavailableMetricsDossierNumber),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${unavailableMetricsDossierNumber}`,
+      ({ request }) => {
+        const includeMetrics = new URL(request.url).searchParams.get(
+          "include_metrics",
+        );
+        includeMetricsRequests.push(includeMetrics);
+
+        return HttpResponse.json({
+          data: {
+            socle_commun: fondsVertDossierData.data.socle_commun,
+            information_financiere:
+              fondsVertDossierData.data.information_financiere,
+            metrique_specifique: {
+              unavailable: {
+                label: "Surface créée — Donnée non disponible",
+                unite: "m²",
+                valeur_estimee: 12,
+              },
+            },
+          },
+        });
+      },
+    ),
+  );
+
+  try {
+    await page.goto(`/projets/${unavailableMetricsDossierNumber}`);
+
+    await expect
+      .poll(() => getStoredDossierMetrics(unavailableMetricsDossierNumber))
+      .toBeUndefined();
+
+    await page.reload();
+
+    expect(
+      await getStoredDossierMetrics(unavailableMetricsDossierNumber),
+    ).toBeUndefined();
+    expect(includeMetricsRequests).toEqual(["true", "true"]);
+  } finally {
+    await deleteStoredDossierMetrics(unavailableMetricsDossierNumber);
+  }
+});
+
 test("dossier page organizes metrics by thematic groups correctly", async ({
   page,
 }) => {

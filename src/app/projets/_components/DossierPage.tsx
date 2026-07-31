@@ -45,7 +45,6 @@ export async function DossierPage({
     userEmail: user.email,
   });
   const storedMetricsPromise = getDossierMetricsState({ numeroDossier });
-  // Fonds Vert metric inclusion depends on whether local revisions exist.
   const dossierFondsVertPromise = storedMetricsPromise.then((metricsState) =>
     getDossierFondsVert({
       numeroDossier,

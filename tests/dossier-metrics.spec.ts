@@ -354,6 +354,25 @@ test("keeps the import pending when no metric has a supported shape", async ({},
   ).resolves.toEqual({ status: "not-imported" });
 });
 
+test("keeps the import pending when metrics only contain unavailable data", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+
+  await importDossierMetricsIfMissing({
+    numeroDossier: dossierNumber,
+    metrics: {
+      unavailable: {
+        label: "Surface créée — Donnée non disponible",
+        unite: "m²",
+        valeur_estimee: 12,
+      },
+    },
+  });
+
+  await expect(
+    getDossierMetricsState({ numeroDossier: dossierNumber }),
+  ).resolves.toEqual({ status: "not-imported" });
+});
+
 test("keeps only the first concurrent initial import", async ({}, testInfo) => {
   const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
 

@@ -1,5 +1,5 @@
 import {
-  isMetricFields,
+  isDisplayableMetricFields,
   MetricFields,
   Metrics,
   ProcessedMetric,
@@ -7,10 +7,6 @@ import {
 
 const AVANT_TRAVAUX = "avant travaux";
 const APRES_TRAVAUX = "après travaux";
-
-function hasUnavailableData(metric: MetricFields): boolean {
-  return metric.label.includes("Donnée non disponible");
-}
 
 function extractBaseMetricName(label: string): string {
   return label
@@ -25,7 +21,7 @@ function findAvantTravauxMetric(
 ): { key: string; value: MetricFields } | null {
   for (const [key, value] of Object.entries(metrics)) {
     if (
-      isMetricFields(value) &&
+      isDisplayableMetricFields(value) &&
       value.label.includes(` ${AVANT_TRAVAUX}`) &&
       extractBaseMetricName(value.label) === baseLabel
     ) {
@@ -45,22 +41,14 @@ export function processMetrics(
   const processedKeys = new Set<string>();
 
   for (const [apresKey, apresValue] of Object.entries(metrics)) {
-    if (
-      !isMetricFields(apresValue) ||
-      hasUnavailableData(apresValue) ||
-      processedKeys.has(apresKey)
-    )
+    if (!isDisplayableMetricFields(apresValue) || processedKeys.has(apresKey))
       continue;
 
     if (apresValue.label.includes(` ${APRES_TRAVAUX}`)) {
       const baseLabel = extractBaseMetricName(apresValue.label);
       const avantMetric = findAvantTravauxMetric(baseLabel, metrics);
 
-      if (
-        avantMetric &&
-        isMetricFields(avantMetric.value) &&
-        !hasUnavailableData(avantMetric.value)
-      ) {
+      if (avantMetric) {
         const newKey = baseLabel.toLowerCase().replace(/\s+/g, "_");
         processedMetrics[newKey] = {
           _typename: "AvantApresTravaux",
@@ -77,12 +65,7 @@ export function processMetrics(
   }
 
   for (const [key, value] of Object.entries(metrics)) {
-    if (
-      !isMetricFields(value) ||
-      hasUnavailableData(value) ||
-      processedKeys.has(key)
-    )
-      continue;
+    if (!isDisplayableMetricFields(value) || processedKeys.has(key)) continue;
 
     processedMetrics[key] = {
       _typename: "Simple",

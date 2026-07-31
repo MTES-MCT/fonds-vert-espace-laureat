@@ -3,7 +3,7 @@ import { asc, desc, eq, sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { dossierMetricRevisions } from "@/db/schema";
 import {
-  isMetricFields,
+  isDisplayableMetricFields,
   type MetricFields,
   type Metrics,
   type MetricValue,
@@ -127,7 +127,7 @@ export async function importDossierMetricsIfMissing({
 
   const revisions = Object.entries(metrics)
     .filter((entry): entry is [string, MetricFields] =>
-      isMetricFields(entry[1]),
+      isDisplayableMetricFields(entry[1]),
     )
     .map(([metricCode, metric]) =>
       toRevisionInsert({
@@ -154,10 +154,7 @@ export async function importDossierMetricsIfMissing({
       return;
     }
 
-    await tx
-      .insert(dossierMetricRevisions)
-      .values(revisions)
-      .onConflictDoNothing();
+    await tx.insert(dossierMetricRevisions).values(revisions);
   });
 }
 
