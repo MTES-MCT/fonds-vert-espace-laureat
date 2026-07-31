@@ -50,6 +50,7 @@ export async function DossierSection({
   impactStatus,
   nocache,
   anomaliesSection,
+  pageAction,
   impactPrefillUrl,
 }: {
   isAdmin: boolean;
@@ -61,6 +62,7 @@ export async function DossierSection({
   impactStatus: ImpactStatus;
   nocache: boolean;
   anomaliesSection?: ReactNode;
+  pageAction?: ReactNode;
   impactPrefillUrl?: string;
 }) {
   const subvention = dossierSubvention.champs;
@@ -116,6 +118,8 @@ export async function DossierSection({
 
       <div className="fr-container -mt-32 mb-8 flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-1 flex-col gap-y-8">
+          {pageAction && <div className="flex justify-end">{pageAction}</div>}
+
           {anomaliesSection}
 
           <section className="bg-white p-8 shadow-lg">

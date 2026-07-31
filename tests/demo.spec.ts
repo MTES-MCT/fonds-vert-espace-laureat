@@ -156,6 +156,24 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await expect(dialog.getByLabel("Valeur source")).toHaveValue("448");
   await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("420");
+  await dialog.getByRole("button", { name: "Annuler" }).click();
+
+  await Promise.all([
+    page.waitForEvent("load"),
+    page
+      .getByRole("button", {
+        name: "Réinitialiser les données de démonstration",
+      })
+      .click(),
+  ]);
+
+  await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
+  await expect(anomaliesSection.getByText(/2\s*055\s*650\s*kWh/)).toBeVisible();
+  await expect(anomaliesSection.getByText("448kgCO₂e")).toBeVisible();
+
+  await page.reload();
+  await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
+  await expect(anomaliesSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
 test("fits before/after metric values and actions on mobile", async ({

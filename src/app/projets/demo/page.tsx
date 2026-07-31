@@ -1,5 +1,6 @@
 import { DossierSection } from "@/app/projets/_components/DossierSection";
 import { DemoAnomaliesSection } from "@/app/projets/demo/DemoAnomaliesSection";
+import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { getDemoDossierMetricsSnapshot } from "@/db/demoMetrics";
@@ -60,6 +61,7 @@ export default async function EspaceLaureatDemo() {
                 anomaliesSection={
                   <DemoAnomaliesSection dossierNumber={dossier.numero} />
                 }
+                pageAction={<DemoResetButton />}
                 impactPrefillUrl={process.env.DS_IMPACT_URL}
               />
             </MetricRevisionProvider>
