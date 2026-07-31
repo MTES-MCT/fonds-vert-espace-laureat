@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 
 import { closeDb } from "@/db";
 import {
+  appendDossierMetricRevision,
+  getDossierMetricRevisionTargets,
   getDossierMetricsState,
   importDossierMetricsIfMissing,
 } from "@/db/dossierMetrics";
@@ -406,5 +408,282 @@ test("keeps only the first concurrent initial import", async ({}, testInfo) => {
   expect(state.status).toBe("imported");
   if (state.status === "imported") {
     expect(Object.keys(state.metrics)).toHaveLength(1);
+  }
+});
+
+test("appends one typed revision while preserving the source and other metrics", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+  const sql = createTestDatabaseClient();
+
+  try {
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        changing: {
+          label: "Valeur à corriger",
+          unite: "ha",
+          valeur_estimee: 12.5,
+        },
+        unchanged: {
+          label: "Valeur indépendante",
+          unite: null,
+          valeur_estimee: "stable",
+        },
+      },
+    });
+
+    await expect(
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "changing",
+        value: 13.75,
+      }),
+    ).resolves.toMatchObject({
+      metricCode: "changing",
+      revision: 2,
+      sourceValue: 12.5,
+      effectiveValue: 13.75,
+    });
+
+    await expect(
+      getDossierMetricsState({ numeroDossier: dossierNumber }),
+    ).resolves.toEqual({
+      status: "imported",
+      metrics: {
+        changing: {
+          label: "Valeur à corriger",
+          unite: "ha",
+          valeur_estimee: 13.75,
+        },
+        unchanged: {
+          label: "Valeur indépendante",
+          unite: null,
+          valeur_estimee: "stable",
+        },
+      },
+    });
+
+    await expect(
+      getDossierMetricRevisionTargets({ numeroDossier: dossierNumber }),
+    ).resolves.toEqual({
+      changing: {
+        metricCode: "changing",
+        revision: 2,
+        label: "Valeur à corriger",
+        unit: "ha",
+        valueType: "number",
+        sourceValue: 12.5,
+        effectiveValue: 13.75,
+      },
+      unchanged: {
+        metricCode: "unchanged",
+        revision: 1,
+        label: "Valeur indépendante",
+        unit: null,
+        valueType: "text",
+        sourceValue: "stable",
+        effectiveValue: "stable",
+      },
+    });
+
+    const revisions = await sql<{ revision: number; number_value: string }[]>`
+      select revision, number_value::text as number_value
+      from dossier_metric_revisions
+      where dossier_number = ${dossierNumber}
+        and metric_code = 'changing'
+      order by revision
+    `;
+
+    expect(revisions).toEqual([
+      { revision: 1, number_value: "12.5" },
+      { revision: 2, number_value: "13.75" },
+    ]);
+  } finally {
+    await sql.end();
+  }
+});
+
+test("appends valid revisions for every stored metric type", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+  const corrections = {
+    number: 2.5,
+    text: "texte corrigé",
+    boolean: true,
+    text_array: ["première", "deuxième"],
+  } as const;
+
+  await importDossierMetricsIfMissing({
+    numeroDossier: dossierNumber,
+    metrics: {
+      number: { label: "Nombre", unite: null, valeur_estimee: 1 },
+      text: { label: "Texte", unite: null, valeur_estimee: "source" },
+      boolean: { label: "Booléen", unite: null, valeur_estimee: false },
+      text_array: {
+        label: "Liste",
+        unite: null,
+        valeur_estimee: ["source"],
+      },
+    },
+  });
+
+  for (const [metricCode, value] of Object.entries(corrections)) {
+    await expect(
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode,
+        value,
+      }),
+    ).resolves.toMatchObject({
+      metricCode,
+      revision: 2,
+      effectiveValue: value,
+    });
+  }
+
+  await expect(
+    getDossierMetricsState({ numeroDossier: dossierNumber }),
+  ).resolves.toMatchObject({
+    metrics: {
+      number: { valeur_estimee: corrections.number },
+      text: { valeur_estimee: corrections.text },
+      boolean: { valeur_estimee: corrections.boolean },
+      text_array: { valeur_estimee: corrections.text_array },
+    },
+  });
+});
+
+test("rejects unknown targets and invalid values for every stored type", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+
+  await importDossierMetricsIfMissing({
+    numeroDossier: dossierNumber,
+    metrics: {
+      number: { label: "Nombre", unite: null, valeur_estimee: 1 },
+      text: { label: "Texte", unite: null, valeur_estimee: "source" },
+      boolean: { label: "Booléen", unite: null, valeur_estimee: false },
+      text_array: {
+        label: "Liste",
+        unite: null,
+        valeur_estimee: ["source"],
+      },
+    },
+  });
+
+  await expect(
+    appendDossierMetricRevision({
+      numeroDossier: dossierNumber,
+      metricCode: "unknown",
+      value: 1,
+    }),
+  ).rejects.toThrow("Métrique inconnue");
+
+  for (const [metricCode, value] of [
+    ["number", "1"],
+    ["number", Number.NaN],
+    ["number", Number.POSITIVE_INFINITY],
+    ["text", "   "],
+    ["text", false],
+    ["boolean", "true"],
+    ["text_array", []],
+    ["text_array", ["valide", "  "]],
+    ["text_array", "valide"],
+  ] satisfies [string, unknown][]) {
+    await expect(
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode,
+        value,
+      }),
+    ).rejects.toThrow("Valeur invalide");
+  }
+});
+
+test("deduplicates a double submission under concurrency", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+  const sql = createTestDatabaseClient();
+
+  try {
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        metric: {
+          label: "Métrique",
+          unite: null,
+          valeur_estimee: 1,
+        },
+      },
+    });
+
+    const results = await Promise.all([
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "metric",
+        value: 2,
+      }),
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "metric",
+        value: 2,
+      }),
+    ]);
+
+    expect(results.map(({ revision }) => revision)).toEqual([2, 2]);
+    const [{ count }] = await sql<{ count: number }[]>`
+      select count(*)::integer as count
+      from dossier_metric_revisions
+      where dossier_number = ${dossierNumber}
+        and metric_code = 'metric'
+    `;
+    expect(count).toBe(2);
+  } finally {
+    await sql.end();
+  }
+});
+
+test("serializes different concurrent corrections without partial revisions", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+  const sql = createTestDatabaseClient();
+
+  try {
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        metric: {
+          label: "Métrique",
+          unite: null,
+          valeur_estimee: 1,
+        },
+      },
+    });
+
+    await Promise.all([
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "metric",
+        value: 2,
+      }),
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "metric",
+        value: 3,
+      }),
+    ]);
+
+    const revisions = await sql<{ revision: number; number_value: string }[]>`
+      select revision, number_value::text as number_value
+      from dossier_metric_revisions
+      where dossier_number = ${dossierNumber}
+        and metric_code = 'metric'
+      order by revision
+    `;
+
+    expect(revisions.map(({ revision }) => revision)).toEqual([1, 2, 3]);
+    expect(revisions.map(({ number_value }) => number_value).sort()).toEqual([
+      "1",
+      "2",
+      "3",
+    ]);
+  } finally {
+    await sql.end();
   }
 });
