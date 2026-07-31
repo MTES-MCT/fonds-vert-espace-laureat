@@ -1,6 +1,12 @@
-import Button from "@codegouvfr/react-dsfr/Button";
+"use client";
 
+import Alert from "@codegouvfr/react-dsfr/Alert";
+import Button from "@codegouvfr/react-dsfr/Button";
+import { useState } from "react";
+
+import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { MetricField } from "@/components/metrics/MetricField";
+import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import {
   MetricValueContent,
   type ScalarMetricValue,
@@ -17,8 +23,8 @@ type AnomalyProblem = {
 };
 
 export type Anomaly = {
+  metricCode: string;
   indicator: string;
-  declaredValue: AnomalyMetricValue;
   problem: AnomalyProblem;
   helpText: string;
 };
@@ -30,7 +36,10 @@ export function AnomaliesSection({
   anomalies: Anomaly[];
   correctionUrl: string;
 }) {
-  if (anomalies.length === 0) {
+  const { targets } = useMetricRevisions();
+  const [successMessage, setSuccessMessage] = useState<string>();
+
+  if (anomalies.length === 0 && !successMessage) {
     return null;
   }
 
@@ -46,79 +55,109 @@ export function AnomaliesSection({
               <h3 id="anomalies-heading" className="mb-0">
                 Données à vérifier
               </h3>
-              <span
-                aria-label={`${anomalies.length} anomalies`}
-                className={`
-                  mt-0.5 flex size-6 items-center justify-center rounded-full
-                  bg-[var(--background-flat-warning)] text-sm font-bold text-white
-                `}
-              >
-                {anomalies.length}
-              </span>
+              {anomalies.length > 0 && (
+                <span
+                  aria-label={`${anomalies.length} anomalies`}
+                  className={`
+                    mt-0.5 flex size-6 items-center justify-center rounded-full
+                    bg-[var(--background-flat-warning)] text-sm font-bold text-white
+                  `}
+                >
+                  {anomalies.length}
+                </span>
+              )}
             </div>
           </div>
           <div className="max-w-xl">
             <p className="fr-text--sm mb-0 text-[var(--text-default-grey)]">
               Ces vérifications sont automatiques et s'appuient sur les données
               du dossier. Elles servent à fiabiliser les indicateurs d'impact.
-              Pour corriger, demandez au porteur de mettre à jour son dossier
-              dans Démarches Numériques.
+              Vous pouvez corriger une valeur ici ou demander au porteur de
+              mettre à jour son dossier dans Démarches Numériques.
             </p>
           </div>
         </div>
+
+        {successMessage && (
+          <Alert
+            severity="success"
+            small
+            description={successMessage}
+            role="status"
+          />
+        )}
 
         <ul
           aria-label="Liste des anomalies détectées automatiquement sur les données du dossier"
           className="list-none space-y-6 pl-0"
         >
-          {anomalies.map((anomaly) => (
-            <li key={anomaly.indicator}>
-              <h4 className="mb-2 text-lg font-bold">{anomaly.indicator}</h4>
-              <dl
-                className={`
-                  grid gap-8 border border-gray-200 px-8 py-6
-                  sm:grid-cols-[minmax(10rem,14rem)_1fr]
-                `}
-              >
-                <MetricField
-                  label="Valeur déclarée"
-                  value={anomaly.declaredValue.value}
-                  unite={anomaly.declaredValue.unite}
-                  bold
-                />
-                <div>
-                  <dt className="sr-only">Anomalie détectée</dt>
-                  <dd className="!mb-0">
-                    <div className="flex items-center gap-1 text-base font-semibold">
-                      <span
-                        aria-hidden="true"
+          {anomalies.map((anomaly) => {
+            const target = targets[anomaly.metricCode];
+            if (!target || Array.isArray(target.effectiveValue)) {
+              return null;
+            }
+
+            return (
+              <li className="space-y-2" key={anomaly.metricCode}>
+                <h4 className="mb-0 text-lg font-bold">{anomaly.indicator}</h4>
+                <dl
+                  className={`
+                    grid gap-8 border border-gray-200 px-8 py-6
+                    sm:grid-cols-[minmax(10rem,14rem)_1fr]
+                  `}
+                >
+                  <MetricField
+                    label="Valeur déclarée"
+                    value={target.effectiveValue}
+                    unite={target.unit}
+                    bold
+                  />
+                  <div>
+                    <dt className="sr-only">Anomalie détectée</dt>
+                    <dd className="!mb-0">
+                      <div className="flex items-center gap-1 text-base font-semibold">
+                        <span
+                          aria-hidden="true"
+                          className={`
+                            fr-icon-warning-fill fr-icon--sm text-[var(--text-default-warning)]
+                          `}
+                        />
+                        <span>{anomaly.problem.label}</span>
+                        {anomaly.problem.metric && (
+                          <span>
+                            <MetricValueContent
+                              value={anomaly.problem.metric.value}
+                              unite={anomaly.problem.metric.unite}
+                            />
+                          </span>
+                        )}
+                      </div>
+                      <div
                         className={`
-                          fr-icon-warning-fill fr-icon--sm text-[var(--text-default-warning)]
+                          text-xs leading-tight font-normal text-[var(--text-mention-grey)]
                         `}
-                      />
-                      <span>{anomaly.problem.label}</span>
-                      {anomaly.problem.metric && (
-                        <span>
-                          <MetricValueContent
-                            value={anomaly.problem.metric.value}
-                            unite={anomaly.problem.metric.unite}
-                          />
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className={`text-xs leading-tight font-normal text-[var(--text-mention-grey)]`}
-                    >
-                      {anomaly.helpText}
-                    </div>
-                  </dd>
-                </div>
-              </dl>
-            </li>
-          ))}
+                      >
+                        {anomaly.helpText}
+                      </div>
+                    </dd>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <MetricCorrectionEditor
+                      target={target}
+                      onSuccess={() =>
+                        setSuccessMessage(
+                          `Correction enregistrée pour « ${target.label} ».`,
+                        )
+                      }
+                    />
+                  </div>
+                </dl>
+              </li>
+            );
+          })}
         </ul>
 
-        <div className="mt-4 flex justify-end">
+        <div className="flex justify-end">
           <Button
             priority="secondary"
             iconId="fr-icon-external-link-line"

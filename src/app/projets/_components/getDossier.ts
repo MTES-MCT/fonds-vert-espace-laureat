@@ -1,6 +1,7 @@
 import { ClientError } from "graphql-request";
 
 import { createGraphqlClient } from "@/services/ds/graphql";
+import { getDossierAccessQuery } from "@/services/ds/graphql/getDossierAccessQuery";
 import { getDossierQuery } from "@/services/ds/graphql/getDossierQuery";
 import { Dossier } from "@/services/ds/subvention";
 import { getChamps } from "@/services/ds/subvention/champs";
@@ -8,6 +9,51 @@ import { logException } from "@/utils/error";
 import { isAdmin } from "@/utils/roles";
 
 const graphqlClient = createGraphqlClient();
+
+type DossierAccessFields = {
+  demandeur: { __typename?: string };
+  usager: { email: string };
+  groupeInstructeur: { instructeurs: { email: string }[] };
+};
+
+function canAccessDossier({
+  dossier,
+  userEmail,
+}: {
+  dossier: DossierAccessFields;
+  userEmail: string;
+}) {
+  if (dossier.demandeur.__typename !== "PersonneMorale") {
+    return false;
+  }
+
+  return (
+    dossier.usager.email === userEmail ||
+    dossier.groupeInstructeur.instructeurs.some(
+      (instructeur) => instructeur.email === userEmail,
+    ) ||
+    isAdmin({ userEmail })
+  );
+}
+
+export async function getDossierAccess({
+  numeroDossier,
+  userEmail,
+}: {
+  numeroDossier: number;
+  userEmail: string;
+}): Promise<boolean> {
+  try {
+    const { dossier } = await graphqlClient.request(getDossierAccessQuery, {
+      number: numeroDossier,
+    });
+
+    return canAccessDossier({ dossier, userEmail });
+  } catch (error: unknown) {
+    logException(error);
+    return false;
+  }
+}
 
 export async function getDossier({
   numeroDossier,
@@ -30,15 +76,7 @@ export async function getDossier({
       };
     }
 
-    const instructeurEmails = dossier.groupeInstructeur.instructeurs.map(
-      (instructeur) => instructeur.email,
-    );
-
-    const isInstructeur = instructeurEmails.includes(userEmail);
-    const isDemandeur = userEmail === dossier.usager.email;
-    const isAdminUser = isAdmin({ userEmail });
-
-    if (!isDemandeur && !isInstructeur && !isAdminUser) {
+    if (!canAccessDossier({ dossier, userEmail })) {
       return {
         success: false,
         error: "Vous n'êtes pas autorisé à accéder à ce dossier",
