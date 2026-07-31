@@ -1,13 +1,17 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { unionAll } from "drizzle-orm/pg-core";
 
 import { getDb } from "@/db";
 import { dossierMetricRevisions } from "@/db/schema";
 import {
-  isDisplayableMetricFields,
   type MetricFields,
   type Metrics,
   type MetricValue,
 } from "@/services/fondsvert/dossier";
+import {
+  classifyMetricValue,
+  isDisplayableMetricFields,
+} from "@/utils/metrics/guards";
 import { metricValuesEqual } from "@/utils/metrics/values";
 
 type MetricRevisionInsert = typeof dossierMetricRevisions.$inferInsert;
@@ -25,9 +29,30 @@ type CurrentMetricRow = Pick<
   | "textArrayValue"
 >;
 type MetricValueType = CurrentMetricRow["valueType"];
+const currentMetricSelection = {
+  metricCode: dossierMetricRevisions.metricCode,
+  revision: dossierMetricRevisions.revision,
+  label: dossierMetricRevisions.label,
+  unit: dossierMetricRevisions.unit,
+  valueType: dossierMetricRevisions.valueType,
+  numberValue: dossierMetricRevisions.numberValue,
+  textValue: dossierMetricRevisions.textValue,
+  booleanValue: dossierMetricRevisions.booleanValue,
+  textArrayValue: dossierMetricRevisions.textArrayValue,
+};
 export type DossierMetricsState =
   | { status: "not-imported" }
   | { status: "imported"; metrics: Record<string, MetricFields> };
+export type DossierMetricsSnapshot =
+  | {
+      status: "not-imported";
+      targets: Record<string, DossierMetricRevisionTarget>;
+    }
+  | {
+      status: "imported";
+      metrics: Record<string, MetricFields>;
+      targets: Record<string, DossierMetricRevisionTarget>;
+    };
 export type DossierMetricRevisionTarget = {
   metricCode: string;
   revision: number;
@@ -54,42 +79,44 @@ function valueColumns(
   MetricRevisionInsert,
   "valueType" | "numberValue" | "textValue" | "booleanValue" | "textArrayValue"
 > {
-  if (typeof value === "number") {
+  const classifiedValue = classifyMetricValue(value);
+
+  if (classifiedValue.valueType === "number") {
     return {
-      valueType: "number",
-      numberValue: value,
+      valueType: classifiedValue.valueType,
+      numberValue: classifiedValue.value,
       textValue: null,
       booleanValue: null,
       textArrayValue: null,
     };
   }
 
-  if (typeof value === "string") {
+  if (classifiedValue.valueType === "text") {
     return {
-      valueType: "text",
+      valueType: classifiedValue.valueType,
       numberValue: null,
-      textValue: value,
+      textValue: classifiedValue.value,
       booleanValue: null,
       textArrayValue: null,
     };
   }
 
-  if (typeof value === "boolean") {
+  if (classifiedValue.valueType === "boolean") {
     return {
-      valueType: "boolean",
+      valueType: classifiedValue.valueType,
       numberValue: null,
       textValue: null,
-      booleanValue: value,
+      booleanValue: classifiedValue.value,
       textArrayValue: null,
     };
   }
 
   return {
-    valueType: "text_array",
+    valueType: classifiedValue.valueType,
     numberValue: null,
     textValue: null,
     booleanValue: null,
-    textArrayValue: value,
+    textArrayValue: classifiedValue.value,
   };
 }
 
@@ -178,6 +205,75 @@ function revisionRowsToTarget({
   };
 }
 
+async function loadDossierMetricRevisionRows(numeroDossier: number) {
+  const db = getDb();
+  const sourceRevisions = db
+    .select(currentMetricSelection)
+    .from(dossierMetricRevisions)
+    .where(
+      and(
+        eq(dossierMetricRevisions.dossierNumber, numeroDossier),
+        eq(dossierMetricRevisions.revision, 1),
+      ),
+    );
+  const latestRevisions = db
+    .selectDistinctOn(
+      [dossierMetricRevisions.dossierNumber, dossierMetricRevisions.metricCode],
+      currentMetricSelection,
+    )
+    .from(dossierMetricRevisions)
+    .where(eq(dossierMetricRevisions.dossierNumber, numeroDossier))
+    .orderBy(
+      asc(dossierMetricRevisions.dossierNumber),
+      asc(dossierMetricRevisions.metricCode),
+      desc(dossierMetricRevisions.revision),
+    );
+  const revisions = await unionAll(sourceRevisions, latestRevisions);
+  const revisionsByMetricCode = Object.groupBy(
+    revisions,
+    (revision) => revision.metricCode,
+  );
+  const sources: CurrentMetricRow[] = [];
+  const effectiveRevisions: CurrentMetricRow[] = [];
+
+  for (const metricRevisions of Object.values(revisionsByMetricCode)) {
+    const source = metricRevisions?.find((revision) => revision.revision === 1);
+    const effectiveRevision = metricRevisions?.reduce((latest, revision) =>
+      revision.revision > latest.revision ? revision : latest,
+    );
+
+    if (source && effectiveRevision) {
+      sources.push(source);
+      effectiveRevisions.push(effectiveRevision);
+    }
+  }
+
+  return { sources, effectiveRevisions };
+}
+
+function revisionRowsToTargets({
+  sources,
+  effectiveRevisions,
+}: Awaited<ReturnType<typeof loadDossierMetricRevisionRows>>) {
+  const sourcesByMetricCode = new Map(
+    sources.map((source) => [source.metricCode, source]),
+  );
+
+  return Object.fromEntries(
+    effectiveRevisions.flatMap((effectiveRevision) => {
+      const source = sourcesByMetricCode.get(effectiveRevision.metricCode);
+      return source
+        ? [
+            [
+              effectiveRevision.metricCode,
+              revisionRowsToTarget({ source, effectiveRevision }),
+            ],
+          ]
+        : [];
+    }),
+  );
+}
+
 export async function importDossierMetricsIfMissing({
   numeroDossier,
   metrics,
@@ -225,36 +321,15 @@ export async function getDossierMetricsState({
 }: {
   numeroDossier: number;
 }): Promise<DossierMetricsState> {
-  const rows = await getDb()
-    .selectDistinctOn(
-      [dossierMetricRevisions.dossierNumber, dossierMetricRevisions.metricCode],
-      {
-        metricCode: dossierMetricRevisions.metricCode,
-        revision: dossierMetricRevisions.revision,
-        label: dossierMetricRevisions.label,
-        unit: dossierMetricRevisions.unit,
-        valueType: dossierMetricRevisions.valueType,
-        numberValue: dossierMetricRevisions.numberValue,
-        textValue: dossierMetricRevisions.textValue,
-        booleanValue: dossierMetricRevisions.booleanValue,
-        textArrayValue: dossierMetricRevisions.textArrayValue,
-      },
-    )
-    .from(dossierMetricRevisions)
-    .where(eq(dossierMetricRevisions.dossierNumber, numeroDossier))
-    .orderBy(
-      asc(dossierMetricRevisions.dossierNumber),
-      asc(dossierMetricRevisions.metricCode),
-      desc(dossierMetricRevisions.revision),
-    );
+  const snapshot = await getDossierMetricsSnapshot({ numeroDossier });
 
-  if (rows.length === 0) {
+  if (snapshot.status === "not-imported") {
     return { status: "not-imported" };
   }
 
   return {
     status: "imported",
-    metrics: rowsToMetrics(rows),
+    metrics: snapshot.metrics,
   };
 }
 
@@ -263,38 +338,28 @@ export async function getDossierMetricRevisionTargets({
 }: {
   numeroDossier: number;
 }): Promise<Record<string, DossierMetricRevisionTarget>> {
-  const rows = await getDb()
-    .select({
-      metricCode: dossierMetricRevisions.metricCode,
-      revision: dossierMetricRevisions.revision,
-      label: dossierMetricRevisions.label,
-      unit: dossierMetricRevisions.unit,
-      valueType: dossierMetricRevisions.valueType,
-      numberValue: dossierMetricRevisions.numberValue,
-      textValue: dossierMetricRevisions.textValue,
-      booleanValue: dossierMetricRevisions.booleanValue,
-      textArrayValue: dossierMetricRevisions.textArrayValue,
-    })
-    .from(dossierMetricRevisions)
-    .where(eq(dossierMetricRevisions.dossierNumber, numeroDossier))
-    .orderBy(
-      asc(dossierMetricRevisions.metricCode),
-      asc(dossierMetricRevisions.revision),
-    );
-
-  return Object.fromEntries(
-    Object.entries(Object.groupBy(rows, (row) => row.metricCode)).flatMap(
-      ([metricCode, revisions]) => {
-        const source = revisions?.at(0);
-        const effectiveRevision = revisions?.at(-1);
-        const target =
-          source && effectiveRevision
-            ? revisionRowsToTarget({ source, effectiveRevision })
-            : undefined;
-        return target ? [[metricCode, target]] : [];
-      },
-    ),
+  return revisionRowsToTargets(
+    await loadDossierMetricRevisionRows(numeroDossier),
   );
+}
+
+export async function getDossierMetricsSnapshot({
+  numeroDossier,
+}: {
+  numeroDossier: number;
+}): Promise<DossierMetricsSnapshot> {
+  const rows = await loadDossierMetricRevisionRows(numeroDossier);
+  const targets = revisionRowsToTargets(rows);
+
+  if (rows.effectiveRevisions.length === 0) {
+    return { status: "not-imported", targets };
+  }
+
+  return {
+    status: "imported",
+    metrics: rowsToMetrics(rows.effectiveRevisions),
+    targets,
+  };
 }
 
 export async function appendDossierMetricRevision({
@@ -309,18 +374,19 @@ export async function appendDossierMetricRevision({
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
 
-    const rows = await tx
-      .select({
-        metricCode: dossierMetricRevisions.metricCode,
-        revision: dossierMetricRevisions.revision,
-        label: dossierMetricRevisions.label,
-        unit: dossierMetricRevisions.unit,
-        valueType: dossierMetricRevisions.valueType,
-        numberValue: dossierMetricRevisions.numberValue,
-        textValue: dossierMetricRevisions.textValue,
-        booleanValue: dossierMetricRevisions.booleanValue,
-        textArrayValue: dossierMetricRevisions.textArrayValue,
-      })
+    const [source] = await tx
+      .select(currentMetricSelection)
+      .from(dossierMetricRevisions)
+      .where(
+        and(
+          eq(dossierMetricRevisions.dossierNumber, numeroDossier),
+          eq(dossierMetricRevisions.metricCode, metricCode),
+          eq(dossierMetricRevisions.revision, 1),
+        ),
+      )
+      .limit(1);
+    const [effectiveRevision] = await tx
+      .select(currentMetricSelection)
       .from(dossierMetricRevisions)
       .where(
         and(
@@ -328,10 +394,9 @@ export async function appendDossierMetricRevision({
           eq(dossierMetricRevisions.metricCode, metricCode),
         ),
       )
-      .orderBy(asc(dossierMetricRevisions.revision));
+      .orderBy(desc(dossierMetricRevisions.revision))
+      .limit(1);
 
-    const source = rows.at(0);
-    const effectiveRevision = rows.at(-1);
     const target =
       source && effectiveRevision
         ? revisionRowsToTarget({ source, effectiveRevision })

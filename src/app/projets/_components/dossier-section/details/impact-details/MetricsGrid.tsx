@@ -1,6 +1,11 @@
+"use client";
+
 import { ArrowedValues } from "@/components/metrics/ArrowedValues";
+import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
+import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
-import { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
+import type { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
+import { isMetricFields } from "@/utils/metrics/guards";
 import { processMetrics } from "@/utils/metrics/process";
 import { groupMetricsByTheme } from "@/utils/metrics/themes";
 
@@ -14,78 +19,104 @@ function labelToTestId(label: string): string {
 }
 
 const SimpleMetricCard = ({
-  metricKey,
   metric,
   borderColorClass = "border-t-green-500",
 }: {
-  metricKey: string;
-  metric: ProcessedMetric;
+  metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
   borderColorClass?: string;
 }) => {
-  if (metric._typename !== "Simple") return null;
-
   const metricId = labelToTestId(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
+  const { targets } = useMetricRevisions();
+  const target = targets[metric.metricCode];
 
   return (
-    <div
-      key={metricKey}
-      className={`border-t-4 bg-white p-4 shadow-md ${borderColorClass} overflow-hidden rounded-xs`}
+    <section
+      aria-label={metric.label}
+      className={`space-y-2 border-t-4 bg-white p-4 shadow-md ${borderColorClass}
+        overflow-hidden rounded-xs
+      `}
       data-testid={`metric-${metricId}`}
     >
-      <h5 className="mb-2 max-w-[18rem] text-sm font-medium text-balance text-gray-600">
+      <h5 className="max-w-[18rem] text-sm font-medium text-balance text-gray-600">
         {metric.label}
       </h5>
 
       {estimee !== undefined && (
         <MetricValue
           value={estimee}
+          accessibleName="Valeur effective"
           unite={metric.unite}
           testId="valeur-estimee"
         />
       )}
-    </div>
+      {target && <MetricCorrectionEditor target={target} />}
+    </section>
   );
 };
 
 const AvantApresTravauxCard = ({
-  metricKey,
   metric,
   borderColorClass = "border-t-green-500",
 }: {
-  metricKey: string;
-  metric: ProcessedMetric;
+  metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
   borderColorClass?: string;
 }) => {
-  if (metric._typename !== "AvantApresTravaux") return null;
-
   const metricId = labelToTestId(metric.label);
+  const { targets } = useMetricRevisions();
+  const beforeTarget = targets[metric.beforeMetricCode];
+  const afterTarget = targets[metric.afterMetricCode];
 
   return (
-    <div
-      key={metricKey}
-      className={`relative border-t-4 bg-white p-4 shadow-md ${borderColorClass}
+    <section
+      aria-label={metric.label}
+      className={`relative space-y-4 border-t-4 bg-white p-4 shadow-md ${borderColorClass}
         overflow-hidden rounded-xs
       `}
       data-testid={`metric-${metricId}`}
     >
-      <div className="mb-2 text-sm font-medium text-gray-600">
-        {metric.label}
-      </div>
+      <div className="text-sm font-medium text-gray-600">{metric.label}</div>
 
       <ArrowedValues
         values={[metric.valeur_avant_travaux, metric.valeur_apres_travaux]}
         labels={["Avant travaux", "Après travaux"]}
         unite={metric.unite}
       />
-    </div>
+      <div className="flex flex-wrap gap-2">
+        {beforeTarget && (
+          <MetricCorrectionEditor
+            target={beforeTarget}
+            buttonLabel="Modifier la valeur avant travaux"
+          />
+        )}
+        {afterTarget && (
+          <MetricCorrectionEditor
+            target={afterTarget}
+            buttonLabel="Modifier la valeur après travaux"
+          />
+        )}
+      </div>
+    </section>
   );
 };
 
 export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
+  const { targets } = useMetricRevisions();
   if (!metriques) return null;
 
-  const processedMetrics = processMetrics(metriques);
+  const effectiveMetrics = Object.fromEntries(
+    Object.entries(metriques).map(([metricCode, metric]) => {
+      const target = targets[metricCode];
+
+      return [
+        metricCode,
+        target && isMetricFields(metric)
+          ? { ...metric, valeur_estimee: target.effectiveValue }
+          : metric,
+      ];
+    }),
+  );
+  const processedMetrics = processMetrics(effectiveMetrics);
   const metricGroups = groupMetricsByTheme(processedMetrics);
 
   if (Object.keys(metricGroups).length === 0) return null;
@@ -114,14 +145,12 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               return metric._typename === "Simple" ? (
                 <SimpleMetricCard
                   key={key}
-                  metricKey={key}
                   metric={metric}
                   borderColorClass={borderColorClass}
                 />
               ) : (
                 <AvantApresTravauxCard
                   key={key}
-                  metricKey={key}
                   metric={metric}
                   borderColorClass={borderColorClass}
                 />

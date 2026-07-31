@@ -50,6 +50,7 @@ export async function DossierSection({
   impactStatus,
   nocache,
   anomaliesSection,
+  impactPrefillUrl,
 }: {
   isAdmin: boolean;
   dossierSubvention: Dossier;
@@ -60,6 +61,7 @@ export async function DossierSection({
   impactStatus: ImpactStatus;
   nocache: boolean;
   anomaliesSection?: ReactNode;
+  impactPrefillUrl?: string;
 }) {
   const subvention = dossierSubvention.champs;
 
@@ -93,12 +95,14 @@ export async function DossierSection({
         },
       };
 
-  const prefilledDsImpactUrl = await buildImpactPrefillUrl({
-    numeroDossier: dossierSubvention.numero,
-    metriques,
-    socleCommun,
-    nocache,
-  });
+  const prefilledDsImpactUrl =
+    impactPrefillUrl ??
+    (await buildImpactPrefillUrl({
+      numeroDossier: dossierSubvention.numero,
+      metriques,
+      socleCommun,
+      nocache,
+    }));
 
   return (
     <div>

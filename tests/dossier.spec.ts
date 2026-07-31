@@ -76,6 +76,16 @@ test.use({
         return HttpResponse.json(getDossierData);
       }),
 
+      ds.query("getDossierAccess", () => {
+        const { demandeur, groupeInstructeur, usager } =
+          getDossierData.data.dossier;
+        return HttpResponse.json({
+          data: {
+            dossier: { demandeur, groupeInstructeur, usager },
+          },
+        });
+      }),
+
       ds.query("getDemarcheDossiers", () => {
         return HttpResponse.json(makeDemarcheDossiersData());
       }),
@@ -432,7 +442,9 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   const natureOperations = page.getByTestId("metric-nature-des-operations");
   await expect(natureOperations).toContainText("Nature des opérations");
 
-  const natureOperationsTags = natureOperations.locator("li");
+  const natureOperationsTags = natureOperations
+    .getByRole("list")
+    .getByRole("listitem");
   await expect(natureOperationsTags).toHaveCount(3);
   await expect(natureOperationsTags.nth(0)).toContainText(
     "Travaux d'isolation de l'enveloppe du ou des bâtiments",
@@ -447,7 +459,9 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   const typeBatiments = page.getByTestId("metric-types-des-batiments");
   await expect(typeBatiments).toContainText("Types des bâtiments");
 
-  const typeBatimentsTags = typeBatiments.locator("li");
+  const typeBatimentsTags = typeBatiments
+    .getByRole("list")
+    .getByRole("listitem");
   await expect(typeBatimentsTags).toHaveCount(2);
   await expect(typeBatimentsTags.nth(0)).toContainText(
     "École (établissement public du premier degré)",
@@ -459,6 +473,290 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
   await expect(
     page.getByRole("link", { name: "Mettre à jour les données" }),
   ).toHaveCount(2);
+});
+
+test("validates and submits a numeric metric correction once", async ({
+  page,
+  msw,
+}) => {
+  const correctionDossierNumber = 89000012;
+
+  await deleteStoredDossierMetrics(correctionDossierNumber);
+  msw.use(
+    ds.query("getDossier", () => {
+      return HttpResponse.json(
+        makeDossierDataWithNumber(correctionDossierNumber),
+      );
+    }),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${correctionDossierNumber}`,
+      () => HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber: correctionDossierNumber,
+    metrics: {
+      number_metric: {
+        label: "Métrique numérique",
+        unite: "ha",
+        valeur_estimee: 1,
+      },
+    },
+  });
+
+  try {
+    await page.goto(`/projets/${correctionDossierNumber}`);
+
+    const numberCard = page.getByRole("region", {
+      name: "Métrique numérique",
+    });
+    await numberCard
+      .getByRole("button", { name: "Modifier la valeur" })
+      .click();
+    let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    const numberInput = dialog.getByLabel("Valeur corrigée");
+    await numberInput.fill("");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog.getByText("Saisissez un nombre valide.")).toBeVisible();
+    await expect(numberInput).toBeFocused();
+
+    let releaseNumberRequest: (() => void) | undefined;
+    const numberRequestGate = new Promise<void>((resolve) => {
+      releaseNumberRequest = resolve;
+    });
+    let numberRequestCount = 0;
+    await page.route("**/metrics/number_metric", async (route) => {
+      numberRequestCount += 1;
+      await numberRequestGate;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          target: {
+            metricCode: "number_metric",
+            revision: 2,
+            label: "Métrique numérique",
+            unit: "ha",
+            valueType: "number",
+            sourceValue: 1,
+            effectiveValue: 2.5,
+          },
+        }),
+      });
+    });
+
+    await numberInput.fill("2,5");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect.poll(() => numberRequestCount, { timeout: 5000 }).toBe(1);
+    await expect(
+      dialog.getByRole("button", { name: "Enregistrement…" }),
+    ).toBeDisabled();
+    await dialog.locator("form").evaluate((form: HTMLFormElement) => {
+      form.requestSubmit();
+      form.requestSubmit();
+    });
+    expect(numberRequestCount).toBe(1);
+    releaseNumberRequest?.();
+    await expect(dialog).toBeHidden();
+    await expect(numberCard.getByLabel("Valeur effective")).toHaveText(
+      /2,5\s*ha/,
+    );
+    await expect(numberCard.getByRole("status")).toContainText(
+      "Correction enregistrée",
+    );
+    await page.unroute("**/metrics/number_metric");
+    await numberCard
+      .getByRole("button", { name: "Modifier la valeur" })
+      .click();
+    dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await expect(numberCard.getByRole("status")).toHaveCount(0);
+    await expect(dialog.getByLabel("Valeur source")).toHaveValue("1");
+    await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("2.5");
+
+    await page.route("**/metrics/number_metric", (route) =>
+      route.fulfill({
+        status: 500,
+        contentType: "text/plain",
+        body: "Service indisponible",
+      }),
+    );
+    await dialog.getByLabel("Valeur corrigée").fill("3,5");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(
+      dialog.getByText("La correction n’a pas pu être enregistrée."),
+    ).toBeVisible();
+  } finally {
+    await deleteStoredDossierMetrics(correctionDossierNumber);
+  }
+});
+
+test("edits text, boolean and multiple metrics from their cards", async ({
+  page,
+  msw,
+}) => {
+  const correctionDossierNumber = 89000013;
+
+  await deleteStoredDossierMetrics(correctionDossierNumber);
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json(makeDossierDataWithNumber(correctionDossierNumber)),
+    ),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${correctionDossierNumber}`,
+      () => HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber: correctionDossierNumber,
+    metrics: {
+      text_metric: {
+        label: "Métrique texte",
+        unite: null,
+        valeur_estimee: "Source",
+      },
+      boolean_metric: {
+        label: "Métrique booléenne",
+        unite: null,
+        valeur_estimee: false,
+      },
+      array_metric: {
+        label: "Métrique multiple",
+        unite: null,
+        valeur_estimee: ["Source A", "Source B"],
+      },
+    },
+  });
+
+  try {
+    await page.goto(`/projets/${correctionDossierNumber}`);
+
+    const textCard = page.getByRole("region", { name: "Métrique texte" });
+    await textCard.getByRole("button", { name: "Modifier la valeur" }).click();
+    let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Valeur corrigée").fill("Valeur corrigée");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog).toBeHidden();
+    await expect(textCard.getByLabel("Valeur effective")).toHaveText(
+      "Valeur corrigée",
+    );
+
+    const booleanCard = page.getByRole("region", {
+      name: "Métrique booléenne",
+    });
+    await booleanCard
+      .getByRole("button", { name: "Modifier la valeur" })
+      .click();
+    dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Oui", { exact: true }).check({ force: true });
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog).toBeHidden();
+    await expect(booleanCard.getByLabel("Valeur effective")).toHaveText("Oui");
+
+    const arrayCard = page.getByRole("region", {
+      name: "Métrique multiple",
+    });
+    await arrayCard.getByRole("button", { name: "Modifier la valeur" }).click();
+    dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog
+      .getByLabel("Valeur corrigée")
+      .fill("Première valeur\nDeuxième valeur");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog).toBeHidden();
+    const effectiveValues = arrayCard.getByLabel("Valeur effective");
+    await expect(
+      effectiveValues.getByText("Première valeur", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      effectiveValues.getByText("Deuxième valeur", { exact: true }),
+    ).toBeVisible();
+  } finally {
+    await deleteStoredDossierMetrics(correctionDossierNumber);
+  }
+});
+
+test("edits before and after metrics independently", async ({ page, msw }) => {
+  const correctionDossierNumber = 89000014;
+
+  await deleteStoredDossierMetrics(correctionDossierNumber);
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json(makeDossierDataWithNumber(correctionDossierNumber)),
+    ),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${correctionDossierNumber}`,
+      () => HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber: correctionDossierNumber,
+    metrics: {
+      energy_before: {
+        label: "Énergie test avant travaux",
+        unite: "kWh",
+        valeur_estimee: 100,
+      },
+      energy_after: {
+        label: "Énergie test après travaux",
+        unite: "kWh",
+        valeur_estimee: 80,
+      },
+    },
+  });
+
+  try {
+    await page.goto(`/projets/${correctionDossierNumber}`);
+
+    const beforeAfterCard = page.getByRole("region", { name: "Énergie test" });
+    const editBefore = beforeAfterCard.getByRole("button", {
+      name: "Modifier la valeur avant travaux",
+    });
+    const editAfter = beforeAfterCard.getByRole("button", {
+      name: "Modifier la valeur après travaux",
+    });
+
+    await editBefore.click();
+    let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Valeur corrigée").fill("120");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog).toBeHidden();
+    await expect(beforeAfterCard.getByLabel("Avant travaux")).toContainText(
+      "120",
+    );
+    await expect(beforeAfterCard.getByLabel("Après travaux")).toContainText(
+      "80",
+    );
+
+    await editAfter.click();
+    dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Valeur corrigée").fill("70");
+    await dialog
+      .getByRole("button", { name: "Enregistrer la correction" })
+      .click();
+    await expect(dialog).toBeHidden();
+    await expect(beforeAfterCard.getByLabel("Avant travaux")).toContainText(
+      "120",
+    );
+    await expect(beforeAfterCard.getByLabel("Après travaux")).toContainText(
+      "70",
+    );
+  } finally {
+    await deleteStoredDossierMetrics(correctionDossierNumber);
+  }
 });
 
 test("dossier page displays stored metrics before Fonds Vert API metrics", async ({
@@ -913,7 +1211,9 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
     await page.reload();
 
     await expect(
-      page.getByText("Métrique chargée au nouvel essai", { exact: true }),
+      page.getByRole("region", {
+        name: "Métrique chargée au nouvel essai",
+      }),
     ).toBeVisible();
     expect(includeMetricsRequests).toEqual(["true", "false", "true"]);
     await expect
@@ -1360,7 +1660,7 @@ test("dossier page displays metrics", async ({ page, msw }) => {
 
     const natures = impactSection.getByTestId("metric-nature-de-la-friche");
     await expect(natures).toBeVisible();
-    const tags = natures.locator("li");
+    const tags = natures.getByRole("list").getByRole("listitem");
     await expect(tags).toHaveCount(2);
     await expect(tags.nth(0)).toContainText("Friche commerciale");
 

@@ -144,6 +144,7 @@ export function AnomaliesSection({
                   <div className="sm:col-span-2">
                     <MetricCorrectionEditor
                       target={target}
+                      successFeedback="parent"
                       onSuccess={() =>
                         setSuccessMessage(
                           `Correction enregistrée pour « ${target.label} ».`,

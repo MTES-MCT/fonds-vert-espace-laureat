@@ -19,6 +19,8 @@ test("groups matching before and after metrics without changing their values", (
   ).toEqual({
     consommation_énergétique: {
       _typename: "AvantApresTravaux",
+      beforeMetricCode: "energy_before",
+      afterMetricCode: "energy_after",
       label: "Consommation énergétique",
       unite: "kWh",
       valeur_avant_travaux: 350000,
@@ -44,6 +46,7 @@ test("keeps standalone metrics unchanged and ignores unsupported values", () => 
   ).toEqual({
     valid: {
       _typename: "Simple",
+      metricCode: "valid",
       label: "Gain énergétique estimé",
       unite: "%",
       valeur_estimee: 32,

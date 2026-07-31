@@ -4,41 +4,7 @@ import {
   AnomaliesSection,
   type Anomaly,
 } from "@/app/projets/_components/dossier-section/details/AnomaliesSection";
-import {
-  MetricRevisionProvider,
-  useMetricRevisions,
-} from "@/components/metrics/MetricRevisionContext";
-import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
-
-const initialTargets: Record<string, DossierMetricRevisionTarget> = {
-  conso_energetique_avant_travaux: {
-    metricCode: "conso_energetique_avant_travaux",
-    revision: 1,
-    label: "Consommation énergétique avant travaux",
-    unit: "kWh",
-    valueType: "number",
-    sourceValue: 2055650,
-    effectiveValue: 2055650,
-  },
-  emission_ges_avant_travaux: {
-    metricCode: "emission_ges_avant_travaux",
-    revision: 1,
-    label: "Émissions de GES avant travaux",
-    unit: "kgCO₂e",
-    valueType: "number",
-    sourceValue: 448,
-    effectiveValue: 448,
-  },
-  gain_energetique_estime_percentage: {
-    metricCode: "gain_energetique_estime_percentage",
-    revision: 1,
-    label: "Gain énergétique estimé",
-    unit: "%",
-    valueType: "number",
-    sourceValue: 32,
-    effectiveValue: 32,
-  },
-};
+import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 
 function DemoAnomalies({ dossierNumber }: { dossierNumber: number }) {
   const { targets } = useMetricRevisions();
@@ -92,13 +58,5 @@ export function DemoAnomaliesSection({
 }: {
   dossierNumber: number;
 }) {
-  return (
-    <MetricRevisionProvider
-      dossierNumber={dossierNumber}
-      initialTargets={initialTargets}
-      demo
-    >
-      <DemoAnomalies dossierNumber={dossierNumber} />
-    </MetricRevisionProvider>
-  );
+  return <DemoAnomalies dossierNumber={dossierNumber} />;
 }

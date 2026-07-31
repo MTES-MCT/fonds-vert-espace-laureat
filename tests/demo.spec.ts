@@ -18,8 +18,20 @@ test.use({
   ],
 });
 
-test("demo page displays the mocked anomalies section", async ({ page }) => {
+test("demo page displays the mocked anomalies section without loading Grist", async ({
+  page,
+  msw,
+}) => {
+  let gristRequestCount = 0;
+  msw.use(
+    http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
+      gristRequestCount += 1;
+      return HttpResponse.json(gristChampsDS);
+    }),
+  );
+
   await page.goto("/projets/demo");
+  expect(gristRequestCount).toBe(0);
 
   const anomaliesSection = page.getByRole("region", {
     name: "Données à vérifier",
@@ -66,6 +78,50 @@ test("demo page displays the mocked anomalies section", async ({ page }) => {
     "href",
     "https://demarche.numerique.gouv.fr/dossiers/12345678",
   );
+});
+
+test("fits before/after metric values and actions on mobile", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/projets/demo");
+
+  const card = page.getByRole("region", {
+    name: "Consommation énergétique",
+  });
+
+  await expect(
+    card.getByRole("button", {
+      name: "Modifier la valeur avant travaux",
+    }),
+  ).toBeVisible();
+  await expect(
+    card.getByRole("button", {
+      name: "Modifier la valeur après travaux",
+    }),
+  ).toBeVisible();
+  await expect
+    .poll(() =>
+      card.evaluate((element) => element.scrollWidth <= element.clientWidth),
+    )
+    .toBe(true);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
+  await expect
+    .poll(() =>
+      card.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return bounds.left >= 0 && bounds.right <= window.innerWidth;
+      }),
+    )
+    .toBe(true);
 });
 
 test("opens and cancels a metric correction with accessible controls", async ({
@@ -130,8 +186,14 @@ test("removes a resolved anomaly after a French numeric correction", async ({
       hasText: "Correction enregistrée",
     }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
+  ).toHaveCount(1);
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
   await expect(anomalyHeading).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Consommation énergétique" }),
+  ).toContainText(/1\s*900\s*000,5/);
 });
 
 test("updates an unresolved anomaly and keeps its source value", async ({

@@ -17,6 +17,7 @@ export type MetricFields = {
 
 export type SimpleMetric = {
   _typename: "Simple";
+  metricCode: string;
   label: string;
   unite: string | null;
   valeur_estimee: MetricValue;
@@ -24,6 +25,8 @@ export type SimpleMetric = {
 
 export type AvantApresTravaux = {
   _typename: "AvantApresTravaux";
+  beforeMetricCode: string;
+  afterMetricCode: string;
   label: string;
   unite: string | null;
   valeur_avant_travaux: MetricValue;
@@ -33,37 +36,6 @@ export type AvantApresTravaux = {
 export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
 
 export type Metrics = Record<string, unknown>;
-
-function isMetricValue(value: unknown): value is MetricValue {
-  return (
-    (typeof value === "number" && Number.isFinite(value)) ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (Array.isArray(value) && value.every((item) => typeof item === "string"))
-  );
-}
-
-export function isMetricFields(value: unknown): value is MetricFields {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "label" in value &&
-    "unite" in value &&
-    "valeur_estimee" in value &&
-    typeof value.label === "string" &&
-    value.label.length > 0 &&
-    (value.unite === null || typeof value.unite === "string") &&
-    isMetricValue(value.valeur_estimee)
-  );
-}
-
-export function isDisplayableMetricFields(
-  value: unknown,
-): value is MetricFields {
-  return (
-    isMetricFields(value) && !value.label.includes("Donnée non disponible")
-  );
-}
 
 export interface DemandePaiement {
   numero_dp: string;

@@ -11,6 +11,8 @@ import {
 
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
+import { keepNewestMetricRevision } from "@/utils/metrics/revisions";
+import { metricValuesEqual } from "@/utils/metrics/values";
 
 type MetricRevisionContextValue = {
   targets: Record<string, DossierMetricRevisionTarget>;
@@ -35,7 +37,21 @@ export function MetricRevisionProvider({
   demo?: boolean;
   children: ReactNode;
 }) {
-  const [targets, setTargets] = useState(initialTargets);
+  const [correctedTargets, setCorrectedTargets] = useState<
+    Record<string, DossierMetricRevisionTarget>
+  >({});
+  const targets = useMemo(() => {
+    const mergedTargets = { ...initialTargets };
+
+    for (const [metricCode, target] of Object.entries(correctedTargets)) {
+      mergedTargets[metricCode] = keepNewestMetricRevision(
+        mergedTargets[metricCode],
+        target,
+      );
+    }
+
+    return mergedTargets;
+  }, [correctedTargets, initialTargets]);
 
   const correctMetric = useCallback(
     async (metricCode: string, value: MetricValue) => {
@@ -48,9 +64,10 @@ export function MetricRevisionProvider({
       let updatedTarget: DossierMetricRevisionTarget;
 
       if (demo) {
-        const unchanged =
-          JSON.stringify(currentTarget.effectiveValue) ===
-          JSON.stringify(value);
+        const unchanged = metricValuesEqual(
+          currentTarget.effectiveValue,
+          value,
+        );
         updatedTarget = {
           ...currentTarget,
           revision: unchanged
@@ -67,7 +84,7 @@ export function MetricRevisionProvider({
             body: JSON.stringify({ value }),
           },
         );
-        const body = (await response.json()) as {
+        const body = (await response.json().catch(() => ({}))) as {
           target?: DossierMetricRevisionTarget;
           error?: string;
         };
@@ -81,10 +98,14 @@ export function MetricRevisionProvider({
         updatedTarget = body.target;
       }
 
-      setTargets((current) => ({
-        ...current,
-        [metricCode]: updatedTarget,
-      }));
+      setCorrectedTargets((current) => {
+        const currentTarget = current[metricCode] ?? targets[metricCode];
+
+        return {
+          ...current,
+          [metricCode]: keepNewestMetricRevision(currentTarget, updatedTarget),
+        };
+      });
 
       return updatedTarget;
     },

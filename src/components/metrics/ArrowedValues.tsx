@@ -14,11 +14,11 @@ export const ArrowedValues = ({
   unite,
 }: ArrowedValuesProps) => {
   return (
-    <div className="flex items-center">
+    <div className="flex min-w-0 items-center">
       {values.map((value, index) => (
-        <div key={index} className="flex items-center">
+        <div key={index} className="flex min-w-0 items-center">
           {index > 0 && (
-            <div className="mx-4 text-gray-400/65">
+            <div className="mx-1 shrink-0 text-gray-400/65 sm:mx-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -36,9 +36,11 @@ export const ArrowedValues = ({
           )}
           <MetricValue
             value={value}
+            accessibleName={labels[index]}
             label={labels[index]}
             unite={unite}
             testId={`valeur-${index}`}
+            compact
           />
         </div>
       ))}

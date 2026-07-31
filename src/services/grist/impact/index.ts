@@ -1,10 +1,10 @@
-import {
-  isMetricFields,
+import type {
   MetricFields,
   Metrics,
   SocleCommun,
 } from "@/services/fondsvert/dossier";
 import { requireEnv } from "@/utils/env";
+import { isMetricFields } from "@/utils/metrics/guards";
 
 type GristImpactRecord = {
   id: number;

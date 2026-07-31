@@ -4,6 +4,7 @@ import { closeDb } from "@/db";
 import {
   appendDossierMetricRevision,
   getDossierMetricRevisionTargets,
+  getDossierMetricsSnapshot,
   getDossierMetricsState,
   importDossierMetricsIfMissing,
 } from "@/db/dossierMetrics";
@@ -486,6 +487,26 @@ test("appends one typed revision while preserving the source and other metrics",
       },
     });
 
+    await expect(
+      getDossierMetricsSnapshot({ numeroDossier: dossierNumber }),
+    ).resolves.toMatchObject({
+      status: "imported",
+      metrics: {
+        changing: { valeur_estimee: 13.75 },
+        unchanged: { valeur_estimee: "stable" },
+      },
+      targets: {
+        changing: {
+          sourceValue: 12.5,
+          effectiveValue: 13.75,
+        },
+        unchanged: {
+          sourceValue: "stable",
+          effectiveValue: "stable",
+        },
+      },
+    });
+
     const revisions = await sql<{ revision: number; number_value: string }[]>`
       select revision, number_value::text as number_value
       from dossier_metric_revisions
@@ -499,6 +520,47 @@ test("appends one typed revision while preserving the source and other metrics",
       { revision: 2, number_value: "13.75" },
     ]);
   } finally {
+    await sql.end();
+  }
+});
+
+test("keeps an orphan revision without revision 1 non-imported", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + 2000 + testInfo.parallelIndex;
+  const sql = createTestDatabaseClient();
+
+  try {
+    await sql`
+      insert into dossier_metric_revisions (
+        dossier_number,
+        metric_code,
+        revision,
+        label,
+        value_type,
+        text_value
+      )
+      values (
+        ${dossierNumber},
+        'orphan',
+        2,
+        'Révision orpheline',
+        'text',
+        'sans source'
+      )
+    `;
+
+    await expect(
+      getDossierMetricsSnapshot({ numeroDossier: dossierNumber }),
+    ).resolves.toEqual({
+      status: "not-imported",
+      targets: {},
+    });
+    await expect(
+      getDossierMetricsState({ numeroDossier: dossierNumber }),
+    ).resolves.toEqual({
+      status: "not-imported",
+    });
+  } finally {
+    await deleteStoredDossierMetrics(dossierNumber);
     await sql.end();
   }
 });

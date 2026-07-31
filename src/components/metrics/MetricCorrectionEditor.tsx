@@ -6,14 +6,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
-import {
-  type FormEvent,
-  type RefObject,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type FormEvent, useId, useMemo, useRef, useState } from "react";
 
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
@@ -59,11 +52,9 @@ function parseValue(
       return value.length > 0 ? value : undefined;
     }
     case "boolean":
-      return rawValue === "true"
-        ? true
-        : rawValue === "false"
-          ? false
-          : undefined;
+      if (rawValue === "true") return true;
+      if (rawValue === "false") return false;
+      return undefined;
     case "text_array": {
       const values = rawValue.split("\n").map((value) => value.trim());
       return values.length > 0 && values.every((value) => value.length > 0)
@@ -90,9 +81,13 @@ function validationMessage(
 
 export function MetricCorrectionEditor({
   target,
+  buttonLabel = "Modifier la valeur",
+  successFeedback = "editor",
   onSuccess,
 }: {
   target: DossierMetricRevisionTarget;
+  buttonLabel?: string;
+  successFeedback?: "editor" | "parent";
   onSuccess?: (target: DossierMetricRevisionTarget) => void;
 }) {
   const instanceId = useId().replaceAll(":", "");
@@ -107,18 +102,27 @@ export function MetricCorrectionEditor({
   const { correctMetric } = useMetricRevisions();
   const [rawValue, setRawValue] = useState(inputValue(target.effectiveValue));
   const [error, setError] = useState<string>();
+  const [successMessage, setSuccessMessage] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const setInputRef = (
+    element: HTMLInputElement | HTMLTextAreaElement | null,
+  ) => {
+    inputRef.current = element;
+  };
 
   const focusCorrectionControl = () => {
-    window.setTimeout(() => inputRef.current?.focus(), 0);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => inputRef.current?.focus());
+    });
   };
 
   const openEditor = () => {
     setRawValue(inputValue(target.effectiveValue));
     setError(undefined);
+    setSuccessMessage(undefined);
     modal.open();
     focusCorrectionControl();
   };
@@ -148,6 +152,9 @@ export function MetricCorrectionEditor({
 
     try {
       const updatedTarget = await correctMetric(target.metricCode, value);
+      if (successFeedback === "editor") {
+        setSuccessMessage(`Correction enregistrée pour « ${target.label} ».`);
+      }
       onSuccess?.(updatedTarget);
       closeEditor();
     } catch (caughtError) {
@@ -164,6 +171,69 @@ export function MetricCorrectionEditor({
   };
 
   const fieldState = error ? "error" : "default";
+  const correctionField = () => {
+    switch (target.valueType) {
+      case "boolean":
+        return (
+          <RadioButtons
+            legend="Valeur corrigée"
+            orientation="horizontal"
+            state={fieldState}
+            stateRelatedMessage={error}
+            options={[
+              {
+                label: "Oui",
+                nativeInputProps: {
+                  checked: rawValue === "true",
+                  disabled: isSubmitting,
+                  onChange: () => setRawValue("true"),
+                  ref: setInputRef,
+                },
+              },
+              {
+                label: "Non",
+                nativeInputProps: {
+                  checked: rawValue === "false",
+                  disabled: isSubmitting,
+                  onChange: () => setRawValue("false"),
+                },
+              },
+            ]}
+          />
+        );
+      case "text_array":
+        return (
+          <Input
+            label="Valeur corrigée"
+            textArea
+            state={fieldState}
+            stateRelatedMessage={error}
+            nativeTextAreaProps={{
+              value: rawValue,
+              disabled: isSubmitting,
+              onChange: (event) => setRawValue(event.target.value),
+              ref: setInputRef,
+            }}
+          />
+        );
+      case "number":
+      case "text":
+        return (
+          <Input
+            label="Valeur corrigée"
+            state={fieldState}
+            stateRelatedMessage={error}
+            nativeInputProps={{
+              value: rawValue,
+              disabled: isSubmitting,
+              inputMode: target.valueType === "number" ? "decimal" : undefined,
+              onChange: (event) => setRawValue(event.target.value),
+              ref: setInputRef,
+            }}
+          />
+        );
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -177,12 +247,12 @@ export function MetricCorrectionEditor({
           onClick: openEditor,
         }}
       >
-        Modifier la valeur
+        {buttonLabel}
       </Button>
 
       <modal.Component title="Modifier la valeur" size="small">
         <form className="space-y-6" onSubmit={submit}>
-          <p className="mb-0 font-medium">{target.label}</p>
+          <p className="font-medium">{target.label}</p>
 
           <div className="space-y-2">
             {target.valueType === "text_array" ? (
@@ -204,69 +274,12 @@ export function MetricCorrectionEditor({
               />
             )}
 
-            {target.valueType === "boolean" ? (
-              <RadioButtons
-                legend="Valeur corrigée"
-                orientation="horizontal"
-                state={fieldState}
-                stateRelatedMessage={error}
-                options={[
-                  {
-                    label: "Oui",
-                    nativeInputProps: {
-                      checked: rawValue === "true",
-                      disabled: isSubmitting,
-                      onChange: () => setRawValue("true"),
-                      ref: inputRef as RefObject<HTMLInputElement>,
-                    },
-                  },
-                  {
-                    label: "Non",
-                    nativeInputProps: {
-                      checked: rawValue === "false",
-                      disabled: isSubmitting,
-                      onChange: () => setRawValue("false"),
-                    },
-                  },
-                ]}
-              />
-            ) : target.valueType === "text_array" ? (
-              <Input
-                label="Valeur corrigée"
-                textArea
-                state={fieldState}
-                stateRelatedMessage={error}
-                nativeTextAreaProps={{
-                  value: rawValue,
-                  disabled: isSubmitting,
-                  onChange: (event) => setRawValue(event.target.value),
-                  ref: inputRef as RefObject<HTMLTextAreaElement>,
-                }}
-              />
-            ) : (
-              <Input
-                label="Valeur corrigée"
-                state={fieldState}
-                stateRelatedMessage={error}
-                nativeInputProps={{
-                  value: rawValue,
-                  disabled: isSubmitting,
-                  inputMode:
-                    target.valueType === "number" ? "decimal" : undefined,
-                  onChange: (event) => setRawValue(event.target.value),
-                  ref: inputRef as RefObject<HTMLInputElement>,
-                }}
-              />
-            )}
+            {correctionField()}
 
             {target.unit && (
-              <p className="fr-hint-text mb-0">Unité : {target.unit}</p>
+              <p className="fr-hint-text">Unité : {target.unit}</p>
             )}
           </div>
-
-          {error && (
-            <Alert severity="error" small description={error} role="alert" />
-          )}
 
           <ButtonsGroup
             alignment="right"
@@ -291,6 +304,15 @@ export function MetricCorrectionEditor({
           />
         </form>
       </modal.Component>
+
+      {successMessage && (
+        <Alert
+          severity="success"
+          small
+          description={successMessage}
+          role="status"
+        />
+      )}
     </div>
   );
 }

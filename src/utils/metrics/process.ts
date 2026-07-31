@@ -1,9 +1,9 @@
-import {
-  isDisplayableMetricFields,
+import type {
   MetricFields,
   Metrics,
   ProcessedMetric,
 } from "@/services/fondsvert/dossier";
+import { isDisplayableMetricFields } from "@/utils/metrics/guards";
 
 const AVANT_TRAVAUX = "avant travaux";
 const APRES_TRAVAUX = "après travaux";
@@ -52,6 +52,8 @@ export function processMetrics(
         const newKey = baseLabel.toLowerCase().replace(/\s+/g, "_");
         processedMetrics[newKey] = {
           _typename: "AvantApresTravaux",
+          beforeMetricCode: avantMetric.key,
+          afterMetricCode: apresKey,
           label: baseLabel,
           unite: apresValue.unite,
           valeur_avant_travaux: avantMetric.value.valeur_estimee,
@@ -69,6 +71,7 @@ export function processMetrics(
 
     processedMetrics[key] = {
       _typename: "Simple",
+      metricCode: key,
       label: value.label,
       unite: value.unite,
       valeur_estimee: value.valeur_estimee,
