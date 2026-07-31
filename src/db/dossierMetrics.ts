@@ -22,16 +22,12 @@ type CurrentMetricRow = Pick<
   | "booleanValue"
   | "textArrayValue"
 >;
-type DisplayableMetricFields = MetricFields & {
-  valeur_estimee: Exclude<MetricValue, null>;
-};
-
 export type DossierMetricsState =
   | { status: "not-imported" }
-  | { status: "imported"; metrics: Metrics };
+  | { status: "imported"; metrics: Record<string, MetricFields> };
 
 function valueColumns(
-  value: Exclude<MetricValue, null>,
+  value: MetricValue,
 ): Pick<
   MetricRevisionInsert,
   "valueType" | "numberValue" | "textValue" | "booleanValue" | "textArrayValue"
@@ -82,7 +78,7 @@ function toRevisionInsert({
 }: {
   dossierNumber: number;
   metricCode: string;
-  metric: DisplayableMetricFields;
+  metric: MetricFields;
 }): MetricRevisionInsert {
   return {
     dossierNumber,
@@ -94,7 +90,7 @@ function toRevisionInsert({
   };
 }
 
-function rowValue(row: CurrentMetricRow): Exclude<MetricValue, null> {
+function rowValue(row: CurrentMetricRow): MetricValue {
   switch (row.valueType) {
     case "number":
       return row.numberValue!;
@@ -107,7 +103,7 @@ function rowValue(row: CurrentMetricRow): Exclude<MetricValue, null> {
   }
 }
 
-function rowsToMetrics(rows: CurrentMetricRow[]): Metrics {
+function rowsToMetrics(rows: CurrentMetricRow[]): Record<string, MetricFields> {
   return Object.fromEntries(
     rows.map((row) => [
       row.metricCode,
@@ -130,7 +126,7 @@ export async function importDossierMetricsIfMissing({
   const db = getDb();
 
   const revisions = Object.entries(metrics)
-    .filter((entry): entry is [string, DisplayableMetricFields] =>
+    .filter((entry): entry is [string, MetricFields] =>
       isMetricFields(entry[1]),
     )
     .map(([metricCode, metric]) =>

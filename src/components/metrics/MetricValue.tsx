@@ -3,7 +3,7 @@ import Tag from "@codegouvfr/react-dsfr/Tag";
 import { MetricValue as MetricValueType } from "@/services/fondsvert/dossier";
 import { formatMetric } from "@/utils/format";
 
-export type ScalarMetricValue = Exclude<MetricValueType, string[] | null>;
+export type ScalarMetricValue = Exclude<MetricValueType, string[]>;
 
 export const MetricValueContent = ({
   value,
@@ -31,8 +31,6 @@ export const MetricValue = ({
   unite,
   testId = "value",
 }: MetricValueProps) => {
-  if (value === null) return null;
-
   const isNumberValue = typeof value === "number";
   const isStringValue = typeof value === "string";
   const isArrayValue = Array.isArray(value);

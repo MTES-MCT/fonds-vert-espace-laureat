@@ -13,14 +13,9 @@ export const ArrowedValues = ({
   labels,
   unite,
 }: ArrowedValuesProps) => {
-  const nonNullValues = values.filter((v) => v !== null);
-  const nonNullLabels = labels.filter((_, i) => values[i] !== null);
-
-  if (nonNullValues.length === 0) return null;
-
   return (
     <div className="flex items-center">
-      {nonNullValues.map((value, index) => (
+      {values.map((value, index) => (
         <div key={index} className="flex items-center">
           {index > 0 && (
             <div className="mx-4 text-gray-400/65">
@@ -41,7 +36,7 @@ export const ArrowedValues = ({
           )}
           <MetricValue
             value={value}
-            label={nonNullLabels[index]}
+            label={labels[index]}
             unite={unite}
             testId={`valeur-${index}`}
           />

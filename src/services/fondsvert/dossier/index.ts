@@ -7,7 +7,7 @@ const defaultDossierSearchParams = {
   type_export: "JSON",
 };
 
-export type MetricValue = number | string | boolean | string[] | null;
+export type MetricValue = number | string | boolean | string[];
 
 export type MetricFields = {
   label: string;
@@ -32,7 +32,7 @@ export type AvantApresTravaux = {
 
 export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
 
-export type Metrics = Record<string, MetricFields | unknown>;
+export type Metrics = Record<string, unknown>;
 
 function isMetricValue(value: unknown): value is MetricValue {
   return (
@@ -43,9 +43,7 @@ function isMetricValue(value: unknown): value is MetricValue {
   );
 }
 
-export function isMetricFields(
-  value: unknown,
-): value is MetricFields & { valeur_estimee: Exclude<MetricValue, null> } {
+export function isMetricFields(value: unknown): value is MetricFields {
   return (
     typeof value === "object" &&
     value !== null &&
@@ -55,7 +53,6 @@ export function isMetricFields(
     typeof value.label === "string" &&
     value.label.length > 0 &&
     (value.unite === null || typeof value.unite === "string") &&
-    value.valeur_estimee !== null &&
     isMetricValue(value.valeur_estimee)
   );
 }
