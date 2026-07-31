@@ -118,8 +118,6 @@ export async function DossierSection({
 
       <div className="fr-container -mt-32 mb-8 flex flex-wrap items-start gap-8">
         <div className="flex min-w-0 flex-1 flex-col gap-y-8">
-          {pageAction && <div className="flex justify-end">{pageAction}</div>}
-
           {anomaliesSection}
 
           <section className="bg-white p-8 shadow-lg">
@@ -159,57 +157,69 @@ export async function DossierSection({
           </Link>
         </div>
 
-        <div className="relative w-[22rem] shrink-0 bg-white p-6 shadow-lg">
-          <RefreshIndicator />
-          <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
-            <StatutRealisation
-              statut={impactStatus.statut}
-              updatedAt={impactStatus.updatedAt}
-              impactPrefillUrl={prefilledDsImpactUrl}
-            />
-          </div>
-          {socleCommun && (
-            <Timeline
-              steps={[
-                { label: "Dépôt du dossier", date: socleCommun.date_depot },
-                {
-                  label: "Notification",
-                  date: socleCommun.date_notification,
-                },
-                {
-                  label: "Début d'exécution",
-                  date: socleCommun.date_debut_execution,
-                },
-                {
-                  label: "Fin d'exécution",
-                  date: socleCommun.date_fin_execution,
-                },
-              ]}
-            />
-          )}
-          <ProjectPresentation
-            resume={subvention.resumeProjet}
-            numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-            departementImplantation={subvention.departementImplantation}
-            socleCommun={socleCommun}
-          />
-          <ProjectHolder
-            emailRepresentantLegal={subvention.emailRepresentantLegal}
-            emailResponsableSuivi={subvention.emailResponsableSuivi}
-            socleCommun={socleCommun}
-          />
-          <section aria-labelledby="evaluation-heading">
-            <h3
-              id="evaluation-heading"
-              className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
+        <div
+          className={`relative flex w-[22rem] shrink-0 flex-col gap-y-4 lg:block`}
+        >
+          {pageAction && (
+            <div
+              className={`flex justify-end lg:absolute lg:right-0 lg:bottom-full lg:mb-4`}
             >
-              Les données de votre projet participent à la transition écologique
-            </h3>
-            <CompletionSidebar
-              prefilledDsImpactUrl={prefilledDsImpactUrl}
-              updatedAt={impactStatus.updatedAt}
+              {pageAction}
+            </div>
+          )}
+          <div className="relative bg-white p-6 shadow-lg">
+            <RefreshIndicator />
+            <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
+              <StatutRealisation
+                statut={impactStatus.statut}
+                updatedAt={impactStatus.updatedAt}
+                impactPrefillUrl={prefilledDsImpactUrl}
+              />
+            </div>
+            {socleCommun && (
+              <Timeline
+                steps={[
+                  { label: "Dépôt du dossier", date: socleCommun.date_depot },
+                  {
+                    label: "Notification",
+                    date: socleCommun.date_notification,
+                  },
+                  {
+                    label: "Début d'exécution",
+                    date: socleCommun.date_debut_execution,
+                  },
+                  {
+                    label: "Fin d'exécution",
+                    date: socleCommun.date_fin_execution,
+                  },
+                ]}
+              />
+            )}
+            <ProjectPresentation
+              resume={subvention.resumeProjet}
+              numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+              departementImplantation={subvention.departementImplantation}
+              socleCommun={socleCommun}
             />
-          </section>
+            <ProjectHolder
+              emailRepresentantLegal={subvention.emailRepresentantLegal}
+              emailResponsableSuivi={subvention.emailResponsableSuivi}
+              socleCommun={socleCommun}
+            />
+            <section aria-labelledby="evaluation-heading">
+              <h3
+                id="evaluation-heading"
+                className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
+              >
+                Les données de votre projet participent à la transition
+                écologique
+              </h3>
+              <CompletionSidebar
+                prefilledDsImpactUrl={prefilledDsImpactUrl}
+                updatedAt={impactStatus.updatedAt}
+              />
+            </section>
+          </div>
         </div>
       </div>
     </div>

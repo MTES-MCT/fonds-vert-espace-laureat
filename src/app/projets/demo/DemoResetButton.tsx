@@ -37,7 +37,9 @@ export function DemoResetButton() {
   return (
     <div className="space-y-2">
       <Button
-        priority="secondary"
+        className="bg-white shadow-sm"
+        priority="tertiary no outline"
+        size="small"
         iconId="fr-icon-refresh-line"
         nativeButtonProps={{
           type: "button",
@@ -45,9 +47,7 @@ export function DemoResetButton() {
           onClick: resetDemo,
         }}
       >
-        {isResetting
-          ? "Réinitialisation…"
-          : "Réinitialiser les données de démonstration"}
+        {isResetting ? "Réinitialisation…" : "Réinitialiser la démo"}
       </Button>
 
       {error && <Alert severity="error" small description={error} />}

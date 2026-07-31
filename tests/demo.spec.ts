@@ -162,7 +162,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     page.waitForEvent("load"),
     page
       .getByRole("button", {
-        name: "Réinitialiser les données de démonstration",
+        name: "Réinitialiser la démo",
       })
       .click(),
   ]);
