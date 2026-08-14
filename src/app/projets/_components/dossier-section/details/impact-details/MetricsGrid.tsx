@@ -27,6 +27,8 @@ type MetricsGridProps = {
   onCorrectionSuccess?: (metricLabel: string) => void;
 };
 
+type SimpleMetric = Extract<ProcessedMetric, { _typename: "Simple" }>;
+
 function isMetricVisible(
   metric: ProcessedMetric,
   visibleMetricCodes?: ReadonlySet<string>,
@@ -37,6 +39,34 @@ function isMetricVisible(
     ? visibleMetricCodes.has(metric.metricCode)
     : visibleMetricCodes.has(metric.beforeMetricCode) ||
         visibleMetricCodes.has(metric.afterMetricCode);
+}
+
+function indexRelatedMetrics(metrics: Record<string, ProcessedMetric>) {
+  const simpleMetricsByLabel = new Map<string, SimpleMetric>();
+
+  for (const metric of Object.values(metrics)) {
+    if (metric._typename === "Simple") {
+      simpleMetricsByLabel.set(metric.label, metric);
+    }
+  }
+
+  const relatedMetricsByParentLabel = new Map<string, SimpleMetric>();
+  const relatedMetricCodes = new Set<string>();
+
+  for (const metric of Object.values(metrics)) {
+    if (metric._typename !== "AvantApresTravaux") continue;
+
+    const relatedMetric = simpleMetricsByLabel.get(
+      RELATED_METRIC_LABELS[metric.label],
+    );
+
+    if (relatedMetric) {
+      relatedMetricsByParentLabel.set(metric.label, relatedMetric);
+      relatedMetricCodes.add(relatedMetric.metricCode);
+    }
+  }
+
+  return { relatedMetricsByParentLabel, relatedMetricCodes };
 }
 
 const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
@@ -68,7 +98,7 @@ const SimpleMetricRow = ({
   metric,
   onCorrectionSuccess,
 }: {
-  metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
+  metric: SimpleMetric;
   onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
   const metricId = slugify(metric.label);
@@ -123,7 +153,7 @@ const AvantApresTravauxRows = ({
   onCorrectionSuccess,
 }: {
   metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
-  relatedMetric?: Extract<ProcessedMetric, { _typename: "Simple" }>;
+  relatedMetric?: SimpleMetric;
   visibleMetricCodes?: ReadonlySet<string>;
   onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
@@ -259,87 +289,75 @@ export function MetricsGrid({
 
   return (
     <div className="space-y-8">
-      {Object.entries(metricGroups).map(([groupId, group]) => (
-        <div
-          key={groupId}
-          className="metric-group"
-          data-testid={`metric-group-${groupId}`}
-        >
-          {group.theme && (
-            <h4
-              className="mb-4 flex items-center gap-2 text-lg font-medium"
-              data-testid={`metric-group-title-${groupId}`}
-            >
-              <span
-                aria-hidden="true"
-                className={`${group.theme.iconClass} ${group.theme.accentTextColor}`}
-              />
-              {group.theme.label}
-            </h4>
-          )}
-          <div className="space-y-4">
-            {Object.entries(group.metrics).map(([key, metric]) => {
-              const hasRelatedParent =
-                metric._typename === "Simple" &&
-                Object.entries(RELATED_METRIC_LABELS).some(
-                  ([parentLabel, relatedLabel]) =>
-                    relatedLabel === metric.label &&
-                    Object.values(group.metrics).some(
-                      (candidate) =>
-                        candidate._typename === "AvantApresTravaux" &&
-                        candidate.label === parentLabel,
-                    ),
+      {Object.entries(metricGroups).map(([groupId, group]) => {
+        const { relatedMetricsByParentLabel, relatedMetricCodes } =
+          indexRelatedMetrics(group.metrics);
+
+        return (
+          <div
+            key={groupId}
+            className="metric-group"
+            data-testid={`metric-group-${groupId}`}
+          >
+            {group.theme && (
+              <h4
+                className="mb-4 flex items-center gap-2 text-lg font-medium"
+                data-testid={`metric-group-title-${groupId}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`${group.theme.iconClass} ${group.theme.accentTextColor}`}
+                />
+                {group.theme.label}
+              </h4>
+            )}
+            <div className="space-y-4">
+              {Object.entries(group.metrics).map(([key, metric]) => {
+                if (
+                  metric._typename === "Simple" &&
+                  relatedMetricCodes.has(metric.metricCode)
+                ) {
+                  return null;
+                }
+
+                if (metric._typename === "Simple") {
+                  if (!isMetricVisible(metric, visibleMetricCodes)) return null;
+
+                  return (
+                    <SimpleMetricRow
+                      key={key}
+                      metric={metric}
+                      onCorrectionSuccess={onCorrectionSuccess}
+                    />
+                  );
+                }
+
+                const relatedMetric = relatedMetricsByParentLabel.get(
+                  metric.label,
                 );
 
-              if (hasRelatedParent) {
-                return null;
-              }
-
-              if (metric._typename === "Simple") {
-                if (!isMetricVisible(metric, visibleMetricCodes)) return null;
+                if (
+                  !isMetricVisible(metric, visibleMetricCodes) &&
+                  (!relatedMetric ||
+                    !isMetricVisible(relatedMetric, visibleMetricCodes))
+                ) {
+                  return null;
+                }
 
                 return (
-                  <SimpleMetricRow
+                  <AvantApresTravauxRows
                     key={key}
                     metric={metric}
+                    relatedMetric={relatedMetric}
+                    visibleMetricCodes={visibleMetricCodes}
                     onCorrectionSuccess={onCorrectionSuccess}
                   />
                 );
-              }
-
-              const relatedMetricLabel = RELATED_METRIC_LABELS[metric.label];
-              const relatedMetric = Object.values(group.metrics).find(
-                (
-                  candidate,
-                ): candidate is Extract<
-                  ProcessedMetric,
-                  { _typename: "Simple" }
-                > =>
-                  candidate._typename === "Simple" &&
-                  candidate.label === relatedMetricLabel,
-              );
-
-              if (
-                !isMetricVisible(metric, visibleMetricCodes) &&
-                (!relatedMetric ||
-                  !isMetricVisible(relatedMetric, visibleMetricCodes))
-              ) {
-                return null;
-              }
-
-              return (
-                <AvantApresTravauxRows
-                  key={key}
-                  metric={metric}
-                  relatedMetric={relatedMetric}
-                  visibleMetricCodes={visibleMetricCodes}
-                  onCorrectionSuccess={onCorrectionSuccess}
-                />
-              );
-            })}
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
