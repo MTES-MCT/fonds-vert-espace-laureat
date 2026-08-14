@@ -664,13 +664,8 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     });
     await arrayCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-    const sourceValues = dialog.getByRole("list", { name: "Valeur source" });
-    await expect(sourceValues.getByRole("listitem")).toHaveCount(2);
-    await expect(sourceValues).toContainText("Source A");
-    await expect(sourceValues).toContainText("Source B");
-
     const valuesEditor = dialog.getByRole("group", {
-      name: "Valeurs corrigées",
+      name: "Valeurs à modifier",
     });
     const firstValue = valuesEditor.getByRole("textbox", {
       name: "Valeur 1",

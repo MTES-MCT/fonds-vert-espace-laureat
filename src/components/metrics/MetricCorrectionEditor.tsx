@@ -12,7 +12,6 @@ import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
 
 import { useMetricRevisions } from "./MetricRevisionContext";
-import { MetricValue as DisplayMetricValue } from "./MetricValue";
 
 function inputValue(value: MetricValue): string {
   if (Array.isArray(value)) {
@@ -291,13 +290,7 @@ export function MetricCorrectionEditor({
 
         return (
           <fieldset className="m-0 border-0 p-0">
-            <legend className="fr-label mb-4">
-              Valeurs corrigées
-              <span className="fr-hint-text">
-                Ajoutez une valeur par champ. Les doublons ne sont pas
-                autorisés.
-              </span>
-            </legend>
+            <legend className="sr-only">Valeurs à modifier</legend>
             <div className="space-y-4">
               {textArrayValues.map((value, index) => (
                 <div
@@ -400,15 +393,7 @@ export function MetricCorrectionEditor({
           <p className="font-medium">{target.label}</p>
 
           <div className="space-y-2">
-            {target.valueType === "text_array" ? (
-              <div>
-                <p className="fr-label mb-2">Valeur source</p>
-                <DisplayMetricValue
-                  accessibleName="Valeur source"
-                  value={target.sourceValue}
-                />
-              </div>
-            ) : (
+            {target.valueType !== "text_array" && (
               <Input
                 label="Valeur source"
                 nativeInputProps={{
