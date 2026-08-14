@@ -1,4 +1,5 @@
 import { DossierSection } from "@/app/projets/_components/DossierSection";
+import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
 import {
   DemoAnomaliesSection,
   DemoMetricAnomalyProvider,
@@ -6,7 +7,6 @@ import {
 import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
-import { getDemoDossierMetricsSnapshot } from "@/db/demoMetrics";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { resolveImpactStatus } from "@/services/impact/status";
 import {
@@ -18,13 +18,24 @@ import {
 
 export default async function EspaceLaureatDemo() {
   const dossiers = [demoDossier1];
-  const metricsSnapshot = await getDemoDossierMetricsSnapshot();
-  const storedMetrics =
-    metricsSnapshot.status === "imported" ? metricsSnapshot.metrics : {};
-  const dossierFondsVert = {
-    ...demoDossierFondsVert,
-    metrique_specifique: storedMetrics,
-  };
+  const metricLoading = startDossierMetricLoading({
+    numeroDossier: demoDossier1.numero,
+    loadDossierFondsVert: async (includeMetrics) => ({
+      success: true,
+      data: {
+        ...demoDossierFondsVert,
+        metrique_specifique: includeMetrics
+          ? demoDossierFondsVert.metrique_specifique
+          : undefined,
+      },
+      metricsStatus: includeMetrics ? "loaded" : "not-requested",
+    }),
+  });
+  const { dossierFondsVertResult, metricRevisionTargets } =
+    await metricLoading.resultPromise;
+  const storedMetrics = dossierFondsVertResult.success
+    ? (dossierFondsVertResult.data.metrique_specifique ?? {})
+    : {};
 
   const financesEJResult: FinancesEJResult = {
     [demoFinancesEJ1.numero_ej]: { success: true, data: demoFinancesEJ1 },
@@ -48,17 +59,14 @@ export default async function EspaceLaureatDemo() {
             <MetricRevisionProvider
               key={index}
               dossierNumber={dossier.numero}
-              initialTargets={metricsSnapshot.targets}
+              initialTargets={metricRevisionTargets}
               correctionApiPath="/api/projets/demo/metrics"
             >
               <DemoMetricAnomalyProvider>
                 <DossierSection
                   isAdmin={false}
                   dossierSubvention={dossier}
-                  dossierFondsVertResult={{
-                    success: true,
-                    data: dossierFondsVert,
-                  }}
+                  dossierFondsVertResult={dossierFondsVertResult}
                   financesEJPromise={financesEJPromise}
                   impactStatus={impactStatus}
                   nocache={false}

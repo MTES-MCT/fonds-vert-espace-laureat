@@ -3,12 +3,9 @@ import { getDemarcheDossiers } from "@/app/projets/_components/getDemarcheDossie
 import { getDossier } from "@/app/projets/_components/getDossier";
 import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
+import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
-import {
-  getDossierMetricsSnapshot,
-  importDossierMetricsIfMissing,
-} from "@/db/dossierMetrics";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
   buildFinancesResult,
@@ -45,13 +42,15 @@ export async function DossierPage({
     numeroDossier,
     userEmail: user.email,
   });
-  const storedMetricsPromise = getDossierMetricsSnapshot({ numeroDossier });
-  const dossierFondsVertPromise = storedMetricsPromise.then((snapshot) =>
-    getDossierFondsVert({
-      numeroDossier,
-      includeMetrics: snapshot.status !== "imported",
-    }),
-  );
+  const metricLoading = startDossierMetricLoading({
+    numeroDossier,
+    loadDossierFondsVert: (includeMetrics) =>
+      getDossierFondsVert({
+        numeroDossier,
+        includeMetrics,
+      }),
+  });
+  const dossierFondsVertPromise = metricLoading.externalDossierPromise;
   const dossiersImpactPromise = getDemarcheDossiers({
     demarcheNumber: demarcheImpactNumber,
     userEmail: user.email,
@@ -75,12 +74,11 @@ export async function DossierPage({
   }
 
   // 4. Await remaining promises
-  const [dossiersImpactResult, dossierFondsVertResult, metricsSnapshot] =
-    await Promise.all([
-      dossiersImpactPromise,
-      dossierFondsVertPromise,
-      storedMetricsPromise,
-    ]);
+  const [dossiersImpactResult, metricLoadingResult] = await Promise.all([
+    dossiersImpactPromise,
+    metricLoading.resultPromise,
+  ]);
+  const { dossierFondsVertResult, metricRevisionTargets } = metricLoadingResult;
 
   const dossierSubvention = dossierSubventionResult.data;
   const dossiersImpact = dossiersImpactResult.success
@@ -89,40 +87,6 @@ export async function DossierPage({
   const dossierFondsVert = dossierFondsVertResult.success
     ? dossierFondsVertResult.data
     : undefined;
-  let localMetrics =
-    metricsSnapshot.status === "imported" ? metricsSnapshot.metrics : undefined;
-  let metricRevisionTargets = metricsSnapshot.targets;
-
-  if (
-    metricsSnapshot.status === "not-imported" &&
-    dossierFondsVertResult.success &&
-    dossierFondsVertResult.metricsStatus === "loaded"
-  ) {
-    await importDossierMetricsIfMissing({
-      numeroDossier,
-      metrics: dossierFondsVertResult.data.metrique_specifique ?? {},
-    });
-
-    const importedMetricsSnapshot = await getDossierMetricsSnapshot({
-      numeroDossier,
-    });
-    localMetrics =
-      importedMetricsSnapshot.status === "imported"
-        ? importedMetricsSnapshot.metrics
-        : undefined;
-    metricRevisionTargets = importedMetricsSnapshot.targets;
-  }
-
-  const displayedDossierFondsVertResult =
-    dossierFondsVertResult.success && localMetrics
-      ? {
-          success: true as const,
-          data: {
-            ...dossierFondsVertResult.data,
-            metrique_specifique: localMetrics,
-          },
-        }
-      : dossierFondsVertResult;
   const impactStatus = resolveImpactStatus({
     dossierSubventionNumero: dossierSubvention.numero,
     dossiersImpact,
@@ -140,7 +104,7 @@ export async function DossierPage({
           <DossierSection
             isAdmin={isAdmin({ userEmail: user.email })}
             dossierSubvention={dossierSubvention}
-            dossierFondsVertResult={displayedDossierFondsVertResult}
+            dossierFondsVertResult={dossierFondsVertResult}
             financesEJPromise={financesEJPromise}
             impactStatus={impactStatus}
             nocache={nocache === "" || nocache === "1"}
