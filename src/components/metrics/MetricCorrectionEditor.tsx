@@ -225,12 +225,14 @@ export function MetricCorrectionEditor({
   };
 
   const fieldState = error ? "error" : "default";
+  const unitHint = target.unit ? `Unité : ${target.unit}` : undefined;
   const correctionField = () => {
     switch (target.valueType) {
       case "boolean":
         return (
           <RadioButtons
             legend={target.label}
+            hintText={unitHint}
             orientation="horizontal"
             state={fieldState}
             stateRelatedMessage={error}
@@ -347,6 +349,7 @@ export function MetricCorrectionEditor({
         return (
           <Input
             label={target.label}
+            hintText={unitHint}
             state={fieldState}
             stateRelatedMessage={error}
             nativeInputProps={{
@@ -383,16 +386,13 @@ export function MetricCorrectionEditor({
       >
         <form ref={formRef} className="space-y-6" onSubmit={submit}>
           {target.valueType === "text_array" && (
-            <p className="font-medium">{target.label}</p>
+            <div>
+              <p className="font-medium">{target.label}</p>
+              {unitHint && <p className="fr-hint-text">{unitHint}</p>}
+            </div>
           )}
 
-          <div className="space-y-2">
-            {correctionField()}
-
-            {target.unit && (
-              <p className="fr-hint-text">Unité : {target.unit}</p>
-            )}
-          </div>
+          <div className="space-y-2">{correctionField()}</div>
 
           <ButtonsGroup
             alignment="right"
