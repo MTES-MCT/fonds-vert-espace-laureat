@@ -596,6 +596,65 @@ test("validates and submits a numeric metric correction once", async ({
   }
 });
 
+test("persists a correction submitted from the standard dossier page", async ({
+  page,
+  msw,
+}) => {
+  const correctionDossierNumber = 89000016;
+
+  await deleteStoredDossierMetrics(correctionDossierNumber);
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json(makeDossierDataWithNumber(correctionDossierNumber)),
+    ),
+    http.get(
+      `http://fondsvert/fonds_vert/v2/dossiers/${correctionDossierNumber}`,
+      () => HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber: correctionDossierNumber,
+    metrics: {
+      persistent_metric: {
+        label: "Métrique persistante",
+        unite: "ha",
+        valeur_estimee: 10,
+      },
+    },
+  });
+
+  try {
+    await page.goto(`/projets/${correctionDossierNumber}`);
+
+    const metricCard = page.getByRole("region", {
+      name: "Métrique persistante",
+    });
+    await metricCard.getByRole("button", { name: "Modifier" }).click();
+    const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Métrique persistante").fill("12,5");
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+
+    await expect(dialog).toBeHidden();
+    await expect(metricCard.getByLabel("Valeur effective")).toHaveText(
+      /12,5\s*ha/,
+    );
+    await expect
+      .poll(() => getStoredDossierMetrics(correctionDossierNumber))
+      .toMatchObject({
+        persistent_metric: { valeur_estimee: 12.5 },
+      });
+
+    await page.reload();
+    await expect(metricCard.getByLabel("Valeur effective")).toHaveText(
+      /12,5\s*ha/,
+    );
+  } finally {
+    await deleteStoredDossierMetrics(correctionDossierNumber);
+  }
+});
+
 test("edits text, boolean and multiple metrics from their cards", async ({
   page,
   msw,
