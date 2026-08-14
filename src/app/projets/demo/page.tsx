@@ -58,9 +58,7 @@ export default async function EspaceLaureatDemo() {
                 financesEJPromise={financesEJPromise}
                 impactStatus={impactStatus}
                 nocache={false}
-                anomaliesSection={
-                  <DemoAnomaliesSection dossierNumber={dossier.numero} />
-                }
+                anomaliesSection={<DemoAnomaliesSection />}
                 pageAction={<DemoResetButton />}
                 impactPrefillUrl={process.env.DS_IMPACT_URL}
               />

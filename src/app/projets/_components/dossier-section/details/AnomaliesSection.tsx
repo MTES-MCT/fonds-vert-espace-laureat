@@ -1,7 +1,6 @@
 "use client";
 
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import Button from "@codegouvfr/react-dsfr/Button";
 import { useState } from "react";
 
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
@@ -29,13 +28,7 @@ export type Anomaly = {
   helpText: string;
 };
 
-export function AnomaliesSection({
-  anomalies,
-  correctionUrl,
-}: {
-  anomalies: Anomaly[];
-  correctionUrl: string;
-}) {
+export function AnomaliesSection({ anomalies }: { anomalies: Anomaly[] }) {
   const { targets } = useMetricRevisions();
   const [successMessage, setSuccessMessage] = useState<string>();
 
@@ -102,8 +95,8 @@ export function AnomaliesSection({
                 <h4 className="mb-0 text-lg font-bold">{anomaly.indicator}</h4>
                 <dl
                   className={`
-                    grid gap-8 border border-gray-200 px-8 py-6
-                    sm:grid-cols-[minmax(10rem,14rem)_1fr]
+                    grid items-start gap-6 border border-gray-200 px-8 py-6
+                    sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto]
                   `}
                 >
                   <MetricField
@@ -141,9 +134,10 @@ export function AnomaliesSection({
                       </div>
                     </dd>
                   </div>
-                  <div className="sm:col-span-2">
+                  <div className="justify-self-end">
                     <MetricCorrectionEditor
                       target={target}
+                      buttonLabel="Modifier"
                       successFeedback="parent"
                       onSuccess={() =>
                         setSuccessMessage(
@@ -157,21 +151,6 @@ export function AnomaliesSection({
             );
           })}
         </ul>
-
-        <div className="flex justify-end">
-          <Button
-            priority="secondary"
-            iconId="fr-icon-external-link-line"
-            iconPosition="right"
-            linkProps={{
-              href: correctionUrl,
-              target: "_blank",
-              rel: "noopener noreferrer",
-            }}
-          >
-            Corriger dans Démarches Numériques
-          </Button>
-        </div>
       </div>
     </section>
   );

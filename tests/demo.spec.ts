@@ -76,16 +76,13 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     anomaliesSection.getByRole("link", {
       name: "Corriger dans Démarches Numériques",
     }),
-  ).toHaveAttribute(
-    "href",
-    "https://demarche.numerique.gouv.fr/dossiers/99999999",
-  );
+  ).toHaveCount(0);
 
   let anomaly = anomaliesSection
     .getByRole("listitem")
     .filter({ hasText: "Consommation énergétique avant travaux" });
 
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  await anomaly.getByRole("button", { name: "Modifier" }).click();
   let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await expect(dialog).toBeVisible();
   await expect(
@@ -101,14 +98,12 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await dialog.getByRole("button", { name: "Annuler" }).click();
   await expect(dialog).toBeHidden();
-  await expect(
-    anomaly.getByRole("button", { name: "Modifier la valeur" }),
-  ).toBeFocused();
+  await expect(anomaly.getByRole("button", { name: "Modifier" })).toBeFocused();
 
   const anomalyHeading = anomaliesSection.getByRole("heading", {
     name: "Consommation énergétique avant travaux",
   });
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
   await dialog
@@ -139,7 +134,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   anomaly = anomaliesSection
     .getByRole("listitem")
     .filter({ hasText: "Émissions GES avant travaux" });
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("420");
   await dialog
@@ -152,7 +147,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(anomaly.getByText("400kgCO₂e")).toBeVisible();
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
 
-  await anomaly.getByRole("button", { name: "Modifier la valeur" }).click();
+  await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await expect(dialog.getByLabel("Valeur source")).toHaveValue("448");
   await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("420");

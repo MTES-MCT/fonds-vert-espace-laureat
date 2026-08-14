@@ -6,7 +6,7 @@ import {
 } from "@/app/projets/_components/dossier-section/details/AnomaliesSection";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 
-function DemoAnomalies({ dossierNumber }: { dossierNumber: number }) {
+function DemoAnomalies() {
   const { targets } = useMetricRevisions();
   const anomalies: Anomaly[] = [];
 
@@ -45,18 +45,9 @@ function DemoAnomalies({ dossierNumber }: { dossierNumber: number }) {
     });
   }
 
-  return (
-    <AnomaliesSection
-      anomalies={anomalies}
-      correctionUrl={`https://demarche.numerique.gouv.fr/dossiers/${dossierNumber}`}
-    />
-  );
+  return <AnomaliesSection anomalies={anomalies} />;
 }
 
-export function DemoAnomaliesSection({
-  dossierNumber,
-}: {
-  dossierNumber: number;
-}) {
-  return <DemoAnomalies dossierNumber={dossierNumber} />;
+export function DemoAnomaliesSection() {
+  return <DemoAnomalies />;
 }
