@@ -4,7 +4,7 @@ export type MetricTheme = {
   id: string;
   label: string;
   keywords: string[];
-  backgroundColor: string;
+  borderColor: string;
 };
 
 export const METRIC_THEMES: MetricTheme[] = [
@@ -12,31 +12,31 @@ export const METRIC_THEMES: MetricTheme[] = [
     id: "project",
     label: "Caractéristiques du projet",
     keywords: ["bâtiment", "surface", "Surface", "Nature des opérations"],
-    backgroundColor: "bg-gray-700",
+    borderColor: "border-t-gray-700",
   },
   {
     id: "energy",
     label: "Énergie",
     keywords: ["énergétique", "chauffage"],
-    backgroundColor: "bg-yellow-700",
+    borderColor: "border-t-yellow-500",
   },
   {
     id: "ges",
     label: "Gaz à Effet de Serre (GES)",
     keywords: ["GES"],
-    backgroundColor: "bg-green-700",
+    borderColor: "border-t-green-500",
   },
   {
     id: "proximity-management",
     label: "Gestion de proximité",
     keywords: ["gestion de proximité"],
-    backgroundColor: "bg-orange-700",
+    borderColor: "border-t-orange-500",
   },
   {
     id: "separate-collection",
     label: "Collecte séparée",
     keywords: ["collecte", "collectés"],
-    backgroundColor: "bg-purple-700",
+    borderColor: "border-t-purple-500",
   },
 ];
 
