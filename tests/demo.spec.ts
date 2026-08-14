@@ -47,7 +47,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   ).toBeVisible();
   await expect(
     anomaliesSection.getByText(
-      "Ces vérifications sont automatiques et s'appuient sur les données du dossier.",
+      "Ces vérifications sont automatiques et s'appuient sur les données du dossier. Elles servent à fiabiliser les indicateurs d'impact. Vous pouvez corriger une valeur ici.",
     ),
   ).toBeVisible();
   const anomalousEnergyMetrics = anomaliesSection.getByRole("region", {

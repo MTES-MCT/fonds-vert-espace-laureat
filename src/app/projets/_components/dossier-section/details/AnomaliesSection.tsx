@@ -53,8 +53,7 @@ export function AnomaliesSection({
             <p className="fr-text--sm mb-0 text-[var(--text-default-grey)]">
               Ces vérifications sont automatiques et s'appuient sur les données
               du dossier. Elles servent à fiabiliser les indicateurs d'impact.
-              Vous pouvez corriger une valeur ici ou demander au porteur de
-              mettre à jour son dossier dans Démarches Numériques.
+              Vous pouvez corriger une valeur ici.
             </p>
           </div>
         </div>
