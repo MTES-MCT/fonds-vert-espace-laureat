@@ -1,21 +1,24 @@
 "use client";
 
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { MetricsGrid } from "@/app/projets/_components/dossier-section/details/impact-details/MetricsGrid";
 import type { MetricAnomaly } from "@/components/metrics/MetricAnomalyContext";
-import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage";
-import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
-import { MetricField } from "@/components/metrics/MetricField";
-import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
+import type { Metrics } from "@/services/fondsvert/dossier";
 
 export function AnomaliesSection({
   anomalies,
+  metriques,
 }: {
   anomalies: MetricAnomaly[];
+  metriques: Metrics;
 }) {
-  const { targets } = useMetricRevisions();
   const [successMessage, setSuccessMessage] = useState<string>();
+  const anomalousMetricCodes = useMemo(
+    () => new Set(anomalies.map((anomaly) => anomaly.metricCode)),
+    [anomalies],
+  );
 
   if (anomalies.length === 0 && !successMessage) {
     return null;
@@ -24,9 +27,9 @@ export function AnomaliesSection({
   return (
     <section
       aria-labelledby="anomalies-heading"
-      className="border-t-4 border-[var(--border-plain-warning)] bg-white shadow-lg"
+      className="bg-white p-8 shadow-lg"
     >
-      <div className="space-y-6 p-8">
+      <div className="space-y-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -65,57 +68,13 @@ export function AnomaliesSection({
           />
         )}
 
-        <ul
-          aria-label="Liste des anomalies détectées automatiquement sur les données du dossier"
-          className="list-none space-y-6 pl-0"
-        >
-          {anomalies.map((anomaly) => {
-            const target = targets[anomaly.metricCode];
-            if (!target || Array.isArray(target.effectiveValue)) {
-              return null;
-            }
-
-            return (
-              <li className="space-y-2" key={anomaly.metricCode}>
-                <h4 className="mb-0 text-lg font-bold">{anomaly.indicator}</h4>
-                <dl
-                  className={`
-                    grid items-start gap-6 border border-gray-200 px-6 py-6
-                    sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto]
-                  `}
-                >
-                  <MetricField
-                    label="Valeur déclarée"
-                    value={target.effectiveValue}
-                    unite={target.unit}
-                    bold
-                  />
-                  <div>
-                    <dt className="sr-only">Anomalie détectée</dt>
-                    <dd className="!mb-0">
-                      <MetricAnomalyMessage
-                        problem={anomaly.problem}
-                        helpText={anomaly.helpText}
-                      />
-                    </dd>
-                  </div>
-                  <div className="justify-self-end">
-                    <MetricCorrectionEditor
-                      target={target}
-                      buttonLabel="Modifier"
-                      successFeedback="parent"
-                      onSuccess={() =>
-                        setSuccessMessage(
-                          `Correction enregistrée pour « ${target.label} ».`,
-                        )
-                      }
-                    />
-                  </div>
-                </dl>
-              </li>
-            );
-          })}
-        </ul>
+        <MetricsGrid
+          metriques={metriques}
+          visibleMetricCodes={anomalousMetricCodes}
+          onCorrectionSuccess={(metricLabel) =>
+            setSuccessMessage(`Correction enregistrée pour « ${metricLabel} ».`)
+          }
+        />
       </div>
     </section>
   );

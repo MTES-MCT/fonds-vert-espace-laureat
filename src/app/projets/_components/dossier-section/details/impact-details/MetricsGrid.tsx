@@ -20,6 +20,24 @@ const RELATED_METRIC_LABELS: Record<string, string> = {
   "Émissions de GES": "Émissions de GES évitées",
 };
 
+type MetricsGridProps = {
+  metriques?: Metrics;
+  visibleMetricCodes?: ReadonlySet<string>;
+  onCorrectionSuccess?: (metricLabel: string) => void;
+};
+
+function isMetricVisible(
+  metric: ProcessedMetric,
+  visibleMetricCodes?: ReadonlySet<string>,
+): boolean {
+  if (!visibleMetricCodes) return true;
+
+  return metric._typename === "Simple"
+    ? visibleMetricCodes.has(metric.metricCode)
+    : visibleMetricCodes.has(metric.beforeMetricCode) ||
+        visibleMetricCodes.has(metric.afterMetricCode);
+}
+
 function labelToTestId(label: string): string {
   return label
     .toLowerCase()
@@ -56,8 +74,10 @@ const MetricCard = ({ children }: { children: ReactNode }) => (
 
 const SimpleMetricRow = ({
   metric,
+  onCorrectionSuccess,
 }: {
   metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
+  onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
   const metricId = labelToTestId(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
@@ -86,7 +106,12 @@ const SimpleMetricRow = ({
         </div>
         {target && (
           <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
-            <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
+            <MetricCorrectionEditor
+              target={target}
+              buttonLabel="Modifier"
+              successFeedback={onCorrectionSuccess ? "parent" : "editor"}
+              onSuccess={() => onCorrectionSuccess?.(target.label)}
+            />
           </div>
         )}
         {anomalies?.length ? (
@@ -102,9 +127,13 @@ const SimpleMetricRow = ({
 const AvantApresTravauxRows = ({
   metric,
   relatedMetric,
+  visibleMetricCodes,
+  onCorrectionSuccess,
 }: {
   metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
   relatedMetric?: Extract<ProcessedMetric, { _typename: "Simple" }>;
+  visibleMetricCodes?: ReadonlySet<string>;
+  onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
   const metricId = labelToTestId(metric.label);
   const { targets } = useMetricRevisions();
@@ -140,7 +169,10 @@ const AvantApresTravauxRows = ({
           },
         ]
       : []),
-  ];
+  ].filter(
+    ({ metricCode }) =>
+      !visibleMetricCodes || visibleMetricCodes.has(metricCode),
+  );
 
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
@@ -182,6 +214,8 @@ const AvantApresTravauxRows = ({
                   <MetricCorrectionEditor
                     target={target}
                     buttonLabel="Modifier"
+                    successFeedback={onCorrectionSuccess ? "parent" : "editor"}
+                    onSuccess={() => onCorrectionSuccess?.(target.label)}
                   />
                 </div>
               )}
@@ -200,7 +234,11 @@ const AvantApresTravauxRows = ({
   );
 };
 
-export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
+export function MetricsGrid({
+  metriques,
+  visibleMetricCodes,
+  onCorrectionSuccess,
+}: MetricsGridProps) {
   const { targets } = useMetricRevisions();
   if (!metriques) return null;
 
@@ -217,7 +255,13 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
     }),
   );
   const processedMetrics = processMetrics(effectiveMetrics);
-  const metricGroups = groupMetricsByTheme(processedMetrics);
+  const metricGroups = Object.fromEntries(
+    Object.entries(groupMetricsByTheme(processedMetrics)).filter(([, group]) =>
+      Object.values(group.metrics).some((metric) =>
+        isMetricVisible(metric, visibleMetricCodes),
+      ),
+    ),
+  );
 
   if (Object.keys(metricGroups).length === 0) return null;
 
@@ -260,7 +304,15 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               }
 
               if (metric._typename === "Simple") {
-                return <SimpleMetricRow key={key} metric={metric} />;
+                if (!isMetricVisible(metric, visibleMetricCodes)) return null;
+
+                return (
+                  <SimpleMetricRow
+                    key={key}
+                    metric={metric}
+                    onCorrectionSuccess={onCorrectionSuccess}
+                  />
+                );
               }
 
               const relatedMetricLabel = RELATED_METRIC_LABELS[metric.label];
@@ -275,11 +327,21 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
                   candidate.label === relatedMetricLabel,
               );
 
+              if (
+                !isMetricVisible(metric, visibleMetricCodes) &&
+                (!relatedMetric ||
+                  !isMetricVisible(relatedMetric, visibleMetricCodes))
+              ) {
+                return null;
+              }
+
               return (
                 <AvantApresTravauxRows
                   key={key}
                   metric={metric}
                   relatedMetric={relatedMetric}
+                  visibleMetricCodes={visibleMetricCodes}
+                  onCorrectionSuccess={onCorrectionSuccess}
                 />
               );
             })}

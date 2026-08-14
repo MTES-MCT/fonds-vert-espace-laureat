@@ -50,24 +50,34 @@ test("demo page loads, corrects and persists its database-backed metrics", async
       "Ces vérifications sont automatiques et s'appuient sur les données du dossier.",
     ),
   ).toBeVisible();
+  const anomalousEnergyMetrics = anomaliesSection.getByRole("region", {
+    name: "Consommation énergétique",
+  });
+  const anomalousEnergyBefore = anomalousEnergyMetrics.getByRole("group", {
+    name: "Avant travaux",
+  });
+  const anomalousEnergyGain = anomalousEnergyMetrics.getByRole("group", {
+    name: "Gain énergétique estimé",
+  });
+  const anomalousGesMetrics = anomaliesSection.getByRole("region", {
+    name: "Émissions de GES",
+  });
+  const anomalousGesBefore = anomalousGesMetrics.getByRole("group", {
+    name: "Avant travaux",
+  });
+
+  await expect(anomalousEnergyMetrics).toBeVisible();
+  await expect(anomalousEnergyBefore).toContainText(/2\s*055\s*650\s*kWh/);
+  await expect(anomalousEnergyGain).toContainText(/32\s*%/);
+  await expect(anomalousGesBefore).toContainText(/448\s*kgCO₂e/);
   await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Consommation énergétique avant travaux",
-    }),
-  ).toBeVisible();
-  await expect(anomaliesSection.getByText(/2\s*055\s*650\s*kWh/)).toBeVisible();
+    anomaliesSection.getByRole("group", { name: "Après travaux" }),
+  ).toHaveCount(0);
   await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Émissions GES avant travaux",
-    }),
-  ).toBeVisible();
+    anomaliesSection.getByRole("heading", { name: "Gestion de proximité" }),
+  ).toHaveCount(0);
   await expect(anomaliesSection.getByText("Valeur supérieure à")).toBeVisible();
   await expect(anomaliesSection.getByText("400kgCO₂e")).toBeVisible();
-  await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Taux d'économies d'énergie estimé",
-    }),
-  ).toBeVisible();
   await expect(
     anomaliesSection.getByText("Inférieur au seuil attendu de"),
   ).toBeVisible();
@@ -78,7 +88,8 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     }),
   ).toHaveCount(0);
 
-  const energyMetrics = page.getByRole("region", {
+  const impactSection = page.getByTestId("impact-section");
+  const energyMetrics = impactSection.getByRole("region", {
     name: "Consommation énergétique",
   });
   const energyBeforeAnomaly = energyMetrics
@@ -101,7 +112,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "Vérifier les consommations avant et après travaux",
   );
 
-  const gesBeforeAnomaly = page
+  const gesBeforeAnomaly = impactSection
     .getByRole("region", { name: "Émissions de GES" })
     .getByRole("group", { name: "Avant travaux" })
     .getByRole("note", { name: "Anomalie détectée" });
@@ -112,9 +123,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "Probable confusion kg / tonnes CO₂e",
   );
 
-  let anomaly = anomaliesSection
-    .getByRole("listitem")
-    .filter({ hasText: "Consommation énergétique avant travaux" });
+  let anomaly = anomalousEnergyBefore;
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -134,9 +143,6 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(dialog).toBeHidden();
   await expect(anomaly.getByRole("button", { name: "Modifier" })).toBeFocused();
 
-  const anomalyHeading = anomaliesSection.getByRole("heading", {
-    name: "Consommation énergétique avant travaux",
-  });
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
@@ -154,21 +160,19 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
   ).toHaveCount(1);
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
-  await expect(anomalyHeading).toHaveCount(0);
+  await expect(anomalousEnergyBefore).toHaveCount(0);
   await expect(
-    page.getByRole("region", { name: "Consommation énergétique" }),
+    impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
   await expect(energyBeforeAnomaly).toHaveCount(0);
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
   await expect(
-    page.getByRole("region", { name: "Consommation énergétique" }),
+    impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
 
-  anomaly = anomaliesSection
-    .getByRole("listitem")
-    .filter({ hasText: "Émissions GES avant travaux" });
+  anomaly = anomalousGesBefore;
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("420");
@@ -218,9 +222,9 @@ test("fits related energy metric values and actions on mobile", async ({
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/projets/demo");
 
-  const card = page.getByRole("region", {
-    name: "Consommation énergétique",
-  });
+  const card = page
+    .getByTestId("impact-section")
+    .getByRole("region", { name: "Consommation énergétique" });
 
   for (const label of [
     "Avant travaux",

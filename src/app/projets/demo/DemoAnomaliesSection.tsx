@@ -9,6 +9,7 @@ import {
   useAllMetricAnomalies,
 } from "@/components/metrics/MetricAnomalyContext";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
+import type { Metrics } from "@/services/fondsvert/dossier";
 
 type NumericAnomalyRule = MetricAnomaly & {
   comparison: "greater-than" | "less-than";
@@ -84,7 +85,7 @@ export function DemoMetricAnomalyProvider({
   );
 }
 
-export function DemoAnomaliesSection() {
+export function DemoAnomaliesSection({ metriques }: { metriques: Metrics }) {
   const anomalies = useAllMetricAnomalies();
-  return <AnomaliesSection anomalies={anomalies} />;
+  return <AnomaliesSection anomalies={anomalies} metriques={metriques} />;
 }
