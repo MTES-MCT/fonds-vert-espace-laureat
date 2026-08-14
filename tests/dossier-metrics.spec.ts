@@ -648,6 +648,7 @@ test("rejects unknown targets and invalid values for every stored type", async (
     ["boolean", "true"],
     ["text_array", []],
     ["text_array", ["valide", "  "]],
+    ["text_array", ["doublon", "doublon"]],
     ["text_array", "valide"],
   ] satisfies [string, unknown][]) {
     await expect(

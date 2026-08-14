@@ -664,9 +664,49 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     });
     await arrayCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    const sourceValues = dialog.getByRole("list", { name: "Valeur source" });
+    await expect(sourceValues.getByRole("listitem")).toHaveCount(2);
+    await expect(sourceValues).toContainText("Source A");
+    await expect(sourceValues).toContainText("Source B");
+
+    const valuesEditor = dialog.getByRole("group", {
+      name: "Valeurs corrigées",
+    });
+    const firstValue = valuesEditor.getByRole("textbox", {
+      name: "Valeur 1",
+      exact: true,
+    });
+    const secondValue = valuesEditor.getByRole("textbox", {
+      name: "Valeur 2",
+      exact: true,
+    });
+    await expect(firstValue).toHaveValue("Source A");
+    await expect(secondValue).toHaveValue("Source B");
+
+    await firstValue.fill("Première valeur");
+    await secondValue.fill("Première valeur");
     await dialog
-      .getByLabel("Valeur corrigée")
-      .fill("Première valeur\nDeuxième valeur");
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(
+      valuesEditor.getByText("Chaque valeur doit être unique."),
+    ).toBeVisible();
+    await expect(secondValue).toBeFocused();
+
+    await secondValue.fill("Deuxième valeur");
+    await valuesEditor
+      .getByRole("button", { name: "Ajouter une valeur" })
+      .click();
+    const thirdValue = valuesEditor.getByRole("textbox", {
+      name: "Valeur 3",
+      exact: true,
+    });
+    await expect(thirdValue).toBeFocused();
+    await thirdValue.fill("Valeur temporaire");
+    await valuesEditor
+      .getByRole("button", { name: "Supprimer la valeur 3" })
+      .click();
+    await expect(thirdValue).toHaveCount(0);
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();

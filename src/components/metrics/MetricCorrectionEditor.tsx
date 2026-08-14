@@ -12,6 +12,7 @@ import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
 
 import { useMetricRevisions } from "./MetricRevisionContext";
+import { MetricValue as DisplayMetricValue } from "./MetricValue";
 
 function inputValue(value: MetricValue): string {
   if (Array.isArray(value)) {
@@ -33,10 +34,10 @@ function sourceValue(value: MetricValue): string {
   return inputValue(value);
 }
 
-function parseValue(
-  valueType: DossierMetricRevisionTarget["valueType"],
+function parseScalarValue(
+  valueType: Exclude<DossierMetricRevisionTarget["valueType"], "text_array">,
   rawValue: string,
-): MetricValue | undefined {
+): Exclude<MetricValue, string[]> | undefined {
   switch (valueType) {
     case "number": {
       const normalizedValue = rawValue
@@ -55,17 +56,11 @@ function parseValue(
       if (rawValue === "true") return true;
       if (rawValue === "false") return false;
       return undefined;
-    case "text_array": {
-      const values = rawValue.split("\n").map((value) => value.trim());
-      return values.length > 0 && values.every((value) => value.length > 0)
-        ? values
-        : undefined;
-    }
   }
 }
 
 function validationMessage(
-  valueType: DossierMetricRevisionTarget["valueType"],
+  valueType: Exclude<DossierMetricRevisionTarget["valueType"], "text_array">,
 ): string {
   switch (valueType) {
     case "number":
@@ -74,9 +69,46 @@ function validationMessage(
       return "Saisissez une valeur non vide.";
     case "boolean":
       return "Sélectionnez oui ou non.";
-    case "text_array":
-      return "Saisissez au moins une valeur, une par ligne.";
   }
+}
+
+type TextArrayValidation =
+  | { success: true; value: string[] }
+  | { success: false; message: string; invalidIndex: number };
+
+function validateTextArray(values: string[]): TextArrayValidation {
+  const normalizedValues = values.map((value) => value.trim());
+  const emptyIndex = normalizedValues.findIndex((value) => value.length === 0);
+
+  if (emptyIndex !== -1) {
+    return {
+      success: false,
+      message: "Renseignez chaque valeur ou supprimez les champs vides.",
+      invalidIndex: emptyIndex,
+    };
+  }
+
+  const seenValues = new Set<string>();
+  const duplicateIndex = normalizedValues.findIndex((value) => {
+    const comparableValue = value.toLocaleLowerCase("fr");
+    if (seenValues.has(comparableValue)) return true;
+    seenValues.add(comparableValue);
+    return false;
+  });
+
+  if (duplicateIndex !== -1) {
+    return {
+      success: false,
+      message: "Chaque valeur doit être unique.",
+      invalidIndex: duplicateIndex,
+    };
+  }
+
+  return { success: true, value: normalizedValues };
+}
+
+function textArrayInputValue(value: MetricValue): string[] {
+  return Array.isArray(value) && value.length > 0 ? [...value] : [""];
 }
 
 export function MetricCorrectionEditor({
@@ -101,11 +133,16 @@ export function MetricCorrectionEditor({
   );
   const { correctMetric } = useMetricRevisions();
   const [rawValue, setRawValue] = useState(inputValue(target.effectiveValue));
+  const [textArrayValues, setTextArrayValues] = useState(() =>
+    textArrayInputValue(target.effectiveValue),
+  );
   const [error, setError] = useState<string>();
+  const [invalidTextArrayIndex, setInvalidTextArrayIndex] = useState<number>();
   const [successMessage, setSuccessMessage] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const setInputRef = (
     element: HTMLInputElement | HTMLTextAreaElement | null,
@@ -113,15 +150,28 @@ export function MetricCorrectionEditor({
     inputRef.current = element;
   };
 
-  const focusCorrectionControl = () => {
+  const focusCorrectionControl = (textArrayIndex = 0) => {
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => inputRef.current?.focus());
+      requestAnimationFrame(() => {
+        if (target.valueType === "text_array") {
+          formRef.current
+            ?.querySelector<HTMLInputElement>(
+              `#${instanceId}-value-${textArrayIndex}`,
+            )
+            ?.focus();
+          return;
+        }
+
+        inputRef.current?.focus();
+      });
     });
   };
 
   const openEditor = () => {
     setRawValue(inputValue(target.effectiveValue));
+    setTextArrayValues(textArrayInputValue(target.effectiveValue));
     setError(undefined);
+    setInvalidTextArrayIndex(undefined);
     setSuccessMessage(undefined);
     modal.open();
     focusCorrectionControl();
@@ -139,11 +189,24 @@ export function MetricCorrectionEditor({
       return;
     }
 
-    const value = parseValue(target.valueType, rawValue);
-    if (value === undefined) {
-      setError(validationMessage(target.valueType));
-      focusCorrectionControl();
-      return;
+    let value: MetricValue | undefined;
+
+    if (target.valueType === "text_array") {
+      const validation = validateTextArray(textArrayValues);
+      if (!validation.success) {
+        setError(validation.message);
+        setInvalidTextArrayIndex(validation.invalidIndex);
+        focusCorrectionControl(validation.invalidIndex);
+        return;
+      }
+      value = validation.value;
+    } else {
+      value = parseScalarValue(target.valueType, rawValue);
+      if (value === undefined) {
+        setError(validationMessage(target.valueType));
+        focusCorrectionControl();
+        return;
+      }
     }
 
     submittingRef.current = true;
@@ -201,21 +264,98 @@ export function MetricCorrectionEditor({
             ]}
           />
         );
-      case "text_array":
+      case "text_array": {
+        const updateValue = (index: number, value: string) => {
+          setTextArrayValues((currentValues) =>
+            currentValues.map((currentValue, currentIndex) =>
+              currentIndex === index ? value : currentValue,
+            ),
+          );
+          setError(undefined);
+          setInvalidTextArrayIndex(undefined);
+        };
+        const addValue = () => {
+          const newIndex = textArrayValues.length;
+          setTextArrayValues((currentValues) => [...currentValues, ""]);
+          focusCorrectionControl(newIndex);
+        };
+        const removeValue = (index: number) => {
+          if (textArrayValues.length === 1) return;
+          setTextArrayValues((currentValues) =>
+            currentValues.filter((_, currentIndex) => currentIndex !== index),
+          );
+          setError(undefined);
+          setInvalidTextArrayIndex(undefined);
+          focusCorrectionControl(Math.max(0, index - 1));
+        };
+
         return (
-          <Input
-            label="Valeur corrigée"
-            textArea
-            state={fieldState}
-            stateRelatedMessage={error}
-            nativeTextAreaProps={{
-              value: rawValue,
-              disabled: isSubmitting,
-              onChange: (event) => setRawValue(event.target.value),
-              ref: setInputRef,
-            }}
-          />
+          <fieldset className="m-0 border-0 p-0">
+            <legend className="fr-label mb-4">
+              Valeurs corrigées
+              <span className="fr-hint-text">
+                Ajoutez une valeur par champ. Les doublons ne sont pas
+                autorisés.
+              </span>
+            </legend>
+            <div className="space-y-4">
+              {textArrayValues.map((value, index) => (
+                <div
+                  className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+                  key={index}
+                >
+                  <Input
+                    label={`Valeur ${index + 1}`}
+                    state={
+                      invalidTextArrayIndex === index ? "error" : "default"
+                    }
+                    stateRelatedMessage={
+                      invalidTextArrayIndex === index ? error : undefined
+                    }
+                    nativeInputProps={{
+                      autoComplete: "off",
+                      disabled: isSubmitting,
+                      id: `${instanceId}-value-${index}`,
+                      name: `metric-value-${index + 1}`,
+                      onChange: (event) =>
+                        updateValue(index, event.target.value),
+                      value,
+                    }}
+                  />
+                  <Button
+                    priority="tertiary"
+                    size="small"
+                    iconId="fr-icon-delete-line"
+                    disabled={isSubmitting || textArrayValues.length === 1}
+                    nativeButtonProps={{
+                      "aria-label": `Supprimer la valeur ${index + 1}`,
+                      onClick: () => removeValue(index),
+                      type: "button",
+                    }}
+                  >
+                    Supprimer
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {error && invalidTextArrayIndex === undefined && (
+              <p className="fr-error-text mt-2" role="alert">
+                {error}
+              </p>
+            )}
+            <Button
+              className="mt-4"
+              priority="secondary"
+              size="small"
+              iconId="fr-icon-add-line"
+              disabled={isSubmitting}
+              nativeButtonProps={{ onClick: addValue, type: "button" }}
+            >
+              Ajouter une valeur
+            </Button>
+          </fieldset>
         );
+      }
       case "number":
       case "text":
         return (
@@ -251,20 +391,22 @@ export function MetricCorrectionEditor({
         {buttonLabel}
       </Button>
 
-      <modal.Component title="Modifier la valeur" size="medium">
-        <form className="space-y-6" onSubmit={submit}>
+      <modal.Component
+        title="Modifier la valeur"
+        size={target.valueType === "text_array" ? "large" : "medium"}
+      >
+        <form ref={formRef} className="space-y-6" onSubmit={submit}>
           <p className="font-medium">{target.label}</p>
 
           <div className="space-y-2">
             {target.valueType === "text_array" ? (
-              <Input
-                label="Valeur source"
-                textArea
-                nativeTextAreaProps={{
-                  value: sourceValue(target.sourceValue),
-                  readOnly: true,
-                }}
-              />
+              <div>
+                <p className="fr-label mb-2">Valeur source</p>
+                <DisplayMetricValue
+                  accessibleName="Valeur source"
+                  value={target.sourceValue}
+                />
+              </div>
             ) : (
               <Input
                 label="Valeur source"

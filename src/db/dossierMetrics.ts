@@ -177,12 +177,19 @@ function isValidRevisionValue(
     case "boolean":
       return typeof value === "boolean";
     case "text_array":
-      return (
-        Array.isArray(value) &&
-        value.length > 0 &&
-        value.every(
+      if (
+        !Array.isArray(value) ||
+        value.length === 0 ||
+        !value.every(
           (item) => typeof item === "string" && item.trim().length > 0,
         )
+      ) {
+        return false;
+      }
+
+      return (
+        new Set(value.map((item) => item.trim().toLocaleLowerCase("fr")))
+          .size === value.length
       );
   }
 }
