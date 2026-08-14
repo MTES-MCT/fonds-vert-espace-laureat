@@ -6,7 +6,6 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
-import { DOSSIER_NUMBER } from "./fixtures/constants";
 import { getDossierData } from "./fixtures/ds";
 import {
   fondsVertDossierData,
@@ -19,9 +18,20 @@ import { authenticatePage } from "./setup/auth";
 import { deleteStoredDossierMetrics } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
+const IMPACT_PREFILL_DOSSIER_NUMBER = 89000015;
+const impactPrefillDossierData = {
+  ...getDossierData,
+  data: {
+    ...getDossierData.data,
+    dossier: {
+      ...getDossierData.data.dossier,
+      number: IMPACT_PREFILL_DOSSIER_NUMBER,
+    },
+  },
+};
 
 test.beforeEach(async ({ page }) => {
-  await deleteStoredDossierMetrics(DOSSIER_NUMBER);
+  await deleteStoredDossierMetrics(IMPACT_PREFILL_DOSSIER_NUMBER);
   await authenticatePage(page);
 });
 
@@ -29,7 +39,7 @@ test.use({
   mswHandlers: [
     [
       ds.query("getDossier", () => {
-        return HttpResponse.json(getDossierData);
+        return HttpResponse.json(impactPrefillDossierData);
       }),
 
       http.post("http://fondsvert/fonds_vert/login", () => {
@@ -37,7 +47,7 @@ test.use({
       }),
 
       http.get(
-        `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+        `http://fondsvert/fonds_vert/v2/dossiers/${IMPACT_PREFILL_DOSSIER_NUMBER}`,
         () => {
           return HttpResponse.json(fondsVertDossierData);
         },
@@ -62,14 +72,14 @@ test.use({
 test("impact prefill link includes dossier number from DS", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
   const href = await evaluationLink.getAttribute("href");
   const url = new URL(href!);
 
-  const dossierNumberFromDS = getDossierData.data.dossier.number;
+  const dossierNumberFromDS = impactPrefillDossierData.data.dossier.number;
   expect(url.searchParams.get("champ_Q2hhbXAtNDc2OTEyOQ")).toBe(
     String(dossierNumberFromDS),
   );
@@ -78,7 +88,7 @@ test("impact prefill link includes dossier number from DS", async ({
 test("impact prefill link is generated correctly with metrics", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
@@ -97,7 +107,7 @@ test("impact prefill link is generated correctly with metrics", async ({
 test("impact prefill link handles multi-value fields correctly", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
 
@@ -124,7 +134,7 @@ test("page loads in degraded mode when Grist is unavailable", async ({
     }),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}?nocache=1`);
+  await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}?nocache=1`);
 
   const evaluationLink = page.getByTestId("impact-evaluation-link");
   await expect(evaluationLink).toBeVisible();
