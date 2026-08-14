@@ -3,28 +3,18 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import { useState } from "react";
 
+import {
+  MetricAnomalyMessage,
+  type MetricAnomalyProblem,
+} from "@/components/metrics/MetricAnomalyMessage";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { MetricField } from "@/components/metrics/MetricField";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
-import {
-  MetricValueContent,
-  type ScalarMetricValue,
-} from "@/components/metrics/MetricValue";
-
-type AnomalyMetricValue = {
-  value: ScalarMetricValue;
-  unite?: string | null;
-};
-
-type AnomalyProblem = {
-  label: string;
-  metric?: AnomalyMetricValue;
-};
 
 export type Anomaly = {
   metricCode: string;
   indicator: string;
-  problem: AnomalyProblem;
+  problem: MetricAnomalyProblem;
   helpText: string;
 };
 
@@ -108,30 +98,10 @@ export function AnomaliesSection({ anomalies }: { anomalies: Anomaly[] }) {
                   <div>
                     <dt className="sr-only">Anomalie détectée</dt>
                     <dd className="!mb-0">
-                      <div className="flex items-center gap-1 text-base font-semibold">
-                        <span
-                          aria-hidden="true"
-                          className={`
-                            fr-icon-warning-fill fr-icon--sm text-[var(--text-default-warning)]
-                          `}
-                        />
-                        <span>{anomaly.problem.label}</span>
-                        {anomaly.problem.metric && (
-                          <span>
-                            <MetricValueContent
-                              value={anomaly.problem.metric.value}
-                              unite={anomaly.problem.metric.unite}
-                            />
-                          </span>
-                        )}
-                      </div>
-                      <div
-                        className={`
-                          text-xs leading-tight font-normal text-[var(--text-mention-grey)]
-                        `}
-                      >
-                        {anomaly.helpText}
-                      </div>
+                      <MetricAnomalyMessage
+                        problem={anomaly.problem}
+                        helpText={anomaly.helpText}
+                      />
                     </dd>
                   </div>
                   <div className="justify-self-end">
