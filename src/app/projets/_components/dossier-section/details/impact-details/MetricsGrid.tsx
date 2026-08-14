@@ -52,7 +52,7 @@ const MetricCard = ({
 }) => (
   <div
     className={`
-      relative grid grid-cols-1 items-start gap-x-6 border-l-4 bg-[var(--background-alt-grey)] p-4
+      relative grid grid-cols-1 items-start gap-x-6 border-l-2 bg-[var(--background-alt-grey)] p-4
       sm:grid-cols-[minmax(0,1fr)_auto]
       ${accentBorderColor}
     `}
