@@ -133,8 +133,8 @@ export function MetricCorrectionEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const textArrayInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   const setInputRef = (
     element: HTMLInputElement | HTMLTextAreaElement | null,
   ) => {
@@ -145,11 +145,7 @@ export function MetricCorrectionEditor({
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (target.valueType === "text_array") {
-          formRef.current
-            ?.querySelector<HTMLInputElement>(
-              `#${instanceId}-value-${textArrayIndex}`,
-            )
-            ?.focus();
+          textArrayInputRefs.current[textArrayIndex]?.focus();
           return;
         }
 
@@ -306,6 +302,9 @@ export function MetricCorrectionEditor({
                       name: `metric-value-${index + 1}`,
                       onChange: (event) =>
                         updateValue(index, event.target.value),
+                      ref: (element) => {
+                        textArrayInputRefs.current[index] = element;
+                      },
                       value,
                     }}
                   />
@@ -384,7 +383,7 @@ export function MetricCorrectionEditor({
         title="Modifier la valeur"
         size={target.valueType === "text_array" ? "large" : "medium"}
       >
-        <form ref={formRef} className="space-y-6" onSubmit={submit}>
+        <form className="space-y-6" onSubmit={submit}>
           {target.valueType === "text_array" && (
             <div>
               <p className="font-medium">{target.label}</p>
