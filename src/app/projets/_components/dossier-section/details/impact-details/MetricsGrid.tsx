@@ -228,7 +228,9 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
       {Object.entries(metricGroups).map(([groupId, group]) => (
         <div
           key={groupId}
-          className="metric-group"
+          className={`metric-group border-t-2 pt-2 ${
+            group.theme?.borderColor || "border-t-green-500"
+          }`}
           data-testid={`metric-group-${groupId}`}
         >
           {group.theme && (
@@ -239,11 +241,7 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               {group.theme.label}
             </h4>
           )}
-          <div
-            className={`space-y-4 border-t-4 pt-6 ${
-              group.theme?.borderColor || "border-t-green-500"
-            }`}
-          >
+          <div className="space-y-4">
             {Object.entries(group.metrics).map(([key, metric]) => {
               const hasRelatedParent =
                 metric._typename === "Simple" &&
