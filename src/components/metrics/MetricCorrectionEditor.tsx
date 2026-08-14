@@ -240,7 +240,7 @@ export function MetricCorrectionEditor({
       <Button
         ref={openerRef}
         className="bg-white"
-        priority="tertiary no outline"
+        priority="tertiary"
         size="small"
         nativeButtonProps={{
           ...modal.buttonProps,

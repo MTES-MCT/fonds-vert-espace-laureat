@@ -20,7 +20,9 @@ export function MetricAnomalyMessage({
 }) {
   return (
     <>
-      <div className="flex items-center gap-1 text-base font-semibold">
+      <div
+        className={`flex items-center gap-1 text-base font-semibold text-[var(--text-title-grey)]`}
+      >
         <span
           aria-hidden="true"
           className={`fr-icon-warning-fill fr-icon--sm text-[var(--text-default-warning)]`}
