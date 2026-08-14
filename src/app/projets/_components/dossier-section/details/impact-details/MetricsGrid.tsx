@@ -141,7 +141,7 @@ const AvantApresTravauxRows = ({
           <div
             key={label}
             aria-label={label}
-            className={`grid items-start gap-6 py-4 sm:grid-cols-[minmax(0,1fr)_auto]`}
+            className={`grid items-start gap-6 py-4 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto]`}
             data-testid={
               relatedMetric?.label === label
                 ? `metric-${labelToTestId(label)}`
