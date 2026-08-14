@@ -95,7 +95,7 @@ export function AnomaliesSection({ anomalies }: { anomalies: Anomaly[] }) {
                 <h4 className="mb-0 text-lg font-bold">{anomaly.indicator}</h4>
                 <dl
                   className={`
-                    grid items-start gap-6 border border-gray-200 px-8 py-6
+                    grid items-start gap-6 border border-gray-200 px-6 py-6
                     sm:grid-cols-[minmax(10rem,14rem)_minmax(0,1fr)_auto]
                   `}
                 >

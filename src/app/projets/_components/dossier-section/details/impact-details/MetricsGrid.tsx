@@ -35,7 +35,7 @@ const SimpleMetricRow = ({
   return (
     <section
       aria-label={metric.label}
-      className={`grid items-start gap-6 px-8 py-6 sm:grid-cols-[minmax(0,1fr)_auto]`}
+      className={`grid items-start gap-6 px-6 py-6 sm:grid-cols-[minmax(0,1fr)_auto]`}
       data-testid={`metric-${metricId}`}
     >
       <div className="space-y-1">
@@ -102,7 +102,7 @@ const AvantApresTravauxRows = ({
   return (
     <section
       aria-label={metric.label}
-      className="px-8 py-6"
+      className="px-6 py-6"
       data-testid={`metric-${metricId}`}
     >
       <h5 className="mb-2 text-base font-normal text-[var(--text-label-grey)]">

@@ -29,7 +29,7 @@ export function SubventionDetails({
         <h4 id="aide-fonds-vert-heading" className="mb-2 text-lg font-bold">
           Aide du Fonds vert
         </h4>
-        <dl className="grid grid-cols-3 border border-gray-200 px-8 py-6">
+        <dl className="grid grid-cols-3 border border-gray-200 px-6 py-6">
           <MoneyField
             label="Montant attribué"
             value={montantSubventionAttribuee}
