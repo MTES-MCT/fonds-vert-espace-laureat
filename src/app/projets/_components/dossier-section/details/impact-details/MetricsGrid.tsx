@@ -136,7 +136,7 @@ const AvantApresTravauxRows = ({
       <h5 className="mb-2 text-base font-normal text-[var(--text-label-grey)]">
         {metric.label}
       </h5>
-      <dl className="divide-y divide-gray-200 border-t border-gray-200">
+      <dl className="divide-y divide-gray-200">
         {rows.map(({ label, value, metricCode, target, testId }) => (
           <div
             key={label}
