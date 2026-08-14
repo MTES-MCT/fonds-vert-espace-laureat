@@ -12,7 +12,10 @@ import {
   classifyMetricValue,
   isDisplayableMetricFields,
 } from "@/utils/metrics/guards";
-import { metricValuesEqual } from "@/utils/metrics/values";
+import {
+  metricValuesEqual,
+  normalizeMetricValue,
+} from "@/utils/metrics/values";
 
 type MetricRevisionInsert = typeof dossierMetricRevisions.$inferInsert;
 type MetricRevisionRow = typeof dossierMetricRevisions.$inferSelect;
@@ -163,35 +166,6 @@ function rowsToMetrics(rows: CurrentMetricRow[]): Record<string, MetricFields> {
       },
     ]),
   );
-}
-
-function isValidRevisionValue(
-  valueType: MetricValueType,
-  value: unknown,
-): value is MetricValue {
-  switch (valueType) {
-    case "number":
-      return typeof value === "number" && Number.isFinite(value);
-    case "text":
-      return typeof value === "string" && value.trim().length > 0;
-    case "boolean":
-      return typeof value === "boolean";
-    case "text_array":
-      if (
-        !Array.isArray(value) ||
-        value.length === 0 ||
-        !value.every(
-          (item) => typeof item === "string" && item.trim().length > 0,
-        )
-      ) {
-        return false;
-      }
-
-      return (
-        new Set(value.map((item) => item.trim().toLocaleLowerCase("fr")))
-          .size === value.length
-      );
-  }
 }
 
 function revisionRowsToTarget({
@@ -448,14 +422,16 @@ export async function appendDossierMetricRevision({
       );
     }
 
-    if (!isValidRevisionValue(target.valueType, value)) {
+    const validation = normalizeMetricValue(target.valueType, value);
+    if (!validation.success) {
       throw new DossierMetricRevisionError(
         "invalid-value",
         "Valeur invalide pour le type de la métrique",
       );
     }
+    const normalizedValue = validation.value;
 
-    if (metricValuesEqual(target.effectiveValue, value)) {
+    if (metricValuesEqual(target.effectiveValue, normalizedValue)) {
       return target;
     }
 
@@ -467,13 +443,13 @@ export async function appendDossierMetricRevision({
       revision,
       label: target.label,
       unit: target.unit,
-      ...valueColumns(value),
+      ...valueColumns(normalizedValue),
     });
 
     return {
       ...target,
       revision,
-      effectiveValue: value,
+      effectiveValue: normalizedValue,
     };
   });
 }

@@ -614,6 +614,48 @@ test("appends valid revisions for every stored metric type", async ({}, testInfo
   });
 });
 
+test("normalizes accepted text revisions before storing them", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+
+  await importDossierMetricsIfMissing({
+    numeroDossier: dossierNumber,
+    metrics: {
+      text: { label: "Texte", unite: null, valeur_estimee: "source" },
+      text_array: {
+        label: "Liste",
+        unite: null,
+        valeur_estimee: ["source"],
+      },
+    },
+  });
+
+  await expect(
+    appendDossierMetricRevision({
+      numeroDossier: dossierNumber,
+      metricCode: "text",
+      value: "  texte corrigé  ",
+    }),
+  ).resolves.toMatchObject({ effectiveValue: "texte corrigé" });
+  await expect(
+    appendDossierMetricRevision({
+      numeroDossier: dossierNumber,
+      metricCode: "text_array",
+      value: [" première ", " deuxième "],
+    }),
+  ).resolves.toMatchObject({
+    effectiveValue: ["première", "deuxième"],
+  });
+
+  await expect(
+    getDossierMetricsState({ numeroDossier: dossierNumber }),
+  ).resolves.toMatchObject({
+    metrics: {
+      text: { valeur_estimee: "texte corrigé" },
+      text_array: { valeur_estimee: ["première", "deuxième"] },
+    },
+  });
+});
+
 test("rejects unknown targets and invalid values for every stored type", async ({}, testInfo) => {
   const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
 

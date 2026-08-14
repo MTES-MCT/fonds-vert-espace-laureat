@@ -10,6 +10,10 @@ import { type FormEvent, useId, useMemo, useRef, useState } from "react";
 
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
+import {
+  type MetricValueValidation,
+  normalizeMetricValue,
+} from "@/utils/metrics/values";
 
 import { useMetricRevisions } from "./MetricRevisionContext";
 
@@ -25,24 +29,19 @@ function inputValue(value: MetricValue): string {
   return String(value);
 }
 
-function parseScalarValue(
+function scalarInputCandidate(
   valueType: Exclude<DossierMetricRevisionTarget["valueType"], "text_array">,
   rawValue: string,
-): Exclude<MetricValue, string[]> | undefined {
+): unknown {
   switch (valueType) {
     case "number": {
       const normalizedValue = rawValue
         .replace(/[\s\u00a0\u202f]/g, "")
         .replace(",", ".");
-      const value = Number(normalizedValue);
-      return normalizedValue.length > 0 && Number.isFinite(value)
-        ? value
-        : undefined;
+      return normalizedValue.length > 0 ? Number(normalizedValue) : undefined;
     }
-    case "text": {
-      const value = rawValue.trim();
-      return value.length > 0 ? value : undefined;
-    }
+    case "text":
+      return rawValue;
     case "boolean":
       if (rawValue === "true") return true;
       if (rawValue === "false") return false;
@@ -51,7 +50,8 @@ function parseScalarValue(
 }
 
 function validationMessage(
-  valueType: Exclude<DossierMetricRevisionTarget["valueType"], "text_array">,
+  valueType: DossierMetricRevisionTarget["valueType"],
+  validation: Extract<MetricValueValidation, { success: false }>,
 ): string {
   switch (valueType) {
     case "number":
@@ -60,42 +60,11 @@ function validationMessage(
       return "Saisissez une valeur non vide.";
     case "boolean":
       return "Sélectionnez oui ou non.";
+    case "text_array":
+      return validation.reason === "duplicate-value"
+        ? "Chaque valeur doit être unique."
+        : "Renseignez chaque valeur ou supprimez les champs vides.";
   }
-}
-
-type TextArrayValidation =
-  | { success: true; value: string[] }
-  | { success: false; message: string; invalidIndex: number };
-
-function validateTextArray(values: string[]): TextArrayValidation {
-  const normalizedValues = values.map((value) => value.trim());
-  const emptyIndex = normalizedValues.findIndex((value) => value.length === 0);
-
-  if (emptyIndex !== -1) {
-    return {
-      success: false,
-      message: "Renseignez chaque valeur ou supprimez les champs vides.",
-      invalidIndex: emptyIndex,
-    };
-  }
-
-  const seenValues = new Set<string>();
-  const duplicateIndex = normalizedValues.findIndex((value) => {
-    const comparableValue = value.toLocaleLowerCase("fr");
-    if (seenValues.has(comparableValue)) return true;
-    seenValues.add(comparableValue);
-    return false;
-  });
-
-  if (duplicateIndex !== -1) {
-    return {
-      success: false,
-      message: "Chaque valeur doit être unique.",
-      invalidIndex: duplicateIndex,
-    };
-  }
-
-  return { success: true, value: normalizedValues };
 }
 
 function textArrayInputValue(value: MetricValue): string[] {
@@ -179,21 +148,28 @@ export function MetricCorrectionEditor({
     let value: MetricValue | undefined;
 
     if (target.valueType === "text_array") {
-      const validation = validateTextArray(textArrayValues);
+      const validation = normalizeMetricValue(
+        target.valueType,
+        textArrayValues,
+      );
       if (!validation.success) {
-        setError(validation.message);
+        setError(validationMessage(target.valueType, validation));
         setInvalidTextArrayIndex(validation.invalidIndex);
-        focusCorrectionControl(validation.invalidIndex);
+        focusCorrectionControl(validation.invalidIndex ?? 0);
         return;
       }
       value = validation.value;
     } else {
-      value = parseScalarValue(target.valueType, rawValue);
-      if (value === undefined) {
-        setError(validationMessage(target.valueType));
+      const validation = normalizeMetricValue(
+        target.valueType,
+        scalarInputCandidate(target.valueType, rawValue),
+      );
+      if (!validation.success) {
+        setError(validationMessage(target.valueType, validation));
         focusCorrectionControl();
         return;
       }
+      value = validation.value;
     }
 
     submittingRef.current = true;
