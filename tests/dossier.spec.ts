@@ -513,9 +513,7 @@ test("validates and submits a numeric metric correction once", async ({
     const numberCard = page.getByRole("region", {
       name: "Métrique numérique",
     });
-    await numberCard
-      .getByRole("button", { name: "Modifier la valeur" })
-      .click();
+    await numberCard.getByRole("button", { name: "Modifier" }).click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     const numberInput = dialog.getByLabel("Valeur corrigée");
     await numberInput.fill("");
@@ -572,9 +570,7 @@ test("validates and submits a numeric metric correction once", async ({
       "Correction enregistrée",
     );
     await page.unroute("**/metrics/number_metric");
-    await numberCard
-      .getByRole("button", { name: "Modifier la valeur" })
-      .click();
+    await numberCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await expect(numberCard.getByRole("status")).toHaveCount(0);
     await expect(dialog.getByLabel("Valeur source")).toHaveValue("1");
@@ -640,7 +636,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     await page.goto(`/projets/${correctionDossierNumber}`);
 
     const textCard = page.getByRole("region", { name: "Métrique texte" });
-    await textCard.getByRole("button", { name: "Modifier la valeur" }).click();
+    await textCard.getByRole("button", { name: "Modifier" }).click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Valeur corrigée").fill("Valeur corrigée");
     await dialog
@@ -654,9 +650,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     const booleanCard = page.getByRole("region", {
       name: "Métrique booléenne",
     });
-    await booleanCard
-      .getByRole("button", { name: "Modifier la valeur" })
-      .click();
+    await booleanCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Oui", { exact: true }).check({ force: true });
     await dialog
@@ -668,7 +662,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     const arrayCard = page.getByRole("region", {
       name: "Métrique multiple",
     });
-    await arrayCard.getByRole("button", { name: "Modifier la valeur" }).click();
+    await arrayCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog
       .getByLabel("Valeur corrigée")
@@ -722,12 +716,14 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
     await page.goto(`/projets/${correctionDossierNumber}`);
 
     const beforeAfterCard = page.getByRole("region", { name: "Énergie test" });
-    const editBefore = beforeAfterCard.getByRole("button", {
-      name: "Modifier la valeur avant travaux",
+    const beforeRow = beforeAfterCard.getByRole("group", {
+      name: "Avant travaux",
     });
-    const editAfter = beforeAfterCard.getByRole("button", {
-      name: "Modifier la valeur après travaux",
+    const afterRow = beforeAfterCard.getByRole("group", {
+      name: "Après travaux",
     });
+    const editBefore = beforeRow.getByRole("button", { name: "Modifier" });
+    const editAfter = afterRow.getByRole("button", { name: "Modifier" });
 
     await editBefore.click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -736,12 +732,8 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
       .getByRole("button", { name: "Enregistrer la correction" })
       .click();
     await expect(dialog).toBeHidden();
-    await expect(beforeAfterCard.getByLabel("Avant travaux")).toContainText(
-      "120",
-    );
-    await expect(beforeAfterCard.getByLabel("Après travaux")).toContainText(
-      "80",
-    );
+    await expect(beforeRow).toContainText("120");
+    await expect(afterRow).toContainText("80");
 
     await editAfter.click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -750,12 +742,8 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
       .getByRole("button", { name: "Enregistrer la correction" })
       .click();
     await expect(dialog).toBeHidden();
-    await expect(beforeAfterCard.getByLabel("Avant travaux")).toContainText(
-      "120",
-    );
-    await expect(beforeAfterCard.getByLabel("Après travaux")).toContainText(
-      "70",
-    );
+    await expect(beforeRow).toContainText("120");
+    await expect(afterRow).toContainText("70");
   } finally {
     await deleteStoredDossierMetrics(correctionDossierNumber);
   }

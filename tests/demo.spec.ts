@@ -171,7 +171,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(anomaliesSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
-test("fits before/after metric values and actions on mobile", async ({
+test("fits related energy metric values and actions on mobile", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
@@ -181,16 +181,17 @@ test("fits before/after metric values and actions on mobile", async ({
     name: "Consommation énergétique",
   });
 
-  await expect(
-    card.getByRole("button", {
-      name: "Modifier la valeur avant travaux",
-    }),
-  ).toBeVisible();
-  await expect(
-    card.getByRole("button", {
-      name: "Modifier la valeur après travaux",
-    }),
-  ).toBeVisible();
+  for (const label of [
+    "Avant travaux",
+    "Après travaux",
+    "Gain énergétique estimé",
+  ]) {
+    await expect(
+      card
+        .getByRole("group", { name: label })
+        .getByRole("button", { name: "Modifier" }),
+    ).toBeVisible();
+  }
   await expect
     .poll(() =>
       card.evaluate((element) => element.scrollWidth <= element.clientWidth),

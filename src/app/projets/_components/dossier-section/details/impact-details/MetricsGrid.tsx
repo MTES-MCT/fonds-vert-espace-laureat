@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowedValues } from "@/components/metrics/ArrowedValues";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
@@ -8,6 +7,11 @@ import type { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
 import { isMetricFields } from "@/utils/metrics/guards";
 import { processMetrics } from "@/utils/metrics/process";
 import { groupMetricsByTheme } from "@/utils/metrics/themes";
+
+const RELATED_METRIC_LABELS: Record<string, string> = {
+  "Consommation énergétique": "Gain énergétique estimé",
+  "Émissions de GES": "Émissions de GES évitées",
+};
 
 function labelToTestId(label: string): string {
   return label
@@ -18,12 +22,10 @@ function labelToTestId(label: string): string {
     .replace(/^-+|-+$/g, ""); // Enlever les tirets au début et à la fin
 }
 
-const SimpleMetricCard = ({
+const SimpleMetricRow = ({
   metric,
-  borderColorClass = "border-t-green-500",
 }: {
   metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
-  borderColorClass?: string;
 }) => {
   const metricId = labelToTestId(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
@@ -33,69 +35,118 @@ const SimpleMetricCard = ({
   return (
     <section
       aria-label={metric.label}
-      className={`space-y-2 border-t-4 bg-white p-4 shadow-md ${borderColorClass}
-        overflow-hidden rounded-xs
-      `}
+      className={`grid items-start gap-6 px-8 py-6 sm:grid-cols-[minmax(0,1fr)_auto]`}
       data-testid={`metric-${metricId}`}
     >
-      <h5 className="max-w-[18rem] text-sm font-medium text-balance text-gray-600">
-        {metric.label}
-      </h5>
-
-      {estimee !== undefined && (
-        <MetricValue
-          value={estimee}
-          accessibleName="Valeur effective"
-          unite={metric.unite}
-          testId="valeur-estimee"
-        />
+      <div className="space-y-1">
+        <h5 className="mb-0 text-base font-normal text-[var(--text-label-grey)]">
+          {metric.label}
+        </h5>
+        {estimee !== undefined && (
+          <MetricValue
+            value={estimee}
+            accessibleName="Valeur effective"
+            unite={metric.unite}
+            testId="valeur-estimee"
+          />
+        )}
+      </div>
+      {target && (
+        <div className="justify-self-end">
+          <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
+        </div>
       )}
-      {target && <MetricCorrectionEditor target={target} />}
     </section>
   );
 };
 
-const AvantApresTravauxCard = ({
+const AvantApresTravauxRows = ({
   metric,
-  borderColorClass = "border-t-green-500",
+  relatedMetric,
 }: {
   metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
-  borderColorClass?: string;
+  relatedMetric?: Extract<ProcessedMetric, { _typename: "Simple" }>;
 }) => {
   const metricId = labelToTestId(metric.label);
   const { targets } = useMetricRevisions();
   const beforeTarget = targets[metric.beforeMetricCode];
   const afterTarget = targets[metric.afterMetricCode];
+  const relatedTarget = relatedMetric
+    ? targets[relatedMetric.metricCode]
+    : undefined;
+  const rows = [
+    {
+      label: "Avant travaux",
+      value: metric.valeur_avant_travaux,
+      target: beforeTarget,
+      testId: "valeur-0",
+    },
+    {
+      label: "Après travaux",
+      value: metric.valeur_apres_travaux,
+      target: afterTarget,
+      testId: "valeur-1",
+    },
+    ...(relatedMetric
+      ? [
+          {
+            label: relatedMetric.label,
+            value: relatedMetric.valeur_estimee,
+            target: relatedTarget,
+            testId: "valeur-estimee",
+          },
+        ]
+      : []),
+  ];
 
   return (
     <section
       aria-label={metric.label}
-      className={`relative space-y-4 border-t-4 bg-white p-4 shadow-md ${borderColorClass}
-        overflow-hidden rounded-xs
-      `}
+      className="px-8 py-6"
       data-testid={`metric-${metricId}`}
     >
-      <div className="text-sm font-medium text-gray-600">{metric.label}</div>
-
-      <ArrowedValues
-        values={[metric.valeur_avant_travaux, metric.valeur_apres_travaux]}
-        labels={["Avant travaux", "Après travaux"]}
-        unite={metric.unite}
-      />
-      <div className="flex flex-wrap gap-2">
-        {beforeTarget && (
-          <MetricCorrectionEditor
-            target={beforeTarget}
-            buttonLabel="Modifier la valeur avant travaux"
-          />
-        )}
-        {afterTarget && (
-          <MetricCorrectionEditor
-            target={afterTarget}
-            buttonLabel="Modifier la valeur après travaux"
-          />
-        )}
-      </div>
+      <h5 className="mb-2 text-base font-normal text-[var(--text-label-grey)]">
+        {metric.label}
+      </h5>
+      <dl className="divide-y divide-gray-200">
+        {rows.map(({ label, value, target, testId }) => (
+          <div
+            key={label}
+            aria-label={label}
+            className={`grid items-start gap-6 py-4 sm:grid-cols-[minmax(0,1fr)_auto]`}
+            data-testid={
+              relatedMetric?.label === label
+                ? `metric-${labelToTestId(label)}`
+                : undefined
+            }
+            role="group"
+          >
+            <div className="space-y-1">
+              <dt className="text-[var(--text-label-grey)]">{label}</dt>
+              <dd className="!mb-0">
+                <MetricValue
+                  value={value}
+                  accessibleName={label}
+                  unite={
+                    relatedMetric?.label === label
+                      ? relatedMetric.unite
+                      : metric.unite
+                  }
+                  testId={testId}
+                />
+              </dd>
+            </div>
+            {target && (
+              <div className="justify-self-end">
+                <MetricCorrectionEditor
+                  target={target}
+                  buttonLabel="Modifier"
+                />
+              </div>
+            )}
+          </div>
+        ))}
+      </dl>
     </section>
   );
 };
@@ -137,22 +188,49 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               {group.theme.label}
             </h4>
           )}
-          <div className="flex flex-wrap gap-4">
+          <div
+            className={`divide-y divide-gray-200 border border-gray-200 border-t-4 ${
+              group.theme?.borderColor || "border-t-green-500"
+            }`}
+          >
             {Object.entries(group.metrics).map(([key, metric]) => {
-              const borderColorClass =
-                group.theme?.borderColor || "border-t-green-500";
+              const hasRelatedParent =
+                metric._typename === "Simple" &&
+                Object.entries(RELATED_METRIC_LABELS).some(
+                  ([parentLabel, relatedLabel]) =>
+                    relatedLabel === metric.label &&
+                    Object.values(group.metrics).some(
+                      (candidate) =>
+                        candidate._typename === "AvantApresTravaux" &&
+                        candidate.label === parentLabel,
+                    ),
+                );
 
-              return metric._typename === "Simple" ? (
-                <SimpleMetricCard
+              if (hasRelatedParent) {
+                return null;
+              }
+
+              if (metric._typename === "Simple") {
+                return <SimpleMetricRow key={key} metric={metric} />;
+              }
+
+              const relatedMetricLabel = RELATED_METRIC_LABELS[metric.label];
+              const relatedMetric = Object.values(group.metrics).find(
+                (
+                  candidate,
+                ): candidate is Extract<
+                  ProcessedMetric,
+                  { _typename: "Simple" }
+                > =>
+                  candidate._typename === "Simple" &&
+                  candidate.label === relatedMetricLabel,
+              );
+
+              return (
+                <AvantApresTravauxRows
                   key={key}
                   metric={metric}
-                  borderColorClass={borderColorClass}
-                />
-              ) : (
-                <AvantApresTravauxCard
-                  key={key}
-                  metric={metric}
-                  borderColorClass={borderColorClass}
+                  relatedMetric={relatedMetric}
                 />
               );
             })}
