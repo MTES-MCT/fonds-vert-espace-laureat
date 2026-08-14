@@ -301,7 +301,7 @@ export function MetricCorrectionEditor({
             <div className="space-y-4">
               {textArrayValues.map((value, index) => (
                 <div
-                  className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end"
+                  className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]"
                   key={index}
                 >
                   <Input
@@ -323,6 +323,7 @@ export function MetricCorrectionEditor({
                     }}
                   />
                   <Button
+                    className="sm:mt-9 sm:self-start"
                     priority="tertiary"
                     size="small"
                     iconId="fr-icon-delete-line"
