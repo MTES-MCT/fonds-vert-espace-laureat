@@ -32,7 +32,7 @@ const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
     <div
       key={`${anomaly.metricCode}-${anomaly.problem.label}`}
       aria-label="Anomalie détectée"
-      className="col-span-full"
+      className="col-span-full mb-2"
       role="note"
     >
       <MetricAnomalyMessage
@@ -56,7 +56,7 @@ const SimpleMetricRow = ({
   return (
     <section
       aria-label={metric.label}
-      className={`grid items-start gap-6 px-6 py-6 sm:grid-cols-[minmax(0,1fr)_auto]`}
+      className={`grid items-start gap-x-6 gap-y-3 px-6 py-6 sm:grid-cols-[minmax(0,1fr)_auto]`}
       data-testid={`metric-${metricId}`}
     >
       <div className="space-y-1">
@@ -136,12 +136,16 @@ const AvantApresTravauxRows = ({
       <h5 className="mb-2 text-base font-normal text-[var(--text-label-grey)]">
         {metric.label}
       </h5>
-      <dl className="divide-y divide-gray-200">
+      <dl className="divide-y divide-gray-200 border-t border-gray-200">
         {rows.map(({ label, value, metricCode, target, testId }) => (
           <div
             key={label}
             aria-label={label}
-            className={`grid items-start gap-6 py-4 last:pb-0 sm:grid-cols-[minmax(0,1fr)_auto]`}
+            className={`
+              grid items-start gap-x-6 gap-y-3 py-4
+              last:pb-0
+              sm:grid-cols-[minmax(0,1fr)_auto]
+            `}
             data-testid={
               relatedMetric?.label === label
                 ? `metric-${labelToTestId(label)}`
