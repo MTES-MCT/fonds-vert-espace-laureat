@@ -244,9 +244,13 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
         >
           {group.theme && (
             <h4
-              className="mb-4 text-lg font-medium"
+              className="mb-4 flex items-center gap-2 text-lg font-medium"
               data-testid={`metric-group-title-${groupId}`}
             >
+              <span
+                aria-hidden="true"
+                className={`${group.theme.iconClass} ${group.theme.accentTextColor}`}
+              />
               {group.theme.label}
             </h4>
           )}

@@ -5,6 +5,8 @@ export type MetricTheme = {
   label: string;
   keywords: string[];
   accentBorderColor: string;
+  accentTextColor: string;
+  iconClass: string;
 };
 
 export const METRIC_THEMES: MetricTheme[] = [
@@ -13,30 +15,40 @@ export const METRIC_THEMES: MetricTheme[] = [
     label: "Caractéristiques du projet",
     keywords: ["bâtiment", "surface", "Surface", "Nature des opérations"],
     accentBorderColor: "border-l-gray-700",
+    accentTextColor: "text-gray-700",
+    iconClass: "fr-icon-building-line",
   },
   {
     id: "energy",
     label: "Énergie",
     keywords: ["énergétique", "chauffage"],
     accentBorderColor: "border-l-yellow-500",
+    accentTextColor: "text-yellow-500",
+    iconClass: "fr-icon-flashlight-line",
   },
   {
     id: "ges",
     label: "Gaz à Effet de Serre (GES)",
     keywords: ["GES"],
     accentBorderColor: "border-l-green-500",
+    accentTextColor: "text-green-500",
+    iconClass: "fr-icon-leaf-line",
   },
   {
     id: "proximity-management",
     label: "Gestion de proximité",
     keywords: ["gestion de proximité"],
     accentBorderColor: "border-l-orange-500",
+    accentTextColor: "text-orange-500",
+    iconClass: "fr-icon-community-line",
   },
   {
     id: "separate-collection",
     label: "Collecte séparée",
     keywords: ["collecte", "collectés"],
     accentBorderColor: "border-l-purple-500",
+    accentTextColor: "text-purple-500",
+    iconClass: "fr-icon-recycle-line",
   },
 ];
 
