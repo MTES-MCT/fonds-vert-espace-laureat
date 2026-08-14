@@ -387,28 +387,36 @@ export async function appendDossierMetricRevision({
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
 
-    const [source] = await tx
-      .select(currentMetricSelection)
-      .from(dossierMetricRevisions)
-      .where(
-        and(
-          eq(dossierMetricRevisions.dossierNumber, numeroDossier),
-          eq(dossierMetricRevisions.metricCode, metricCode),
-          eq(dossierMetricRevisions.revision, 1),
-        ),
-      )
-      .limit(1);
-    const [effectiveRevision] = await tx
-      .select(currentMetricSelection)
-      .from(dossierMetricRevisions)
-      .where(
-        and(
-          eq(dossierMetricRevisions.dossierNumber, numeroDossier),
-          eq(dossierMetricRevisions.metricCode, metricCode),
-        ),
-      )
-      .orderBy(desc(dossierMetricRevisions.revision))
-      .limit(1);
+    const revisions = await unionAll(
+      tx
+        .select(currentMetricSelection)
+        .from(dossierMetricRevisions)
+        .where(
+          and(
+            eq(dossierMetricRevisions.dossierNumber, numeroDossier),
+            eq(dossierMetricRevisions.metricCode, metricCode),
+            eq(dossierMetricRevisions.revision, 1),
+          ),
+        )
+        .limit(1),
+      tx
+        .select(currentMetricSelection)
+        .from(dossierMetricRevisions)
+        .where(
+          and(
+            eq(dossierMetricRevisions.dossierNumber, numeroDossier),
+            eq(dossierMetricRevisions.metricCode, metricCode),
+          ),
+        )
+        .orderBy(desc(dossierMetricRevisions.revision))
+        .limit(1),
+    );
+    const source = revisions.find((revision) => revision.revision === 1);
+    const effectiveRevision = revisions.reduce<CurrentMetricRow | undefined>(
+      (latest, revision) =>
+        !latest || revision.revision > latest.revision ? revision : latest,
+      undefined,
+    );
 
     const target =
       source && effectiveRevision
