@@ -132,10 +132,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     dialog.getByText("Consommation énergétique avant travaux"),
   ).toBeVisible();
   await expect(dialog.getByLabel("Valeur source")).toHaveValue("2055650");
-  await expect(dialog.getByLabel("Valeur source")).toHaveAttribute(
-    "readonly",
-    "",
-  );
+  await expect(dialog.getByLabel("Valeur source")).toBeDisabled();
   await expect(dialog.getByLabel("Valeur corrigée")).toBeFocused();
   await expect(dialog.getByText("Unité : kWh", { exact: true })).toBeVisible();
 

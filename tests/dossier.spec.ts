@@ -574,6 +574,7 @@ test("validates and submits a numeric metric correction once", async ({
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await expect(numberCard.getByRole("status")).toHaveCount(0);
     await expect(dialog.getByLabel("Valeur source")).toHaveValue("1");
+    await expect(dialog.getByLabel("Valeur source")).toBeDisabled();
     await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("2.5");
 
     await page.route("**/metrics/number_metric", (route) =>

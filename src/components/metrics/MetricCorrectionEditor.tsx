@@ -395,10 +395,10 @@ export function MetricCorrectionEditor({
           <div className="space-y-2">
             {target.valueType !== "text_array" && (
               <Input
+                disabled
                 label="Valeur source"
                 nativeInputProps={{
-                  value: sourceValue(target.sourceValue),
-                  readOnly: true,
+                  defaultValue: sourceValue(target.sourceValue),
                 }}
               />
             )}
