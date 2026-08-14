@@ -239,7 +239,7 @@ export function MetricCorrectionEditor({
     <div className="space-y-2">
       <Button
         ref={openerRef}
-        priority="tertiary no outline"
+        priority="tertiary"
         size="small"
         nativeButtonProps={{
           ...modal.buttonProps,
