@@ -69,12 +69,7 @@ const SimpleMetricRow = ({
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
       <MetricCard>
-        <div
-          className={`space-y-3 ${
-            anomalies?.length ? "pt-12 sm:pt-0" : "pr-24 sm:pr-0"
-          }`}
-        >
-          <MetricAnomalyNotices anomalies={anomalies} />
+        <div className="pr-24 sm:pr-0">
           <dl className="space-y-1">
             <dt className="text-[var(--text-label-grey)]">{metric.label}</dt>
             {estimee !== undefined && (
@@ -94,6 +89,11 @@ const SimpleMetricRow = ({
             <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
           </div>
         )}
+        {anomalies?.length ? (
+          <div className="col-span-full mt-3 space-y-3">
+            <MetricAnomalyNotices anomalies={anomalies} />
+          </div>
+        ) : null}
       </MetricCard>
     </section>
   );
@@ -160,16 +160,7 @@ const AvantApresTravauxRows = ({
             role="group"
           >
             <MetricCard>
-              <div
-                className={`space-y-3 ${
-                  anomaliesByMetricCode[metricCode]?.length
-                    ? "pt-12 sm:pt-0"
-                    : "pr-24 sm:pr-0"
-                }`}
-              >
-                <MetricAnomalyNotices
-                  anomalies={anomaliesByMetricCode[metricCode]}
-                />
+              <div className="pr-24 sm:pr-0">
                 <div className="space-y-1">
                   <dt className="text-[var(--text-label-grey)]">{label}</dt>
                   <dd className="!mb-0">
@@ -194,6 +185,13 @@ const AvantApresTravauxRows = ({
                   />
                 </div>
               )}
+              {anomaliesByMetricCode[metricCode]?.length ? (
+                <div className="col-span-full mt-3 space-y-3">
+                  <MetricAnomalyNotices
+                    anomalies={anomaliesByMetricCode[metricCode]}
+                  />
+                </div>
+              ) : null}
             </MetricCard>
           </div>
         ))}
