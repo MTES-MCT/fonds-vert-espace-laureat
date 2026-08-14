@@ -131,9 +131,10 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(
     dialog.getByText("Consommation énergétique avant travaux"),
   ).toBeVisible();
-  await expect(dialog.getByLabel("Valeur source")).toHaveValue("2055650");
-  await expect(dialog.getByLabel("Valeur source")).toBeDisabled();
-  await expect(dialog.getByLabel("Valeur corrigée")).toBeFocused();
+  await expect(dialog.getByLabel("Valeur source")).toHaveCount(0);
+  await expect(
+    dialog.getByLabel("Consommation énergétique avant travaux"),
+  ).toBeFocused();
   await expect(dialog.getByText("Unité : kWh", { exact: true })).toBeVisible();
 
   await dialog.getByRole("button", { name: "Annuler" }).click();
@@ -142,7 +143,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
+  await dialog
+    .getByLabel("Consommation énergétique avant travaux")
+    .fill("1 900 000,5");
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -172,7 +175,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   anomaly = anomalousGesBefore;
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await dialog.getByLabel("Valeur corrigée").fill("420");
+  await dialog.getByLabel("Émissions de GES avant travaux").fill("420");
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -188,8 +191,10 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-  await expect(dialog.getByLabel("Valeur source")).toHaveValue("448");
-  await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("420");
+  await expect(dialog.getByLabel("Valeur source")).toHaveCount(0);
+  await expect(dialog.getByLabel("Émissions de GES avant travaux")).toHaveValue(
+    "420",
+  );
   await dialog.getByRole("button", { name: "Annuler" }).click();
 
   await Promise.all([

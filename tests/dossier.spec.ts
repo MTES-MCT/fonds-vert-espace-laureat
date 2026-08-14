@@ -515,7 +515,8 @@ test("validates and submits a numeric metric correction once", async ({
     });
     await numberCard.getByRole("button", { name: "Modifier" }).click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-    const numberInput = dialog.getByLabel("Valeur corrigée");
+    const numberInput = dialog.getByLabel("Métrique numérique");
+    await expect(dialog.getByLabel("Valeur source")).toHaveCount(0);
     await numberInput.fill("");
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
@@ -573,9 +574,8 @@ test("validates and submits a numeric metric correction once", async ({
     await numberCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await expect(numberCard.getByRole("status")).toHaveCount(0);
-    await expect(dialog.getByLabel("Valeur source")).toHaveValue("1");
-    await expect(dialog.getByLabel("Valeur source")).toBeDisabled();
-    await expect(dialog.getByLabel("Valeur corrigée")).toHaveValue("2.5");
+    await expect(dialog.getByLabel("Valeur source")).toHaveCount(0);
+    await expect(dialog.getByLabel("Métrique numérique")).toHaveValue("2.5");
 
     await page.route("**/metrics/number_metric", (route) =>
       route.fulfill({
@@ -584,7 +584,7 @@ test("validates and submits a numeric metric correction once", async ({
         body: "Service indisponible",
       }),
     );
-    await dialog.getByLabel("Valeur corrigée").fill("3,5");
+    await dialog.getByLabel("Métrique numérique").fill("3,5");
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
@@ -639,7 +639,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     const textCard = page.getByRole("region", { name: "Métrique texte" });
     await textCard.getByRole("button", { name: "Modifier" }).click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-    await dialog.getByLabel("Valeur corrigée").fill("Valeur corrigée");
+    await dialog.getByLabel("Métrique texte").fill("Valeur corrigée");
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
@@ -763,7 +763,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
 
     await editBefore.click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-    await dialog.getByLabel("Valeur corrigée").fill("120");
+    await dialog.getByLabel("Énergie test avant travaux").fill("120");
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
@@ -773,7 +773,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
 
     await editAfter.click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-    await dialog.getByLabel("Valeur corrigée").fill("70");
+    await dialog.getByLabel("Énergie test après travaux").fill("70");
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();

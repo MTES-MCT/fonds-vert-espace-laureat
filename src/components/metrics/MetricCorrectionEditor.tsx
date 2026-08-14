@@ -25,14 +25,6 @@ function inputValue(value: MetricValue): string {
   return String(value);
 }
 
-function sourceValue(value: MetricValue): string {
-  if (typeof value === "boolean") {
-    return value ? "Oui" : "Non";
-  }
-
-  return inputValue(value);
-}
-
 function parseScalarValue(
   valueType: Exclude<DossierMetricRevisionTarget["valueType"], "text_array">,
   rawValue: string,
@@ -238,7 +230,7 @@ export function MetricCorrectionEditor({
       case "boolean":
         return (
           <RadioButtons
-            legend="Valeur corrigée"
+            legend={target.label}
             orientation="horizontal"
             state={fieldState}
             stateRelatedMessage={error}
@@ -354,7 +346,7 @@ export function MetricCorrectionEditor({
       case "text":
         return (
           <Input
-            label="Valeur corrigée"
+            label={target.label}
             state={fieldState}
             stateRelatedMessage={error}
             nativeInputProps={{
@@ -390,19 +382,11 @@ export function MetricCorrectionEditor({
         size={target.valueType === "text_array" ? "large" : "medium"}
       >
         <form ref={formRef} className="space-y-6" onSubmit={submit}>
-          <p className="font-medium">{target.label}</p>
+          {target.valueType === "text_array" && (
+            <p className="font-medium">{target.label}</p>
+          )}
 
           <div className="space-y-2">
-            {target.valueType !== "text_array" && (
-              <Input
-                disabled
-                label="Valeur source"
-                nativeInputProps={{
-                  defaultValue: sourceValue(target.sourceValue),
-                }}
-              />
-            )}
-
             {correctionField()}
 
             {target.unit && (
