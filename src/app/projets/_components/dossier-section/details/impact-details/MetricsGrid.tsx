@@ -75,19 +75,19 @@ const SimpleMetricRow = ({
           }`}
         >
           <MetricAnomalyNotices anomalies={anomalies} />
-          <div className="space-y-1">
-            <h5 className="mb-0 text-base font-normal text-[var(--text-label-grey)]">
-              {metric.label}
-            </h5>
+          <dl className="space-y-1">
+            <dt className="text-[var(--text-label-grey)]">{metric.label}</dt>
             {estimee !== undefined && (
-              <MetricValue
-                value={estimee}
-                accessibleName="Valeur effective"
-                unite={metric.unite}
-                testId="valeur-estimee"
-              />
+              <dd className="!mb-0">
+                <MetricValue
+                  value={estimee}
+                  accessibleName="Valeur effective"
+                  unite={metric.unite}
+                  testId="valeur-estimee"
+                />
+              </dd>
             )}
-          </div>
+          </dl>
         </div>
         {target && (
           <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
