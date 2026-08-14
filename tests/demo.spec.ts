@@ -155,13 +155,11 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await expect(dialog).toBeHidden();
   await expect(
-    anomaliesSection.getByRole("status").filter({
+    page.getByRole("status").filter({
       hasText: "Correction enregistrée",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
-  ).toHaveCount(1);
+  await expect(anomaliesSection.getByRole("status")).toHaveCount(0);
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
   await expect(anomalousEnergyBefore).toHaveCount(0);
   await expect(

@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 
+import { successToast } from "@/components/toast/toast";
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
 import { keepNewestMetricRevision } from "@/utils/metrics/revisions";
@@ -91,6 +92,7 @@ export function MetricRevisionProvider({
           [metricCode]: keepNewestMetricRevision(currentTarget, updatedTarget),
         };
       });
+      successToast(`Correction enregistrée pour « ${updatedTarget.label} ».`);
 
       return updatedTarget;
     },

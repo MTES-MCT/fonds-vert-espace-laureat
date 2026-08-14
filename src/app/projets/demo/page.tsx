@@ -7,6 +7,7 @@ import {
 import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
+import { ToastViewport } from "@/components/toast/toast";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { resolveImpactStatus } from "@/services/impact/status";
 import {
@@ -47,6 +48,7 @@ export default async function EspaceLaureatDemo() {
   return (
     <>
       <StartDsfrOnHydration />
+      <ToastViewport />
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => {
           const impactStatus = resolveImpactStatus({

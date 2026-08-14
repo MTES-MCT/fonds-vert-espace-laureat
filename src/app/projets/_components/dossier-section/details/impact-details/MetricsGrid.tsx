@@ -24,7 +24,6 @@ const RELATED_METRIC_LABELS: Record<string, string> = {
 type MetricsGridProps = {
   metriques?: Metrics;
   visibleMetricCodes?: ReadonlySet<string>;
-  onCorrectionSuccess?: (metricLabel: string) => void;
 };
 
 type SimpleMetric = Extract<ProcessedMetric, { _typename: "Simple" }>;
@@ -94,13 +93,7 @@ const MetricCard = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-const SimpleMetricRow = ({
-  metric,
-  onCorrectionSuccess,
-}: {
-  metric: SimpleMetric;
-  onCorrectionSuccess?: (metricLabel: string) => void;
-}) => {
+const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
   const metricId = slugify(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
   const { targets } = useMetricRevisions();
@@ -128,12 +121,7 @@ const SimpleMetricRow = ({
         </div>
         {target && (
           <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
-            <MetricCorrectionEditor
-              target={target}
-              buttonLabel="Modifier"
-              successFeedback={onCorrectionSuccess ? "parent" : "editor"}
-              onSuccess={() => onCorrectionSuccess?.(target.label)}
-            />
+            <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
           </div>
         )}
         {anomalies?.length ? (
@@ -150,12 +138,10 @@ const AvantApresTravauxRows = ({
   metric,
   relatedMetric,
   visibleMetricCodes,
-  onCorrectionSuccess,
 }: {
   metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
   relatedMetric?: SimpleMetric;
   visibleMetricCodes?: ReadonlySet<string>;
-  onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
   const metricId = slugify(metric.label);
   const { targets } = useMetricRevisions();
@@ -236,8 +222,6 @@ const AvantApresTravauxRows = ({
                   <MetricCorrectionEditor
                     target={target}
                     buttonLabel="Modifier"
-                    successFeedback={onCorrectionSuccess ? "parent" : "editor"}
-                    onSuccess={() => onCorrectionSuccess?.(target.label)}
                   />
                 </div>
               )}
@@ -259,7 +243,6 @@ const AvantApresTravauxRows = ({
 export function MetricsGrid({
   metriques,
   visibleMetricCodes,
-  onCorrectionSuccess,
 }: MetricsGridProps) {
   const { targets } = useMetricRevisions();
   if (!metriques) return null;
@@ -323,13 +306,7 @@ export function MetricsGrid({
                 if (metric._typename === "Simple") {
                   if (!isMetricVisible(metric, visibleMetricCodes)) return null;
 
-                  return (
-                    <SimpleMetricRow
-                      key={key}
-                      metric={metric}
-                      onCorrectionSuccess={onCorrectionSuccess}
-                    />
-                  );
+                  return <SimpleMetricRow key={key} metric={metric} />;
                 }
 
                 const relatedMetric = relatedMetricsByParentLabel.get(
@@ -350,7 +327,6 @@ export function MetricsGrid({
                     metric={metric}
                     relatedMetric={relatedMetric}
                     visibleMetricCodes={visibleMetricCodes}
-                    onCorrectionSuccess={onCorrectionSuccess}
                   />
                 );
               })}

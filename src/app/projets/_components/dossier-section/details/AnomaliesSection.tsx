@@ -1,7 +1,6 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { MetricsGrid } from "@/app/projets/_components/dossier-section/details/impact-details/MetricsGrid";
 import type { MetricAnomaly } from "@/components/metrics/MetricAnomalyContext";
@@ -14,13 +13,12 @@ export function AnomaliesSection({
   anomalies: MetricAnomaly[];
   metriques: Metrics;
 }) {
-  const [successMessage, setSuccessMessage] = useState<string>();
   const anomalousMetricCodes = useMemo(
     () => new Set(anomalies.map((anomaly) => anomaly.metricCode)),
     [anomalies],
   );
 
-  if (anomalies.length === 0 && !successMessage) {
+  if (anomalies.length === 0) {
     return null;
   }
 
@@ -58,21 +56,9 @@ export function AnomaliesSection({
           </div>
         </div>
 
-        {successMessage && (
-          <Alert
-            severity="success"
-            small
-            description={successMessage}
-            role="status"
-          />
-        )}
-
         <MetricsGrid
           metriques={metriques}
           visibleMetricCodes={anomalousMetricCodes}
-          onCorrectionSuccess={(metricLabel) =>
-            setSuccessMessage(`Correction enregistrée pour « ${metricLabel} ».`)
-          }
         />
       </div>
     </section>

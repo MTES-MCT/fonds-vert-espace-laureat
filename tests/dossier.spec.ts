@@ -574,9 +574,12 @@ test("validates and submits a numeric metric correction once", async ({
     await expect(numberCard.getByLabel("Valeur effective")).toHaveText(
       /2,5\s*ha/,
     );
-    await expect(numberCard.getByRole("status")).toContainText(
-      "Correction enregistrée",
-    );
+    await expect(
+      page.getByRole("status").filter({
+        hasText: "Correction enregistrée pour « Métrique numérique ».",
+      }),
+    ).toBeVisible();
+    await expect(numberCard.getByRole("status")).toHaveCount(0);
     await page.unroute("**/metrics/number_metric");
     await numberCard.getByRole("button", { name: "Modifier" }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });

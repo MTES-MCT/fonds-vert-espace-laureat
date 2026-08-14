@@ -6,6 +6,7 @@ import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusCo
 import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
+import { ToastViewport } from "@/components/toast/toast";
 import { getDossierFondsVert } from "@/services/fondsvert/dossier";
 import {
   buildFinancesResult,
@@ -95,6 +96,7 @@ export async function DossierPage({
   return (
     <>
       <StartDsfrOnHydration />
+      <ToastViewport />
       <RefreshStatusProvider>
         <RefreshOnVisibility />
         <MetricRevisionProvider

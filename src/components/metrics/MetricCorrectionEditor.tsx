@@ -1,6 +1,5 @@
 "use client";
 
-import Alert from "@codegouvfr/react-dsfr/Alert";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
@@ -74,13 +73,9 @@ function textArrayInputValue(value: MetricValue): string[] {
 export function MetricCorrectionEditor({
   target,
   buttonLabel = "Modifier la valeur",
-  successFeedback = "editor",
-  onSuccess,
 }: {
   target: DossierMetricRevisionTarget;
   buttonLabel?: string;
-  successFeedback?: "editor" | "parent";
-  onSuccess?: (target: DossierMetricRevisionTarget) => void;
 }) {
   const instanceId = useId().replaceAll(":", "");
   const modal = useMemo(
@@ -98,7 +93,6 @@ export function MetricCorrectionEditor({
   );
   const [error, setError] = useState<string>();
   const [invalidTextArrayIndex, setInvalidTextArrayIndex] = useState<number>();
-  const [successMessage, setSuccessMessage] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
@@ -128,7 +122,6 @@ export function MetricCorrectionEditor({
     setTextArrayValues(textArrayInputValue(target.effectiveValue));
     setError(undefined);
     setInvalidTextArrayIndex(undefined);
-    setSuccessMessage(undefined);
     focusCorrectionControl();
   };
 
@@ -176,11 +169,7 @@ export function MetricCorrectionEditor({
     setError(undefined);
 
     try {
-      const updatedTarget = await correctMetric(target.metricCode, value);
-      if (successFeedback === "editor") {
-        setSuccessMessage(`Correction enregistrée pour « ${target.label} ».`);
-      }
-      onSuccess?.(updatedTarget);
+      await correctMetric(target.metricCode, value);
       closeEditor();
     } catch (caughtError) {
       setError(
@@ -339,7 +328,7 @@ export function MetricCorrectionEditor({
   };
 
   return (
-    <div className="space-y-2">
+    <div>
       <Button
         ref={openerRef}
         className="bg-white"
@@ -389,15 +378,6 @@ export function MetricCorrectionEditor({
           />
         </form>
       </modal.Component>
-
-      {successMessage && (
-        <Alert
-          severity="success"
-          small
-          description={successMessage}
-          role="status"
-        />
-      )}
     </div>
   );
 }
