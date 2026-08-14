@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  type MetricAnomaly,
+  useMetricAnomaliesByMetricCode,
+} from "@/components/metrics/MetricAnomalyContext";
+import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
@@ -22,6 +27,21 @@ function labelToTestId(label: string): string {
     .replace(/^-+|-+$/g, ""); // Enlever les tirets au début et à la fin
 }
 
+const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
+  anomalies?.map((anomaly) => (
+    <div
+      key={`${anomaly.metricCode}-${anomaly.problem.label}`}
+      aria-label="Anomalie détectée"
+      className="col-span-full"
+      role="note"
+    >
+      <MetricAnomalyMessage
+        problem={anomaly.problem}
+        helpText={anomaly.helpText}
+      />
+    </div>
+  ));
+
 const SimpleMetricRow = ({
   metric,
 }: {
@@ -30,6 +50,7 @@ const SimpleMetricRow = ({
   const metricId = labelToTestId(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
   const { targets } = useMetricRevisions();
+  const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
   const target = targets[metric.metricCode];
 
   return (
@@ -56,6 +77,9 @@ const SimpleMetricRow = ({
           <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
         </div>
       )}
+      <MetricAnomalyNotices
+        anomalies={anomaliesByMetricCode[metric.metricCode]}
+      />
     </section>
   );
 };
@@ -69,6 +93,7 @@ const AvantApresTravauxRows = ({
 }) => {
   const metricId = labelToTestId(metric.label);
   const { targets } = useMetricRevisions();
+  const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
   const beforeTarget = targets[metric.beforeMetricCode];
   const afterTarget = targets[metric.afterMetricCode];
   const relatedTarget = relatedMetric
@@ -78,12 +103,14 @@ const AvantApresTravauxRows = ({
     {
       label: "Avant travaux",
       value: metric.valeur_avant_travaux,
+      metricCode: metric.beforeMetricCode,
       target: beforeTarget,
       testId: "valeur-0",
     },
     {
       label: "Après travaux",
       value: metric.valeur_apres_travaux,
+      metricCode: metric.afterMetricCode,
       target: afterTarget,
       testId: "valeur-1",
     },
@@ -92,6 +119,7 @@ const AvantApresTravauxRows = ({
           {
             label: relatedMetric.label,
             value: relatedMetric.valeur_estimee,
+            metricCode: relatedMetric.metricCode,
             target: relatedTarget,
             testId: "valeur-estimee",
           },
@@ -109,7 +137,7 @@ const AvantApresTravauxRows = ({
         {metric.label}
       </h5>
       <dl className="divide-y divide-gray-200">
-        {rows.map(({ label, value, target, testId }) => (
+        {rows.map(({ label, value, metricCode, target, testId }) => (
           <div
             key={label}
             aria-label={label}
@@ -144,6 +172,9 @@ const AvantApresTravauxRows = ({
                 />
               </div>
             )}
+            <MetricAnomalyNotices
+              anomalies={anomaliesByMetricCode[metricCode]}
+            />
           </div>
         ))}
       </dl>

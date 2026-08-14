@@ -3,22 +3,17 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import { useState } from "react";
 
-import {
-  MetricAnomalyMessage,
-  type MetricAnomalyProblem,
-} from "@/components/metrics/MetricAnomalyMessage";
+import type { MetricAnomaly } from "@/components/metrics/MetricAnomalyContext";
+import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { MetricField } from "@/components/metrics/MetricField";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 
-export type Anomaly = {
-  metricCode: string;
-  indicator: string;
-  problem: MetricAnomalyProblem;
-  helpText: string;
-};
-
-export function AnomaliesSection({ anomalies }: { anomalies: Anomaly[] }) {
+export function AnomaliesSection({
+  anomalies,
+}: {
+  anomalies: MetricAnomaly[];
+}) {
   const { targets } = useMetricRevisions();
   const [successMessage, setSuccessMessage] = useState<string>();
 

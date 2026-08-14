@@ -1,5 +1,8 @@
 import { DossierSection } from "@/app/projets/_components/DossierSection";
-import { DemoAnomaliesSection } from "@/app/projets/demo/DemoAnomaliesSection";
+import {
+  DemoAnomaliesSection,
+  DemoMetricAnomalyProvider,
+} from "@/app/projets/demo/DemoAnomaliesSection";
 import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
@@ -48,20 +51,22 @@ export default async function EspaceLaureatDemo() {
               initialTargets={metricsSnapshot.targets}
               correctionApiPath="/api/projets/demo/metrics"
             >
-              <DossierSection
-                isAdmin={false}
-                dossierSubvention={dossier}
-                dossierFondsVertResult={{
-                  success: true,
-                  data: dossierFondsVert,
-                }}
-                financesEJPromise={financesEJPromise}
-                impactStatus={impactStatus}
-                nocache={false}
-                anomaliesSection={<DemoAnomaliesSection />}
-                pageAction={<DemoResetButton />}
-                impactPrefillUrl={process.env.DS_IMPACT_URL}
-              />
+              <DemoMetricAnomalyProvider>
+                <DossierSection
+                  isAdmin={false}
+                  dossierSubvention={dossier}
+                  dossierFondsVertResult={{
+                    success: true,
+                    data: dossierFondsVert,
+                  }}
+                  financesEJPromise={financesEJPromise}
+                  impactStatus={impactStatus}
+                  nocache={false}
+                  anomaliesSection={<DemoAnomaliesSection />}
+                  pageAction={<DemoResetButton />}
+                  impactPrefillUrl={process.env.DS_IMPACT_URL}
+                />
+              </DemoMetricAnomalyProvider>
             </MetricRevisionProvider>
           );
         })}

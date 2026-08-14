@@ -78,6 +78,40 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     }),
   ).toHaveCount(0);
 
+  const energyMetrics = page.getByRole("region", {
+    name: "Consommation énergétique",
+  });
+  const energyBeforeAnomaly = energyMetrics
+    .getByRole("group", { name: "Avant travaux" })
+    .getByRole("note", { name: "Anomalie détectée" });
+  await expect(energyBeforeAnomaly).toContainText(
+    "Consommation surfacique hors plage",
+  );
+  await expect(energyBeforeAnomaly).toContainText(
+    "Vérifier l'unité ou la surface de référence",
+  );
+
+  const energyGainAnomaly = energyMetrics
+    .getByRole("group", { name: "Gain énergétique estimé" })
+    .getByRole("note", { name: "Anomalie détectée" });
+  await expect(energyGainAnomaly).toContainText(
+    /Inférieur au seuil attendu de\s*40\s*%/,
+  );
+  await expect(energyGainAnomaly).toContainText(
+    "Vérifier les consommations avant et après travaux",
+  );
+
+  const gesBeforeAnomaly = page
+    .getByRole("region", { name: "Émissions de GES" })
+    .getByRole("group", { name: "Avant travaux" })
+    .getByRole("note", { name: "Anomalie détectée" });
+  await expect(gesBeforeAnomaly).toContainText(
+    /Valeur supérieure à\s*400\s*kgCO₂e/,
+  );
+  await expect(gesBeforeAnomaly).toContainText(
+    "Probable confusion kg / tonnes CO₂e",
+  );
+
   let anomaly = anomaliesSection
     .getByRole("listitem")
     .filter({ hasText: "Consommation énergétique avant travaux" });
@@ -124,6 +158,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(
     page.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
+  await expect(energyBeforeAnomaly).toHaveCount(0);
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
@@ -146,6 +181,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(anomaly.getByText("Valeur supérieure à")).toBeVisible();
   await expect(anomaly.getByText("400kgCO₂e")).toBeVisible();
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();
+  await expect(gesBeforeAnomaly).toContainText(
+    /Valeur supérieure à\s*400\s*kgCO₂e/,
+  );
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -165,6 +203,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
   await expect(anomaliesSection.getByText(/2\s*055\s*650\s*kWh/)).toBeVisible();
   await expect(anomaliesSection.getByText("448kgCO₂e")).toBeVisible();
+  await expect(energyBeforeAnomaly).toContainText(
+    "Consommation surfacique hors plage",
+  );
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
