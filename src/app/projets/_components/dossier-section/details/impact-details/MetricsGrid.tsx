@@ -11,6 +11,7 @@ import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEdi
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
 import type { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
+import { slugify } from "@/utils/format";
 import { isMetricFields } from "@/utils/metrics/guards";
 import { processMetrics } from "@/utils/metrics/process";
 import { groupMetricsByTheme } from "@/utils/metrics/themes";
@@ -36,15 +37,6 @@ function isMetricVisible(
     ? visibleMetricCodes.has(metric.metricCode)
     : visibleMetricCodes.has(metric.beforeMetricCode) ||
         visibleMetricCodes.has(metric.afterMetricCode);
-}
-
-function labelToTestId(label: string): string {
-  return label
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
-    .replace(/[^a-z0-9]+/g, "-") // Remplacer les caractères non alphanumériques par des tirets
-    .replace(/^-+|-+$/g, ""); // Enlever les tirets au début et à la fin
 }
 
 const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
@@ -79,7 +71,7 @@ const SimpleMetricRow = ({
   metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
   onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
-  const metricId = labelToTestId(metric.label);
+  const metricId = slugify(metric.label);
   const estimee = metric.valeur_estimee ?? undefined;
   const { targets } = useMetricRevisions();
   const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
@@ -135,7 +127,7 @@ const AvantApresTravauxRows = ({
   visibleMetricCodes?: ReadonlySet<string>;
   onCorrectionSuccess?: (metricLabel: string) => void;
 }) => {
-  const metricId = labelToTestId(metric.label);
+  const metricId = slugify(metric.label);
   const { targets } = useMetricRevisions();
   const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
   const beforeTarget = targets[metric.beforeMetricCode];
@@ -186,7 +178,7 @@ const AvantApresTravauxRows = ({
             aria-label={label}
             data-testid={
               relatedMetric?.label === label
-                ? `metric-${labelToTestId(label)}`
+                ? `metric-${slugify(label)}`
                 : undefined
             }
             role="group"
