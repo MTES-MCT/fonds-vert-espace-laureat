@@ -49,6 +49,12 @@ async function waitForDsfrTabs(page: Page) {
   await page.waitForSelector("[data-fr-js-tab-button]");
 }
 
+async function waitForDsfrModal(page: Page) {
+  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
+    state: "attached",
+  });
+}
+
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const impactDateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
@@ -509,6 +515,7 @@ test("validates and submits a numeric metric correction once", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}`);
+    await waitForDsfrModal(page);
 
     const numberCard = page.getByRole("region", {
       name: "Métrique numérique",
@@ -625,6 +632,7 @@ test("persists a correction submitted from the standard dossier page", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}`);
+    await waitForDsfrModal(page);
 
     const metricCard = page.getByRole("region", {
       name: "Métrique persistante",
@@ -694,6 +702,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}`);
+    await waitForDsfrModal(page);
 
     const textCard = page.getByRole("region", { name: "Métrique texte" });
     await textCard.getByRole("button", { name: "Modifier" }).click();
@@ -809,6 +818,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}`);
+    await waitForDsfrModal(page);
 
     const beforeAfterCard = page.getByRole("region", { name: "Énergie test" });
     const beforeRow = beforeAfterCard.getByRole("group", {

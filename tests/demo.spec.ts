@@ -35,6 +35,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   );
 
   await page.goto("/projets/demo");
+  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
+    state: "attached",
+  });
   expect(gristRequestCount).toBe(0);
 
   const anomaliesSection = page.getByRole("region", {

@@ -129,7 +129,6 @@ export function MetricCorrectionEditor({
     setError(undefined);
     setInvalidTextArrayIndex(undefined);
     setSuccessMessage(undefined);
-    modal.open();
     focusCorrectionControl();
   };
 
