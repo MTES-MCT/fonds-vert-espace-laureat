@@ -251,7 +251,7 @@ export function MetricCorrectionEditor({
         {buttonLabel}
       </Button>
 
-      <modal.Component title="Modifier la valeur" size="small">
+      <modal.Component title="Modifier la valeur" size="medium">
         <form className="space-y-6" onSubmit={submit}>
           <p className="font-medium">{target.label}</p>
 
@@ -288,9 +288,7 @@ export function MetricCorrectionEditor({
             isReverseOrder
             buttons={[
               {
-                children: isSubmitting
-                  ? "Enregistrement…"
-                  : "Enregistrer la correction",
+                children: isSubmitting ? "Enregistrement…" : "Enregistrer",
                 disabled: isSubmitting,
                 type: "submit",
               },

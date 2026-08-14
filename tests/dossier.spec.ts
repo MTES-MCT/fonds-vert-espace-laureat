@@ -518,7 +518,7 @@ test("validates and submits a numeric metric correction once", async ({
     const numberInput = dialog.getByLabel("Valeur corrigée");
     await numberInput.fill("");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog.getByText("Saisissez un nombre valide.")).toBeVisible();
     await expect(numberInput).toBeFocused();
@@ -550,7 +550,7 @@ test("validates and submits a numeric metric correction once", async ({
 
     await numberInput.fill("2,5");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect.poll(() => numberRequestCount, { timeout: 5000 }).toBe(1);
     await expect(
@@ -585,7 +585,7 @@ test("validates and submits a numeric metric correction once", async ({
     );
     await dialog.getByLabel("Valeur corrigée").fill("3,5");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(
       dialog.getByText("La correction n’a pas pu être enregistrée."),
@@ -640,7 +640,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Valeur corrigée").fill("Valeur corrigée");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
     await expect(textCard.getByLabel("Valeur effective")).toHaveText(
@@ -654,7 +654,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Oui", { exact: true }).check({ force: true });
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
     await expect(booleanCard.getByLabel("Valeur effective")).toHaveText("Oui");
@@ -668,7 +668,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
       .getByLabel("Valeur corrigée")
       .fill("Première valeur\nDeuxième valeur");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
     const effectiveValues = arrayCard.getByLabel("Valeur effective");
@@ -729,7 +729,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Valeur corrigée").fill("120");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
     await expect(beforeRow).toContainText("120");
@@ -739,7 +739,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Valeur corrigée").fill("70");
     await dialog
-      .getByRole("button", { name: "Enregistrer la correction" })
+      .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
     await expect(beforeRow).toContainText("120");

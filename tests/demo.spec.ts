@@ -147,7 +147,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("1 900 000,5");
   await dialog
-    .getByRole("button", { name: "Enregistrer la correction" })
+    .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
 
   await expect(dialog).toBeHidden();
@@ -177,7 +177,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Valeur corrigée").fill("420");
   await dialog
-    .getByRole("button", { name: "Enregistrer la correction" })
+    .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
 
   await expect(dialog).toBeHidden();
