@@ -30,8 +30,4 @@ export async function resetDemoDossierMetrics() {
     numeroDossier: DEMO_DOSSIER_NUMBER,
     metrics: demoMetrics,
   });
-
-  return getDossierMetricsSnapshot({
-    numeroDossier: DEMO_DOSSIER_NUMBER,
-  });
 }
