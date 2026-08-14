@@ -43,11 +43,18 @@ const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
     </div>
   ));
 
-const MetricCard = ({ children }: { children: ReactNode }) => (
+const MetricCard = ({
+  accentBorderColor,
+  children,
+}: {
+  accentBorderColor: string;
+  children: ReactNode;
+}) => (
   <div
     className={`
-      relative grid grid-cols-1 items-start gap-x-6 bg-[var(--background-alt-grey)] p-4
+      relative grid grid-cols-1 items-start gap-x-6 border-l-4 bg-[var(--background-alt-grey)] p-4
       sm:grid-cols-[minmax(0,1fr)_auto]
+      ${accentBorderColor}
     `}
   >
     {children}
@@ -55,8 +62,10 @@ const MetricCard = ({ children }: { children: ReactNode }) => (
 );
 
 const SimpleMetricRow = ({
+  accentBorderColor,
   metric,
 }: {
+  accentBorderColor: string;
   metric: Extract<ProcessedMetric, { _typename: "Simple" }>;
 }) => {
   const metricId = labelToTestId(metric.label);
@@ -68,7 +77,7 @@ const SimpleMetricRow = ({
 
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
-      <MetricCard>
+      <MetricCard accentBorderColor={accentBorderColor}>
         <div
           className={`space-y-3 ${
             anomalies?.length ? "pt-12 sm:pt-0" : "pr-24 sm:pr-0"
@@ -100,9 +109,11 @@ const SimpleMetricRow = ({
 };
 
 const AvantApresTravauxRows = ({
+  accentBorderColor,
   metric,
   relatedMetric,
 }: {
+  accentBorderColor: string;
   metric: Extract<ProcessedMetric, { _typename: "AvantApresTravaux" }>;
   relatedMetric?: Extract<ProcessedMetric, { _typename: "Simple" }>;
 }) => {
@@ -159,7 +170,7 @@ const AvantApresTravauxRows = ({
             }
             role="group"
           >
-            <MetricCard>
+            <MetricCard accentBorderColor={accentBorderColor}>
               <div
                 className={`space-y-3 ${
                   anomaliesByMetricCode[metricCode]?.length
@@ -228,9 +239,7 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
       {Object.entries(metricGroups).map(([groupId, group]) => (
         <div
           key={groupId}
-          className={`metric-group border-t-2 pt-2 ${
-            group.theme?.borderColor || "border-t-green-500"
-          }`}
+          className="metric-group"
           data-testid={`metric-group-${groupId}`}
         >
           {group.theme && (
@@ -260,7 +269,15 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               }
 
               if (metric._typename === "Simple") {
-                return <SimpleMetricRow key={key} metric={metric} />;
+                return (
+                  <SimpleMetricRow
+                    key={key}
+                    accentBorderColor={
+                      group.theme?.accentBorderColor || "border-l-green-500"
+                    }
+                    metric={metric}
+                  />
+                );
               }
 
               const relatedMetricLabel = RELATED_METRIC_LABELS[metric.label];
@@ -278,6 +295,9 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
               return (
                 <AvantApresTravauxRows
                   key={key}
+                  accentBorderColor={
+                    group.theme?.accentBorderColor || "border-l-green-500"
+                  }
                   metric={metric}
                   relatedMetric={relatedMetric}
                 />
