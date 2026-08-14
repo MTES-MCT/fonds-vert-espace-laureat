@@ -1,3 +1,5 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
+
 import {
   MetricValueContent,
   type ScalarMetricValue,
@@ -20,23 +22,17 @@ export function MetricAnomalyMessage({
 }) {
   return (
     <>
-      <div
-        className={`flex items-center gap-1 text-base font-semibold text-[var(--text-title-grey)]`}
-      >
-        <span
-          aria-hidden="true"
-          className={`fr-icon-warning-fill fr-icon--sm text-[var(--text-default-warning)]`}
-        />
-        <span>{problem.label}</span>
+      <Badge small severity="warning">
+        {problem.label}
         {problem.metric && (
-          <span>
+          <span className="ml-1 normal-case [&_span]:!text-[0.625rem]">
             <MetricValueContent
               value={problem.metric.value}
               unite={problem.metric.unite}
             />
           </span>
         )}
-      </div>
+      </Badge>
       <div
         className={`text-xs leading-tight font-normal text-[var(--text-mention-grey)]`}
       >
