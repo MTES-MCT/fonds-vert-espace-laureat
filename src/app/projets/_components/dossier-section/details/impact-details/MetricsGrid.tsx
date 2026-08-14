@@ -249,7 +249,7 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
             >
               <span
                 aria-hidden="true"
-                className={`${group.theme.iconClass} ${group.theme.accentTextColor}`}
+                className={`${group.theme.iconClass} fr-icon--sm ${group.theme.accentTextColor}`}
               />
               {group.theme.label}
             </h4>
