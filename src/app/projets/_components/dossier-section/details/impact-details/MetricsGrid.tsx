@@ -233,17 +233,16 @@ export function MetricsGrid({ metriques }: { metriques?: Metrics }) {
         >
           {group.theme && (
             <h4
-              className="mb-4 text-lg font-medium"
+              className={`
+                mb-4 px-4 py-3 text-lg font-medium text-white
+                ${group.theme.backgroundColor}
+              `}
               data-testid={`metric-group-title-${groupId}`}
             >
               {group.theme.label}
             </h4>
           )}
-          <div
-            className={`space-y-4 border-t-4 pt-6 ${
-              group.theme?.borderColor || "border-t-green-500"
-            }`}
-          >
+          <div className="space-y-4">
             {Object.entries(group.metrics).map(([key, metric]) => {
               const hasRelatedParent =
                 metric._typename === "Simple" &&
