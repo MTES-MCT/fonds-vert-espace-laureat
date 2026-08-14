@@ -4,15 +4,19 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import type { CSSProperties } from "react";
 import { toast, Toaster } from "sonner";
 
-const toastViewportStyle = { "--width": "36rem" } as CSSProperties;
+const toastViewportStyle = {
+  "--width": "36rem",
+  fontFamily: '"Marianne", arial, sans-serif',
+} as CSSProperties;
 
 export function ToastViewport() {
   return (
     <Toaster
+      className="fr-raw-list"
       position="top-right"
       duration={5000}
       style={toastViewportStyle}
-      toastOptions={{ className: "list-none", unstyled: true }}
+      toastOptions={{ unstyled: true }}
     />
   );
 }
