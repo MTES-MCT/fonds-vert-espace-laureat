@@ -34,7 +34,6 @@ const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
     <div
       key={`${anomaly.metricCode}-${anomaly.problem.label}`}
       aria-label="Anomalie détectée"
-      className="col-span-full"
       role="note"
     >
       <MetricAnomalyMessage
@@ -47,7 +46,7 @@ const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
 const MetricCard = ({ children }: { children: ReactNode }) => (
   <div
     className={`
-      grid items-start gap-x-6 gap-y-3 bg-[var(--background-alt-grey)] p-4
+      relative grid grid-cols-1 items-start gap-x-6 bg-[var(--background-alt-grey)] p-4
       sm:grid-cols-[minmax(0,1fr)_auto]
     `}
   >
@@ -65,28 +64,33 @@ const SimpleMetricRow = ({
   const { targets } = useMetricRevisions();
   const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
   const target = targets[metric.metricCode];
+  const anomalies = anomaliesByMetricCode[metric.metricCode];
 
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
       <MetricCard>
-        <MetricAnomalyNotices
-          anomalies={anomaliesByMetricCode[metric.metricCode]}
-        />
-        <div className="space-y-1">
-          <h5 className="mb-0 text-base font-normal text-[var(--text-label-grey)]">
-            {metric.label}
-          </h5>
-          {estimee !== undefined && (
-            <MetricValue
-              value={estimee}
-              accessibleName="Valeur effective"
-              unite={metric.unite}
-              testId="valeur-estimee"
-            />
-          )}
+        <div
+          className={`space-y-3 ${
+            anomalies?.length ? "pt-12 sm:pt-0" : "pr-24 sm:pr-0"
+          }`}
+        >
+          <MetricAnomalyNotices anomalies={anomalies} />
+          <div className="space-y-1">
+            <h5 className="mb-0 text-base font-normal text-[var(--text-label-grey)]">
+              {metric.label}
+            </h5>
+            {estimee !== undefined && (
+              <MetricValue
+                value={estimee}
+                accessibleName="Valeur effective"
+                unite={metric.unite}
+                testId="valeur-estimee"
+              />
+            )}
+          </div>
         </div>
         {target && (
-          <div className="justify-self-end">
+          <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
             <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
           </div>
         )}
@@ -156,26 +160,34 @@ const AvantApresTravauxRows = ({
             role="group"
           >
             <MetricCard>
-              <MetricAnomalyNotices
-                anomalies={anomaliesByMetricCode[metricCode]}
-              />
-              <div className="space-y-1">
-                <dt className="text-[var(--text-label-grey)]">{label}</dt>
-                <dd className="!mb-0">
-                  <MetricValue
-                    value={value}
-                    accessibleName={label}
-                    unite={
-                      relatedMetric?.label === label
-                        ? relatedMetric.unite
-                        : metric.unite
-                    }
-                    testId={testId}
-                  />
-                </dd>
+              <div
+                className={`space-y-3 ${
+                  anomaliesByMetricCode[metricCode]?.length
+                    ? "pt-12 sm:pt-0"
+                    : "pr-24 sm:pr-0"
+                }`}
+              >
+                <MetricAnomalyNotices
+                  anomalies={anomaliesByMetricCode[metricCode]}
+                />
+                <div className="space-y-1">
+                  <dt className="text-[var(--text-label-grey)]">{label}</dt>
+                  <dd className="!mb-0">
+                    <MetricValue
+                      value={value}
+                      accessibleName={label}
+                      unite={
+                        relatedMetric?.label === label
+                          ? relatedMetric.unite
+                          : metric.unite
+                      }
+                      testId={testId}
+                    />
+                  </dd>
+                </div>
               </div>
               {target && (
-                <div className="justify-self-end">
+                <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
                   <MetricCorrectionEditor
                     target={target}
                     buttonLabel="Modifier"
