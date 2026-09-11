@@ -1,8 +1,8 @@
 const { version: nextVersion } = require("next/package.json");
 
-if (nextVersion !== "16.3.0") {
+if (nextVersion !== "16.3.4") {
   throw new Error(
-    `The Next.js test proxy workaround targets 16.3.0, not ${nextVersion}. Re-evaluate it before upgrading Next.js.`,
+    `The Next.js test proxy workaround targets 16.3.4, not ${nextVersion}. Re-evaluate it before upgrading Next.js.`,
   );
 }
 
@@ -10,8 +10,9 @@ const {
   ClientRequestInterceptor,
 } = require("next/dist/compiled/@mswjs/interceptors/ClientRequest");
 
-// Next 16.3.0's test proxy already intercepts fetch. Its additional
+// Next 16.3.4's test proxy already intercepts fetch. Its additional
 // ClientRequest interceptor also catches the proxy's own request and deadlocks
-// server-rendered Playwright navigations before the MSW handlers can respond.
+// concurrent server-rendered Playwright navigations before the MSW handlers
+// can respond.
 ClientRequestInterceptor.prototype.apply =
   function skipNextTestClientRequestInterception() {};
