@@ -4,12 +4,14 @@ import {
   check,
   index,
   integer,
+  jsonb,
   numeric,
   pgEnum,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const metricValueType = pgEnum("metric_value_type", [
@@ -84,3 +86,31 @@ export const dossierMetricRevisions = pgTable(
     ),
   ],
 );
+
+export const fondsVertExportPages = pgTable(
+  "fonds_vert_export_pages",
+  {
+    exportId: uuid("export_id").notNull(),
+    pageNumber: integer("page_number").notNull(),
+    generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    totalCount: integer("total_count").notNull(),
+    corrections: jsonb("corrections")
+      .$type<StoredFondsVertCorrection[]>()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.exportId, table.pageNumber] }),
+    index("fonds_vert_export_pages_expiration_idx").on(table.expiresAt),
+  ],
+);
+
+export type StoredFondsVertCorrection = {
+  dossierNumber: number;
+  metricCode: string;
+  revision: number;
+  valueType: "number" | "text" | "boolean" | "text_array";
+  value: number | string | boolean | string[];
+  unit: string | null;
+  correctedAt: string;
+};
