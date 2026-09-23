@@ -1,0 +1,348 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "1d6b35de-1761-432d-b1f2-f69a30eb4182",
+  "prevIds": [
+    "30250557-2d79-4dba-a0eb-b4fb68215ea6"
+  ],
+  "ddl": [
+    {
+      "values": [
+        "number",
+        "text",
+        "boolean",
+        "text_array"
+      ],
+      "name": "metric_value_type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "dossier_metric_revisions",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "fonds_vert_export_pages",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "dossier_number",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "metric_code",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "revision",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "label",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "unit",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "metric_value_type",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "value_type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "numeric",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "number_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "text_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "boolean_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 1,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "text_array_value",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "export_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "page_number",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "generated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "expires_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "total_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "corrections",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "dossier_number",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "metric_code",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "revision",
+          "isExpression": false,
+          "asc": false,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "dossier_metric_revisions_latest_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "expires_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "fonds_vert_export_pages_expiration_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "columns": [
+        "dossier_number",
+        "metric_code",
+        "revision"
+      ],
+      "nameExplicit": false,
+      "name": "dossier_metric_revisions_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "columns": [
+        "export_id",
+        "page_number"
+      ],
+      "nameExplicit": false,
+      "name": "fonds_vert_export_pages_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "fonds_vert_export_pages"
+    },
+    {
+      "value": "\"revision\" > 0",
+      "name": "dossier_metric_revisions_revision_positive",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    },
+    {
+      "value": "\n        (\n          \"value_type\" = 'number'\n          and \"number_value\" is not null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text'\n          and \"number_value\" is null\n          and \"text_value\" is not null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'boolean'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is not null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text_array'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is not null\n        )\n      ",
+      "name": "dossier_metric_revisions_typed_value",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "dossier_metric_revisions"
+    }
+  ],
+  "renames": []
+}
