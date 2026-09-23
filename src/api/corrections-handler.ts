@@ -66,27 +66,17 @@ export async function getCorrections(request: Request) {
       : (await createAdmittedCorrectionExport(Number(size))).exportId;
     const pageNumber = parsed ? Number(parsed[2]) : 0;
     const page = await readFondsVertCorrectionExportPage(exportId, pageNumber);
-    // Every non-final page has the original requested page size; the final page
-    // has no successor, including the single empty page of an empty export.
-    const hasNext =
-      page.corrections.length > 0 &&
-      (pageNumber + 1) * page.corrections.length < page.totalCount;
-    // A short final page cannot derive its offset from its own length. Probe the
-    // next key instead; this remains an indexed page read without history scans.
-    let nextCursor: string | null = null;
-    if (hasNext) {
-      try {
-        await readFondsVertCorrectionExportPage(exportId, pageNumber + 1);
-        nextCursor = `${exportId}:${pageNumber + 1}`;
-      } catch (error) {
-        if (
-          !(error instanceof FondsVertExportPageError) ||
-          error.code !== "missing"
-        ) {
-          throw error;
-        }
-      }
-    }
+    // Page zero retains the original size. A missing successor is an error on
+    // continuation, never evidence that a partial export has reached its end.
+    const pageSize =
+      pageNumber === 0
+        ? page.corrections.length
+        : (await readFondsVertCorrectionExportPage(exportId, 0)).corrections
+            .length;
+    const nextCursor =
+      (pageNumber + 1) * pageSize < page.totalCount
+        ? `${exportId}:${pageNumber + 1}`
+        : null;
     const body: CorrectionPage = {
       corrections: page.corrections.map((correction) => ({
         dossier_number: correction.dossierNumber,

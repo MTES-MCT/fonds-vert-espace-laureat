@@ -352,6 +352,28 @@ test.describe("configured machine HTTP API", () => {
     ).toBe("Updated");
   });
 
+  test("does not interpret a missing successor as a completed export", async ({
+    request,
+  }) => {
+    await seed(3);
+    const first = await pageResponse(
+      await request.get(`${endpoint}?page_size=1`, { headers }),
+    );
+    const id = first.next_cursor!.split(":")[0];
+    await sql`delete from fonds_vert_export_pages where export_id = ${id} and page_number = 2`;
+    const second = await pageResponse(
+      await request.get(`${endpoint}?cursor=${first.next_cursor}`, { headers }),
+    );
+    expect(second.next_cursor).toBe(`${id}:2`);
+    await errorResponse(
+      await request.get(`${endpoint}?cursor=${second.next_cursor}`, {
+        headers,
+      }),
+      404,
+      "missing",
+    );
+  });
+
   test("returns an empty export, expiration and cleanup as distinct outcomes", async ({
     request,
   }) => {
