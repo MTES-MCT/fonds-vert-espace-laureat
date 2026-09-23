@@ -114,3 +114,13 @@ export type StoredFondsVertCorrection = {
   unit: string | null;
   correctedAt: string;
 };
+
+/** Shared admission clock for expensive machine export creation attempts. */
+export const fondsVertExportAdmission = pgTable(
+  "fonds_vert_export_admission",
+  {
+    id: integer("id").primaryKey(),
+    nextAllowedAt: timestamp("next_allowed_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [check("fonds_vert_export_admission_singleton", sql`${table.id} = 1`)],
+);
