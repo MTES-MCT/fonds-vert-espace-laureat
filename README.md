@@ -95,3 +95,11 @@ Si votre compte a un rôle administrateur, vous pouvez visualiser les dossiers d
 Une page de démonstration, ne nécessitant ni token ni compte ProConnect, est disponible :
 
 - [/projets/demo](http://localhost:3000/projets/demo)
+
+### API des corrections Fonds Vert
+
+`GET /api/v1/corrections` exporte les dernières corrections locales par champ
+et dossier, hors imports seuls et démonstration. L’accès nécessite une clé machine
+et une adresse IP autorisée.
+
+[Documentation OpenAPI](openapi/corrections.json)
