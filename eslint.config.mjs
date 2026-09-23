@@ -7,7 +7,7 @@ export default [
   ...nextConfig,
   prettierRecommended,
   {
-    ignores: ["src/generated/**"],
+    ignores: ["src/generated/**", "src/api/generated/**"],
   },
   {
     files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],

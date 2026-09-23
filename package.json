@@ -24,7 +24,9 @@
     "db:generate": "drizzle-kit generate --config drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config drizzle.config.ts",
     "db:migrate:deploy": "node scripts/migrate-production.mjs",
-    "db:studio": "drizzle-kit studio --config drizzle.config.ts"
+    "db:studio": "drizzle-kit studio --config drizzle.config.ts",
+    "codegen:corrections": "openapi-typescript openapi/corrections.json -o src/api/generated/corrections-api.d.ts",
+    "check:corrections": "npm run codegen:corrections -- --check"
   },
   "overrides": {
     "postcss-url": {
@@ -78,6 +80,7 @@
     "eslint-plugin-readable-tailwind": "^3.0.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "msw": "^2.12.10",
+    "openapi-typescript": "7.13.0",
     "postcss": "^8",
     "prettier": "3.5.3",
     "sass": "^1.97.3",
