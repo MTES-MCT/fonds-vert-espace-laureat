@@ -120,7 +120,11 @@ export const fondsVertExportAdmission = pgTable(
   "fonds_vert_export_admission",
   {
     id: integer("id").primaryKey(),
-    nextAllowedAt: timestamp("next_allowed_at", { withTimezone: true }).notNull(),
+    nextAllowedAt: timestamp("next_allowed_at", {
+      withTimezone: true,
+    }).notNull(),
   },
-  (table) => [check("fonds_vert_export_admission_singleton", sql`${table.id} = 1`)],
+  (table) => [
+    check("fonds_vert_export_admission_singleton", sql`${table.id} = 1`),
+  ],
 );
