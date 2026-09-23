@@ -24,6 +24,17 @@ jobs:
         run: npm exec -- playwright install --with-deps
       - name: Run Playwright tests
         run: npm run test
+      - name: Run isolated corrections HTTP API tests
+        run: npm run test:corrections-api
+      - name: Verify revoked machine key on a fresh server
+        run: npx dotenv -e tests/fixtures/corrections-api.env -- env -u CORRECTIONS_API_PREVIOUS_KEY CORRECTIONS_TEST_PROFILE=revoked npm run test:e2e -- tests/corrections-api.spec.ts --workers=1 --grep "HTTP configuration"
+      - name: Verify incomplete and invalid configuration on fresh servers
+        run: |
+          npx dotenv -e tests/fixtures/corrections-api.env -- env -u CORRECTIONS_API_KEY CORRECTIONS_TEST_PROFILE=closed npm run test:e2e -- tests/corrections-api.spec.ts --workers=1 --grep "HTTP configuration"
+          npx dotenv -e tests/fixtures/corrections-api.env -- env CORRECTIONS_INGRESS_VERIFIED=false CORRECTIONS_TEST_PROFILE=closed npm run test:e2e -- tests/corrections-api.spec.ts --workers=1 --grep "HTTP configuration"
+          npx dotenv -e tests/fixtures/corrections-api.env -- env CORRECTIONS_ALLOWED_IPS=invalid CORRECTIONS_TEST_PROFILE=closed npm run test:e2e -- tests/corrections-api.spec.ts --workers=1 --grep "HTTP configuration"
+      - name: Check TypeScript
+        run: npx tsc --noEmit
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
