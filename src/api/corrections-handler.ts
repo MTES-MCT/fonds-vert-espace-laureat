@@ -1,0 +1,112 @@
+import { correctionAccess } from "@/api/corrections-access";
+import type { components } from "@/api/generated/corrections-api";
+import {
+  CorrectionExportBusyError,
+  createAdmittedCorrectionExport,
+} from "@/db/fondsVertCorrectionAdmission";
+import {
+  FondsVertExportPageError,
+  readFondsVertCorrectionExportPage,
+} from "@/db/fondsVertCorrectionExport";
+
+type ApiError = components["schemas"]["ApiError"];
+type CorrectionPage = components["schemas"]["CorrectionPage"];
+const cursorPattern =
+  /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}):(0|[1-9][0-9]{0,9})$/;
+
+export function correctionError(
+  status: number,
+  error: ApiError["error"],
+  headers?: HeadersInit,
+) {
+  const body: ApiError = { error };
+  return Response.json(body, {
+    status,
+    headers: { "Cache-Control": "no-store", ...headers },
+  });
+}
+
+export async function getCorrections(request: Request) {
+  const access = correctionAccess(request);
+  if (access) {
+    return correctionError(
+      access,
+      access === 503
+        ? "unavailable"
+        : access === 401
+          ? "unauthorized"
+          : "forbidden",
+      access === 401 ? { "WWW-Authenticate": "Bearer" } : undefined,
+    );
+  }
+  const params = new URL(request.url).searchParams;
+  if (
+    [...params.keys()].some((key) => key !== "cursor" && key !== "page_size") ||
+    params.getAll("cursor").length > 1 ||
+    params.getAll("page_size").length > 1 ||
+    (params.has("cursor") && params.has("page_size"))
+  ) {
+    return correctionError(400, "invalid_request");
+  }
+  const cursor = params.get("cursor");
+  const parsed = cursor === null ? null : cursorPattern.exec(cursor);
+  const size = params.get("page_size") ?? "100";
+  if (
+    (cursor !== null &&
+      (!parsed || cursor.length > 64 || Number(parsed[2]) > 2_147_483_647)) ||
+    !/^[1-9][0-9]{0,3}$/.test(size) ||
+    Number(size) > 1_000
+  ) {
+    return correctionError(400, "invalid_request");
+  }
+
+  try {
+    const exportId = parsed
+      ? parsed[1]
+      : (await createAdmittedCorrectionExport(Number(size))).exportId;
+    const pageNumber = parsed ? Number(parsed[2]) : 0;
+    const page = await readFondsVertCorrectionExportPage(exportId, pageNumber);
+    // Every non-final page has the original requested page size; the final page
+    // has no successor, including the single empty page of an empty export.
+    const hasNext =
+      page.corrections.length > 0 &&
+      (pageNumber + 1) * page.corrections.length < page.totalCount;
+    // A short final page cannot derive its offset from its own length. Probe the
+    // next key instead; this remains an indexed page read without history scans.
+    let nextCursor: string | null = null;
+    if (hasNext) {
+      try {
+        await readFondsVertCorrectionExportPage(exportId, pageNumber + 1);
+        nextCursor = `${exportId}:${pageNumber + 1}`;
+      } catch (error) {
+        if (
+          !(error instanceof FondsVertExportPageError) ||
+          error.code !== "missing"
+        ) {
+          throw error;
+        }
+      }
+    }
+    const body: CorrectionPage = {
+      corrections: page.corrections.map((correction) => ({
+        dossier_number: correction.dossierNumber,
+        champ: correction.metricCode,
+        valeur_corrigee: correction.value,
+        date_correction: correction.correctedAt,
+      })),
+      next_cursor: nextCursor,
+      generated_at: page.generatedAt.toISOString(),
+      expires_at: page.expiresAt.toISOString(),
+      total_count: page.totalCount,
+    };
+    return Response.json(body, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    if (error instanceof CorrectionExportBusyError) {
+      return correctionError(429, "rate_limited", { "Retry-After": "60" });
+    }
+    if (error instanceof FondsVertExportPageError) {
+      return correctionError(error.code === "expired" ? 410 : 404, error.code);
+    }
+    return correctionError(503, "unavailable");
+  }
+}
