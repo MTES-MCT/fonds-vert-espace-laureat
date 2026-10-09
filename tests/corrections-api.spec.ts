@@ -299,9 +299,6 @@ test.describe("configured machine HTTP API", () => {
       "unexpected=1",
       "cursor=",
       "cursor=garbage",
-      `cursor=${randomUUID()}:2147483648`,
-      `cursor=${randomUUID()}:-1`,
-      `cursor=${randomUUID()}:01`,
       `cursor=${randomUUID()}:0&page_size=2`,
       `cursor=${randomUUID()}:0&cursor=${randomUUID()}:0`,
     ]) {
@@ -315,6 +312,48 @@ test.describe("configured machine HTTP API", () => {
       await request.get(`${endpoint}?cursor=${randomUUID()}:0`, { headers }),
       404,
       "missing",
+    );
+    expect(await sql`select * from fonds_vert_export_admission`).toHaveLength(
+      0,
+    );
+  });
+
+  test("uses canonical OpenAPI cursor syntax and rejects out-of-range positions", async ({
+    request,
+  }) => {
+    const cursorParameter = correctionsContract.paths[
+      endpoint
+    ].get.parameters.find((parameter) => parameter.name === "cursor");
+    const cursorPattern = new RegExp(cursorParameter?.schema.pattern ?? "");
+    const missingExportId = randomUUID();
+    for (const position of ["0", "1", "2147483647"]) {
+      const cursor = `${missingExportId}:${position}`;
+      expect(cursorPattern.test(cursor), cursor).toBe(true);
+      await errorResponse(
+        await request.get(`${endpoint}?cursor=${encodeURIComponent(cursor)}`, {
+          headers,
+        }),
+        404,
+        "missing",
+      );
+    }
+    for (const position of ["01", "-1", "1.5", "1e2", "10000000000"]) {
+      const cursor = `${missingExportId}:${position}`;
+      expect(cursorPattern.test(cursor), cursor).toBe(false);
+      await errorResponse(
+        await request.get(`${endpoint}?cursor=${encodeURIComponent(cursor)}`, {
+          headers,
+        }),
+        400,
+        "invalid_request",
+      );
+    }
+    await errorResponse(
+      await request.get(`${endpoint}?cursor=${missingExportId}:2147483648`, {
+        headers,
+      }),
+      400,
+      "invalid_request",
     );
     expect(await sql`select * from fonds_vert_export_admission`).toHaveLength(
       0,
