@@ -20,6 +20,7 @@ const nextHeaders: typeof import("next/headers") = require("next/headers");
 const { cookieName, password } = sessionOptions;
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 const cookieValues = new Map<string, string>();
+let cookieWriteCount = 0;
 const identity = {
   sub: "proconnect-return-user",
   email: "laureat@example.test",
@@ -41,11 +42,15 @@ let callbackArguments:
 test.describe("ProConnect return after authentication", () => {
   test.beforeEach(() => {
     cookieValues.clear();
+    cookieWriteCount = 0;
     callbackArguments = undefined;
     mock.method(nextHeaders, "cookies", async () => ({
       get: (name: string) =>
         cookieValues.has(name) ? { value: cookieValues.get(name) } : undefined,
-      set: (name: string, value: string) => cookieValues.set(name, value),
+      set: (name: string, value: string) => {
+        cookieWriteCount += 1;
+        cookieValues.set(name, value);
+      },
     }));
     mock.method(Issuer, "discover", async () => issuer);
     mock.method(
@@ -92,8 +97,10 @@ test.describe("ProConnect return after authentication", () => {
     const callbackUrl = new URL("/api/auth/proconnect/login-callback", baseUrl);
     callbackUrl.searchParams.set("code", "test-code");
     callbackUrl.searchParams.set("state", transaction.state!);
+    const cookieWritesBeforeCallback = cookieWriteCount;
     const response = await callback(new NextRequest(callbackUrl));
     expect(response.status).toBe(307);
+    expect(cookieWriteCount - cookieWritesBeforeCallback).toBe(2);
     expect(callbackArguments).toEqual([
       new URL("/api/auth/proconnect/login-callback", baseUrl).href,
       { code: "test-code", state: transaction.state },
@@ -217,6 +224,7 @@ test.describe("ProConnect return after authentication", () => {
       { code: "test-code", state: "previous-state" },
       { state: "previous-state", nonce: "previous-nonce" },
     ]);
+    expect(cookieWriteCount).toBe(2);
     const storedSession = await readSession();
     expect(storedSession.user?.id).toBe(identity.sub);
     expect(storedSession.returnTo).toBeUndefined();
@@ -251,6 +259,7 @@ test.describe("ProConnect return after authentication", () => {
       new URL("/connexion/echec", baseUrl).href,
     );
     expect((await readSession()).user).toBeUndefined();
+    expect(cookieWriteCount).toBe(0);
     expect(log.mock.calls[0].arguments).toEqual([providerError.message]);
   });
 });

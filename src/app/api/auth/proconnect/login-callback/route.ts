@@ -8,13 +8,9 @@ import { errorUrl, getAuthenticatedReturnUrl } from "@/utils/url";
 export const GET = withSession(async function loginCallbackRoute(req) {
   try {
     const userInfo = await proConnectAuthenticate(req);
-    await setSession(userInfo, req.session);
-
     const returnTo = req.session.returnTo;
-    if (returnTo) {
-      req.session.returnTo = undefined;
-      await req.session.save();
-    }
+    req.session.returnTo = undefined;
+    await setSession(userInfo, req.session);
 
     return NextResponse.redirect(getAuthenticatedReturnUrl(returnTo));
   } catch (e: unknown) {
