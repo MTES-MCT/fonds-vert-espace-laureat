@@ -13,11 +13,11 @@ import {
 
 import { GET as login } from "@/app/api/auth/proconnect/login/route";
 import { GET as callback } from "@/app/api/auth/proconnect/login-callback/route";
+import { type Session, sessionOptions } from "@/utils/session";
 
 const require = createRequire(`${process.cwd()}/package.json`);
 const nextHeaders: typeof import("next/headers") = require("next/headers");
-const cookieName = "fonds-vert-espace-laureat";
-const password = process.env.IRON_SESSION_PWD!;
+const { cookieName, password } = sessionOptions;
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 const cookieValues = new Map<string, string>();
 const identity = {
@@ -33,12 +33,7 @@ const issuer = new Issuer({
   token_endpoint: "https://identity.example.test/token",
 });
 
-type StoredSession = {
-  user?: { id: string; email: string; siret: string };
-  returnTo?: string;
-  state?: string;
-  nonce?: string;
-};
+type StoredSession = Partial<Session>;
 
 test.describe("ProConnect return after authentication", () => {
   test.beforeEach(() => {

@@ -3,24 +3,13 @@ import { sealData } from "iron-session";
 import { SessionOptions } from "iron-session";
 import { Page } from "next/experimental/testmode/playwright/msw";
 
+import type { Session } from "@/utils/session";
+
 const projectDir = process.cwd();
 loadEnvConfig(projectDir);
 
 const DEFAULT_EMAIL = "alice.doe@example.com";
 const DEFAULT_SIRET = "12345678910111";
-
-interface MockUser {
-  id: string;
-  isProConnectIdentityProvider: boolean;
-  email: string;
-  isSiretVerifiedForEmailDomain: boolean;
-  siret: string;
-}
-
-interface SessionData {
-  user: MockUser;
-  returnTo?: string;
-}
 
 const getSessionOptions = (): SessionOptions => {
   const password = process.env.IRON_SESSION_PWD || "";
@@ -49,7 +38,7 @@ async function createAuthCookie({
 }> {
   const options = getSessionOptions();
 
-  const sessionData: SessionData = {
+  const sessionData: Session = {
     user: {
       id: "test-user-id",
       isProConnectIdentityProvider: true,

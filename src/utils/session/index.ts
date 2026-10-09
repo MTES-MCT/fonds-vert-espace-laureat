@@ -14,7 +14,7 @@ type User = {
   siret: string;
 };
 
-type Session = {
+export type Session = {
   user: User | null;
   state?: string;
   nonce?: string;
