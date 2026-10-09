@@ -158,6 +158,16 @@ test.describe("configured machine HTTP API", () => {
   test("rejects missing, wrong, duplicate keys and a valid ProConnect session alone", async ({
     request,
   }) => {
+    await seed(1);
+    const authorized = await pageResponse(
+      await request.get(endpoint, { headers }),
+    );
+    expect(authorized.total_count).toBe(1);
+    const [storedPage] =
+      await sql`select export_id from fonds_vert_export_pages`;
+    const existingPageUrl = `${endpoint}?cursor=${storedPage.export_id}:0`;
+    const [admissionBefore] =
+      await sql`select next_allowed_at from fonds_vert_export_admission`;
     const cookie = await sealData(
       { user: { email: "alice.doe@example.com" } },
       {
@@ -172,43 +182,61 @@ test.describe("configured machine HTTP API", () => {
       `Bearer ${key}, Bearer ${key}`,
       `Basic ${key}`,
     ]) {
-      const response = await request.get(endpoint, {
-        headers: {
-          ...headers,
-          authorization,
-          cookie: `fonds-vert-espace-laureat=${cookie}`,
-        },
-      });
-      await errorResponse(response, 401, "unauthorized");
-      expect(response.headers()["www-authenticate"]).toBe("Bearer");
+      for (const url of [endpoint, existingPageUrl]) {
+        const response = await request.get(url, {
+          headers: {
+            ...headers,
+            authorization,
+            cookie: `fonds-vert-espace-laureat=${cookie}`,
+          },
+        });
+        await errorResponse(response, 401, "unauthorized");
+        expect(response.headers()["www-authenticate"]).toBe("Bearer");
+      }
     }
-    expect(await sql`select * from fonds_vert_export_admission`).toHaveLength(
-      0,
-    );
+    expect(
+      await sql`select next_allowed_at from fonds_vert_export_admission`,
+    ).toEqual([admissionBefore]);
+    expect(await sql`select export_id from fonds_vert_export_pages`).toEqual([
+      storedPage,
+    ]);
+    expect(
+      await pageResponse(await request.get(existingPageUrl, { headers })),
+    ).toEqual(authorized);
   });
 
   test("accepts both rotation keys and canonical IPv6 but rejects spoofed origins", async ({
     request,
   }) => {
-    for (const authorization of [`Bearer ${key}`, `Bearer ${oldKey}`]) {
-      await errorResponse(
-        await request.get(`${endpoint}?unknown=1`, {
-          headers: { ...headers, authorization },
-        }),
-        400,
-        "invalid_request",
-      );
-    }
-    await errorResponse(
-      await request.get(`${endpoint}?unknown=1`, {
-        headers: {
-          ...headers,
-          "x-corrections-client-ip": "2001:0db8:0:0:0:0:0:10",
-        },
-      }),
-      400,
-      "invalid_request",
+    await seed(1);
+    const authorized = await pageResponse(
+      await request.get(endpoint, { headers }),
     );
+    expect(authorized.total_count).toBe(1);
+    const [storedPage] =
+      await sql`select export_id from fonds_vert_export_pages`;
+    const existingPageUrl = `${endpoint}?cursor=${storedPage.export_id}:0`;
+    const [admissionBefore] =
+      await sql`select next_allowed_at from fonds_vert_export_admission`;
+    for (const authorization of [`Bearer ${key}`, `Bearer ${oldKey}`]) {
+      expect(
+        await pageResponse(
+          await request.get(existingPageUrl, {
+            headers: { ...headers, authorization },
+          }),
+        ),
+      ).toEqual(authorized);
+    }
+    expect(
+      await pageResponse(
+        await request.get(existingPageUrl, {
+          headers: {
+            ...headers,
+            "x-corrections-client-ip": "2001:0db8:0:0:0:0:0:10",
+          },
+        }),
+      ),
+    ).toEqual(authorized);
     const originChanges: Record<string, string>[] = [
       { "x-corrections-ingress": "" },
       { "x-corrections-ingress": "wrong" },
@@ -228,15 +256,23 @@ test.describe("configured machine HTTP API", () => {
       { "x-corrections-proto": "https,http" },
     ];
     for (const changes of originChanges) {
-      await errorResponse(
-        await request.get(endpoint, { headers: { ...headers, ...changes } }),
-        403,
-        "forbidden",
-      );
+      for (const url of [endpoint, existingPageUrl]) {
+        await errorResponse(
+          await request.get(url, { headers: { ...headers, ...changes } }),
+          403,
+          "forbidden",
+        );
+      }
     }
-    expect(await sql`select * from fonds_vert_export_admission`).toHaveLength(
-      0,
-    );
+    expect(
+      await sql`select next_allowed_at from fonds_vert_export_admission`,
+    ).toEqual([admissionBefore]);
+    expect(await sql`select export_id from fonds_vert_export_pages`).toEqual([
+      storedPage,
+    ]);
+    expect(
+      await pageResponse(await request.get(existingPageUrl, { headers })),
+    ).toEqual(authorized);
   });
 
   test("validates bounds, duplicate parameters and cursor syntax before database admission", async ({
@@ -279,12 +315,13 @@ test.describe("configured machine HTTP API", () => {
   test("traverses and replays immutable pages after a newer correction", async ({
     request,
   }) => {
-    await seed(5);
+    await seed(4);
     await sql`insert into dossier_metric_revisions
-      (dossier_number, metric_code, revision, label, value_type, number_value, boolean_value, text_value)
-      values (89996000, 'number', 2, 'Synthetic', 'number', 12.5, null, null),
-      (89996000, 'boolean', 2, 'Synthetic', 'boolean', null, false, null),
-      (89996000, 'text', 2, 'Synthetic', 'text', null, null, 'École')`;
+      (dossier_number, metric_code, revision, label, value_type, number_value, boolean_value, text_value, created_at)
+      values (89996000, 'number', 2, 'Synthetic', 'number', 12.5, null, null, '2026-09-22T08:00:00Z'),
+      (89996000, 'boolean', 2, 'Synthetic', 'boolean', null, false, null, '2026-09-22T08:00:00Z'),
+      (89996000, 'text', 2, 'Synthetic', 'text', null, null, 'École', '2026-09-22T08:00:00Z'),
+      (89996001, 'other_dossier', 2, 'Synthetic', 'text', null, null, 'Autre dossier', '2026-09-20T09:00:00Z')`;
     const first = await pageResponse(
       await request.get(`${endpoint}?page_size=3`, { headers }),
     );
@@ -305,6 +342,7 @@ test.describe("configured machine HTTP API", () => {
         page,
       );
       expect(page.generated_at).toBe(first.generated_at);
+      expect(page.expires_at).toBe(first.expires_at);
       expect(page.total_count).toBe(first.total_count);
       await errorResponse(
         await request.get(url, { headers: { ...headers, authorization: "" } }),
@@ -324,6 +362,26 @@ test.describe("configured machine HTTP API", () => {
       expect(sizes.length).toBeLessThan(5);
     }
     expect(sizes).toEqual([3, 3, 2]);
+    const mainDossierCorrections = corrections.filter(
+      (correction) => correction.champ !== "other_dossier",
+    );
+    expect(mainDossierCorrections).toHaveLength(7);
+    for (const correction of mainDossierCorrections) {
+      expect(correction.dossier_number).toBe(89996000);
+      expect(correction.date_correction).toBe(
+        correction.champ.startsWith("field_")
+          ? "2026-09-21T12:00:00.000Z"
+          : "2026-09-22T08:00:00.000Z",
+      );
+    }
+    expect(
+      corrections.find((correction) => correction.champ === "other_dossier"),
+    ).toEqual({
+      dossier_number: 89996001,
+      champ: "other_dossier",
+      valeur_corrigee: "Autre dossier",
+      date_correction: "2026-09-20T09:00:00.000Z",
+    });
     expect(
       corrections.find((c) => c.champ === "field_000001")?.valeur_corrigee,
     ).toEqual(["École", "Mairie"]);
