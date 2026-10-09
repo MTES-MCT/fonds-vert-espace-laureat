@@ -34,10 +34,14 @@ const issuer = new Issuer({
 });
 
 type StoredSession = Partial<Session>;
+let callbackArguments:
+  | [string, CallbackParamsType, OpenIDCallbackChecks | undefined]
+  | undefined;
 
 test.describe("ProConnect return after authentication", () => {
   test.beforeEach(() => {
     cookieValues.clear();
+    callbackArguments = undefined;
     mock.method(nextHeaders, "cookies", async () => ({
       get: (name: string) =>
         cookieValues.has(name) ? { value: cookieValues.get(name) } : undefined,
@@ -52,16 +56,7 @@ test.describe("ProConnect return after authentication", () => {
         params: CallbackParamsType,
         checks?: OpenIDCallbackChecks,
       ) => {
-        const transaction = await readSession();
-        expect(redirectUri).toBe(
-          new URL("/api/auth/proconnect/login-callback", baseUrl).href,
-        );
-        expect(params.code).toBe("test-code");
-        expect(params.state).toBe(transaction.state);
-        expect(checks).toMatchObject({
-          state: transaction.state,
-          nonce: transaction.nonce,
-        });
+        callbackArguments = [redirectUri, params, checks];
         return new TokenSet({
           access_token: "test-token",
           id_token: "test-id",
@@ -99,6 +94,11 @@ test.describe("ProConnect return after authentication", () => {
     callbackUrl.searchParams.set("state", transaction.state!);
     const response = await callback(new NextRequest(callbackUrl));
     expect(response.status).toBe(307);
+    expect(callbackArguments).toEqual([
+      new URL("/api/auth/proconnect/login-callback", baseUrl).href,
+      { code: "test-code", state: transaction.state },
+      { state: transaction.state, nonce: transaction.nonce },
+    ]);
     const storedSession = await readSession();
     expect(storedSession.user).toMatchObject({
       id: identity.sub,
@@ -212,6 +212,11 @@ test.describe("ProConnect return after authentication", () => {
     expect(response.headers.get("location")).toBe(
       new URL("/projets", baseUrl).href,
     );
+    expect(callbackArguments).toEqual([
+      new URL("/api/auth/proconnect/login-callback", baseUrl).href,
+      { code: "test-code", state: "previous-state" },
+      { state: "previous-state", nonce: "previous-nonce" },
+    ]);
     const storedSession = await readSession();
     expect(storedSession.user?.id).toBe(identity.sub);
     expect(storedSession.returnTo).toBeUndefined();
