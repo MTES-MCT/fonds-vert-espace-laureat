@@ -286,7 +286,12 @@ export async function importDossierMetricsIfMissing({
     const [storedRevision] = await tx
       .select({ metricCode: dossierMetricRevisions.metricCode })
       .from(dossierMetricRevisions)
-      .where(eq(dossierMetricRevisions.dossierNumber, numeroDossier))
+      .where(
+        and(
+          eq(dossierMetricRevisions.dossierNumber, numeroDossier),
+          eq(dossierMetricRevisions.revision, 1),
+        ),
+      )
       .limit(1);
 
     if (storedRevision) {

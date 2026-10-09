@@ -524,7 +524,7 @@ test("appends one typed revision while preserving the source and other metrics",
   }
 });
 
-test("keeps an orphan revision without revision 1 non-imported", async ({}, testInfo) => {
+test("imports a missing source while preserving an orphan correction and refuses later reimports", async ({}, testInfo) => {
   const dossierNumber = BASE_DOSSIER_NUMBER + 2000 + testInfo.parallelIndex;
   const sql = createTestDatabaseClient();
 
@@ -559,6 +559,67 @@ test("keeps an orphan revision without revision 1 non-imported", async ({}, test
     ).resolves.toEqual({
       status: "not-imported",
     });
+
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        orphan: {
+          label: "Révision orpheline",
+          unite: null,
+          valeur_estimee: "source Fonds Vert",
+        },
+      },
+    });
+    const importedSnapshot = await getDossierMetricsSnapshot({
+      numeroDossier: dossierNumber,
+    });
+    expect(importedSnapshot).toEqual({
+      status: "imported",
+      metrics: {
+        orphan: {
+          label: "Révision orpheline",
+          unite: null,
+          valeur_estimee: "sans source",
+        },
+      },
+      targets: {
+        orphan: {
+          metricCode: "orphan",
+          revision: 2,
+          label: "Révision orpheline",
+          unit: null,
+          valueType: "text",
+          sourceValue: "source Fonds Vert",
+          effectiveValue: "sans source",
+        },
+      },
+    });
+
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        orphan: {
+          label: "Révision orpheline",
+          unite: null,
+          valeur_estimee: "source externe ultérieure",
+        },
+      },
+    });
+    await expect(
+      getDossierMetricsSnapshot({ numeroDossier: dossierNumber }),
+    ).resolves.toEqual(importedSnapshot);
+    expect(
+      await sql<{ revision: number; text_value: string }[]>`
+        select revision, text_value
+        from dossier_metric_revisions
+        where dossier_number = ${dossierNumber}
+          and metric_code = 'orphan'
+        order by revision
+      `,
+    ).toEqual([
+      { revision: 1, text_value: "source Fonds Vert" },
+      { revision: 2, text_value: "sans source" },
+    ]);
   } finally {
     await deleteStoredDossierMetrics(dossierNumber);
     await sql.end();
