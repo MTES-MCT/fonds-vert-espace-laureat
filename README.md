@@ -76,7 +76,13 @@ Vert impact est accessible via :
 
 - [/projets](http://localhost:3000/projets)
 
-L'utilisateur se connecte via ProConnect. Nous récupérons tous les dossiers associés à son numéro de SIRET via l'API Fonds Vert. Nous n'affichons que les dossiers rattachés à l'adresse email de l'utilisateur connecté. Seuls les utilisateurs connectés avec une adresse email vérifiée par ProConnect peuvent accéder à Vert impact.
+Après connexion via ProConnect, l’application retrouve les dossiers à partir du
+SIRET et de l’adresse email. Les droits de lecture et de correction sont vérifiés
+auprès de Démarche Numérique : porteur, instructeur autorisé ou administrateur,
+pour un dossier de personne morale.
+
+Les corrections locales prennent effet immédiatement et priment sur les valeurs
+importées de Fonds Vert.
 
 Il est possible d'accéder directement à un dossier :
 
@@ -92,7 +98,8 @@ Si votre compte a un rôle administrateur, vous pouvez visualiser les dossiers d
 
 #### Mode démo
 
-Une page de démonstration, ne nécessitant ni token ni compte ProConnect, est disponible :
+La démonstration utilise des données synthétiques, exclues des exports réels.
+Elle est accessible sans token ni compte ProConnect :
 
 - [/projets/demo](http://localhost:3000/projets/demo)
 
