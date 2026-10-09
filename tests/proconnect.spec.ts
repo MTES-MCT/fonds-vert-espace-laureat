@@ -255,17 +255,23 @@ test.describe("ProConnect return after authentication", () => {
   });
 });
 
-test("an unauthenticated dossier visitor keeps the dossier destination in the ProConnect link", async ({
-  page,
-}) => {
-  await page.goto("/projets/123");
-  await expect(page).toHaveURL(
-    /\/connexion\?error=user_unknown&returnTo=%2Fprojets%2F123$/,
-  );
-  await expect(
-    page.locator('a[href^="/api/auth/proconnect/login"]'),
-  ).toHaveAttribute(
-    "href",
-    "/api/auth/proconnect/login?returnTo=%2Fprojets%2F123",
-  );
-});
+for (const [situation, destination] of [
+  ["a dossier", "/projets/123"],
+  ["a project search", "/projets?siret=12345678900011&dossier=123"],
+]) {
+  test(`an unauthenticated visitor to ${situation} keeps the destination in the ProConnect link`, async ({
+    page,
+  }) => {
+    await page.goto(destination);
+    await expect(page).toHaveURL(/\/connexion\?/);
+    const connexionUrl = new URL(page.url());
+    expect(connexionUrl.searchParams.get("error")).toBe("user_unknown");
+    expect(connexionUrl.searchParams.get("returnTo")).toBe(destination);
+    await expect(
+      page.locator('a[href^="/api/auth/proconnect/login"]'),
+    ).toHaveAttribute(
+      "href",
+      `/api/auth/proconnect/login?returnTo=${encodeURIComponent(destination)}`,
+    );
+  });
+}

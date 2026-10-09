@@ -10,7 +10,10 @@ export async function proxy(request: NextRequest) {
   if (!user) {
     const loginUrl = new URL("/connexion", request.url);
     loginUrl.searchParams.set("error", "user_unknown");
-    loginUrl.searchParams.set("returnTo", request.nextUrl.pathname);
+    loginUrl.searchParams.set(
+      "returnTo",
+      request.nextUrl.pathname + request.nextUrl.search,
+    );
     return NextResponse.redirect(loginUrl);
   }
 
