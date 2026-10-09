@@ -2,6 +2,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { unionAll } from "drizzle-orm/pg-core";
 
 import { getDb } from "@/db";
+import { metricRevisionValue } from "@/db/dossierMetricValue";
 import { dossierMetricRevisions } from "@/db/schema";
 import {
   type MetricFields,
@@ -142,19 +143,6 @@ function toRevisionInsert({
   };
 }
 
-function rowValue(row: CurrentMetricRow): MetricValue {
-  switch (row.valueType) {
-    case "number":
-      return row.numberValue!;
-    case "text":
-      return row.textValue!;
-    case "boolean":
-      return row.booleanValue!;
-    case "text_array":
-      return row.textArrayValue!;
-  }
-}
-
 function rowsToMetrics(rows: CurrentMetricRow[]): Record<string, MetricFields> {
   return Object.fromEntries(
     rows.map((row) => [
@@ -162,7 +150,7 @@ function rowsToMetrics(rows: CurrentMetricRow[]): Record<string, MetricFields> {
       {
         label: row.label,
         unite: row.unit,
-        valeur_estimee: rowValue(row),
+        valeur_estimee: metricRevisionValue(row),
       },
     ]),
   );
@@ -181,8 +169,8 @@ function revisionRowsToTarget({
     label: source.label,
     unit: source.unit,
     valueType: source.valueType,
-    sourceValue: rowValue(source),
-    effectiveValue: rowValue(effectiveRevision),
+    sourceValue: metricRevisionValue(source),
+    effectiveValue: metricRevisionValue(effectiveRevision),
   };
 }
 

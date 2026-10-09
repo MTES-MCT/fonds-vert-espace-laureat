@@ -1,6 +1,7 @@
 import { and, asc, desc, gt, ne } from "drizzle-orm";
 
 import { getDb } from "@/db";
+import { metricRevisionValue } from "@/db/dossierMetricValue";
 import { dossierMetricRevisions } from "@/db/schema";
 import { type MetricValue } from "@/services/fondsvert/dossier";
 import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
@@ -31,33 +32,6 @@ const correctionSelection = {
   createdAt: dossierMetricRevisions.createdAt,
 };
 
-type CorrectionRow = Pick<
-  MetricRevisionRow,
-  | "dossierNumber"
-  | "metricCode"
-  | "revision"
-  | "unit"
-  | "valueType"
-  | "numberValue"
-  | "textValue"
-  | "booleanValue"
-  | "textArrayValue"
-  | "createdAt"
->;
-
-function rowValue(row: CorrectionRow): MetricValue {
-  switch (row.valueType) {
-    case "number":
-      return row.numberValue!;
-    case "text":
-      return row.textValue!;
-    case "boolean":
-      return row.booleanValue!;
-    case "text_array":
-      return row.textArrayValue!;
-  }
-}
-
 /**
  * Reads the current local correction for each real dossier/metric pair.
  */
@@ -87,7 +61,7 @@ export async function getLatestFondsVertCorrections(): Promise<
     metricCode: row.metricCode,
     revision: row.revision,
     valueType: row.valueType,
-    value: rowValue(row),
+    value: metricRevisionValue(row),
     unit: row.unit,
     correctedAt: row.createdAt,
   }));
