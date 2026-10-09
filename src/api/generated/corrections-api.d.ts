@@ -59,7 +59,7 @@ export interface operations {
             query?: {
                 /** @description Premier appel seulement ; incompatible avec cursor. */
                 page_size?: number;
-                /** @description Curseur opaque reçu dans next_cursor, à réutiliser sans modification. */
+                /** @description Curseur opaque reçu dans next_cursor, à réutiliser sans modification. Sa position est un entier de 0 à 2147483647, sans zéro initial sauf pour 0 ; une position hors borne est rejetée en 400. */
                 cursor?: string;
             };
             header?: never;
