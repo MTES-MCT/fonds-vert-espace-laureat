@@ -1,11 +1,13 @@
 import { correctionAccess } from "@/api/corrections-access";
 import type { components } from "@/api/generated/corrections-api";
 import {
+  CORRECTION_EXPORT_INTERVAL_SECONDS,
   CorrectionExportBusyError,
   createAdmittedCorrectionExport,
 } from "@/db/fondsVertCorrectionAdmission";
 import {
   FondsVertExportPageError,
+  MAX_EXPORT_PAGE_SIZE,
   readFondsVertCorrectionExportPage,
   readFondsVertCorrectionExportPageSize,
 } from "@/db/fondsVertCorrectionExport";
@@ -56,7 +58,7 @@ export async function getCorrections(request: Request) {
     (cursor !== null &&
       (!parsed || cursor.length > 64 || Number(parsed[2]) > 2_147_483_647)) ||
     !/^[1-9][0-9]{0,3}$/.test(size) ||
-    Number(size) > 1_000
+    Number(size) > MAX_EXPORT_PAGE_SIZE
   ) {
     return correctionError(400, "invalid_request");
   }
@@ -92,7 +94,9 @@ export async function getCorrections(request: Request) {
     return Response.json(body, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof CorrectionExportBusyError) {
-      return correctionError(429, "rate_limited", { "Retry-After": "60" });
+      return correctionError(429, "rate_limited", {
+        "Retry-After": String(CORRECTION_EXPORT_INTERVAL_SECONDS),
+      });
     }
     if (error instanceof FondsVertExportPageError) {
       return correctionError(error.code === "expired" ? 410 : 404, error.code);

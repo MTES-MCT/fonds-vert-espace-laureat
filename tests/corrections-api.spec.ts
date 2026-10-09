@@ -5,7 +5,9 @@ import { sealData } from "iron-session";
 
 import { correctionAccess } from "@/api/corrections-access";
 import type { components } from "@/api/generated/corrections-api";
+import { MAX_EXPORT_PAGE_SIZE } from "@/db/fondsVertCorrectionExport";
 
+import correctionsContract from "../openapi/corrections.json";
 import { createTestDatabaseClient } from "./setup/db";
 
 type Page = components["schemas"]["CorrectionPage"];
@@ -20,6 +22,13 @@ const headers = {
   "x-corrections-proto": "https",
 };
 const profile = process.env.CORRECTIONS_TEST_PROFILE;
+
+test("published page-size maximum matches the stored export limit", () => {
+  const pageSize = correctionsContract.paths[endpoint].get.parameters.find(
+    (parameter) => parameter.name === "page_size",
+  );
+  expect(pageSize?.schema.maximum).toBe(MAX_EXPORT_PAGE_SIZE);
+});
 
 async function errorResponse(
   response: APIResponse,
@@ -495,6 +504,7 @@ test.describe("configured machine HTTP API", () => {
     request,
   }) => {
     await seed(3);
+    const [beforeAdmission] = await sql`select clock_timestamp() as at`;
     const responses = await Promise.all(
       Array.from({ length: 6 }, () =>
         request.get(`${endpoint}?page_size=1`, { headers }),
@@ -511,6 +521,15 @@ test.describe("configured machine HTTP API", () => {
     }
     const successful = responses.find((response) => response.status() === 200)!;
     const first = await pageResponse(successful);
+    const [admission] =
+      await sql`select next_allowed_at, clock_timestamp() as at
+      from fonds_vert_export_admission`;
+    expect(admission.next_allowed_at.getTime()).toBeGreaterThanOrEqual(
+      beforeAdmission.at.getTime() + 60_000,
+    );
+    expect(admission.next_allowed_at.getTime()).toBeLessThanOrEqual(
+      admission.at.getTime() + 60_000,
+    );
     await pageResponse(
       await request.get(`${endpoint}?cursor=${first.next_cursor}`, { headers }),
     );

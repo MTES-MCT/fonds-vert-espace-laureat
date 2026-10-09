@@ -3,6 +3,8 @@ import { sql } from "drizzle-orm";
 import { getDb } from "@/db";
 import { createFondsVertCorrectionExport } from "@/db/fondsVertCorrectionExport";
 
+export const CORRECTION_EXPORT_INTERVAL_SECONDS = 60;
+
 export class CorrectionExportBusyError extends Error {}
 
 /** One creation at a time across instances, at most one attempt per minute. */
@@ -16,9 +18,9 @@ export async function createAdmittedCorrectionExport(pageSize: number) {
     // Commit the clock independently: failed publication must consume admission too.
     const admitted = await getDb().execute(sql`
       insert into fonds_vert_export_admission (id, next_allowed_at)
-      values (1, clock_timestamp() + interval '60 seconds')
+      values (1, clock_timestamp() + make_interval(secs => ${CORRECTION_EXPORT_INTERVAL_SECONDS}))
       on conflict (id) do update
-        set next_allowed_at = clock_timestamp() + interval '60 seconds'
+        set next_allowed_at = clock_timestamp() + make_interval(secs => ${CORRECTION_EXPORT_INTERVAL_SECONDS})
         where fonds_vert_export_admission.next_allowed_at <= clock_timestamp()
       returning id
     `);
