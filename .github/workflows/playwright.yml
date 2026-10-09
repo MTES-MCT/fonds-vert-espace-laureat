@@ -21,7 +21,7 @@ jobs:
       - name: Check OpenAPI generated types
         run: npm run check:corrections
       - name: Install Playwright Browsers
-        run: npm exec -- playwright install --with-deps
+        run: npm exec -- playwright install chromium --with-deps
       - name: Run Playwright tests
         run: npm run test
         env:
