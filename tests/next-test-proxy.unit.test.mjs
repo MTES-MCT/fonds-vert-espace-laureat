@@ -5,7 +5,7 @@ import test from "node:test";
 const preloadScript =
   "./scripts/disable-next-test-client-request-interceptor.cjs";
 
-test("disables the Next 16.3 ClientRequest interceptor in the test server", () => {
+test("the test preload keeps ClientRequest interception inactive", () => {
   const result = spawnSync(
     process.execPath,
     [
@@ -13,14 +13,20 @@ test("disables the Next 16.3 ClientRequest interceptor in the test server", () =
       "--eval",
       `
         const assert = require("node:assert/strict");
+        const http = require("node:http");
+        const https = require("node:https");
         const { ClientRequestInterceptor } = require(
           "next/dist/compiled/@mswjs/interceptors/ClientRequest"
         );
+        const originalHttpRequest = http.request;
+        const originalHttpsRequest = https.request;
 
-        assert.equal(
-          ClientRequestInterceptor.prototype.apply.name,
-          "skipNextTestClientRequestInterception"
-        );
+        const interceptor = new ClientRequestInterceptor();
+        interceptor.apply();
+
+        assert.equal(interceptor.readyState, "INACTIVE");
+        assert.equal(http.request, originalHttpRequest);
+        assert.equal(https.request, originalHttpsRequest);
       `,
     ],
     { encoding: "utf8" },
