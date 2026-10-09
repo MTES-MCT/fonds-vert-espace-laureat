@@ -7,6 +7,7 @@ import {
 import {
   FondsVertExportPageError,
   readFondsVertCorrectionExportPage,
+  readFondsVertCorrectionExportPageSize,
 } from "@/db/fondsVertCorrectionExport";
 
 type ApiError = components["schemas"]["ApiError"];
@@ -71,8 +72,7 @@ export async function getCorrections(request: Request) {
     const pageSize =
       pageNumber === 0
         ? page.corrections.length
-        : (await readFondsVertCorrectionExportPage(exportId, 0)).corrections
-            .length;
+        : await readFondsVertCorrectionExportPageSize(exportId);
     const nextCursor =
       (pageNumber + 1) * pageSize < page.totalCount
         ? `${exportId}:${pageNumber + 1}`

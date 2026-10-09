@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { and, eq, lte } from "drizzle-orm";
+import { and, eq, lte, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { getLatestFondsVertCorrections } from "@/db/fondsVertCorrectionProjection";
@@ -67,11 +67,7 @@ export async function createFondsVertCorrectionExport({
   return { exportId, generatedAt, expiresAt, totalCount, pageCount };
 }
 
-/** Reads one stored page without scanning correction history. */
-export async function readFondsVertCorrectionExportPage(
-  exportId: string,
-  pageNumber: number,
-) {
+function pageCondition(exportId: string, pageNumber: number) {
   if (
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       exportId,
@@ -82,18 +78,42 @@ export async function readFondsVertCorrectionExportPage(
   ) {
     throw new FondsVertExportPageError("missing");
   }
-  const [page] = await getDb()
-    .select()
-    .from(fondsVertExportPages)
-    .where(
-      and(
-        eq(fondsVertExportPages.exportId, exportId),
-        eq(fondsVertExportPages.pageNumber, pageNumber),
-      ),
-    );
+  return and(
+    eq(fondsVertExportPages.exportId, exportId),
+    eq(fondsVertExportPages.pageNumber, pageNumber),
+  );
+}
+
+function activePage<Page extends { expiresAt: Date }>(page: Page | undefined) {
   if (!page) throw new FondsVertExportPageError("missing");
   if (page.expiresAt.getTime() <= Date.now()) {
     throw new FondsVertExportPageError("expired");
   }
   return page;
+}
+
+/** Reads one stored page without scanning correction history. */
+export async function readFondsVertCorrectionExportPage(
+  exportId: string,
+  pageNumber: number,
+) {
+  const condition = pageCondition(exportId, pageNumber);
+  const [page] = await getDb()
+    .select()
+    .from(fondsVertExportPages)
+    .where(condition);
+  return activePage(page);
+}
+
+/** Reads the initial page length without transferring its correction payload. */
+export async function readFondsVertCorrectionExportPageSize(exportId: string) {
+  const condition = pageCondition(exportId, 0);
+  const [page] = await getDb()
+    .select({
+      pageSize: sql<number>`jsonb_array_length(${fondsVertExportPages.corrections})`,
+      expiresAt: fondsVertExportPages.expiresAt,
+    })
+    .from(fondsVertExportPages)
+    .where(condition);
+  return activePage(page).pageSize;
 }

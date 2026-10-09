@@ -374,6 +374,40 @@ test.describe("configured machine HTTP API", () => {
     );
   });
 
+  test("rejects continuation when its initial page is expired or missing", async ({
+    request,
+  }) => {
+    await seed(3);
+    const first = await pageResponse(
+      await request.get(`${endpoint}?page_size=1`, { headers }),
+    );
+    const id = first.next_cursor!.split(":")[0];
+    const continuationUrl = `${endpoint}?cursor=${first.next_cursor}`;
+    const second = await pageResponse(
+      await request.get(continuationUrl, { headers }),
+    );
+    expect(second.corrections).toHaveLength(1);
+    expect(second.next_cursor).toBe(`${id}:2`);
+
+    await sql`update fonds_vert_export_pages set expires_at = now() - interval '1 second'
+      where export_id = ${id} and page_number = 0`;
+    await errorResponse(
+      await request.get(continuationUrl, { headers }),
+      410,
+      "expired",
+    );
+
+    await sql`delete from fonds_vert_export_pages where export_id = ${id} and page_number = 0`;
+    await errorResponse(
+      await request.get(continuationUrl, { headers }),
+      404,
+      "missing",
+    );
+    expect(
+      await sql`select page_number from fonds_vert_export_pages where export_id = ${id} order by page_number`,
+    ).toEqual([{ page_number: 1 }, { page_number: 2 }]);
+  });
+
   test("returns an empty export, expiration and cleanup as distinct outcomes", async ({
     request,
   }) => {

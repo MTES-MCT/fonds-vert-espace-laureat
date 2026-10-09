@@ -8,6 +8,7 @@ import {
   MAX_EXPORT_PAGE_SIZE,
   MAX_EXPORT_RETENTION_MS,
   readFondsVertCorrectionExportPage,
+  readFondsVertCorrectionExportPageSize,
 } from "@/db/fondsVertCorrectionExport";
 
 import { createTestDatabaseClient } from "./setup/db";
@@ -69,6 +70,9 @@ test("stores all pages in order and replays typed immutable corrections", async 
     ),
   );
   expect(pages.map((p) => p.corrections.length)).toEqual([2, 2, 1]);
+  expect(await readFondsVertCorrectionExportPageSize(exported.exportId)).toBe(
+    2,
+  );
   expect(pages.flatMap((p) => p.corrections.map((c) => c.metricCode))).toEqual(
     [1, 2, 3, 4, 5].map((n) => `field_${String(n).padStart(6, "0")}`),
   );
@@ -81,6 +85,9 @@ test("stores all pages in order and replays typed immutable corrections", async 
     values (89995000, 'field_000001', 3, 'Fixture', 'text', 'Updated')`;
   expect(await readFondsVertCorrectionExportPage(exported.exportId, 0)).toEqual(
     pages[0],
+  );
+  expect(await readFondsVertCorrectionExportPageSize(exported.exportId)).toBe(
+    2,
   );
   const next = await createFondsVertCorrectionExport(options);
   expect(
@@ -98,6 +105,14 @@ test("distinguishes successful empty exports from missing pages", async () => {
   expect(
     (await readFondsVertCorrectionExportPage(exported.exportId, 0)).corrections,
   ).toEqual([]);
+  expect(await readFondsVertCorrectionExportPageSize(exported.exportId)).toBe(
+    0,
+  );
+  for (const id of [randomUUID(), "invalid"]) {
+    await expect(
+      readFondsVertCorrectionExportPageSize(id),
+    ).rejects.toMatchObject({ code: "missing" });
+  }
   for (const [id, page] of [
     [randomUUID(), 0],
     ["invalid", 0],
@@ -116,6 +131,9 @@ test("rejects expired pages and cleans them at the next creation only", async ()
   await expect(
     readFondsVertCorrectionExportPage(expired.exportId, 0),
   ).rejects.toMatchObject({ code: "expired" });
+  await expect(
+    readFondsVertCorrectionExportPageSize(expired.exportId),
+  ).rejects.toMatchObject({ code: "expired" });
   expect(await sql`select * from fonds_vert_export_pages`).toHaveLength(1);
   const active = await createFondsVertCorrectionExport(options);
   expect(await sql`select export_id from fonds_vert_export_pages`).toEqual([
@@ -123,6 +141,9 @@ test("rejects expired pages and cleans them at the next creation only", async ()
   ]);
   await expect(
     readFondsVertCorrectionExportPage(expired.exportId, 0),
+  ).rejects.toMatchObject({ code: "missing" });
+  await expect(
+    readFondsVertCorrectionExportPageSize(expired.exportId),
   ).rejects.toMatchObject({ code: "missing" });
 });
 
@@ -200,6 +221,11 @@ test("measures synthetic preparation and uses the page key for indexed reads", a
       .corrections,
   ).toHaveLength(100);
   const readMs = performance.now() - readStart;
+  const sizeReadStart = performance.now();
+  expect(await readFondsVertCorrectionExportPageSize(exported.exportId)).toBe(
+    100,
+  );
+  const sizeReadMs = performance.now() - sizeReadStart;
   const [storage] =
     await sql`select sum(pg_column_size(corrections))::int as bytes from fonds_vert_export_pages`;
   await sql`analyze fonds_vert_export_pages`;
@@ -213,6 +239,7 @@ test("measures synthetic preparation and uses the page key for indexed reads", a
       syntheticCorrections: 10_000,
       preparationMs,
       readMs,
+      sizeReadMs,
       heapDeltaBytes,
       storedJsonBytes: storage.bytes,
     }),
