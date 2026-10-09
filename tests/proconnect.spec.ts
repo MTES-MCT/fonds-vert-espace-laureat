@@ -172,6 +172,28 @@ test.describe("ProConnect return after authentication", () => {
     });
   }
 
+  for (const [situation, returnTo] of [
+    ["no return destination", undefined],
+    ["an empty return destination", ""],
+  ]) {
+    test(`a laureat restarting login with ${situation} discards the previous dossier destination`, async () => {
+      cookieValues.set(
+        cookieName,
+        await sealData(
+          {
+            state: "abandoned-state",
+            nonce: "abandoned-nonce",
+            returnTo: "/projets/123",
+          },
+          { password },
+        ),
+      );
+
+      const destination = await completeLogin(returnTo);
+      expect(destination.href).toBe(new URL("/projets", baseUrl).href);
+    });
+  }
+
   test("a laureat with a previously sealed unsafe return falls back to the dashboard", async () => {
     cookieValues.set(
       cookieName,

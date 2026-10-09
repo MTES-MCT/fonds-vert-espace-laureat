@@ -10,10 +10,7 @@ export const GET = withSession(async function loginRoute(req) {
     const { searchParams } = new URL(req.url);
     const returnTo = searchParams.get("returnTo");
 
-    if (returnTo) {
-      req.session.returnTo = returnTo;
-      await req.session.save();
-    }
+    req.session.returnTo = returnTo || undefined;
 
     const url = await proConnectAuthorizeUrl(req);
     return NextResponse.redirect(url);
