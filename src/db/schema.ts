@@ -14,6 +14,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { FondsVertCorrection } from "@/db/fondsVertCorrectionProjection";
+
 export const metricValueType = pgEnum("metric_value_type", [
   "number",
   "text",
@@ -105,13 +107,10 @@ export const fondsVertExportPages = pgTable(
   ],
 );
 
-export type StoredFondsVertCorrection = {
-  dossierNumber: number;
-  metricCode: string;
-  revision: number;
-  valueType: "number" | "text" | "boolean" | "text_array";
-  value: number | string | boolean | string[];
-  unit: string | null;
+export type StoredFondsVertCorrection = Omit<
+  FondsVertCorrection,
+  "correctedAt"
+> & {
   correctedAt: string;
 };
 
