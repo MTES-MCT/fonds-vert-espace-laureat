@@ -9,7 +9,7 @@ Ce projet repose sur 4 services externes :
 - [API Fonds Vert](https://api-fonds-vert.datahub.din.developpement-durable.gouv.fr/docs) : données financières et consolidation des indicateurs
 - [Grist](https://grist.numerique.gouv.fr/) : mapping entre les champs des différentes APIs
 
-Les données projet, financières et d'identité restent hébergées sur ces services. La base PostgreSQL du projet sert uniquement à stocker les métriques d'impact consolidées par dossier.
+Les données projet, financières et d'identité restent hébergées sur ces services. La base PostgreSQL du projet conserve les métriques d'impact et leurs révisions, les pages figées des exports de corrections et leur état d'admission partagé.
 
 ### Prérequis
 
