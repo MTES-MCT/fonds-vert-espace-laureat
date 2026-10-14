@@ -19,6 +19,7 @@ export type Session = {
   state?: string;
   nonce?: string;
   pkceCodeVerifier?: string;
+  logoutState?: string;
   idToken?: string;
   returnTo?: string;
 };

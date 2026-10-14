@@ -217,18 +217,42 @@ test("displays empty state when no dossiers in any source", async ({
   ).toBeVisible();
 });
 
-test("displays authenticated header quick access", async ({ page, msw }) => {
-  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
-  msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
+for (const [situation, viewport] of [
+  ["desktop", { width: 1280, height: 800 }],
+] as const) {
+  test(`an authenticated laureat logs out using the ${situation} header and keyboard`, async ({
+    page,
+    msw,
+  }) => {
+    await page.setViewportSize(viewport);
+    await authenticatePage(page, { email: DEMANDEUR_EMAIL });
+    msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
+    await page.goto("/projets");
 
-  await page.goto("/projets");
+    const quickAccess = page.locator("#fr-header-quick-access-item-0");
+    await expect(quickAccess).toContainText(DEMANDEUR_EMAIL);
+    const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });
+    await expect(logout).toBeVisible();
+    await expect(logout).toHaveAttribute("type", "submit");
+    await expect(logout).toHaveAttribute("form", "proconnect-logout-form");
+    await expect(page.locator("#proconnect-logout-form")).toHaveAttribute(
+      "action",
+      "/api/auth/proconnect/logout",
+    );
+    await expect(page.locator("#proconnect-logout-form")).toHaveAttribute(
+      "method",
+      "post",
+    );
 
-  await expect(page.locator("#fr-header-quick-access-item-0")).toContainText(
-    DEMANDEUR_EMAIL,
-  );
-  await expect(
-    page.locator("#fr-header-quick-access-item-0").getByRole("link", {
-      name: "Se déconnecter",
-    }),
-  ).toHaveAttribute("href", "/api/auth/proconnect/logout");
-});
+    const submitted = page.waitForResponse((response) =>
+      response.url().endsWith("/api/auth/proconnect/logout"),
+    );
+    await logout.press("Enter");
+    const response = await submitted;
+    expect(response.request().method()).toBe("POST");
+    expect(response.status()).toBe(303);
+    await expect(page).toHaveURL("/");
+    await page.goto("/projets");
+    await expect(page).toHaveURL(/\/connexion\?/);
+  });
+}

@@ -13,7 +13,11 @@ import { NextRequest } from "next/server";
 
 import { GET as login } from "@/app/api/auth/proconnect/login/route";
 import { GET as callback } from "@/app/api/auth/proconnect/login-callback/route";
+import { POST as logout } from "@/app/api/auth/proconnect/logout/route";
+import { GET as logoutCallback } from "@/app/api/auth/proconnect/logout-callback/route";
 import { type Session, sessionOptions } from "@/utils/session";
+
+import { authenticatePage } from "./setup/auth";
 
 const require = createRequire(`${process.cwd()}/package.json`);
 const nextHeaders: typeof import("next/headers") = require("next/headers");
@@ -42,6 +46,8 @@ let unsignedUserInfo: boolean;
 let missingAccessToken: boolean;
 let providerFailure: boolean;
 let discoveryIssuer: string;
+let discoveryUnavailable = false;
+let rejectCookieWrite = false;
 const providerRequests: string[] = [];
 const validVerifier = "A".repeat(43);
 let expectedChallenge: string;
@@ -68,6 +74,7 @@ test.describe("ProConnect return after authentication", () => {
   test.beforeEach(() => {
     cookieValues.clear();
     cookieWriteCount = 0;
+    rejectCookieWrite = false;
     tokenRequest = undefined;
     tokenClaims = {};
     userInfoClaims = {};
@@ -78,11 +85,13 @@ test.describe("ProConnect return after authentication", () => {
     providerFailure = false;
     expectedChallenge = pkceChallenge(validVerifier);
     discoveryIssuer = issuerUrl;
+    discoveryUnavailable = false;
     providerRequests.length = 0;
     mock.method(nextHeaders, "cookies", async () => ({
       get: (name: string) =>
         cookieValues.has(name) ? { value: cookieValues.get(name) } : undefined,
       set: (name: string, value: string) => {
+        if (rejectCookieWrite) throw new Error("Session cookie write failed");
         cookieWriteCount += 1;
         cookieValues.set(name, value);
       },
@@ -96,6 +105,7 @@ test.describe("ProConnect return after authentication", () => {
         providerRequests.push(address.pathname);
         const now = Math.floor(Date.now() / 1000);
         if (address.href === discoveryUrl) {
+          if (discoveryUnavailable) return new Response(null, { status: 503 });
           return Response.json({
             issuer: discoveryIssuer,
             authorization_endpoint: `${issuerUrl}/authorize`,
@@ -252,6 +262,33 @@ test.describe("ProConnect return after authentication", () => {
     expect(storedSession.pkceCodeVerifier).toBeUndefined();
     return new URL(response.headers.get("location")!);
   }
+
+  test("a provider discovery failure during logout preserves the local session and redirects with 303", async () => {
+    const authenticated: StoredSession = {
+      user: {
+        id: identity.sub,
+        email: identity.email,
+        siret: identity.siret,
+        isProConnectIdentityProvider: true,
+        isSiretVerifiedForEmailDomain: true,
+      },
+      idToken: "existing-provider-id-token",
+    };
+    await storeSession(authenticated);
+    const cookie = cookieValues.get(cookieName);
+    discoveryUnavailable = true;
+    const log = mock.method(console, "error", () => {});
+    const response = await logout(logoutRequest());
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(new URL("/", baseUrl).href);
+    expect(cookieValues.get(cookieName)).toBe(cookie);
+    expect(cookieWriteCount).toBe(0);
+    expect((await readSession()).user).toEqual(authenticated.user);
+    expect(log.mock.calls[0].arguments[0]).toBe(
+      "unexpected HTTP response status code",
+    );
+    expect(providerRequests).toEqual([new URL(discoveryUrl).pathname]);
+  });
 
   test("a mismatched discovery issuer is rejected and a subsequent discovery can recover", async () => {
     discoveryIssuer = "https://attacker.example";
@@ -484,6 +521,141 @@ test.describe("ProConnect return after authentication", () => {
     }
   });
 
+  function logoutRequest(origin: string | null = new URL(baseUrl).origin) {
+    return new NextRequest(new URL("/api/auth/proconnect/logout", baseUrl), {
+      method: "POST",
+      headers: origin === null ? {} : { origin },
+    });
+  }
+
+  async function invokeLogoutCallback(query: string) {
+    return logoutCallback(
+      new NextRequest(
+        new URL(`/api/auth/proconnect/logout-callback?${query}`, baseUrl),
+      ),
+    );
+  }
+
+  test("a laureat logs out through ProConnect and clears the local session only after the matching return", async () => {
+    await completeLogin();
+    const authenticated = await readSession();
+    const response = await logout(logoutRequest());
+    expect(response.status).toBe(303);
+    const providerLogout = new URL(response.headers.get("location")!);
+    expect(providerLogout.href.startsWith(`${issuerUrl}/logout?`)).toBe(true);
+    expect(providerLogout.searchParams.get("id_token_hint")).toBe(
+      authenticated.idToken,
+    );
+    expect(providerLogout.searchParams.get("post_logout_redirect_uri")).toBe(
+      new URL("/api/auth/proconnect/logout-callback", baseUrl).href,
+    );
+    const pending = await readSession();
+    expect(pending.logoutState).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(providerLogout.searchParams.get("state")).toBe(pending.logoutState);
+    expect(pending.user).toEqual(authenticated.user);
+
+    const returned = await invokeLogoutCallback(`state=${pending.logoutState}`);
+    expect(returned.headers.get("location")).toBe(new URL("/", baseUrl).href);
+    const loggedOut = await readSession();
+    expect(loggedOut.user).toBeUndefined();
+    expect(loggedOut.idToken).toBeUndefined();
+    expect(loggedOut.logoutState).toBeUndefined();
+  });
+
+  test("a repeated logout POST preserves the first provider return", async () => {
+    await completeLogin();
+    const first = await logout(logoutRequest());
+    const firstUrl = new URL(first.headers.get("location")!);
+    const second = await logout(logoutRequest());
+    expect(second.status).toBe(303);
+    expect(
+      new URL(second.headers.get("location")!).searchParams.get("state"),
+    ).toBe(firstUrl.searchParams.get("state"));
+    await invokeLogoutCallback(`state=${firstUrl.searchParams.get("state")}`);
+    expect((await readSession()).user).toBeUndefined();
+  });
+
+  for (const [situation, origin] of [
+    ["external origin", "https://attacker.example"],
+    ["missing origin", null],
+    ["opaque origin", "null"],
+    ["different local port", "http://localhost:4999"],
+  ] as const) {
+    test(`a logout POST from ${situation} preserves the authenticated session`, async () => {
+      await completeLogin();
+      const cookie = cookieValues.get(cookieName);
+      cookieWriteCount = 0;
+      providerRequests.length = 0;
+      const response = await logout(logoutRequest(origin));
+      expect(response.status).toBe(403);
+      expect(response.headers.has("location")).toBe(false);
+      expect(cookieValues.get(cookieName)).toBe(cookie);
+      expect(cookieWriteCount).toBe(0);
+      expect(providerRequests).toHaveLength(0);
+    });
+  }
+
+  for (const [situation, transaction, query] of [
+    ["without a pending logout", undefined, "state=unsolicited"],
+    ["without a returned state", "expected-state", ""],
+    ["with an empty returned state", "expected-state", "state="],
+    ["with a wrong returned state", "expected-state", "state=other-state"],
+  ] as const) {
+    test(`a logout callback ${situation} preserves the existing user and token`, async () => {
+      await completeLogin();
+      await storeSession({
+        ...(await readSession()),
+        logoutState: transaction,
+      });
+      const cookie = cookieValues.get(cookieName);
+      cookieWriteCount = 0;
+      const response = await invokeLogoutCallback(query);
+      expect(response.headers.get("location")).toBe(new URL("/", baseUrl).href);
+      expect(cookieValues.get(cookieName)).toBe(cookie);
+      expect(cookieWriteCount).toBe(0);
+      expect((await readSession()).user?.id).toBe(identity.sub);
+    });
+  }
+
+  test("a session without an ID token logs out locally with a GET redirect", async () => {
+    await completeLogin();
+    await storeSession({ ...(await readSession()), idToken: undefined });
+    providerRequests.length = 0;
+    const response = await logout(logoutRequest());
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(new URL("/", baseUrl).href);
+    expect((await readSession()).user).toBeUndefined();
+    expect(providerRequests).toHaveLength(0);
+  });
+
+  test("a fresh login invalidates a pending logout callback", async () => {
+    await completeLogin();
+    await logout(logoutRequest());
+    const previous = await readSession();
+    await login(
+      new NextRequest(new URL("/api/auth/proconnect/login", baseUrl)),
+    );
+    expect((await readSession()).logoutState).toBeUndefined();
+    cookieWriteCount = 0;
+    await invokeLogoutCallback(`state=${previous.logoutState}`);
+    expect(cookieWriteCount).toBe(0);
+    expect((await readSession()).user).toEqual(previous.user);
+  });
+
+  test("failure to save a logout transaction redirects with 303 and keeps the existing session", async () => {
+    await completeLogin();
+    const cookie = cookieValues.get(cookieName);
+    rejectCookieWrite = true;
+    const log = mock.method(console, "error", () => {});
+    const response = await logout(logoutRequest());
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(new URL("/", baseUrl).href);
+    expect(cookieValues.get(cookieName)).toBe(cookie);
+    expect(log.mock.calls[0].arguments).toEqual([
+      "Session cookie write failed",
+    ]);
+  });
+
   async function storeSession(session: StoredSession) {
     cookieValues.set(
       cookieName,
@@ -663,3 +835,22 @@ for (const [situation, destination] of [
     );
   });
 }
+
+test("a GET logout request cannot modify an authenticated browser session", async ({
+  page,
+}) => {
+  await authenticatePage(page);
+  const before = (await page.context().cookies()).find(
+    (cookie) => cookie.name === cookieName,
+  )!;
+  const response = await page.request.get("/api/auth/proconnect/logout", {
+    maxRedirects: 0,
+  });
+  expect(response.status()).toBe(405);
+  expect(response.headers()["set-cookie"]).toBeUndefined();
+  expect(response.headers()["location"]).toBeUndefined();
+  const after = (await page.context().cookies()).find(
+    (cookie) => cookie.name === cookieName,
+  )!;
+  expect(after.value).toBe(before.value);
+});

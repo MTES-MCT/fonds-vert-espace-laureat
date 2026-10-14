@@ -81,6 +81,7 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   req.session.state = state;
   req.session.nonce = nonce;
   req.session.pkceCodeVerifier = pkceCodeVerifier;
+  req.session.logoutState = undefined;
   await req.session.save();
 
   return buildAuthorizationUrl(client, {
@@ -150,9 +151,14 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
 };
 
 export const proConnectLogoutUrl = async (req: RequestWithSession) => {
+  if (!req.session.idToken) throw new Error("No ProConnect ID token");
   const client = await getClient();
-  return buildEndSessionUrl(client, {
-    ...(req.session.idToken ? { id_token_hint: req.session.idToken } : {}),
+  req.session.logoutState ??= randomState();
+  const url = buildEndSessionUrl(client, {
+    id_token_hint: req.session.idToken,
     post_logout_redirect_uri: logoutCallbackUrl,
+    state: req.session.logoutState,
   });
+  await req.session.save();
+  return url;
 };

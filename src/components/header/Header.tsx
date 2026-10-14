@@ -16,9 +16,10 @@ export const Header = ({ userEmail }: { userEmail?: string }) => {
             quickAccessItem={{
               iconId: "fr-icon-logout-box-r-line",
               text: "Se déconnecter",
-              linkProps: {
+              buttonProps: {
                 className: "mb-0",
-                href: "/api/auth/proconnect/logout",
+                type: "submit",
+                form: "proconnect-logout-form",
               },
             }}
           />
@@ -36,29 +37,38 @@ export const Header = ({ userEmail }: { userEmail?: string }) => {
       ];
 
   return (
-    <DsfrHeader
-      brandTop={
-        <>
-          Ministères
-          <br />
-          transition écologique
-          <br />
-          aménagement du territoire
-          <br />
-          transports
-          <br />
-          ville et logement
-        </>
-      }
-      serviceTitle="Vert impact"
-      serviceTagline="Accélérer la transition écologique dans les territoires"
-      homeLinkProps={{
-        href: "/",
-        title:
-          "Accueil - Vert impact (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
-      }}
-      quickAccessItems={quickAccessItems}
-      navigation={<Navigation />}
-    />
+    <>
+      <DsfrHeader
+        brandTop={
+          <>
+            Ministères
+            <br />
+            transition écologique
+            <br />
+            aménagement du territoire
+            <br />
+            transports
+            <br />
+            ville et logement
+          </>
+        }
+        serviceTitle="Vert impact"
+        serviceTagline="Accélérer la transition écologique dans les territoires"
+        homeLinkProps={{
+          href: "/",
+          title:
+            "Accueil - Vert impact (Ministère du Partenariat avec les territoires et de la Décentralisation - Ministère de la Transition écologique, de l’Énergie, du Climat et de la Prévention des risques - Ministère du Logement et de la Rénovation urbaine)",
+        }}
+        quickAccessItems={quickAccessItems}
+        navigation={<Navigation />}
+      />
+      {userEmail && (
+        <form
+          id="proconnect-logout-form"
+          action="/api/auth/proconnect/logout"
+          method="post"
+        />
+      )}
+    </>
   );
 };
