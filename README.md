@@ -28,6 +28,12 @@ npm run db:setup
 
 Note : `db:setup` applique les migrations Drizzle.
 
+Dans la configuration de votre service ProConnect, déclarer les URL de retour.
+Par exemple, avec `NEXT_PUBLIC_BASE_URL=https://example.org` dans `.env` :
+
+- connexion : `https://example.org/api/auth/proconnect/login-callback` ;
+- déconnexion : `https://example.org/api/auth/proconnect/logout-callback`.
+
 ### Développement
 
 Lancez le serveur de développement :
