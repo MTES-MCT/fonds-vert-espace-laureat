@@ -1,12 +1,23 @@
 // Documentation ProConnect
 // https://partenaires.proconnect.gouv.fr/docs/fournisseur-service/implementation_technique
 
-import { BaseClient, generators, Issuer } from "openid-client";
+import {
+  authorizationCodeGrant,
+  buildAuthorizationUrl,
+  buildEndSessionUrl,
+  ClientSecretPost,
+  type Configuration,
+  discovery,
+  enableNonRepudiationChecks,
+  fetchUserInfo,
+  randomNonce,
+  randomState,
+} from "openid-client";
 
 import { requireEnv } from "@/utils/env";
 import { RequestWithSession } from "@/utils/session";
 
-let _client = undefined as BaseClient | undefined;
+let clientPromise: Promise<Configuration> | undefined;
 
 const [clientId, clientSecret, discoverUrl, baseUrl] = requireEnv(
   "PROCONNECT_CLIENT_ID",
@@ -26,46 +37,60 @@ const logoutCallbackUrl = new URL(
 ).toString();
 
 export const getClient = async () => {
-  if (_client) {
-    return _client;
-  } else {
-    const proConnectIssuer = await Issuer.discover(discoverUrl);
-
-    _client = new proConnectIssuer.Client({
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uris: [loginCallbackUrl],
-      post_logout_redirect_uris: [logoutCallbackUrl],
-      id_token_signed_response_alg: "RS256",
-      userinfo_signed_response_alg: "RS256",
+  if (!clientPromise) {
+    const suffix = "/.well-known/openid-configuration";
+    const discoveryUrl = new URL(discoverUrl);
+    if (
+      !discoveryUrl.pathname.endsWith(suffix) ||
+      discoveryUrl.search ||
+      discoveryUrl.hash
+    ) {
+      throw new Error("Invalid ProConnect OpenID discovery document URL");
+    }
+    const issuerUrl = new URL(discoveryUrl.href.slice(0, -suffix.length));
+    clientPromise = discovery(
+      issuerUrl,
+      clientId,
+      {
+        client_secret: clientSecret,
+        redirect_uris: [loginCallbackUrl],
+        post_logout_redirect_uris: [logoutCallbackUrl],
+        id_token_signed_response_alg: "RS256",
+        userinfo_signed_response_alg: "RS256",
+      },
+      ClientSecretPost(clientSecret),
+      { execute: [enableNonRepudiationChecks] },
+    ).catch((error: unknown) => {
+      clientPromise = undefined;
+      throw error;
     });
-
-    return _client;
   }
+  return clientPromise;
 };
 
 export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   const client = await getClient();
 
-  const nonce = generators.nonce();
-  const state = generators.state();
+  const nonce = randomNonce();
+  const state = randomState();
 
   req.session.state = state;
   req.session.nonce = nonce;
   await req.session.save();
 
-  return client.authorizationUrl({
+  return buildAuthorizationUrl(client, {
+    redirect_uri: loginCallbackUrl,
     scope: "openid given_name usual_name email siret custom idp_id",
     acr_values: "eidas1",
     nonce,
     state,
-    claims: {
+    claims: JSON.stringify({
       userinfo: {
         email_verified: {
           essential: true,
         },
       },
-    },
+    }),
   });
 };
 
@@ -82,13 +107,13 @@ export type ProConnectUserInfo = {
 };
 
 export const proConnectAuthenticate = async (req: RequestWithSession) => {
+  if (!req.session.state || !req.session.nonce) {
+    throw new Error("Missing ProConnect login transaction");
+  }
   const client = await getClient();
-
-  const params = client.callbackParams(req.nextUrl.toString());
-
-  const tokenSet = await client.callback(loginCallbackUrl, params, {
-    nonce: req.session.nonce,
-    state: req.session.state,
+  const tokenSet = await authorizationCodeGrant(client, new URL(req.url), {
+    expectedNonce: req.session.nonce,
+    expectedState: req.session.state,
   });
 
   const accessToken = tokenSet.access_token;
@@ -96,7 +121,13 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
     throw new Error("No access token");
   }
 
-  const userInfo = (await client.userinfo(tokenSet)) as ProConnectUserInfo;
+  const subject = tokenSet.claims()?.sub;
+  if (!subject) throw new Error("No ID token subject");
+  const userInfo = (await fetchUserInfo(
+    client,
+    accessToken,
+    subject,
+  )) as ProConnectUserInfo;
   req.session.nonce = undefined;
   req.session.state = undefined;
   req.session.idToken = tokenSet.id_token;
@@ -107,8 +138,8 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
 
 export const proConnectLogoutUrl = async (req: RequestWithSession) => {
   const client = await getClient();
-  return client.endSessionUrl({
-    id_token_hint: req.session.idToken,
+  return buildEndSessionUrl(client, {
+    ...(req.session.idToken ? { id_token_hint: req.session.idToken } : {}),
     post_logout_redirect_uri: logoutCallbackUrl,
   });
 };
