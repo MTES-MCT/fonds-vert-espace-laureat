@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { createGetHtmlAttributes } from "@codegouvfr/react-dsfr/next-app-router/getHtmlAttributes";
 
-import { DsfrProvider } from "@/components/dsfr";
+import { DsfrProvider, StartDsfrOnHydration } from "@/components/dsfr";
 import { defaultColorScheme } from "@/components/dsfr/defaultColorScheme";
 import { DsfrHead } from "@/components/dsfr/DsfrHead";
 import { Footer } from "@/components/footer/Footer";
@@ -31,6 +31,7 @@ export default async function RootLayout({
           <Header userEmail={user?.email} />
           <main className="min-h-80">{children}</main>
           <Footer />
+          <StartDsfrOnHydration />
         </DsfrProvider>
       </body>
     </html>

@@ -219,6 +219,7 @@ test("displays empty state when no dossiers in any source", async ({
 
 for (const [situation, viewport] of [
   ["desktop", { width: 1280, height: 800 }],
+  ["mobile", { width: 390, height: 844 }],
 ] as const) {
   test(`an authenticated laureat logs out using the ${situation} header and keyboard`, async ({
     page,
@@ -229,7 +230,17 @@ for (const [situation, viewport] of [
     msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
     await page.goto("/projets");
 
-    const quickAccess = page.locator("#fr-header-quick-access-item-0");
+    if (situation === "mobile") {
+      const menu = page.getByRole("button", { name: "Menu", exact: true });
+      await expect(menu).toHaveAttribute("data-fr-js-modal-button", "true");
+      await menu.press("Enter");
+      await expect(page.locator("#header-menu-modal-fr-header")).toBeVisible();
+    }
+    const quickAccess = page.locator(
+      situation === "mobile"
+        ? "#fr-header-quick-access-item-0-mobile"
+        : "#fr-header-quick-access-item-0",
+    );
     await expect(quickAccess).toContainText(DEMANDEUR_EMAIL);
     const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });
     await expect(logout).toBeVisible();

@@ -5,7 +5,6 @@ import {
   DemoMetricAnomalyProvider,
 } from "@/app/projets/demo/DemoAnomaliesSection";
 import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
-import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
@@ -47,7 +46,6 @@ export default async function EspaceLaureatDemo() {
 
   return (
     <>
-      <StartDsfrOnHydration />
       <ToastViewport />
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => {
