@@ -18,6 +18,7 @@ export type Session = {
   user: User | null;
   state?: string;
   nonce?: string;
+  pkceCodeVerifier?: string;
   idToken?: string;
   returnTo?: string;
 };

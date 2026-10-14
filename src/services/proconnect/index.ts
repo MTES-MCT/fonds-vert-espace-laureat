@@ -5,12 +5,14 @@ import {
   authorizationCodeGrant,
   buildAuthorizationUrl,
   buildEndSessionUrl,
+  calculatePKCECodeChallenge,
   ClientSecretPost,
   type Configuration,
   discovery,
   enableNonRepudiationChecks,
   fetchUserInfo,
   randomNonce,
+  randomPKCECodeVerifier,
   randomState,
 } from "openid-client";
 
@@ -73,9 +75,12 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
 
   const nonce = randomNonce();
   const state = randomState();
+  const pkceCodeVerifier = randomPKCECodeVerifier();
+  const codeChallenge = await calculatePKCECodeChallenge(pkceCodeVerifier);
 
   req.session.state = state;
   req.session.nonce = nonce;
+  req.session.pkceCodeVerifier = pkceCodeVerifier;
   await req.session.save();
 
   return buildAuthorizationUrl(client, {
@@ -84,6 +89,8 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
     acr_values: "eidas1",
     nonce,
     state,
+    code_challenge: codeChallenge,
+    code_challenge_method: "S256",
     claims: JSON.stringify({
       userinfo: {
         email_verified: {
@@ -107,13 +114,18 @@ export type ProConnectUserInfo = {
 };
 
 export const proConnectAuthenticate = async (req: RequestWithSession) => {
-  if (!req.session.state || !req.session.nonce) {
+  if (
+    !req.session.state ||
+    !req.session.nonce ||
+    !req.session.pkceCodeVerifier
+  ) {
     throw new Error("Missing ProConnect login transaction");
   }
   const client = await getClient();
   const tokenSet = await authorizationCodeGrant(client, new URL(req.url), {
     expectedNonce: req.session.nonce,
     expectedState: req.session.state,
+    pkceCodeVerifier: req.session.pkceCodeVerifier,
   });
 
   const accessToken = tokenSet.access_token;
@@ -130,6 +142,7 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
   )) as ProConnectUserInfo;
   req.session.nonce = undefined;
   req.session.state = undefined;
+  req.session.pkceCodeVerifier = undefined;
   req.session.idToken = tokenSet.id_token;
   await req.session.save();
 

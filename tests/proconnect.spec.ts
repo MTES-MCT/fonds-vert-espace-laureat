@@ -1,4 +1,9 @@
-import { createSign, generateKeyPairSync, type KeyObject } from "node:crypto";
+import {
+  createHash,
+  createSign,
+  generateKeyPairSync,
+  type KeyObject,
+} from "node:crypto";
 import { createRequire } from "node:module";
 import { mock } from "node:test";
 
@@ -38,6 +43,12 @@ let missingAccessToken: boolean;
 let providerFailure: boolean;
 let discoveryIssuer: string;
 const providerRequests: string[] = [];
+const validVerifier = "A".repeat(43);
+let expectedChallenge: string;
+
+function pkceChallenge(verifier: string) {
+  return createHash("sha256").update(verifier).digest("base64url");
+}
 
 function signedJwt(claims: Record<string, unknown>, key: KeyObject) {
   const header = Buffer.from(
@@ -65,6 +76,7 @@ test.describe("ProConnect return after authentication", () => {
     unsignedUserInfo = false;
     missingAccessToken = false;
     providerFailure = false;
+    expectedChallenge = pkceChallenge(validVerifier);
     discoveryIssuer = issuerUrl;
     providerRequests.length = 0;
     mock.method(nextHeaders, "cookies", async () => ({
@@ -92,6 +104,7 @@ test.describe("ProConnect return after authentication", () => {
             jwks_uri: `${issuerUrl}/jwks`,
             end_session_endpoint: `${issuerUrl}/logout`,
             token_endpoint_auth_methods_supported: ["client_secret_post"],
+            code_challenge_methods_supported: ["S256"],
             id_token_signing_alg_values_supported: ["RS256"],
             userinfo_signing_alg_values_supported: ["RS256"],
           });
@@ -120,6 +133,12 @@ test.describe("ProConnect return after authentication", () => {
           expect(tokenRequest.get("redirect_uri")).toBe(
             new URL("/api/auth/proconnect/login-callback", baseUrl).href,
           );
+          if (
+            pkceChallenge(tokenRequest.get("code_verifier") ?? "") !==
+            expectedChallenge
+          ) {
+            return Response.json({ error: "invalid_grant" }, { status: 400 });
+          }
           if (providerFailure)
             return Response.json({ error: "invalid_grant" }, { status: 400 });
           const transaction = await readSession();
@@ -196,6 +215,13 @@ test.describe("ProConnect return after authentication", () => {
       userinfo: { email_verified: { essential: true } },
     });
     const transaction = await readSession();
+    expectedChallenge = providerUrl.searchParams.get("code_challenge")!;
+    expect(providerUrl.searchParams.get("code_challenge_method")).toBe("S256");
+    expect(transaction.pkceCodeVerifier).toMatch(/^[A-Za-z0-9_-]{43,128}$/);
+    expect(expectedChallenge).toBe(
+      pkceChallenge(transaction.pkceCodeVerifier!),
+    );
+    expect(providerUrl.searchParams.has("code_verifier")).toBe(false);
     expect(transaction.returnTo).toBe(returnTo || undefined);
     expect(transaction.state).toBe(providerUrl.searchParams.get("state"));
     expect(transaction.nonce).toBe(providerUrl.searchParams.get("nonce"));
@@ -208,6 +234,9 @@ test.describe("ProConnect return after authentication", () => {
     expect(response.status).toBe(307);
     expect(cookieWriteCount - cookieWritesBeforeCallback).toBe(2);
     expect(tokenRequest?.get("code")).toBe("test-code");
+    expect(tokenRequest?.get("code_verifier")).toBe(
+      transaction.pkceCodeVerifier,
+    );
     const storedSession = await readSession();
     expect(storedSession.user).toMatchObject({
       id: identity.sub,
@@ -220,6 +249,7 @@ test.describe("ProConnect return after authentication", () => {
     expect(storedSession.returnTo).toBeUndefined();
     expect(storedSession.state).toBeUndefined();
     expect(storedSession.nonce).toBeUndefined();
+    expect(storedSession.pkceCodeVerifier).toBeUndefined();
     return new URL(response.headers.get("location")!);
   }
 
@@ -253,7 +283,7 @@ test.describe("ProConnect return after authentication", () => {
     expect(log.mock.calls).toHaveLength(1);
   });
 
-  for (const missing of ["state", "nonce"] as const) {
+  for (const missing of ["state", "nonce", "pkceCodeVerifier"] as const) {
     test(`a sealed login transaction without ${missing} is rejected before code exchange`, async () => {
       await storeSession({
         state: "state",
@@ -387,8 +417,81 @@ test.describe("ProConnect return after authentication", () => {
     });
   });
 
+  test("a code exchanged with another PKCE verifier is rejected by the provider", async () => {
+    await storeSession({
+      state: "state",
+      nonce: "nonce",
+      pkceCodeVerifier: "B".repeat(43),
+    });
+    const log = mock.method(console, "error", () => {});
+    const response = await invokeCallback("code=test-code&state=state");
+    expect(response.headers.get("location")).toBe(
+      new URL("/connexion/echec", baseUrl).href,
+    );
+    expect(tokenRequest?.get("code_verifier")).toBe("B".repeat(43));
+    expect(providerRequests).not.toContain(
+      new URL(`${issuerUrl}/userinfo`).pathname,
+    );
+    expect(log.mock.calls[0].arguments[0]).toBe(
+      "server responded with an error in the response body",
+    );
+    expect(cookieWriteCount).toBe(0);
+    expect((await readSession()).user).toBeUndefined();
+  });
+
+  test("two login starts use distinct PKCE challenges and complete with their own sealed transactions", async () => {
+    const transactions = [];
+    for (let start = 0; start < 2; start++) {
+      const response = await login(
+        new NextRequest(new URL("/api/auth/proconnect/login", baseUrl)),
+      );
+      const authorization = new URL(response.headers.get("location")!);
+      const session = await readSession();
+      transactions.push({
+        session,
+        challenge: authorization.searchParams.get("code_challenge")!,
+        cookie: cookieValues.get(cookieName)!,
+      });
+      expect(authorization.searchParams.get("code_challenge_method")).toBe(
+        "S256",
+      );
+      expect(authorization.searchParams.has("code_verifier")).toBe(false);
+      expect(authorization.searchParams.has("pkceCodeVerifier")).toBe(false);
+    }
+    expect(transactions[0].session.state).not.toBe(
+      transactions[1].session.state,
+    );
+    expect(transactions[0].session.nonce).not.toBe(
+      transactions[1].session.nonce,
+    );
+    expect(transactions[0].session.pkceCodeVerifier).not.toBe(
+      transactions[1].session.pkceCodeVerifier,
+    );
+    expect(transactions[0].challenge).not.toBe(transactions[1].challenge);
+
+    for (const { session, challenge, cookie } of transactions) {
+      cookieValues.set(cookieName, cookie);
+      expectedChallenge = challenge;
+      expect(challenge).toBe(pkceChallenge(session.pkceCodeVerifier!));
+      const response = await invokeCallback(
+        `code=test-code&state=${session.state}`,
+      );
+      expect(response.headers.get("location")).toBe(
+        new URL("/projets", baseUrl).href,
+      );
+      expect(tokenRequest?.get("code_verifier")).toBe(session.pkceCodeVerifier);
+      expect((await readSession()).pkceCodeVerifier).toBeUndefined();
+    }
+  });
+
   async function storeSession(session: StoredSession) {
-    cookieValues.set(cookieName, await sealData(session, { password }));
+    cookieValues.set(
+      cookieName,
+      await sealData(
+        { pkceCodeVerifier: validVerifier, ...session },
+        { password },
+      ),
+    );
   }
 
   async function invokeCallback(query: string) {
@@ -484,6 +587,7 @@ test.describe("ProConnect return after authentication", () => {
         {
           state: "previous-state",
           nonce: "previous-nonce",
+          pkceCodeVerifier: validVerifier,
           returnTo: "/\t/attacker.example/path",
         },
         { password },
@@ -516,6 +620,7 @@ test.describe("ProConnect return after authentication", () => {
         {
           state: "rejected-state",
           nonce: "rejected-nonce",
+          pkceCodeVerifier: validVerifier,
           returnTo: "/\t/attacker.example/path",
         },
         { password },
