@@ -7,6 +7,8 @@ import {
   readdir,
   readFile,
   rm,
+  stat,
+  utimes,
   writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -117,6 +119,24 @@ test("GraphQL generation reads source queries and excludes declarations and gene
   assert.match(generated["graphql.ts"], /GreetingDocument/);
   assert.match(generated["graphql.ts"], /greeting: string/);
   assert.match(generated["gql.ts"], /query Greeting \{ greeting \}/);
+});
+
+test("GraphQL generation leaves unchanged output files untouched", async (t) => {
+  const root = await project(t);
+  assert.equal(generate(root).status, 0);
+  const previous = await outputs(root);
+  const previousTime = new Date("2020-01-01T00:00:00Z");
+  for (const file of Object.keys(previous)) {
+    await utimes(join(root, "src/generated", file), previousTime, previousTime);
+  }
+
+  const result = generate(root);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.deepEqual(await outputs(root), previous);
+  for (const file of Object.keys(previous)) {
+    const generatedFile = await stat(join(root, "src/generated", file));
+    assert.equal(generatedFile.mtimeMs, previousTime.getTime(), file);
+  }
 });
 
 test("an invalid GraphQL query preserves every previously generated file", async (t) => {

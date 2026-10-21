@@ -103,6 +103,11 @@ async function generate(config) {
 
   // Validate every output before replacing any previously generated file.
   for (const { filename, content } of outputs) {
+    const previous = await readFile(filename, "utf8").catch((error) => {
+      if (error.code !== "ENOENT") throw error;
+      return null;
+    });
+    if (previous === content) continue;
     await mkdir(dirname(filename), { recursive: true });
     await writeFile(filename, content);
   }
