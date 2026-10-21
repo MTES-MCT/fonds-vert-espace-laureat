@@ -76,7 +76,7 @@ test.describe("ProConnect return after authentication", () => {
     cookieWriteCount = 0;
     rejectCookieWrite = false;
     tokenRequest = undefined;
-    tokenClaims = {};
+    tokenClaims = { acr: "eidas1-mfa" };
     userInfoClaims = {};
     invalidIdSignature = false;
     invalidUserInfoSignature = false;
@@ -220,8 +220,14 @@ test.describe("ProConnect return after authentication", () => {
     expect(providerUrl.searchParams.get("scope")).toBe(
       "openid given_name usual_name email siret custom idp_id",
     );
-    expect(providerUrl.searchParams.get("acr_values")).toBe("eidas1");
+    expect(providerUrl.searchParams.has("acr_values")).toBe(false);
     expect(JSON.parse(providerUrl.searchParams.get("claims")!)).toEqual({
+      id_token: {
+        acr: {
+          essential: true,
+          values: ["eidas0-mfa", "eidas1-mfa", "eidas2", "eidas3"],
+        },
+      },
       userinfo: { email_verified: { essential: true } },
     });
     const transaction = await readSession();
@@ -338,6 +344,41 @@ test.describe("ProConnect return after authentication", () => {
     expect(providerRequests).toHaveLength(0);
     expect(log.mock.calls).toHaveLength(1);
   });
+
+  for (const acr of ["eidas0-mfa", "eidas1-mfa", "eidas2", "eidas3"]) {
+    test(`a laureat with signed MFA assurance ${acr} can log in`, async () => {
+      tokenClaims.acr = acr;
+
+      expect((await completeLogin()).pathname).toBe("/projets");
+    });
+  }
+
+  for (const [situation, acr] of [
+    ["missing assurance", undefined],
+    ["single-factor eidas0 assurance", "eidas0"],
+    ["single-factor eidas1 assurance", "eidas1"],
+    ["unknown assurance", "eidas1-mfa-extra"],
+    ["an array instead of an assurance string", ["eidas1-mfa"]],
+  ] as const) {
+    test(`a laureat with ${situation} cannot establish a session or fetch UserInfo`, async () => {
+      await storeSession({ state: "state", nonce: "nonce" });
+      const previousCookie = cookieValues.get(cookieName);
+      tokenClaims.acr = acr;
+
+      const response = await invokeCallback("code=test-code&state=state");
+
+      expect(response.headers.get("location")).toBe(
+        new URL("/connexion/echec?error=mfa_required", baseUrl).href,
+      );
+      expect(tokenRequest?.get("code")).toBe("test-code");
+      expect(providerRequests).not.toContain(
+        new URL(`${issuerUrl}/userinfo`).pathname,
+      );
+      expect(cookieWriteCount).toBe(0);
+      expect(cookieValues.get(cookieName)).toBe(previousCookie);
+      expect((await readSession()).user).toBeUndefined();
+    });
+  }
 
   for (const missing of ["state", "nonce", "pkceCodeVerifier"] as const) {
     test(`a sealed login transaction without ${missing} is rejected before code exchange`, async () => {

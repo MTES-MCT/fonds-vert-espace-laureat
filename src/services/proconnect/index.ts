@@ -20,6 +20,18 @@ import { requireEnv } from "@/utils/env";
 import { RequestWithSession } from "@/utils/session";
 
 let clientPromise: Promise<Configuration> | undefined;
+const MFA_ACR_VALUES = [
+  "eidas0-mfa",
+  "eidas1-mfa",
+  "eidas2",
+  "eidas3",
+] as const;
+
+export class ProConnectMfaRequiredError extends Error {
+  constructor() {
+    super("ProConnect n'a pas confirmé une double authentification.");
+  }
+}
 
 const [clientId, clientSecret, discoverUrl, baseUrl] = requireEnv(
   "PROCONNECT_CLIENT_ID",
@@ -87,12 +99,14 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   return buildAuthorizationUrl(client, {
     redirect_uri: loginCallbackUrl,
     scope: "openid given_name usual_name email siret custom idp_id",
-    acr_values: "eidas1",
     nonce,
     state,
     code_challenge: codeChallenge,
     code_challenge_method: "S256",
     claims: JSON.stringify({
+      id_token: {
+        acr: { essential: true, values: MFA_ACR_VALUES },
+      },
       userinfo: {
         email_verified: {
           essential: true,
@@ -130,6 +144,11 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
     expectedState: req.session.state,
     pkceCodeVerifier: req.session.pkceCodeVerifier,
   });
+
+  const acr = tokenSet.claims()?.acr;
+  if (!MFA_ACR_VALUES.some((value) => value === acr)) {
+    throw new ProConnectMfaRequiredError();
+  }
 
   const accessToken = tokenSet.access_token;
   if (!accessToken) {

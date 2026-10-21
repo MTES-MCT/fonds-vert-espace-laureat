@@ -87,6 +87,8 @@ SIRET et de l’adresse email. Les droits de lecture et de correction sont véri
 auprès de Démarche Numérique : porteur, instructeur autorisé ou administrateur,
 pour un dossier de personne morale.
 
+La connexion via ProConnect exige une double authentification.
+
 Les corrections locales prennent effet immédiatement et priment sur les valeurs
 importées de Fonds Vert.
 

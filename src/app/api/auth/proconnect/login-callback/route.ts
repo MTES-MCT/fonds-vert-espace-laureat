@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { proConnectAuthenticate } from "@/services/proconnect";
+import {
+  proConnectAuthenticate,
+  ProConnectMfaRequiredError,
+} from "@/services/proconnect";
 import { logException } from "@/utils/error";
 import { setSession, withSession } from "@/utils/session";
-import { errorUrl, getAuthenticatedReturnUrl } from "@/utils/url";
+import { buildUrl, errorUrl, getAuthenticatedReturnUrl } from "@/utils/url";
 
 export const GET = withSession(async function loginCallbackRoute(req) {
   try {
@@ -14,6 +17,11 @@ export const GET = withSession(async function loginCallbackRoute(req) {
 
     return NextResponse.redirect(getAuthenticatedReturnUrl(returnTo));
   } catch (e: unknown) {
+    if (e instanceof ProConnectMfaRequiredError) {
+      return NextResponse.redirect(
+        buildUrl("/connexion/echec?error=mfa_required"),
+      );
+    }
     logException(e);
     return NextResponse.redirect(errorUrl);
   }
