@@ -128,7 +128,7 @@ test("page loads in degraded mode when Grist is unavailable", async ({
   page,
   msw,
 }) => {
-  await msw.use(
+  msw.use(
     http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
       return new HttpResponse(null, { status: 503 });
     }),

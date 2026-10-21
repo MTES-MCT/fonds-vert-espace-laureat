@@ -20,7 +20,7 @@ const cursorPattern =
 export function correctionError(
   status: number,
   error: ApiError["error"],
-  headers?: HeadersInit,
+  headers?: Record<string, string>,
 ) {
   const body: ApiError = { error };
   return Response.json(body, {

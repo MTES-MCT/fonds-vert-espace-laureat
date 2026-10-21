@@ -18,6 +18,8 @@ jobs:
         run: npm install --global npm@11.16.0
       - name: Install dependencies
         run: npm ci
+      - name: Run Oxlint with type-aware rules
+        run: npm run lint
       - name: Check OpenAPI generated types
         run: npm run check:corrections
       - name: Install Playwright Browsers
