@@ -1,11 +1,16 @@
 schema:
   - src/services/ds/graphql/schema.graphql
 documents:
-  - './**/*.tsx'
-  - './**/*.ts'
+  - 'src/**/*.tsx'
+  - 'src/**/*.ts'
+  - '!src/generated/**'
+  - '!src/**/*.d.ts'
 generates:
   src/generated/:
     preset: client
     plugins: [ ]
+    config:
+      defaultScalarType: any
+      enumType: native
     presetConfig:
       fragmentMasking: false
