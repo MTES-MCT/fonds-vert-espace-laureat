@@ -16,6 +16,6 @@ export const GET = withSession(async function loginRoute(req) {
     return NextResponse.redirect(url);
   } catch (e: unknown) {
     logException(e);
-    return NextResponse.redirect(errorUrl);
+    return NextResponse.redirect(errorUrl());
   }
 });

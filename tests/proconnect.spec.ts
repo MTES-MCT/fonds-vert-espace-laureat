@@ -15,13 +15,13 @@ import { GET as login } from "@/app/api/auth/proconnect/login/route";
 import { GET as callback } from "@/app/api/auth/proconnect/login-callback/route";
 import { POST as logout } from "@/app/api/auth/proconnect/logout/route";
 import { GET as logoutCallback } from "@/app/api/auth/proconnect/logout-callback/route";
-import { type Session, sessionOptions } from "@/utils/session";
+import { getSessionOptions, type Session } from "@/utils/session";
 
 import { authenticatePage } from "./setup/auth";
 
 const require = createRequire(`${process.cwd()}/package.json`);
 const nextHeaders: typeof import("next/headers") = require("next/headers");
-const { cookieName, password } = sessionOptions;
+const { cookieName, password } = getSessionOptions();
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL!;
 const cookieValues = new Map<string, string>();
 let cookieWriteCount = 0;

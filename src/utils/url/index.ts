@@ -1,16 +1,14 @@
 import { requireEnv } from "@/utils/env";
 
-const [baseUrl] = requireEnv("NEXT_PUBLIC_BASE_URL");
-
 export const buildUrl = (path: string): URL => {
+  const [baseUrl] = requireEnv("NEXT_PUBLIC_BASE_URL");
   return new URL(path, baseUrl);
 };
 
-export const welcomeUrl = buildUrl("/");
-
-export const dashboardUrl = buildUrl("/projets");
+export const welcomeUrl = () => buildUrl("/");
 
 export function getAuthenticatedReturnUrl(returnTo?: string): URL {
+  const dashboardUrl = buildUrl("/projets");
   if (!returnTo?.startsWith("/") || returnTo.startsWith("//")) {
     return dashboardUrl;
   }
@@ -27,4 +25,4 @@ export function getAuthenticatedReturnUrl(returnTo?: string): URL {
     : dashboardUrl;
 }
 
-export const errorUrl = buildUrl("/connexion/echec");
+export const errorUrl = () => buildUrl("/connexion/echec");

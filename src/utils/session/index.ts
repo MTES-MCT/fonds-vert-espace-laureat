@@ -28,26 +28,26 @@ export type RequestWithSession = NextRequest & {
   session: IronSession<Session>;
 };
 
-const [ironSessionPwd, proconnectIdentiteIdpId] = requireEnv(
-  "IRON_SESSION_PWD",
-  "PROCONNECT_IDENTITE_IDP_ID",
-);
+export function getSessionOptions(): SessionOptions {
+  const [ironSessionPwd] = requireEnv("IRON_SESSION_PWD");
 
-export const sessionOptions: SessionOptions = {
-  password: ironSessionPwd,
-  cookieName: "fonds-vert-espace-laureat",
-  cookieOptions: {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  },
-  ttl,
-};
+  return {
+    password: ironSessionPwd,
+    cookieName: "fonds-vert-espace-laureat",
+    cookieOptions: {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    },
+    ttl,
+  };
+}
 
 export async function setSession(
   userInfo: ProConnectUserInfo,
   session: IronSession<Session>,
 ) {
+  const [proconnectIdentiteIdpId] = requireEnv("PROCONNECT_IDENTITE_IDP_ID");
   session.user = {
     id: userInfo.sub,
     email: userInfo.email,
@@ -63,7 +63,7 @@ export async function setSession(
 
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
-  return await getIronSession<Session>(cookieStore, sessionOptions);
+  return await getIronSession<Session>(cookieStore, getSessionOptions());
 }
 
 export async function getAuthenticatedUser(): Promise<User> {
@@ -90,7 +90,7 @@ export function withSession(
     const cookieStore = await cookies();
     reqWithSession.session = await getIronSession<Session>(
       cookieStore,
-      sessionOptions,
+      getSessionOptions(),
     );
     return handler(reqWithSession);
   };

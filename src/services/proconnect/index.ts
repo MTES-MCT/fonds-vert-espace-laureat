@@ -17,7 +17,7 @@ import {
 } from "openid-client";
 
 import { requireEnv } from "@/utils/env";
-import { RequestWithSession } from "@/utils/session";
+import type { RequestWithSession } from "@/utils/session";
 
 let clientPromise: Promise<Configuration> | undefined;
 const MFA_ACR_VALUES = [
@@ -33,27 +33,34 @@ export class ProConnectMfaRequiredError extends Error {
   }
 }
 
-const [clientId, clientSecret, discoverUrl, baseUrl] = requireEnv(
-  "PROCONNECT_CLIENT_ID",
-  "PROCONNECT_CLIENT_SECRET",
-  "PROCONNECT_DISCOVER_URL",
-  "NEXT_PUBLIC_BASE_URL",
-);
+function getProConnectConfig() {
+  const [clientId, clientSecret, discoverUrl, baseUrl] = requireEnv(
+    "PROCONNECT_CLIENT_ID",
+    "PROCONNECT_CLIENT_SECRET",
+    "PROCONNECT_DISCOVER_URL",
+    "NEXT_PUBLIC_BASE_URL",
+  );
 
-const loginCallbackUrl = new URL(
-  "/api/auth/proconnect/login-callback",
-  baseUrl,
-).toString();
+  return {
+    clientId,
+    clientSecret,
+    discoverUrl,
+    loginCallbackUrl: new URL(
+      "/api/auth/proconnect/login-callback",
+      baseUrl,
+    ).toString(),
+    logoutCallbackUrl: new URL(
+      "/api/auth/proconnect/logout-callback",
+      baseUrl,
+    ).toString(),
+  };
+}
 
-const logoutCallbackUrl = new URL(
-  "/api/auth/proconnect/logout-callback",
-  baseUrl,
-).toString();
-
-export const getClient = async () => {
+const getClient = async () => {
+  const config = getProConnectConfig();
   if (!clientPromise) {
     const suffix = "/.well-known/openid-configuration";
-    const discoveryUrl = new URL(discoverUrl);
+    const discoveryUrl = new URL(config.discoverUrl);
     if (
       !discoveryUrl.pathname.endsWith(suffix) ||
       discoveryUrl.search ||
@@ -64,26 +71,26 @@ export const getClient = async () => {
     const issuerUrl = new URL(discoveryUrl.href.slice(0, -suffix.length));
     clientPromise = discovery(
       issuerUrl,
-      clientId,
+      config.clientId,
       {
-        client_secret: clientSecret,
-        redirect_uris: [loginCallbackUrl],
-        post_logout_redirect_uris: [logoutCallbackUrl],
+        client_secret: config.clientSecret,
+        redirect_uris: [config.loginCallbackUrl],
+        post_logout_redirect_uris: [config.logoutCallbackUrl],
         id_token_signed_response_alg: "RS256",
         userinfo_signed_response_alg: "RS256",
       },
-      ClientSecretPost(clientSecret),
+      ClientSecretPost(config.clientSecret),
       { execute: [enableNonRepudiationChecks] },
     ).catch((error: unknown) => {
       clientPromise = undefined;
       throw error;
     });
   }
-  return clientPromise;
+  return { client: await clientPromise, config };
 };
 
 export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
-  const client = await getClient();
+  const { client, config } = await getClient();
 
   const nonce = randomNonce();
   const state = randomState();
@@ -97,7 +104,7 @@ export const proConnectAuthorizeUrl = async (req: RequestWithSession) => {
   await req.session.save();
 
   return buildAuthorizationUrl(client, {
-    redirect_uri: loginCallbackUrl,
+    redirect_uri: config.loginCallbackUrl,
     scope: "openid given_name usual_name email siret custom idp_id",
     nonce,
     state,
@@ -136,8 +143,8 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
   ) {
     throw new Error("Missing ProConnect login transaction");
   }
-  const client = await getClient();
-  const callbackUrl = new URL(loginCallbackUrl);
+  const { client, config } = await getClient();
+  const callbackUrl = new URL(config.loginCallbackUrl);
   callbackUrl.search = req.nextUrl.search;
   const tokenSet = await authorizationCodeGrant(client, callbackUrl, {
     expectedNonce: req.session.nonce,
@@ -176,11 +183,11 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
 
 export const proConnectLogoutUrl = async (req: RequestWithSession) => {
   if (!req.session.idToken) throw new Error("No ProConnect ID token");
-  const client = await getClient();
+  const { client, config } = await getClient();
   req.session.logoutState ??= randomState();
   const url = buildEndSessionUrl(client, {
     id_token_hint: req.session.idToken,
-    post_logout_redirect_uri: logoutCallbackUrl,
+    post_logout_redirect_uri: config.logoutCallbackUrl,
     state: req.session.logoutState,
   });
   await req.session.save();

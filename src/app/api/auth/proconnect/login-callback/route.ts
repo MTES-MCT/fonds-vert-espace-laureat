@@ -23,6 +23,6 @@ export const GET = withSession(async function loginCallbackRoute(req) {
       );
     }
     logException(e);
-    return NextResponse.redirect(errorUrl);
+    return NextResponse.redirect(errorUrl());
   }
 });
