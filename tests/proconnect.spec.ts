@@ -209,7 +209,7 @@ test.describe("ProConnect return after authentication", () => {
     });
   }
 
-  async function completeLogin(returnTo?: string) {
+  async function completeLogin(returnTo?: string, callbackOrigin = baseUrl) {
     const loginUrl = new URL("/api/auth/proconnect/login", baseUrl);
     if (returnTo !== undefined) loginUrl.searchParams.set("returnTo", returnTo);
 
@@ -236,7 +236,10 @@ test.describe("ProConnect return after authentication", () => {
     expect(transaction.state).toBe(providerUrl.searchParams.get("state"));
     expect(transaction.nonce).toBe(providerUrl.searchParams.get("nonce"));
 
-    const callbackUrl = new URL("/api/auth/proconnect/login-callback", baseUrl);
+    const callbackUrl = new URL(
+      "/api/auth/proconnect/login-callback",
+      callbackOrigin,
+    );
     callbackUrl.searchParams.set("code", "test-code");
     callbackUrl.searchParams.set("state", transaction.state!);
     const cookieWritesBeforeCallback = cookieWriteCount;
@@ -308,6 +311,22 @@ test.describe("ProConnect return after authentication", () => {
       providerRequests.filter((path) => path.endsWith("openid-configuration")),
     ).toHaveLength(2);
   });
+
+  for (const origin of ["https://0.0.0.0:29882", "https://localhost:4000"]) {
+    test(`a callback received at ${origin} exchanges the code with the public callback URL`, async () => {
+      const destination = await completeLogin(
+        "/projets/123?onglet=impact",
+        origin,
+      );
+
+      expect(tokenRequest?.get("redirect_uri")).toBe(
+        new URL("/api/auth/proconnect/login-callback", baseUrl).href,
+      );
+      expect(destination.href).toBe(
+        new URL("/projets/123?onglet=impact", baseUrl).href,
+      );
+    });
+  }
 
   test("a callback without a login transaction cannot create a user", async () => {
     const log = mock.method(console, "error", () => {});

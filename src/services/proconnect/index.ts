@@ -123,7 +123,9 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
     throw new Error("Missing ProConnect login transaction");
   }
   const client = await getClient();
-  const tokenSet = await authorizationCodeGrant(client, new URL(req.url), {
+  const callbackUrl = new URL(loginCallbackUrl);
+  callbackUrl.search = req.nextUrl.search;
+  const tokenSet = await authorizationCodeGrant(client, callbackUrl, {
     expectedNonce: req.session.nonce,
     expectedState: req.session.state,
     pkceCodeVerifier: req.session.pkceCodeVerifier,
