@@ -17,7 +17,7 @@
     "test:e2e": "NODE_ENV=test dotenv -e .env.test.example -e .env.test -- playwright test --project=chromium",
     "test:e2e:ui": "NODE_ENV=test dotenv -e .env.test.example -e .env.test -- playwright test --ui",
     "test:db:setup": "node tests/setup-test-db.mjs",
-    "codegen": "dotenv -e .env -- graphql-codegen --config graphql.config.yml",
+    "codegen": "dotenv -e .env -- node scripts/codegen.mjs",
     "codegen:watch": "npm run codegen -- --watch",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
@@ -60,8 +60,9 @@
     "sonner": "^2.0.7"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "7.4.6",
     "@graphql-codegen/client-preset": "6.2.3",
+    "@graphql-codegen/core": "6.2.2",
+    "@graphql-tools/graphql-tag-pluck": "8.3.41",
     "@next/eslint-plugin-next": "16.3.8",
     "@parcel/watcher": "^2.5.6",
     "@playwright/test": "1.58.2",
@@ -84,6 +85,7 @@
     "prettier": "3.5.3",
     "sass": "^1.97.3",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "yaml": "2.9.1"
   }
 }
