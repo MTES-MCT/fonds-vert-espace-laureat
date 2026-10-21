@@ -123,8 +123,8 @@ export type ProConnectUserInfo = {
   given_name: string;
   usual_name: string;
   idp_id: string;
-  custom: {
-    email_verified: boolean;
+  custom?: {
+    email_verified?: boolean;
   };
 };
 
@@ -162,6 +162,9 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
     accessToken,
     subject,
   )) as ProConnectUserInfo;
+  if (typeof userInfo.email !== "string" || !userInfo.email.trim()) {
+    throw new Error("ProConnect n'a pas renvoyé d'adresse email.");
+  }
   req.session.nonce = undefined;
   req.session.state = undefined;
   req.session.pkceCodeVerifier = undefined;

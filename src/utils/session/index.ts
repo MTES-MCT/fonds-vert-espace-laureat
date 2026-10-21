@@ -55,7 +55,7 @@ export async function setSession(
     // With ProConnect, email_verified=true means the siret has been manually verified by against the email domain.
     // This is only supported by ProConnect Identité (other FI returns email_verified=false).
     // Note: the user email itself is always verified, automatically.
-    isSiretVerifiedForEmailDomain: userInfo.custom.email_verified,
+    isSiretVerifiedForEmailDomain: userInfo.custom?.email_verified,
     isProConnectIdentityProvider: userInfo.idp_id === proconnectIdentiteIdpId,
   };
   await session.save();

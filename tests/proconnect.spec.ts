@@ -514,6 +514,61 @@ test.describe("ProConnect return after authentication", () => {
     });
   });
 
+  for (const [situation, email] of [
+    ["a missing email", undefined],
+    ["a null email", null],
+    ["a numeric email", 42],
+    ["an empty email", ""],
+    ["a whitespace-only email", "   "],
+  ] as const) {
+    test(`a laureat with ${situation} in signed UserInfo cannot establish a session`, async () => {
+      await storeSession({ state: "state", nonce: "nonce" });
+      const previousCookie = cookieValues.get(cookieName);
+      userInfoClaims.email = email;
+      const log = mock.method(console, "error", () => {});
+
+      const response = await invokeCallback("code=test-code&state=state");
+
+      expect(response.headers.get("location")).toBe(
+        new URL("/connexion/echec", baseUrl).href,
+      );
+      expect(providerRequests).toContain(
+        new URL(`${issuerUrl}/userinfo`).pathname,
+      );
+      expect(log.mock.calls[0].arguments).toEqual([
+        "ProConnect n'a pas renvoyé d'adresse email.",
+      ]);
+      expect(cookieWriteCount).toBe(0);
+      expect(cookieValues.get(cookieName)).toBe(previousCookie);
+      expect((await readSession()).user).toBeUndefined();
+    });
+  }
+
+  for (const [situation, custom] of [
+    ["custom claims", undefined],
+    ["the SIRET verification claim", {}],
+  ] as const) {
+    test(`a laureat without ${situation} can log in without a verification flag`, async () => {
+      userInfoClaims.custom = custom;
+      await storeSession({ state: "state", nonce: "nonce" });
+
+      const response = await invokeCallback("code=test-code&state=state");
+
+      expect(response.headers.get("location")).toBe(
+        new URL("/projets", baseUrl).href,
+      );
+      expect((await readSession()).user).toMatchObject({
+        id: identity.sub,
+        email: identity.email,
+        siret: identity.siret,
+      });
+      expect(
+        (await readSession()).user?.isSiretVerifiedForEmailDomain,
+      ).toBeUndefined();
+      expect((await readSession()).pkceCodeVerifier).toBeUndefined();
+    });
+  }
+
   test("a code exchanged with another PKCE verifier is rejected by the provider", async () => {
     await storeSession({
       state: "state",
