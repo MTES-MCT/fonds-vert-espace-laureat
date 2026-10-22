@@ -248,10 +248,8 @@ test.describe("ProConnect return after authentication", () => {
     );
     callbackUrl.searchParams.set("code", "test-code");
     callbackUrl.searchParams.set("state", transaction.state!);
-    const cookieWritesBeforeCallback = cookieWriteCount;
     const response = await callback(new NextRequest(callbackUrl));
     expect(response.status).toBe(307);
-    expect(cookieWriteCount - cookieWritesBeforeCallback).toBe(2);
     expect(tokenRequest?.get("code")).toBe("test-code");
     expect(tokenRequest?.get("code_verifier")).toBe(
       transaction.pkceCodeVerifier,
@@ -892,7 +890,6 @@ test.describe("ProConnect return after authentication", () => {
       new URL("/projets", baseUrl).href,
     );
     expect(tokenRequest?.get("code")).toBe("test-code");
-    expect(cookieWriteCount).toBe(2);
     const storedSession = await readSession();
     expect(storedSession.user?.id).toBe(identity.sub);
     expect(storedSession.returnTo).toBeUndefined();
@@ -926,6 +923,40 @@ test.describe("ProConnect return after authentication", () => {
     );
     expect((await readSession()).user).toBeUndefined();
     expect(cookieWriteCount).toBe(0);
+    expect(log.mock.calls).toHaveLength(1);
+  });
+
+  test("a successful callback publishes the identity and consumes the transaction in one cookie write", async () => {
+    await storeSession({ state: "state", nonce: "nonce" });
+
+    const response = await invokeCallback("code=test-code&state=state");
+
+    expect(response.headers.get("location")).toBe(
+      new URL("/projets", baseUrl).href,
+    );
+    expect(cookieWriteCount).toBe(1);
+    const session = await readSession();
+    expect(session.user?.id).toBe(identity.sub);
+    expect(session.idToken).toBeTruthy();
+    expect(session.state).toBeUndefined();
+    expect(session.nonce).toBeUndefined();
+    expect(session.pkceCodeVerifier).toBeUndefined();
+  });
+
+  test("a failed callback cookie write preserves the previous transaction without publishing an identity", async () => {
+    await storeSession({ state: "state", nonce: "nonce" });
+    const cookie = cookieValues.get(cookieName);
+    rejectCookieWrite = true;
+    const log = mock.method(console, "error", () => {});
+
+    const response = await invokeCallback("code=test-code&state=state");
+
+    expect(response.headers.get("location")).toBe(
+      new URL("/connexion/echec", baseUrl).href,
+    );
+    expect(cookieValues.get(cookieName)).toBe(cookie);
+    expect(cookieWriteCount).toBe(0);
+    expect((await readSession()).user).toBeUndefined();
     expect(log.mock.calls).toHaveLength(1);
   });
 

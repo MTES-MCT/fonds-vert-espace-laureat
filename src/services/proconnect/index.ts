@@ -176,7 +176,6 @@ export const proConnectAuthenticate = async (req: RequestWithSession) => {
   req.session.state = undefined;
   req.session.pkceCodeVerifier = undefined;
   req.session.idToken = tokenSet.id_token;
-  await req.session.save();
 
   return userInfo;
 };
