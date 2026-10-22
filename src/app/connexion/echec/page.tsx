@@ -1,11 +1,17 @@
 import Link from "next/link";
 
+import { getSession } from "@/utils/session";
+import { getAuthenticatedReturnUrl } from "@/utils/url";
+
 export default async function ConnexionEchec({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
   const mfaRequired = (await searchParams).error === "mfa_required";
+  const session = await getSession();
+  const destination = getAuthenticatedReturnUrl(session?.returnTo);
+  const returnTo = destination.pathname + destination.search + destination.hash;
 
   return (
     <div className="fr-container my-8">
@@ -20,7 +26,9 @@ export default async function ConnexionEchec({
           : "Veuillez nous contacter si le problème se reproduit."}
       </p>
       <p>
-        <Link href="/projets">← Réessayer</Link>
+        <Link href={`/connexion?returnTo=${encodeURIComponent(returnTo)}`}>
+          ← Réessayer
+        </Link>
       </p>
     </div>
   );

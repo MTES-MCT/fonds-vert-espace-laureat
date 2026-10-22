@@ -928,6 +928,66 @@ test.describe("ProConnect return after authentication", () => {
     expect(cookieWriteCount).toBe(0);
     expect(log.mock.calls).toHaveLength(1);
   });
+
+  test("a visitor refused MFA can retry and return to the originally requested dossier", async ({
+    page,
+  }) => {
+    const destination = "/projets/123?onglet=impact";
+    await page.goto(destination);
+    const loginPath = await page
+      .locator('a[href^="/api/auth/proconnect/login"]')
+      .getAttribute("href");
+    await login(new NextRequest(new URL(loginPath!, baseUrl)));
+    const transaction = await readSession();
+    expectedChallenge = pkceChallenge(transaction.pkceCodeVerifier!);
+    tokenClaims.acr = "eidas1";
+
+    const refused = await invokeCallback(
+      `code=test-code&state=${transaction.state}`,
+    );
+    expect(cookieWriteCount).toBe(1);
+    expect((await readSession()).user).toBeUndefined();
+    expect(providerRequests).not.toContain(
+      new URL(`${issuerUrl}/userinfo`).pathname,
+    );
+
+    await page.context().addCookies([
+      {
+        name: cookieName,
+        value: cookieValues.get(cookieName)!,
+        url: baseUrl,
+      },
+    ]);
+    await page.goto(refused.headers.get("location")!);
+    await expect(
+      page.getByRole("heading", { name: "Double authentification requise" }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Réessayer" }).click();
+
+    const retryPath = await page
+      .locator('a[href^="/api/auth/proconnect/login"]')
+      .getAttribute("href");
+    const retryDestination = new URL(retryPath!, baseUrl).searchParams.get(
+      "returnTo",
+    );
+    expect(retryDestination).toBe(destination);
+
+    tokenClaims.acr = "eidas1-mfa";
+    expect((await completeLogin(retryDestination!)).href).toBe(
+      new URL(destination, baseUrl).href,
+    );
+  });
+});
+
+test("a visitor without a login transaction can retry a failed connection from the project dashboard", async ({
+  page,
+}) => {
+  await page.goto("/connexion/echec");
+  await page.getByRole("link", { name: "Réessayer" }).click();
+
+  await expect(
+    page.locator('a[href^="/api/auth/proconnect/login"]'),
+  ).toHaveAttribute("href", "/api/auth/proconnect/login?returnTo=%2Fprojets");
 });
 
 for (const [situation, destination] of [
