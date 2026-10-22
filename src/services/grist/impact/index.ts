@@ -133,8 +133,12 @@ export async function fetchPrefillMapping(): Promise<MappingState> {
 let _prefillMappingCached: MappingState = { status: "not-requested" };
 
 export async function getPrefillMappingCached() {
-  if (_prefillMappingCached.status === "not-requested") {
-    _prefillMappingCached = await fetchPrefillMapping();
+  if (_prefillMappingCached.status !== "success") {
+    const result = await fetchPrefillMapping();
+    if (result.status === "success") {
+      _prefillMappingCached = result;
+    }
+    return result;
   }
   return _prefillMappingCached;
 }
