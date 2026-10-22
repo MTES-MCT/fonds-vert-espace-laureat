@@ -26,7 +26,9 @@ npm run db:up
 npm run db:setup
 ```
 
-Note : `db:setup` applique les migrations Drizzle.
+Renseignez les variables des services externes dans `.env`. La commande
+`npm run db:setup` applique les migrations Drizzle. Avec une base PostgreSQL
+existante, définissez `DATABASE_URL` et lancez `npm run db:migrate`.
 
 Dans la configuration de votre service ProConnect, déclarer les URL de retour.
 Par exemple, avec `NEXT_PUBLIC_BASE_URL=https://example.org` dans `.env` :
@@ -46,27 +48,17 @@ Ouvrez [http://localhost:3000](http://localhost:3000) avec votre navigateur pour
 
 ### Tests
 
-En activant le mode `testProxy` de Next, les appels API côté serveur peuvent être interceptés par MSW. Lancez le serveur de développement en activant ce proxy :
-
-```bash
-npm run dev:test
-```
-
-Cette commande est optionnelle. Elle permet notamment d'exécuter plus rapidement les tests par la suite.
-
-Lancez les tests avec Playwright :
-
 ```bash
 npm run test
 ```
 
-`npm run test` prépare la base de test, lance les migrations, puis exécute Playwright. Playwright réutilise un serveur éventuellement déjà disponible sur le port 4000, sinon il lance `npm run dev:test` avant. Le serveur de test utilise `.next-test` pour ne pas perturber un `npm run dev` déjà lancé sur le port 3000.
+La commande prépare la base de test, applique les migrations et lance
+Playwright avec les services externes simulés. Les valeurs de
+`.env.test.example` peuvent être surchargées dans `.env.test`.
 
-Lancez un test spécifique :
-
-```bash
-npm run test -- tests/dossier.spec.ts
-```
+Pour garder le serveur de test démarré entre deux passages, lancez
+`npm run dev:test`. Pour cibler un fichier, utilisez
+`npm run test -- tests/dossier.spec.ts`.
 
 ### Déploiement Scalingo
 
