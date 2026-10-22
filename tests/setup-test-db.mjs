@@ -1,4 +1,5 @@
 import {
+  getTestDatabaseName,
   prepareDatabaseServer,
   recreateDatabase,
   run,
@@ -8,6 +9,7 @@ import {
 const databaseUrl =
   process.env.TEST_DATABASE_URL ?? process.env.DATABASE_URL ?? testDatabaseUrl;
 
+getTestDatabaseName(databaseUrl);
 await prepareDatabaseServer();
 await recreateDatabase(databaseUrl);
 

@@ -4,6 +4,16 @@ import postgres from "postgres";
 export const devDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5432/vert_impact";
 export const testDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5432/vert_impact_test";
 
+export function getTestDatabaseName(url) {
+  const name = getDatabaseName(url);
+  if (!name.endsWith("_test")) {
+    throw new Error(
+      "La base à recréer pour les tests doit porter un nom terminé par _test.",
+    );
+  }
+  return name;
+}
+
 export function run(command, args, options = {}) {
   return execFileSync(command, args, {
     stdio: "inherit",
@@ -43,7 +53,7 @@ export async function prepareDatabaseServer(databaseUrl = devDatabaseUrl) {
 }
 
 export async function recreateDatabase(url) {
-  const databaseName = getDatabaseName(url);
+  const databaseName = getTestDatabaseName(url);
   const adminUrl = getAdminDatabaseUrl(url);
 
   await prepareDatabaseServer(url);

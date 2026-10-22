@@ -1,15 +1,18 @@
 import { defineConfig, devices } from "next/experimental/testmode/playwright";
 
+import {
+  getTestDatabaseName,
+  testDatabaseUrl as defaultTestDatabaseUrl,
+} from "./scripts/lib/dev-db.mjs";
 import { loadTestEnv } from "./tests/setup/load-test-env";
 
 loadTestEnv();
 
-const defaultTestDatabaseUrl =
-  "postgres://vert_impact:vert_impact@localhost:5432/vert_impact_test";
 const testDatabaseUrl =
   process.env.TEST_DATABASE_URL ??
   process.env.DATABASE_URL ??
   defaultTestDatabaseUrl;
+getTestDatabaseName(testDatabaseUrl);
 process.env.DATABASE_URL = testDatabaseUrl;
 delete process.env.NO_COLOR;
 
