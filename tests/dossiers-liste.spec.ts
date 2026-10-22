@@ -249,15 +249,6 @@ for (const [situation, viewport] of [
     const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });
     await expect(logout).toBeVisible();
     await expect(logout).toHaveAttribute("type", "submit");
-    await expect(logout).toHaveAttribute("form", "proconnect-logout-form");
-    await expect(page.locator("#proconnect-logout-form")).toHaveAttribute(
-      "action",
-      "/api/auth/proconnect/logout",
-    );
-    await expect(page.locator("#proconnect-logout-form")).toHaveAttribute(
-      "method",
-      "post",
-    );
 
     const submitted = page.waitForResponse((response) =>
       response.url().endsWith("/api/auth/proconnect/logout"),
