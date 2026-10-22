@@ -22,6 +22,8 @@ jobs:
         run: npm run codegen
       - name: Run Oxlint with type-aware rules
         run: npm run lint
+      - name: Run script tests
+        run: npm run test:scripts
       - name: Check OpenAPI generated types
         run: npm run check:corrections
       - name: Install Playwright Browsers
