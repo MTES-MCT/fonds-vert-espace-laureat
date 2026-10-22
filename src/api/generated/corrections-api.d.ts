@@ -11,7 +11,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Sans curseur, crée un export conservé 24 h. Une création au plus par minute, globalement. Avec curseur, lit une page existante. Aucun filtre métier. HTTPS obligatoire à l’entrée publique, IP partenaire autorisée et attestée par le proxy requis. */
+        /** @description Exporte les corrections en plusieurs pages. Faites le premier appel sans curseur, puis utilisez next_cursor pour lire les pages suivantes. L’export reste disponible pendant 24 h et son contenu ne change pas pendant la lecture. Un nouvel export peut être créé une fois par minute. L’accès nécessite une clé machine et une adresse IP autorisée, via HTTPS. */
         get: operations["getCorrections"];
         put?: never;
         post?: never;
@@ -34,11 +34,19 @@ export interface components {
         };
         CorrectionPage: {
             corrections: components["schemas"]["Correction"][];
+            /** @description Curseur de la page suivante. null indique la fin de l’export. */
             next_cursor: string | null;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Date de début de préparation de l’export.
+             */
             generated_at: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description Date limite pour lire cet export.
+             */
             expires_at: string;
+            /** @description Nombre total de corrections dans l’export, toutes pages comprises. */
             total_count: number;
         };
         ApiError: {
@@ -57,9 +65,9 @@ export interface operations {
     getCorrections: {
         parameters: {
             query?: {
-                /** @description Premier appel seulement ; incompatible avec cursor. */
+                /** @description Nombre de corrections par page. À préciser uniquement au premier appel, sans cursor. */
                 page_size?: number;
-                /** @description Curseur opaque reçu dans next_cursor, à réutiliser sans modification. Sa position est un entier de 0 à 2147483647, sans zéro initial sauf pour 0 ; une position hors borne est rejetée en 400. */
+                /** @description Valeur reçue dans next_cursor, à réutiliser sans modification. */
                 cursor?: string;
             };
             header?: never;
@@ -68,7 +76,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Page immuable. total_count compte toutes les corrections de cet export ; generated_at marque le début de préparation, pas l’instant exact du snapshot SQL. */
+            /** @description Une page de corrections. */
             200: {
                 headers: {
                     "Cache-Control"?: "no-store";
@@ -108,7 +116,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Export ou page absent ; recommencer un export */
+            /** @description Export ou page introuvable. Recommencez sans curseur. */
             404: {
                 headers: {
                     "Cache-Control"?: "no-store";
@@ -128,7 +136,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Export expiré ; recommencer un export */
+            /** @description Export expiré. Recommencez sans curseur. */
             410: {
                 headers: {
                     "Cache-Control"?: "no-store";
@@ -149,7 +157,7 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Configuration incomplète ou service indisponible */
+            /** @description Service indisponible */
             503: {
                 headers: {
                     "Cache-Control"?: "no-store";
