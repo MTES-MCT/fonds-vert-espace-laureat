@@ -42,15 +42,18 @@ export async function fetchPrefillMapping(): Promise<MappingState> {
       accept: "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-  });
+  }).catch(() => null);
 
-  if (!response.ok) {
+  if (!response?.ok) {
+    const error = response
+      ? `Service Grist indisponible (${response.status})`
+      : "Service Grist inaccessible";
     console.error(
-      `Impossible de récupérer le mapping de pré-remplissage du formulaire d'impact (${response.status}) - mode dégradé activé`,
+      `${error} - mapping de pré-remplissage indisponible, mode dégradé activé`,
     );
     return {
       status: "error",
-      error: `Service Grist indisponible (${response.status})`,
+      error,
     };
   }
 

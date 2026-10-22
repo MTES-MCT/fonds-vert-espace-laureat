@@ -124,23 +124,29 @@ test("impact prefill link handles multi-value fields correctly", async ({
   ]);
 });
 
-test("page loads in degraded mode when Grist is unavailable", async ({
-  page,
-  msw,
-}) => {
-  msw.use(
-    http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
-      return new HttpResponse(null, { status: 503 });
-    }),
-  );
+for (const [failure, response] of [
+  ["returns HTTP 503", () => new HttpResponse(null, { status: 503 })],
+  ["has a network failure", () => HttpResponse.error()],
+] as const) {
+  test(`dossier remains readable without prefill when Grist ${failure}`, async ({
+    page,
+    msw,
+  }) => {
+    msw.use(
+      http.get("http://grist/docs/id/tables/Champs_DS/records", response),
+    );
 
-  await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}?nocache=1`);
+    await page.goto(`/projets/${IMPACT_PREFILL_DOSSIER_NUMBER}?nocache=1`);
 
-  const evaluationLink = page.getByTestId("impact-evaluation-link");
-  await expect(evaluationLink).toBeVisible();
+    const evaluationLink = page.getByTestId("impact-evaluation-link");
+    await expect(evaluationLink).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Financement du projet" }),
+    ).toBeVisible();
 
-  const href = await evaluationLink.getAttribute("href");
-  const url = new URL(href!);
+    const href = await evaluationLink.getAttribute("href");
+    const url = new URL(href!);
 
-  expect(url.searchParams.toString()).toBe("");
-});
+    expect(url.searchParams.toString()).toBe("");
+  });
+}
