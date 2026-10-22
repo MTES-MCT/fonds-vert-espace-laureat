@@ -61,7 +61,7 @@ export async function setSession(
   await session.save();
 }
 
-export async function getSession(): Promise<Session | null> {
+export async function getSession(): Promise<IronSession<Session>> {
   const cookieStore = await cookies();
   return await getIronSession<Session>(cookieStore, getSessionOptions());
 }
@@ -86,11 +86,7 @@ export function withSession(
 ) {
   return async (req: NextRequest) => {
     const reqWithSession = req as RequestWithSession;
-    const cookieStore = await cookies();
-    reqWithSession.session = await getIronSession<Session>(
-      cookieStore,
-      getSessionOptions(),
-    );
+    reqWithSession.session = await getSession();
     return handler(reqWithSession);
   };
 }
