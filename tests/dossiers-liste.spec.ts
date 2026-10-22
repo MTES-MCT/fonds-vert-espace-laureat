@@ -6,6 +6,8 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
+import { getSessionOptions } from "@/utils/session";
+
 import {
   DEMANDEUR_EMAIL,
   DOSSIER_NUMBER,
@@ -263,6 +265,10 @@ for (const [situation, viewport] of [
     expect(response.request().method()).toBe("POST");
     expect(response.status()).toBe(303);
     await expect(page).toHaveURL("/");
+    const cookies = await page.context().cookies();
+    expect(
+      cookies.find((cookie) => cookie.name === getSessionOptions().cookieName),
+    ).toBeUndefined();
     await page.goto("/projets");
     await expect(page).toHaveURL(/\/connexion\?/);
   });

@@ -12,7 +12,7 @@ export const GET = withSession(async function logoutCallbackRoute(req) {
     ) {
       return NextResponse.redirect(welcomeUrl());
     }
-    await cleanSession(req.session);
+    cleanSession(req.session);
     return NextResponse.redirect(welcomeUrl());
   } catch (e: unknown) {
     logException(e);

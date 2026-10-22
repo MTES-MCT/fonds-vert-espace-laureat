@@ -11,7 +11,7 @@ export const POST = withSession(async function logoutRoute(req) {
   }
   try {
     if (!req.session.idToken) {
-      await cleanSession(req.session);
+      cleanSession(req.session);
       return NextResponse.redirect(welcomeUrl(), 303);
     }
     const url = await proConnectLogoutUrl(req);

@@ -90,10 +90,11 @@ test.describe("ProConnect return after authentication", () => {
     mock.method(nextHeaders, "cookies", async () => ({
       get: (name: string) =>
         cookieValues.has(name) ? { value: cookieValues.get(name) } : undefined,
-      set: (name: string, value: string) => {
+      set: (name: string, value: string, options?: { maxAge?: number }) => {
         if (rejectCookieWrite) throw new Error("Session cookie write failed");
         cookieWriteCount += 1;
-        cookieValues.set(name, value);
+        if (options?.maxAge === 0) cookieValues.delete(name);
+        else cookieValues.set(name, value);
       },
     }));
     mock.method(
@@ -204,7 +205,7 @@ test.describe("ProConnect return after authentication", () => {
   });
 
   async function readSession() {
-    return unsealData<StoredSession>(cookieValues.get(cookieName)!, {
+    return unsealData<StoredSession>(cookieValues.get(cookieName) ?? "", {
       password,
     });
   }
@@ -673,6 +674,7 @@ test.describe("ProConnect return after authentication", () => {
     expect(loggedOut.user).toBeUndefined();
     expect(loggedOut.idToken).toBeUndefined();
     expect(loggedOut.logoutState).toBeUndefined();
+    expect(cookieValues.has(cookieName)).toBe(false);
   });
 
   test("a repeated logout POST preserves the first provider return", async () => {
@@ -739,6 +741,7 @@ test.describe("ProConnect return after authentication", () => {
     expect(response.headers.get("location")).toBe(new URL("/", baseUrl).href);
     expect((await readSession()).user).toBeUndefined();
     expect(providerRequests).toHaveLength(0);
+    expect(cookieValues.has(cookieName)).toBe(false);
   });
 
   test("a fresh login invalidates a pending logout callback", async () => {

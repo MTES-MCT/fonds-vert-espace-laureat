@@ -77,9 +77,8 @@ export async function getAuthenticatedUser(): Promise<User> {
   return user;
 }
 
-export async function cleanSession(session: IronSession<Session>) {
+export function cleanSession(session: IronSession<Session>) {
   session.destroy();
-  await session.save();
 }
 
 export function withSession(
