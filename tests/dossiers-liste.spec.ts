@@ -15,6 +15,8 @@ import {
 } from "./fixtures/constants";
 import { getDossierData, makeDossierDataForInstructeur } from "./fixtures/ds";
 import {
+  fondsVertDossiersListByInstructeurData,
+  fondsVertDossiersListBySiretData,
   fondsVertLoginData,
   INSTRUCTEUR_DOSSIER_NUMBER,
 } from "./fixtures/fondsvert";
@@ -29,11 +31,11 @@ type DossiersResponse =
 const emptyList: DossiersResponse = { success: true, data: [] };
 const siretList: DossiersResponse = {
   success: true,
-  data: [{ socle_commun: { dossier_number: DOSSIER_NUMBER } }],
+  ...fondsVertDossiersListBySiretData,
 };
 const instructeurList: DossiersResponse = {
   success: true,
-  data: [{ socle_commun: { dossier_number: INSTRUCTEUR_DOSSIER_NUMBER } }],
+  ...fondsVertDossiersListByInstructeurData,
 };
 const errorResponse: DossiersResponse = { success: false };
 

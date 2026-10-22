@@ -6,7 +6,7 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
-import { getDossierData } from "./fixtures/ds";
+import { makeDossierDataWithNumber } from "./fixtures/ds";
 import {
   fondsVertDossierData,
   fondsVertFinancesEJ1Data,
@@ -19,16 +19,9 @@ import { deleteStoredDossierMetrics } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const IMPACT_PREFILL_DOSSIER_NUMBER = 89000015;
-const impactPrefillDossierData = {
-  ...getDossierData,
-  data: {
-    ...getDossierData.data,
-    dossier: {
-      ...getDossierData.data.dossier,
-      number: IMPACT_PREFILL_DOSSIER_NUMBER,
-    },
-  },
-};
+const impactPrefillDossierData = makeDossierDataWithNumber(
+  IMPACT_PREFILL_DOSSIER_NUMBER,
+);
 
 test.beforeEach(async ({ page }) => {
   await deleteStoredDossierMetrics(IMPACT_PREFILL_DOSSIER_NUMBER);
