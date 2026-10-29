@@ -214,6 +214,82 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   );
   await dialog.getByRole("button", { name: "Annuler" }).click();
 
+  await page
+    .getByRole("button", { name: "Modifier l’avancement", exact: true })
+    .click();
+  const progressDialog = page.getByRole("dialog", {
+    name: "Modifier l’avancement",
+    exact: true,
+  });
+  await progressDialog
+    .getByRole("combobox", { name: "Avancement du projet" })
+    .selectOption("En cours de réalisation");
+  await progressDialog
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(progressDialog).toBeHidden();
+  await page.reload();
+  await expect(
+    page
+      .getByRole("region", { name: "Avancement du projet" })
+      .locator(".fr-badge")
+      .filter({ hasText: /^En cours de réalisation$/ }),
+  ).toBeVisible();
+  const progressSql = createTestDatabaseClient();
+  try {
+    expect(
+      await progressSql`select status, author_email from dossier_progress_revisions where dossier_number=${DEMO_DOSSIER_NUMBER}`,
+    ).toEqual([{ status: "En cours de réalisation", author_email: null }]);
+  } finally {
+    await progressSql.end();
+  }
+
+  await page
+    .getByRole("button", { name: "Modifier l’avancement", exact: true })
+    .click();
+  await progressDialog.getByRole("combobox").selectOption("Bloqué");
+  const resetPage = await page.context().newPage();
+  await resetPage.goto("/projets/demo");
+  await Promise.all([
+    resetPage.waitForEvent("load"),
+    resetPage.getByRole("button", { name: "Réinitialiser la démo" }).click(),
+  ]);
+  await resetPage.close();
+
+  await progressDialog
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(progressDialog.getByRole("alert")).toContainText(
+    "L’avancement actuel a été chargé",
+  );
+  await expect(progressDialog.getByRole("combobox")).toHaveValue("");
+  await progressDialog.getByRole("button", { name: "Annuler" }).click();
+  const progressSection = page.getByRole("region", {
+    name: "Avancement du projet",
+  });
+  await expect(
+    progressSection.getByText("Non renseigné", { exact: true }),
+  ).toBeVisible();
+  await expect(progressSection.locator(".fr-badge")).toHaveCount(0);
+
+  await page
+    .getByRole("button", { name: "Modifier l’avancement", exact: true })
+    .click();
+  await progressDialog.getByRole("combobox").selectOption("Non-commencé");
+  await progressDialog
+    .getByRole("button", { name: "Enregistrer", exact: true })
+    .click();
+  await expect(progressDialog).toBeHidden();
+  await expect(progressSection.locator(".fr-badge")).toHaveText("Non-commencé");
+  const resetProgressSql = createTestDatabaseClient();
+  try {
+    expect(
+      await resetProgressSql`select revision,status,author_email from dossier_progress_revisions where dossier_number=${DEMO_DOSSIER_NUMBER}`,
+    ).toEqual([{ revision: 1, status: "Non-commencé", author_email: null }]);
+  } finally {
+    await resetProgressSql.end();
+  }
+
   await Promise.all([
     page.waitForEvent("load"),
     page
@@ -229,6 +305,11 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(energyBeforeAnomaly).toContainText(
     "Consommation surfacique hors plage",
   );
+  await expect(
+    page
+      .getByRole("region", { name: "Avancement du projet" })
+      .getByText("Non renseigné", { exact: true }),
+  ).toBeVisible();
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();

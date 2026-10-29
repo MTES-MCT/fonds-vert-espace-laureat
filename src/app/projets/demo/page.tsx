@@ -7,8 +7,8 @@ import {
 import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
+import { getDossierProgress } from "@/db/dossierProgress";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
-import { resolveImpactStatus } from "@/services/impact/status";
 import {
   demoDossier1,
   demoDossierFondsVert,
@@ -18,6 +18,9 @@ import {
 
 export default async function EspaceLaureatDemo() {
   const dossiers = [demoDossier1];
+  const progressTarget = await getDossierProgress({
+    numeroDossier: demoDossier1.numero,
+  });
   const metricLoading = startDossierMetricLoading({
     numeroDossier: demoDossier1.numero,
     loadDossierFondsVert: async (includeMetrics) => ({
@@ -49,12 +52,6 @@ export default async function EspaceLaureatDemo() {
       <ToastViewport />
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => {
-          const impactStatus = resolveImpactStatus({
-            dossierSubventionNumero: dossier.numero,
-            dossiersImpact: [],
-            dossierFondsVert: demoDossierFondsVert,
-          });
-
           return (
             <MetricRevisionProvider
               key={index}
@@ -68,13 +65,12 @@ export default async function EspaceLaureatDemo() {
                   dossierSubvention={dossier}
                   dossierFondsVertResult={dossierFondsVertResult}
                   financesEJPromise={financesEJPromise}
-                  impactStatus={impactStatus}
-                  nocache={false}
+                  progressTarget={progressTarget}
+                  progressApiPath="/api/projets/demo/progress"
                   anomaliesSection={
                     <DemoAnomaliesSection metriques={storedMetrics} />
                   }
                   pageAction={<DemoResetButton />}
-                  impactPrefillUrl={process.env.DS_IMPACT_URL}
                 />
               </DemoMetricAnomalyProvider>
             </MetricRevisionProvider>

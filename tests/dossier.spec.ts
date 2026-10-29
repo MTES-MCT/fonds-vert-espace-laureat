@@ -30,7 +30,6 @@ import {
   SIRET,
 } from "./fixtures/constants";
 import {
-  DEFAULT_STATUT_UPDATED_AT,
   getDossierData,
   makeDemarcheDossiersData,
   makeDossierDataWithNumber,
@@ -61,20 +60,6 @@ async function waitForDsfrModal(page: Page) {
 }
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
-const impactDateFormatter = new Intl.DateTimeFormat("fr-FR", {
-  dateStyle: "long",
-  timeStyle: "short",
-  timeZone: "Europe/Paris",
-});
-
-function formatImpactDate(isoDate: string) {
-  const date = new Date(isoDate);
-  if (Number.isNaN(date.getTime())) {
-    return isoDate;
-  }
-  return impactDateFormatter.format(date);
-}
-
 test.beforeEach(async ({ page }) => {
   await deleteStoredDossierMetrics(DOSSIER_NUMBER);
   await authenticatePage(page);
@@ -485,7 +470,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
 
   await expect(
     page.getByRole("link", { name: "Mettre à jour les données" }),
-  ).toHaveCount(2);
+  ).toHaveCount(0);
 });
 
 test("validates and submits a numeric metric correction once", async ({
@@ -1503,23 +1488,23 @@ test("dossier page displays calendar timeline with correct dates and status", as
   await expect(timelineItems.nth(3)).toContainText("à venir");
 });
 
-test("impact evaluation sidebar displays last modification date", async ({
+test("dossier page removes the external impact form and invitation", async ({
   page,
 }) => {
   await page.goto(`/projets/${DOSSIER_NUMBER}`);
-
-  const evaluationSection = page.getByRole("region", {
-    name: "Les données de votre projet participent à la transition écologique",
-  });
-
   await expect(
-    evaluationSection.getByText(
-      `Dernière modification : ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`,
-    ),
+    page
+      .getByRole("region", { name: "Avancement du projet" })
+      .getByText("Non renseigné"),
   ).toBeVisible();
   await expect(
-    evaluationSection.getByRole("link", { name: "Mettre à jour les données" }),
-  ).toBeVisible();
+    page.getByRole("link", { name: "Mettre à jour les données" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", {
+      name: "Les données de votre projet participent à la transition écologique",
+    }),
+  ).toHaveCount(0);
 });
 
 test("calendar timeline marks step as done when later step is done, even with missing date", async ({
@@ -1706,116 +1691,6 @@ test("engagement juridique hides badge for unknown etat engagement", async ({
   ).not.toBeAttached();
 });
 
-test("dossier page displays statut de réalisation from impact demarche", async ({
-  page,
-}) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
-
-  const statusSection = page.getByRole("region", {
-    name: "Avancement du projet",
-  });
-
-  await expect(page.getByText("Avancement du projet")).toBeVisible();
-  await expect(
-    page.locator(".fr-badge--info", { hasText: "En cours de réalisation" }),
-  ).toBeVisible();
-  await expect(
-    statusSection.getByText(
-      `Dernière modification : ${formatImpactDate(DEFAULT_STATUT_UPDATED_AT)}`,
-    ),
-  ).toBeVisible();
-});
-
-test("dossier page falls back to Fonds Vert when DS returns no recent impact", async ({
-  page,
-  msw,
-}) => {
-  const fondsVertUpdatedAt = "2024-02-14T08:30:00.000Z";
-  const fondsVertStatut = "Bloqué";
-  let receivedCreatedSince: string | undefined;
-
-  msw.use(
-    ds.query("getDemarcheDossiers", ({ variables }) => {
-      receivedCreatedSince = variables.createdSince ?? undefined;
-      return HttpResponse.json(
-        makeDemarcheDossiersData({ includeImpactDossier: false }),
-      );
-    }),
-    http.get(
-      `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
-      () => {
-        return HttpResponse.json({
-          data: {
-            ...fondsVertDossierData.data,
-            socle_commun: {
-              ...fondsVertDossierData.data.socle_commun,
-              date_derniere_modification: fondsVertUpdatedAt,
-              statut_realisation_projet: fondsVertStatut,
-            },
-          },
-        });
-      },
-    ),
-  );
-
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
-
-  expect(receivedCreatedSince).toBeTruthy();
-
-  const statusSection = page.getByRole("region", {
-    name: "Avancement du projet",
-  });
-
-  await expect(
-    statusSection.locator(".fr-badge--warning", { hasText: fondsVertStatut }),
-  ).toBeVisible();
-  await expect(
-    statusSection.getByText(
-      `Dernière modification : ${formatImpactDate(fondsVertUpdatedAt)}`,
-    ),
-  ).toBeVisible();
-
-  const evaluationSection = page.getByRole("region", {
-    name: "Les données de votre projet participent à la transition écologique",
-  });
-
-  await expect(
-    evaluationSection.getByText(
-      `Dernière modification : ${formatImpactDate(fondsVertUpdatedAt)}`,
-    ),
-  ).toBeVisible();
-});
-
-const STATUT_REALISATION_CASES = [
-  { statut: "Non-commencé", badgeClass: ".fr-badge--new" },
-  { statut: "En cours de réalisation", badgeClass: ".fr-badge--info" },
-  { statut: "Bloqué", badgeClass: ".fr-badge--warning" },
-  { statut: "Abandonné", badgeClass: ".fr-badge--error" },
-  { statut: "Terminé", badgeClass: ".fr-badge--success" },
-] as const;
-
-for (const { statut, badgeClass } of STATUT_REALISATION_CASES) {
-  test(`dossier page displays statut de réalisation "${statut}" with correct badge severity`, async ({
-    page,
-    msw,
-  }) => {
-    msw.use(
-      ds.query("getDemarcheDossiers", () => {
-        return HttpResponse.json(
-          makeDemarcheDossiersData({
-            statutRealisation: statut,
-            updatedAt: DEFAULT_STATUT_UPDATED_AT,
-          }),
-        );
-      }),
-    );
-
-    await page.goto(`/projets/${DOSSIER_NUMBER}`);
-
-    await expect(page.locator(badgeClass, { hasText: statut })).toBeVisible();
-  });
-}
-
 test("dossier page displays metrics", async ({ page, msw }) => {
   const metricsDossierNumber = 89000003;
 
@@ -1948,24 +1823,4 @@ test("dossier page displays boolean metric as Oui/Non", async ({
   } finally {
     await deleteStoredDossierMetrics(booleanMetricDossierNumber);
   }
-});
-
-test("dossier page displays INCONNU status when no impact dossier", async ({
-  page,
-  msw,
-}) => {
-  msw.use(
-    ds.query("getDemarcheDossiers", () => {
-      return HttpResponse.json(
-        makeDemarcheDossiersData({ includeImpactDossier: false }),
-      );
-    }),
-  );
-
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
-
-  await expect(page.getByText("Avancement du projet")).toBeVisible();
-  await expect(
-    page.locator(".fr-badge--warning", { hasText: "INCONNU" }),
-  ).toBeVisible();
 });

@@ -12,16 +12,14 @@ import {
   SummaryHeader,
 } from "@/app/projets/_components/dossier-section/Summary";
 import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
-import { CompletionSidebar } from "@/app/projets/_components/impact/CompletionSidebar";
 import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
+import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
   InformationFinanciere,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
-import { buildImpactPrefillUrl } from "@/services/grist/impact";
-import { ImpactStatus } from "@/services/impact/status";
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,
@@ -47,11 +45,10 @@ export async function DossierSection({
   dossierSubvention,
   dossierFondsVertResult,
   financesEJPromise,
-  impactStatus,
-  nocache,
+  progressTarget,
+  progressApiPath,
   anomaliesSection,
   pageAction,
-  impactPrefillUrl,
 }: {
   isAdmin: boolean;
   dossierSubvention: Dossier;
@@ -59,11 +56,10 @@ export async function DossierSection({
     | { success: false; error: string }
     | { success: true; data: DossierFondsVert };
   financesEJPromise: Promise<FinancesEJResult>;
-  impactStatus: ImpactStatus;
-  nocache: boolean;
+  progressTarget: DossierProgressTarget;
+  progressApiPath?: string;
   anomaliesSection?: ReactNode;
   pageAction?: ReactNode;
-  impactPrefillUrl?: string;
 }) {
   const subvention = dossierSubvention.champs;
 
@@ -96,15 +92,6 @@ export async function DossierSection({
           href: "/projets",
         },
       };
-
-  const prefilledDsImpactUrl =
-    impactPrefillUrl ??
-    (await buildImpactPrefillUrl({
-      numeroDossier: dossierSubvention.numero,
-      metriques,
-      socleCommun,
-      nocache,
-    }));
 
   return (
     <div>
@@ -171,9 +158,9 @@ export async function DossierSection({
             <RefreshIndicator />
             <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
               <StatutRealisation
-                statut={impactStatus.statut}
-                updatedAt={impactStatus.updatedAt}
-                impactPrefillUrl={prefilledDsImpactUrl}
+                dossierNumber={dossierSubvention.numero}
+                initialTarget={progressTarget}
+                correctionApiPath={progressApiPath}
               />
             </div>
             {socleCommun && (
@@ -206,19 +193,6 @@ export async function DossierSection({
               emailResponsableSuivi={subvention.emailResponsableSuivi}
               socleCommun={socleCommun}
             />
-            <section aria-labelledby="evaluation-heading">
-              <h3
-                id="evaluation-heading"
-                className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
-              >
-                Les données de votre projet participent à la transition
-                écologique
-              </h3>
-              <CompletionSidebar
-                prefilledDsImpactUrl={prefilledDsImpactUrl}
-                updatedAt={impactStatus.updatedAt}
-              />
-            </section>
           </div>
         </div>
       </div>

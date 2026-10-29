@@ -153,10 +153,12 @@ test.describe("configured machine HTTP API", () => {
     await sql?.end();
   });
   test.beforeEach(async () => {
-    await sql`truncate dossier_metric_revisions, fonds_vert_export_pages, fonds_vert_export_admission`;
+    await sql`truncate dossier_metric_revisions, dossier_progress_revisions, fonds_vert_export_pages, fonds_vert_export_admission`;
   });
 
   async function seed(count: number) {
+    await sql`insert into dossier_progress_revisions (dossier_number, revision, status, author_email)
+      values (89996000, 1, 'Terminé', 'progress-author@example.com') on conflict do nothing`;
     await sql`insert into dossier_metric_revisions
       (dossier_number, metric_code, revision, label, value_type, text_array_value, created_at, author_email)
       select 89996000, 'field_' || lpad(i::text, 6, '0'), 2, 'Synthetic', 'text_array',
