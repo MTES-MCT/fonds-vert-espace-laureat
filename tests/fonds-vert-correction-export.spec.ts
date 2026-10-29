@@ -50,9 +50,9 @@ test.beforeEach(async () => {
 async function seed(count: number) {
   await sql`
     insert into dossier_metric_revisions
-      (dossier_number, metric_code, revision, label, value_type, text_array_value, created_at)
+      (dossier_number, metric_code, revision, label, value_type, text_array_value, created_at, author_email)
     select 89995000, 'field_' || lpad(i::text, 6, '0'), 2, 'Fixture', 'text_array',
-      array['École', 'Mairie'], '2026-09-21T12:00:00Z'::timestamptz
+      array['École', 'Mairie'], '2026-09-21T12:00:00Z'::timestamptz, 'export-author@example.com'
     from generate_series(1, ${count}) as i
   `;
 }
@@ -80,6 +80,10 @@ test("stores all pages in order and replays typed immutable corrections", async 
     value: ["École", "Mairie"],
     correctedAt: "2026-09-21T12:00:00.000Z",
   });
+  for (const correction of pages.flatMap((page) => page.corrections)) {
+    expect(correction).not.toHaveProperty("authorEmail");
+  }
+  expect(JSON.stringify(pages)).not.toContain("export-author@example.com");
   await sql`insert into dossier_metric_revisions
     (dossier_number, metric_code, revision, label, value_type, text_value)
     values (89995000, 'field_000001', 3, 'Fixture', 'text', 'Updated')`;

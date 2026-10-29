@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDossierAccess } from "@/app/projets/_components/getDossier";
 import {
   appendDossierMetricRevision,
+  DossierMetricRevisionConflict,
   DossierMetricRevisionError,
 } from "@/db/dossierMetrics";
 import { getAuthenticatedUser } from "@/utils/session";
@@ -49,11 +50,26 @@ export async function POST(
   }
 
   let value: unknown;
+  let expectedRevision: unknown;
   try {
-    ({ value } = (await request.json()) as { value?: unknown });
+    ({ value, expectedRevision } = (await request.json()) as {
+      value?: unknown;
+      expectedRevision?: unknown;
+    });
   } catch {
     return NextResponse.json(
       { error: "Corps de requête invalide" },
+      { status: 400 },
+    );
+  }
+
+  if (
+    typeof expectedRevision !== "number" ||
+    !Number.isInteger(expectedRevision) ||
+    expectedRevision < 1
+  ) {
+    return NextResponse.json(
+      { error: "Révision lue invalide ou manquante" },
       { status: 400 },
     );
   }
@@ -63,10 +79,18 @@ export async function POST(
       numeroDossier,
       metricCode,
       value,
+      authorEmail: user.email,
+      expectedRevision,
     });
     revalidatePath(`/projets/${numeroDossier}`);
     return NextResponse.json({ target });
   } catch (error) {
+    if (error instanceof DossierMetricRevisionConflict) {
+      return NextResponse.json(
+        { error: error.message, target: error.target },
+        { status: 409 },
+      );
+    }
     if (error instanceof DossierMetricRevisionError) {
       return NextResponse.json(
         { error: error.message },

@@ -158,9 +158,9 @@ test.describe("configured machine HTTP API", () => {
 
   async function seed(count: number) {
     await sql`insert into dossier_metric_revisions
-      (dossier_number, metric_code, revision, label, value_type, text_array_value, created_at)
+      (dossier_number, metric_code, revision, label, value_type, text_array_value, created_at, author_email)
       select 89996000, 'field_' || lpad(i::text, 6, '0'), 2, 'Synthetic', 'text_array',
-        array['École', 'Mairie'], '2026-09-21T12:00:00Z'::timestamptz
+        array['École', 'Mairie'], '2026-09-21T12:00:00Z'::timestamptz, 'http-export-author@example.com'
       from generate_series(1, ${count}) as i`;
   }
 

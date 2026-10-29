@@ -6,8 +6,10 @@ import {
 } from "next/experimental/testmode/playwright/msw";
 
 import { resetDemoDossierMetrics } from "@/db/demoMetrics";
+import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
 
 import { gristChampsDS } from "./fixtures/grist";
+import { createTestDatabaseClient } from "./setup/db";
 
 test.use({
   mswHandlers: [
@@ -166,6 +168,20 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
   await expect(energyBeforeAnomaly).toHaveCount(0);
+
+  const sql = createTestDatabaseClient();
+  try {
+    const revisions =
+      await sql`select revision, author_email from dossier_metric_revisions
+      where dossier_number = ${DEMO_DOSSIER_NUMBER}
+        and metric_code = 'conso_energetique_avant_travaux' order by revision`;
+    expect(revisions).toEqual([
+      { revision: 1, author_email: null },
+      { revision: 2, author_email: null },
+    ]);
+  } finally {
+    await sql.end();
+  }
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("2 anomalies")).toBeVisible();

@@ -8,6 +8,11 @@ import {
 } from "next/experimental/testmode/playwright/msw";
 
 import {
+  appendDossierMetricRevision,
+  getDossierMetricRevisionTargets,
+} from "@/db/dossierMetrics";
+
+import {
   AGENCE_EAU_NUMBER,
   CENTRE_COUTS,
   CENTRE_COUTS_2C,
@@ -661,8 +666,129 @@ test("persists a correction submitted from the standard dossier page", async ({
     await expect(metricCard.getByLabel("Valeur effective")).toHaveText(
       /12,5\s*ha/,
     );
+
+    await waitForDsfrModal(page);
+    await metricCard.getByRole("button", { name: "Modifier" }).click();
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(dialog).toBeHidden();
+    await expect(
+      page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
+    ).toHaveCount(0);
+    await expect(
+      getDossierMetricRevisionTargets({
+        numeroDossier: correctionDossierNumber,
+      }),
+    ).resolves.toMatchObject({
+      persistent_metric: { revision: 2, effectiveValue: 12.5 },
+    });
   } finally {
     await deleteStoredDossierMetrics(correctionDossierNumber);
+  }
+});
+
+test("refreshes a conflicting correction without replaying the discarded entry", async ({
+  page,
+  msw,
+}) => {
+  const dossierNumber = 89000032;
+  await deleteStoredDossierMetrics(dossierNumber);
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json(makeDossierDataWithNumber(dossierNumber)),
+    ),
+    http.get(`http://fondsvert/fonds_vert/v2/dossiers/${dossierNumber}`, () =>
+      HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber,
+    metrics: {
+      conflict_metric: {
+        label: "Métrique partagée",
+        unite: "ha",
+        valeur_estimee: 10,
+      },
+    },
+  });
+
+  try {
+    await page.goto(`/projets/${dossierNumber}`);
+    await waitForDsfrModal(page);
+    const card = page.getByRole("region", { name: "Métrique partagée" });
+    await card.getByRole("button", { name: "Modifier" }).click();
+    const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    const input = dialog.getByLabel("Métrique partagée");
+    await input.fill("14");
+
+    await appendDossierMetricRevision({
+      numeroDossier: dossierNumber,
+      metricCode: "conflict_metric",
+      value: 12,
+      expectedRevision: 1,
+      authorEmail: "autre-instructeur@example.com",
+    });
+
+    const submittedRevisions: number[] = [];
+    page.on("request", (request) => {
+      if (request.url().endsWith("/metrics/conflict_metric")) {
+        submittedRevisions.push(request.postDataJSON().expectedRevision);
+      }
+    });
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+
+    await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByText(/La valeur actuelle a été chargée/),
+    ).toBeVisible();
+    await expect(input).toHaveValue("12");
+    await expect(input).toBeFocused();
+    await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
+    await expect(
+      page.getByRole("status").filter({ hasText: "Correction enregistrée" }),
+    ).toHaveCount(0);
+    expect(submittedRevisions).toEqual([1]);
+    await expect(
+      getDossierMetricRevisionTargets({ numeroDossier: dossierNumber }),
+    ).resolves.toMatchObject({
+      conflict_metric: { revision: 2, effectiveValue: 12 },
+    });
+
+    await input.press("Tab");
+    const saveButton = dialog.getByRole("button", {
+      name: "Enregistrer",
+      exact: true,
+    });
+    await expect(saveButton).toBeFocused();
+    await saveButton.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(card.getByRole("button", { name: "Modifier" })).toBeFocused();
+    await card.getByRole("button", { name: "Modifier" }).press("Enter");
+    await expect(input).toHaveValue("12");
+    await dialog.getByRole("button", { name: "Fermer" }).click();
+    await expect(dialog).toBeHidden();
+    await expect(card.getByRole("button", { name: "Modifier" })).toBeFocused();
+    await card.getByRole("button", { name: "Modifier" }).press("Enter");
+
+    await input.fill("15");
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(dialog).toBeHidden();
+    expect(submittedRevisions).toEqual([1, 2]);
+    await expect(card.getByRole("button", { name: "Modifier" })).toBeFocused();
+    await page.reload();
+    await expect(card.getByLabel("Valeur effective")).toHaveText(/15\s*ha/);
+    await expect(
+      getDossierMetricRevisionTargets({ numeroDossier: dossierNumber }),
+    ).resolves.toMatchObject({
+      conflict_metric: { revision: 3, effectiveValue: 15 },
+    });
+  } finally {
+    await deleteStoredDossierMetrics(dossierNumber);
   }
 });
 

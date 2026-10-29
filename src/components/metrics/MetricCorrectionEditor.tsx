@@ -4,6 +4,7 @@ import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
+import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
 import { type FormEvent, useId, useMemo, useRef, useState } from "react";
 
@@ -14,7 +15,10 @@ import {
   normalizeMetricValue,
 } from "@/utils/metrics/values";
 
-import { useMetricRevisions } from "./MetricRevisionContext";
+import {
+  MetricRevisionConflictError,
+  useMetricRevisions,
+} from "./MetricRevisionContext";
 
 function inputValue(value: MetricValue): string {
   if (Array.isArray(value)) {
@@ -87,6 +91,7 @@ export function MetricCorrectionEditor({
     [instanceId, target.metricCode],
   );
   const { correctMetric } = useMetricRevisions();
+  const [openedRevision, setOpenedRevision] = useState(target.revision);
   const [rawValue, setRawValue] = useState(inputValue(target.effectiveValue));
   const [textArrayValues, setTextArrayValues] = useState(() =>
     textArrayInputValue(target.effectiveValue),
@@ -98,6 +103,9 @@ export function MetricCorrectionEditor({
   const openerRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const textArrayInputRefs = useRef<Array<HTMLInputElement | null>>([]);
+  useIsModalOpen(modal, {
+    onConceal: () => openerRef.current?.focus(),
+  });
   const setInputRef = (
     element: HTMLInputElement | HTMLTextAreaElement | null,
   ) => {
@@ -118,6 +126,7 @@ export function MetricCorrectionEditor({
   };
 
   const openEditor = () => {
+    setOpenedRevision(target.revision);
     setRawValue(inputValue(target.effectiveValue));
     setTextArrayValues(textArrayInputValue(target.effectiveValue));
     setError(undefined);
@@ -127,7 +136,6 @@ export function MetricCorrectionEditor({
 
   const closeEditor = () => {
     modal.close();
-    requestAnimationFrame(() => openerRef.current?.focus());
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -169,9 +177,17 @@ export function MetricCorrectionEditor({
     setError(undefined);
 
     try {
-      await correctMetric(target.metricCode, value);
+      await correctMetric(target.metricCode, value, openedRevision);
       closeEditor();
     } catch (caughtError) {
+      if (caughtError instanceof MetricRevisionConflictError) {
+        setRawValue(inputValue(caughtError.target.effectiveValue));
+        setTextArrayValues(
+          textArrayInputValue(caughtError.target.effectiveValue),
+        );
+        setOpenedRevision(caughtError.target.revision);
+        setInvalidTextArrayIndex(undefined);
+      }
       setError(
         caughtError instanceof Error
           ? caughtError.message
@@ -195,7 +211,9 @@ export function MetricCorrectionEditor({
             hintText={unitHint}
             orientation="horizontal"
             state={fieldState}
-            stateRelatedMessage={error}
+            stateRelatedMessage={
+              error ? <span role="alert">{error}</span> : undefined
+            }
             options={[
               {
                 label: "Oui",
@@ -314,7 +332,9 @@ export function MetricCorrectionEditor({
             label={target.label}
             hintText={unitHint}
             state={fieldState}
-            stateRelatedMessage={error}
+            stateRelatedMessage={
+              error ? <span role="alert">{error}</span> : undefined
+            }
             nativeInputProps={{
               value: rawValue,
               disabled: isSubmitting,

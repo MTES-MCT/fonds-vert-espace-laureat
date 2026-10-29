@@ -19,12 +19,23 @@ type MetricRevisionContextValue = {
   correctMetric: (
     metricCode: string,
     value: MetricValue,
+    expectedRevision: number,
   ) => Promise<DossierMetricRevisionTarget>;
 };
 
 const MetricRevisionContext = createContext<MetricRevisionContextValue | null>(
   null,
 );
+
+export class MetricRevisionConflictError extends Error {
+  constructor(
+    public readonly target: DossierMetricRevisionTarget,
+    message: string,
+  ) {
+    super(message);
+    this.name = "MetricRevisionConflictError";
+  }
+}
 
 export function MetricRevisionProvider({
   dossierNumber,
@@ -54,7 +65,11 @@ export function MetricRevisionProvider({
   }, [correctedTargets, initialTargets]);
 
   const correctMetric = useCallback(
-    async (metricCode: string, value: MetricValue) => {
+    async (
+      metricCode: string,
+      value: MetricValue,
+      expectedRevision: number,
+    ) => {
       const currentTarget = targets[metricCode];
 
       if (!currentTarget) {
@@ -68,7 +83,7 @@ export function MetricRevisionProvider({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ value }),
+          body: JSON.stringify({ value, expectedRevision }),
         },
       );
       const body = (await response.json().catch(() => ({}))) as {
@@ -76,7 +91,7 @@ export function MetricRevisionProvider({
         error?: string;
       };
 
-      if (!response.ok || !body.target) {
+      if ((!response.ok && response.status !== 409) || !body.target) {
         throw new Error(
           body.error ?? "La correction n’a pas pu être enregistrée.",
         );
@@ -92,7 +107,18 @@ export function MetricRevisionProvider({
           [metricCode]: keepNewestMetricRevision(currentTarget, updatedTarget),
         };
       });
-      successToast(`Correction enregistrée pour « ${updatedTarget.label} ».`);
+
+      if (response.status === 409) {
+        throw new MetricRevisionConflictError(
+          updatedTarget,
+          body.error ??
+            "Cette valeur a été modifiée. La valeur actuelle a été chargée.",
+        );
+      }
+
+      if (updatedTarget.revision !== expectedRevision) {
+        successToast(`Correction enregistrée pour « ${updatedTarget.label} ».`);
+      }
 
       return updatedTarget;
     },

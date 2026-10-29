@@ -88,6 +88,9 @@ test("returns every corrected field outside the demo dossier", async ({}, testIn
         )
     `;
 
+    await sql`update dossier_metric_revisions set author_email = 'projection-author@example.com'
+      where dossier_number = ${dossierNumber} and revision > 1`;
+
     const corrections = await getLatestFondsVertCorrections();
 
     expect(

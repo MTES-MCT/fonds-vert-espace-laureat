@@ -3,11 +3,13 @@ import { expect, test } from "@playwright/test";
 import { closeDb } from "@/db";
 import {
   appendDossierMetricRevision,
+  DossierMetricRevisionConflict,
   getDossierMetricRevisionTargets,
   getDossierMetricsSnapshot,
   getDossierMetricsState,
   importDossierMetricsIfMissing,
 } from "@/db/dossierMetrics";
+import { getLatestFondsVertCorrections } from "@/db/fondsVertCorrectionProjection";
 
 import {
   createTestDatabaseClient,
@@ -15,6 +17,66 @@ import {
 } from "./setup/db";
 
 const BASE_DOSSIER_NUMBER = 89990000;
+
+test("measures sequential correction writes and the Fonds Vert projection", async ({}, testInfo) => {
+  const dossierNumber = 89997032 + testInfo.parallelIndex;
+  const durations = { writes: [] as number[], projections: [] as number[] };
+
+  try {
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        measured: { label: "Métrique mesurée", unite: "ha", valeur_estimee: 0 },
+      },
+    });
+
+    for (let value = 1; value <= 30; value += 1) {
+      const writeStartedAt = performance.now();
+      const target = await appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        numeroDossier: dossierNumber,
+        metricCode: "measured",
+        value,
+        expectedRevision: value,
+      });
+      durations.writes.push(performance.now() - writeStartedAt);
+      expect(target.revision).toBe(value + 1);
+
+      const projectionStartedAt = performance.now();
+      const corrections = await getLatestFondsVertCorrections();
+      durations.projections.push(performance.now() - projectionStartedAt);
+      expect(
+        corrections.find(
+          (correction) => correction.dossierNumber === dossierNumber,
+        ),
+      ).toMatchObject({ metricCode: "measured", value, revision: value + 1 });
+    }
+
+    const summary = Object.fromEntries(
+      Object.entries(durations).map(([operation, samples]) => {
+        const ordered = [...samples].sort((left, right) => left - right);
+        return [
+          operation,
+          {
+            samples: ordered.length,
+            medianMs: ordered[14],
+            p95Ms: ordered[28],
+          },
+        ];
+      }),
+    );
+    console.log(
+      "Metric performance (local PostgreSQL):",
+      JSON.stringify(summary),
+    );
+    await testInfo.attach("metric-performance.json", {
+      body: JSON.stringify(summary),
+      contentType: "application/json",
+    });
+  } finally {
+    await deleteStoredDossierMetrics(dossierNumber);
+  }
+});
 
 test("requires PostgreSQL to read the metric import state", async () => {
   const databaseUrl = process.env.DATABASE_URL;
@@ -435,6 +497,8 @@ test("appends one typed revision while preserving the source and other metrics",
 
     await expect(
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode: "changing",
         value: 13.75,
@@ -507,8 +571,15 @@ test("appends one typed revision while preserving the source and other metrics",
       },
     });
 
-    const revisions = await sql<{ revision: number; number_value: string }[]>`
-      select revision, number_value::text as number_value
+    const revisions = await sql<
+      {
+        revision: number;
+        number_value: string;
+        author_email: string | null;
+        created_at: Date;
+      }[]
+    >`
+      select revision, number_value::text as number_value, author_email, created_at
       from dossier_metric_revisions
       where dossier_number = ${dossierNumber}
         and metric_code = 'changing'
@@ -516,8 +587,18 @@ test("appends one typed revision while preserving the source and other metrics",
     `;
 
     expect(revisions).toEqual([
-      { revision: 1, number_value: "12.5" },
-      { revision: 2, number_value: "13.75" },
+      {
+        revision: 1,
+        number_value: "12.5",
+        author_email: null,
+        created_at: expect.any(Date),
+      },
+      {
+        revision: 2,
+        number_value: "13.75",
+        author_email: "metric-author@example.com",
+        created_at: expect.any(Date),
+      },
     ]);
   } finally {
     await sql.end();
@@ -652,6 +733,8 @@ test("appends valid revisions for every stored metric type", async ({}, testInfo
   for (const [metricCode, value] of Object.entries(corrections)) {
     await expect(
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode,
         value,
@@ -692,6 +775,8 @@ test("normalizes accepted text revisions before storing them", async ({}, testIn
 
   await expect(
     appendDossierMetricRevision({
+      authorEmail: "metric-author@example.com",
+      expectedRevision: 1,
       numeroDossier: dossierNumber,
       metricCode: "text",
       value: "  texte corrigé  ",
@@ -699,6 +784,8 @@ test("normalizes accepted text revisions before storing them", async ({}, testIn
   ).resolves.toMatchObject({ effectiveValue: "texte corrigé" });
   await expect(
     appendDossierMetricRevision({
+      authorEmail: "metric-author@example.com",
+      expectedRevision: 1,
       numeroDossier: dossierNumber,
       metricCode: "text_array",
       value: [" première ", " deuxième "],
@@ -736,6 +823,8 @@ test("rejects unknown targets and invalid values for every stored type", async (
 
   await expect(
     appendDossierMetricRevision({
+      authorEmail: "metric-author@example.com",
+      expectedRevision: 1,
       numeroDossier: dossierNumber,
       metricCode: "unknown",
       value: 1,
@@ -756,6 +845,8 @@ test("rejects unknown targets and invalid values for every stored type", async (
   ] satisfies [string, unknown][]) {
     await expect(
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode,
         value,
@@ -764,7 +855,7 @@ test("rejects unknown targets and invalid values for every stored type", async (
   }
 });
 
-test("deduplicates a double submission under concurrency", async ({}, testInfo) => {
+test("refuses a repeated obsolete submission even when its value matches", async ({}, testInfo) => {
   const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
   const sql = createTestDatabaseClient();
 
@@ -780,20 +871,32 @@ test("deduplicates a double submission under concurrency", async ({}, testInfo) 
       },
     });
 
-    const results = await Promise.all([
+    const results = await Promise.allSettled([
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode: "metric",
         value: 2,
       }),
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode: "metric",
         value: 2,
       }),
     ]);
 
-    expect(results.map(({ revision }) => revision)).toEqual([2, 2]);
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected?.reason).toBeInstanceOf(DossierMetricRevisionConflict);
+    expect(rejected?.reason.target).toMatchObject({
+      revision: 2,
+      effectiveValue: 2,
+    });
     const [{ count }] = await sql<{ count: number }[]>`
       select count(*)::integer as count
       from dossier_metric_revisions
@@ -806,7 +909,7 @@ test("deduplicates a double submission under concurrency", async ({}, testInfo) 
   }
 });
 
-test("serializes different concurrent corrections without partial revisions", async ({}, testInfo) => {
+test("accepts only one concurrent correction from the same opened revision", async ({}, testInfo) => {
   const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
   const sql = createTestDatabaseClient();
 
@@ -822,13 +925,17 @@ test("serializes different concurrent corrections without partial revisions", as
       },
     });
 
-    await Promise.all([
+    const results = await Promise.allSettled([
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode: "metric",
         value: 2,
       }),
       appendDossierMetricRevision({
+        authorEmail: "metric-author@example.com",
+        expectedRevision: 1,
         numeroDossier: dossierNumber,
         metricCode: "metric",
         value: 3,
@@ -843,11 +950,44 @@ test("serializes different concurrent corrections without partial revisions", as
       order by revision
     `;
 
-    expect(revisions.map(({ revision }) => revision)).toEqual([1, 2, 3]);
-    expect(revisions.map(({ number_value }) => number_value).sort()).toEqual([
-      "1",
-      "2",
-      "3",
+    expect(
+      results.filter((result) => result.status === "fulfilled"),
+    ).toHaveLength(1);
+    const rejected = results.find((result) => result.status === "rejected");
+    expect(rejected?.reason).toBeInstanceOf(DossierMetricRevisionConflict);
+    expect(revisions.map(({ revision }) => revision)).toEqual([1, 2]);
+    expect(["2", "3"]).toContain(revisions[1].number_value);
+  } finally {
+    await sql.end();
+  }
+});
+
+test("does not create a revision or attribution when storing a correction fails", async ({}, testInfo) => {
+  const dossierNumber = BASE_DOSSIER_NUMBER + testInfo.parallelIndex;
+  const sql = createTestDatabaseClient();
+
+  try {
+    await importDossierMetricsIfMissing({
+      numeroDossier: dossierNumber,
+      metrics: {
+        text: { label: "Texte", unite: null, valeur_estimee: "source" },
+      },
+    });
+
+    await expect(
+      appendDossierMetricRevision({
+        numeroDossier: dossierNumber,
+        metricCode: "text",
+        value: "Valeur interdite \u0000",
+        expectedRevision: 1,
+        authorEmail: "metric-author@example.com",
+      }),
+    ).rejects.toThrow();
+
+    const revisions = await sql`select revision, text_value, author_email
+      from dossier_metric_revisions where dossier_number = ${dossierNumber}`;
+    expect(revisions).toEqual([
+      { revision: 1, text_value: "source", author_email: null },
     ]);
   } finally {
     await sql.end();

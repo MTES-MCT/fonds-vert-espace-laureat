@@ -77,6 +77,15 @@ export class DossierMetricRevisionError extends Error {
   }
 }
 
+export class DossierMetricRevisionConflict extends Error {
+  constructor(public readonly target: DossierMetricRevisionTarget) {
+    super(
+      "Cette valeur a été modifiée depuis l’ouverture de l’éditeur. La valeur actuelle a été chargée. Vérifiez-la avant de la modifier à nouveau.",
+    );
+    this.name = "DossierMetricRevisionConflict";
+  }
+}
+
 function valueColumns(
   value: MetricValue,
 ): Pick<
@@ -372,10 +381,14 @@ export async function appendDossierMetricRevision({
   numeroDossier,
   metricCode,
   value,
+  authorEmail,
+  expectedRevision,
 }: {
   numeroDossier: number;
   metricCode: string;
   value: unknown;
+  authorEmail: string | null;
+  expectedRevision: number;
 }): Promise<DossierMetricRevisionTarget> {
   return getDb().transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
@@ -423,6 +436,10 @@ export async function appendDossierMetricRevision({
       );
     }
 
+    if (target.revision !== expectedRevision) {
+      throw new DossierMetricRevisionConflict(target);
+    }
+
     const validation = normalizeMetricValue(target.valueType, value);
     if (!validation.success) {
       throw new DossierMetricRevisionError(
@@ -442,6 +459,7 @@ export async function appendDossierMetricRevision({
       dossierNumber: numeroDossier,
       metricCode,
       revision,
+      authorEmail,
       label: target.label,
       unit: target.unit,
       ...valueColumns(normalizedValue),
