@@ -68,8 +68,13 @@ export default async function Projets({
     dossierNumbersResult.completeness === "partial" ||
     authorized.unavailableCount > 0;
 
-  const noResultMsg =
-    "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.";
+  const accessAdvice =
+    view === "porteur"
+      ? "Assurez-vous de vous connecter avec l'adresse e-mail utilisée lors du dépôt de votre demande de subvention."
+      : view === "instructeur"
+        ? "Assurez-vous de vous connecter avec l'adresse e-mail associée à votre groupe instructeur dans Démarche numérique."
+        : "Assurez-vous de vous connecter avec une adresse e-mail disposant d'un accès au projet dans Démarche numérique.";
+  const noResultMsg = `${accessAdvice} Si vous avez besoin d'aide, n'hésitez pas à nous contacter.`;
 
   return (
     <div className="fr-container my-8">

@@ -463,6 +463,12 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
       { count: string }[]
     >`select count(*) from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
     expect(Number(stored.count)).toBe(0);
+    await expect(page.locator("main")).toContainText(
+      "l'adresse e-mail associée à votre groupe instructeur dans Démarche numérique",
+    );
+    await expect(page.locator("main")).not.toContainText(
+      "dépôt de votre demande",
+    );
     await page.screenshot({
       path: testInfo.outputPath("liste-instructeur-desktop.png"),
       fullPage: true,

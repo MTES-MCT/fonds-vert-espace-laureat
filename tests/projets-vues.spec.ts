@@ -155,6 +155,14 @@ for (const [email, listTitle, projectContext] of [
             "Actions",
           ],
     );
+    await expect(page.locator("main")).toContainText(
+      email === PORTEUR
+        ? "l'adresse e-mail utilisée lors du dépôt de votre demande de subvention"
+        : "l'adresse e-mail associée à votre groupe instructeur dans Démarche numérique",
+    );
+    await expect(page.locator("main")).not.toContainText(
+      email === PORTEUR ? "votre groupe instructeur" : "dépôt de votre demande",
+    );
 
     await page
       .getByRole("row")
@@ -473,6 +481,15 @@ test("la liste vide garde un vocabulaire neutre sans inventer de profil", async 
   await expect(
     page.getByRole("combobox", { name: "Vue super admin" }),
   ).toHaveCount(0);
+  await expect(page.locator("main")).toContainText(
+    "une adresse e-mail disposant d'un accès au projet dans Démarche numérique",
+  );
+  await expect(page.locator("main")).not.toContainText(
+    "dépôt de votre demande",
+  );
+  await expect(page.locator("main")).not.toContainText(
+    "votre groupe instructeur",
+  );
 });
 
 test("une fiche DN indisponible ne détermine pas la vue de la liste", async ({
@@ -497,6 +514,12 @@ test("une fiche DN indisponible ne détermine pas la vue de la liste", async ({
   await expect(
     page.getByText("Aucun projet accessible", { exact: false }),
   ).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText(
+    "dépôt de votre demande",
+  );
+  await expect(page.locator("main")).not.toContainText(
+    "votre groupe instructeur",
+  );
 });
 
 test("la préférence de vue exige une session admin et une valeur reconnue", async ({
