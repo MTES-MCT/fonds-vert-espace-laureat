@@ -1,122 +1,328 @@
 import { URLSearchParams } from "url";
 
+import {
+  type FondsVertSignals,
+  isRecord,
+  readFondsVertSignals,
+} from "@/services/fondsvert/anomalies";
+import type { SocleCommun } from "@/services/fondsvert/dossier";
 import { fetchFondsVert } from "@/services/fondsvert/helpers";
 
 const defaultDossierSearchParams = {
   include_metrics: "false",
+  include_finances: "false",
+  include_anomalies: "true",
   type_export: "JSON",
-  page: "1",
   per_page: "100",
 };
 
+export interface DossierFondsVertSummary {
+  numeroDossier: number;
+  socleCommun: { [Key in keyof SocleCommun]?: SocleCommun[Key] | null } | null;
+  signals: FondsVertSignals;
+}
+
 type DossierNumbersResult =
-  | { success: true; data: number[] }
+  | {
+      success: true;
+      data: number[];
+      summaries: Record<number, DossierFondsVertSummary>;
+      completeness: "complete" | "partial";
+      warnings: string[];
+    }
   | { success: false; error: string };
 
-export async function getDossierNumbers({
+const unavailableMessage =
+  "La liste de vos dossiers est temporairement indisponible. Cependant, vous pouvez accéder directement à l’un de vos dossiers via un email de Démarches Simplifiées.";
+const partialMessage =
+  "La liste des projets est incomplète : certaines données n’ont pas pu être chargées. Réessayez pour actualiser la liste.";
+
+function readSummary(value: unknown): DossierFondsVertSummary | null {
+  if (!isRecord(value) || !isRecord(value.socle_commun)) return null;
+  const socle = value.socle_commun;
+  const number = socle.dossier_number;
+  if (
+    typeof number !== "number" ||
+    !Number.isSafeInteger(number) ||
+    number <= 0
+  )
+    return null;
+  const socleCommun: NonNullable<DossierFondsVertSummary["socleCommun"]> = {};
+  for (const key of [
+    "demarche_title",
+    "date_depot",
+    "date_notification",
+    "date_derniere_modification",
+    "statut_realisation_projet",
+    "date_debut_execution",
+    "date_fin_execution",
+    "entreprise_raison_sociale",
+    "siret",
+    "nom_commune",
+  ] as const) {
+    if (key in socle)
+      socleCommun[key] = typeof socle[key] === "string" ? socle[key] : null;
+  }
+  for (const key of [
+    "total_des_depenses",
+    "montant_subvention_attribuee",
+    "annee_millesime",
+  ] as const) {
+    if (key in socle)
+      socleCommun[key] =
+        typeof socle[key] === "number" && Number.isFinite(socle[key])
+          ? socle[key]
+          : null;
+  }
+  return {
+    numeroDossier: number,
+    socleCommun,
+    signals: readFondsVertSignals(value),
+  };
+}
+
+function nextPage(value: string): number | null {
+  try {
+    const page = new URL(value, "https://pagination.invalid").searchParams.get(
+      "page",
+    );
+    if (!page || !/^[1-9]\d*$/.test(page)) return null;
+    const number = Number(page);
+    return Number.isSafeInteger(number) ? number : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getDossiers(
+  filters: Record<string, string>,
+): Promise<DossierNumbersResult> {
+  const summaries: Record<number, DossierFondsVertSummary> = {};
+  const pages = new Set<number>();
+  let page = 1;
+  let expectedCount: number | undefined;
+  let receivedCount = 0;
+  let complete = true;
+  let receivedPage = false;
+
+  while (true) {
+    if (pages.has(page)) {
+      complete = false;
+      break;
+    }
+    pages.add(page);
+    const params = new URLSearchParams({
+      ...defaultDossierSearchParams,
+      ...filters,
+      page: String(page),
+    });
+    const response = await fetchFondsVert<unknown>(
+      `v2/dossiers?${params.toString()}`,
+    );
+    if (!response.success || !isRecord(response.data)) {
+      complete = false;
+      break;
+    }
+    const envelope = response.data;
+    const values = Array.isArray(envelope.data)
+      ? envelope.data
+      : isRecord(envelope.data)
+        ? envelope.count === 0 && Object.keys(envelope.data).length === 0
+          ? []
+          : [envelope.data]
+        : null;
+    if (!values) {
+      complete = false;
+      break;
+    }
+    receivedPage = true;
+    receivedCount += values.length;
+    for (const value of values) {
+      const summary = readSummary(value);
+      if (summary)
+        summaries[summary.numeroDossier] = mergeSummary(
+          summaries[summary.numeroDossier],
+          summary,
+        );
+      else complete = false;
+    }
+    const count = envelope.count;
+    if (
+      typeof count !== "number" ||
+      !Number.isSafeInteger(count) ||
+      count < 0 ||
+      (expectedCount !== undefined && expectedCount !== count)
+    ) {
+      complete = false;
+      break;
+    }
+    expectedCount = count;
+    if (
+      (envelope.previous_page !== null &&
+        typeof envelope.previous_page !== "string") ||
+      (envelope.next_page !== null && typeof envelope.next_page !== "string")
+    ) {
+      complete = false;
+      break;
+    }
+    if (envelope.next_page === null) {
+      if (receivedCount !== count || Object.keys(summaries).length !== count)
+        complete = false;
+      break;
+    }
+    if (values.length === 0 || receivedCount >= count) {
+      complete = false;
+      break;
+    }
+    const next = nextPage(envelope.next_page as string);
+    if (next === null) {
+      complete = false;
+      break;
+    }
+    page = next;
+  }
+
+  if (!receivedPage) return { success: false, error: unavailableMessage };
+  return {
+    success: true,
+    data: Object.values(summaries).map((summary) => summary.numeroDossier),
+    summaries,
+    completeness: complete ? "complete" : "partial",
+    warnings: complete ? [] : [partialMessage],
+  };
+}
+
+export function getDossierNumbers({
   siret,
 }: {
   siret: string;
 }): Promise<DossierNumbersResult> {
-  const params = new URLSearchParams({
-    ...defaultDossierSearchParams,
-    siret,
-  });
-
-  const dossiersResult = await fetchFondsVert<{
-    data: { socle_commun: { dossier_number: number } }[];
-  }>(`dossiers?${params.toString()}`);
-
-  if (!dossiersResult.success && dossiersResult.status === 404) {
-    return {
-      success: true,
-      data: [],
-    };
-  }
-
-  if (!dossiersResult.success) {
-    console.error(
-      `Impossible récupérer les dossiers à partir de l'API Fonds Vert (${dossiersResult.statusText}).`,
-    );
-    return {
-      success: false,
-      error: `La liste de vos dossiers est temporairement indisponible. Cependant, vous pouvez accéder directement à l’un de vos dossiers via un email de Démarches Simplifiées.`,
-    };
-  }
-
-  return {
-    success: true,
-    data: dossiersResult.data.data.map(
-      (dossier) => dossier.socle_commun.dossier_number,
-    ),
-  };
+  return getDossiers({ siret });
 }
 
-export async function getDossierNumbersForInstructeur({
+export function getDossierNumbersForInstructeur({
   email,
 }: {
   email: string;
 }): Promise<DossierNumbersResult> {
-  const params = new URLSearchParams({
-    ...defaultDossierSearchParams,
-    instructeur__instructeur_email: email,
-  });
+  return getDossiers({ instructeur__instructeur_email: email });
+}
 
-  const dossiersResult = await fetchFondsVert<{
-    data: { socle_commun: { dossier_number: number } }[];
-  }>(`dossiers?${params.toString()}`);
-
-  if (!dossiersResult.success && dossiersResult.status === 404) {
-    return {
-      success: true,
-      data: [],
+function mergeSignals(
+  first: FondsVertSignals,
+  second: FondsVertSignals,
+): FondsVertSignals {
+  const a = first.anomalies;
+  const b = second.anomalies;
+  let anomalies: FondsVertSignals["anomalies"];
+  if (!("data" in a)) anomalies = "data" in b || a.status === "absent" ? b : a;
+  else if (!("data" in b)) anomalies = a;
+  else {
+    const boolean = (left: boolean | null, right: boolean | null) =>
+      left === null ? right : right === null ? left : left || right;
+    const labels = (left: string[] | null, right: string[] | null) =>
+      left === null
+        ? right
+        : right === null
+          ? left
+          : [...new Set([...left, ...right])];
+    const diagnostics = [...new Set([...a.diagnostics, ...b.diagnostics])];
+    if (JSON.stringify(a.data) !== JSON.stringify(b.data))
+      diagnostics.push("sources:conflicting-anomalies");
+    anomalies = {
+      status:
+        a.status === "invalid" || b.status === "invalid"
+          ? "invalid"
+          : diagnostics.length > 0
+            ? "incomplete"
+            : "loaded",
+      data: {
+        est_anomalie: boolean(a.data.est_anomalie, b.data.est_anomalie),
+        est_error: boolean(a.data.est_error, b.data.est_error),
+        anomalie_demarche_list: labels(
+          a.data.anomalie_demarche_list,
+          b.data.anomalie_demarche_list,
+        ),
+        anomalie_indicateur_list: labels(
+          a.data.anomalie_indicateur_list,
+          b.data.anomalie_indicateur_list,
+        ),
+        error_indicateur_list: labels(
+          a.data.error_indicateur_list,
+          b.data.error_indicateur_list,
+        ),
+      },
+      diagnostics,
     };
   }
+  const firstWarnings = first.avertissements;
+  const secondWarnings = second.avertissements;
+  const avertissements =
+    firstWarnings.status === "loaded"
+      ? {
+          status: "loaded" as const,
+          data: [
+            ...new Set([
+              ...firstWarnings.data,
+              ...(secondWarnings.status === "loaded"
+                ? secondWarnings.data
+                : []),
+            ]),
+          ],
+        }
+      : secondWarnings.status === "loaded" || firstWarnings.status === "absent"
+        ? secondWarnings
+        : firstWarnings;
+  return { anomalies, avertissements };
+}
 
-  if (!dossiersResult.success) {
-    console.error(
-      `Impossible récupérer les dossiers instructeur à partir de l'API Fonds Vert (${dossiersResult.statusText}).`,
-    );
-    return {
-      success: false,
-      error: `La liste des dossiers que vous instruisez est temporairement indisponible.`,
-    };
-  }
-
-  return {
-    success: true,
-    data: dossiersResult.data.data.map(
-      (dossier) => dossier.socle_commun.dossier_number,
-    ),
-  };
+function mergeSummary(
+  existing: DossierFondsVertSummary | undefined,
+  summary: DossierFondsVertSummary,
+): DossierFondsVertSummary {
+  return existing
+    ? {
+        ...summary,
+        socleCommun: { ...existing.socleCommun, ...summary.socleCommun },
+        signals: mergeSignals(existing.signals, summary.signals),
+      }
+    : summary;
 }
 
 export async function getAllDossierNumbers({
   siret,
   email,
+  global = false,
 }: {
   siret: string;
   email: string;
+  global?: boolean;
 }): Promise<DossierNumbersResult> {
-  const [bySiretResult, byInstructeurResult] = await Promise.all([
+  if (global) return getDossiers({});
+  const results = await Promise.all([
     getDossierNumbers({ siret }),
     getDossierNumbersForInstructeur({ email }),
   ]);
-
-  if (!bySiretResult.success && !byInstructeurResult.success) {
-    return {
-      success: false,
-      error: bySiretResult.error,
-    };
+  const successful = results.filter((result) => result.success);
+  if (successful.length === 0)
+    return { success: false, error: unavailableMessage };
+  const summaries: Record<number, DossierFondsVertSummary> = {};
+  for (const source of successful) {
+    for (const summary of Object.values(source.summaries)) {
+      summaries[summary.numeroDossier] = mergeSummary(
+        summaries[summary.numeroDossier],
+        summary,
+      );
+    }
   }
-
-  const allNumbers = new Set([
-    ...(bySiretResult.success ? bySiretResult.data : []),
-    ...(byInstructeurResult.success ? byInstructeurResult.data : []),
-  ]);
-
+  const complete =
+    successful.length === results.length &&
+    successful.every((source) => source.completeness === "complete");
   return {
     success: true,
-    data: Array.from(allNumbers),
+    data: Object.values(summaries).map((summary) => summary.numeroDossier),
+    summaries,
+    completeness: complete ? "complete" : "partial",
+    warnings: complete ? [] : [partialMessage],
   };
 }

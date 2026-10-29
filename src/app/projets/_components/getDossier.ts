@@ -62,17 +62,27 @@ export async function getDossier({
   numeroDossier: number;
   userEmail: string;
 }): Promise<
-  { success: true; data: Dossier } | { success: false; error: string }
+  | { success: true; data: Dossier }
+  | { success: false; error: string; reason: "denied" | "unavailable" }
 > {
   try {
     const { dossier } = await graphqlClient.request(getDossierQuery, {
       number: numeroDossier,
     });
 
+    if (!dossier) {
+      return {
+        success: false,
+        error: "Impossible de trouver ce dossier",
+        reason: "denied",
+      };
+    }
+
     if (dossier.demandeur.__typename !== "PersonneMorale") {
       return {
         success: false,
         error: "Seules les personnes morales peuvent accéder à cet espace",
+        reason: "denied",
       };
     }
 
@@ -80,6 +90,7 @@ export async function getDossier({
       return {
         success: false,
         error: "Vous n'êtes pas autorisé à accéder à ce dossier",
+        reason: "denied",
       };
     }
 
@@ -108,12 +119,14 @@ export async function getDossier({
     ) {
       return {
         success: false,
+        reason: "unavailable",
         error:
           "Nous ne parvenons pas à nous connecter aux démarches Fonds vert pour le moment. Veuillez nous contacter si le problème persiste.",
       };
     } else {
       return {
         success: false,
+        reason: "unavailable",
         error:
           "Une erreur est survenue. Veuillez nous contacter si le problème persiste.",
       };

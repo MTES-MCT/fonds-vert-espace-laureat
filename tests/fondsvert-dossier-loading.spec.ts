@@ -92,7 +92,7 @@ test("un dossier existant refusé ne lance ni FV ni EJ ni import, puis son porte
 }) => {
   const dossierNumber = DOSSIER + 1;
   const ownerEmail = "porteur.client024@example.com";
-  const dossierData = makeDossierDataWithNumber(dossierNumber);
+  const dossierData = structuredClone(makeDossierDataWithNumber(dossierNumber));
   dossierData.data.dossier.usager.email = ownerEmail;
   let fvCalls = 0;
   let ejCalls = 0;

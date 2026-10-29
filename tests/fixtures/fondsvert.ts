@@ -28,11 +28,17 @@ export const fondsVertFinancesEJ2Data = {
 };
 
 export const fondsVertDossiersListBySiretData = {
+  count: 1,
+  next_page: null,
+  previous_page: null,
   data: [{ socle_commun: { dossier_number: DOSSIER_NUMBER } }],
 };
 
 export const INSTRUCTEUR_DOSSIER_NUMBER = 99999999;
 
 export const fondsVertDossiersListByInstructeurData = {
+  count: 1,
+  next_page: null,
+  previous_page: null,
   data: [{ socle_commun: { dossier_number: INSTRUCTEUR_DOSSIER_NUMBER } }],
 };

@@ -13,7 +13,11 @@ import {
   DOSSIER_NUMBER,
   INSTRUCTEUR_EMAIL,
 } from "./fixtures/constants";
-import { getDossierData, makeDossierDataForInstructeur } from "./fixtures/ds";
+import {
+  getDossierData,
+  makeDossierDataForInstructeur,
+  makeDossierDataWithNumber,
+} from "./fixtures/ds";
 import {
   fondsVertDossiersListByInstructeurData,
   fondsVertDossiersListBySiretData,
@@ -21,14 +25,27 @@ import {
   INSTRUCTEUR_DOSSIER_NUMBER,
 } from "./fixtures/fondsvert";
 import { authenticatePage } from "./setup/auth";
+import { createTestDatabaseClient } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 
 type DossiersResponse =
-  | { success: true; data: { socle_commun: { dossier_number: number } }[] }
+  | {
+      success: true;
+      count: number;
+      next_page: string | null;
+      previous_page: string | null;
+      data: { socle_commun: { dossier_number: number } }[];
+    }
   | { success: false };
 
-const emptyList: DossiersResponse = { success: true, data: [] };
+const emptyList: DossiersResponse = {
+  success: true,
+  count: 0,
+  next_page: null,
+  previous_page: null,
+  data: [],
+};
 const siretList: DossiersResponse = {
   success: true,
   ...fondsVertDossiersListBySiretData,
@@ -46,7 +63,7 @@ function makeDossiersHandler({
   siret: DossiersResponse;
   instructeur: DossiersResponse;
 }) {
-  return http.get("http://fondsvert/fonds_vert/dossiers", ({ request }) => {
+  return http.get("http://fondsvert/fonds_vert/v2/dossiers", ({ request }) => {
     const url = new URL(request.url);
 
     if (url.searchParams.get("siret")) {
@@ -62,12 +79,12 @@ function makeDossiersHandler({
         return HttpResponse.json({ error: "Server Error" }, { status: 500 });
       }
       if (email !== INSTRUCTEUR_EMAIL) {
-        return HttpResponse.json({ data: [] });
+        return HttpResponse.json(emptyList);
       }
       return HttpResponse.json(instructeur);
     }
 
-    return HttpResponse.json({ data: [] });
+    return HttpResponse.json(emptyList);
   });
 }
 
@@ -118,7 +135,7 @@ test("demandeur sees dossiers regardless of status", async ({ page, msw }) => {
 
   await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(
-    http.get("http://fondsvert/fonds_vert/dossiers", ({ request }) => {
+    http.get("http://fondsvert/fonds_vert/v2/dossiers", ({ request }) => {
       const url = new URL(request.url);
       requestedStates.push(url.searchParams.get("state"));
 
@@ -176,6 +193,9 @@ test("displays only SIRET dossiers when instructeur API fails", async ({
   await page.goto("/projets");
 
   await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
+  await expect(
+    page.getByText(/La liste des projets est incomplète/),
+  ).toBeVisible();
 });
 
 test("displays only instructeur dossiers when SIRET API fails", async ({
@@ -192,6 +212,249 @@ test("displays only instructeur dossiers when SIRET API fails", async ({
   await expect(
     page.getByText(String(INSTRUCTEUR_DOSSIER_NUMBER)),
   ).toBeVisible();
+  await expect(
+    page.getByText(/La liste des projets est incomplète/),
+  ).toBeVisible();
+});
+
+test("205 candidats paginés ne masquent pas le voisin autorisé d’un dossier refusé", async ({
+  page,
+  msw,
+}) => {
+  test.setTimeout(60_000);
+  const first = 89993000;
+  const denied = first + 101;
+  const owner = "porteur.liste024@example.com";
+  let dnCalls = 0;
+  let detailCalls = 0;
+  let active = 0;
+  let peak = 0;
+  const pages: number[] = [];
+  await authenticatePage(page, { email: owner });
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/v2/dossiers", ({ request }) => {
+      const params = new URL(request.url).searchParams;
+      if (!params.has("siret")) return HttpResponse.json(emptyList);
+      const pageNumber = Number(params.get("page"));
+      pages.push(pageNumber);
+      const offset = (pageNumber - 1) * 100;
+      return HttpResponse.json({
+        count: 205,
+        next_page: pageNumber < 3 ? `?page=${pageNumber + 1}` : null,
+        previous_page: null,
+        data: Array.from(
+          { length: Math.min(100, 205 - offset) },
+          (_, index) => ({
+            socle_commun: { dossier_number: first + offset + index },
+            anomalies: {
+              est_error: true,
+              est_anomalie: false,
+              anomalie_demarche_list: [],
+              anomalie_indicateur_list: [],
+              error_indicateur_list: ["Signalement privé"],
+            },
+          }),
+        ),
+      });
+    }),
+    ds.query("getDossier", async ({ variables }) => {
+      dnCalls++;
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      active--;
+      const data = structuredClone(makeDossierDataWithNumber(variables.number));
+      data.data.dossier.usager.email =
+        variables.number === denied ? "autre-porteur@example.com" : owner;
+      return HttpResponse.json(data);
+    }),
+    http.get("http://fondsvert/fonds_vert/v2/dossiers/:number", () => {
+      detailCalls++;
+      return new HttpResponse(null, { status: 500 });
+    }),
+  );
+
+  const started = performance.now();
+  await page.goto("/projets");
+
+  await expect(page.getByRole("table").getByRole("row")).toHaveCount(205);
+  await expect(
+    page.getByRole("cell", { name: String(denied), exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("cell", { name: String(denied + 1), exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("cell", { name: String(first + 204), exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/La liste des projets est incomplète/),
+  ).toHaveCount(0);
+  expect(pages).toEqual([1, 2, 3]);
+  expect(dnCalls).toBe(205);
+  expect(peak).toBeLessThanOrEqual(8);
+  expect(detailCalls).toBe(0);
+  const duration = Math.round(performance.now() - started);
+  const sql = createTestDatabaseClient();
+  try {
+    const [stored] = await sql<
+      { count: string }[]
+    >`select count(*) from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 205}`;
+    expect(Number(stored.count)).toBe(0);
+  } finally {
+    await sql.end();
+  }
+  console.log(
+    "FV024 LIST205",
+    JSON.stringify({
+      duration,
+      pages,
+      dnCalls,
+      peak,
+      detailCalls,
+      imported: 0,
+      authorized: 204,
+      denied: 1,
+    }),
+  );
+});
+
+test("un projet présent dans les deux sources ne demande qu’une seule autorisation DN", async ({
+  page,
+  msw,
+}) => {
+  let dnCalls = 0;
+  await authenticatePage(page);
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/v2/dossiers", () =>
+      HttpResponse.json(fondsVertDossiersListBySiretData),
+    ),
+    ds.query("getDossier", () => {
+      dnCalls++;
+      return HttpResponse.json(getDossierData);
+    }),
+  );
+
+  await page.goto("/projets");
+
+  await expect(page.getByRole("table").getByRole("row")).toHaveCount(2);
+  expect(dnCalls).toBe(1);
+});
+
+test("une panne DN laisse visible le projet autorisé et annonce une liste partielle", async ({
+  page,
+  msw,
+}) => {
+  await authenticatePage(page);
+  msw.use(
+    makeDossiersHandler({
+      siret: {
+        success: true,
+        count: 2,
+        next_page: null,
+        previous_page: null,
+        data: [
+          ...fondsVertDossiersListBySiretData.data,
+          ...fondsVertDossiersListByInstructeurData.data,
+        ],
+      },
+      instructeur: emptyList,
+    }),
+    ds.query("getDossier", ({ variables }) =>
+      variables.number === INSTRUCTEUR_DOSSIER_NUMBER
+        ? HttpResponse.json(
+            { errors: [{ message: "DN indisponible" }] },
+            { status: 503 },
+          )
+        : HttpResponse.json(getDossierData),
+    ),
+  );
+
+  await page.goto("/projets");
+
+  await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
+  await expect(
+    page.getByText(/La liste des projets est incomplète/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("cell", {
+      name: String(INSTRUCTEUR_DOSSIER_NUMBER),
+      exact: true,
+    }),
+  ).toHaveCount(0);
+});
+
+test("une source vide et une source en panne ne présentent pas un état vide définitif", async ({
+  page,
+  msw,
+}) => {
+  await authenticatePage(page);
+  msw.use(
+    makeDossiersHandler({ siret: emptyList, instructeur: errorResponse }),
+  );
+
+  await page.goto("/projets");
+
+  await expect(
+    page.getByText(/La liste des projets est incomplète/),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/Assurez-vous de vous connecter avec l'adresse/),
+  ).toHaveCount(0);
+});
+
+test("le tri utilise toutes les dates de décision DN plutôt que l’ordre FV ou le numéro", async ({
+  page,
+  msw,
+}) => {
+  await authenticatePage(page);
+  msw.use(
+    makeDossiersHandler({
+      siret: {
+        success: true,
+        count: 2,
+        next_page: null,
+        previous_page: null,
+        data: [
+          ...fondsVertDossiersListBySiretData.data,
+          ...fondsVertDossiersListByInstructeurData.data,
+        ],
+      },
+      instructeur: emptyList,
+    }),
+    ds.query("getDossier", ({ variables }) => {
+      const data = makeDossierDataWithNumber(variables.number);
+      return HttpResponse.json({
+        data: {
+          dossier: {
+            ...data.data.dossier,
+            annotations: data.data.dossier.annotations.map((champ) =>
+              champ.champDescriptorId === "Q2hhbXAtMjk4MjQ5NA=="
+                ? {
+                    ...champ,
+                    date:
+                      variables.number === DOSSIER_NUMBER
+                        ? "2026-10-01"
+                        : "2024-01-01",
+                  }
+                : champ,
+            ),
+          },
+        },
+      });
+    }),
+  );
+
+  await page.goto("/projets");
+
+  const rows = page.getByRole("table").getByRole("row");
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(1).getByRole("cell").first()).toHaveText(
+    String(DOSSIER_NUMBER),
+  );
+  await expect(rows.nth(2).getByRole("cell").first()).toHaveText(
+    String(INSTRUCTEUR_DOSSIER_NUMBER),
+  );
 });
 
 test("displays error when both APIs fail", async ({ page, msw }) => {

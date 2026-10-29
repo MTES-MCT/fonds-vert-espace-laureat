@@ -793,8 +793,11 @@ test("persists successive metric corrections by an ordinary porteur and instruct
         },
       }),
     ),
-    http.get("http://fondsvert/fonds_vert/dossiers", () =>
+    http.get("http://fondsvert/fonds_vert/v2/dossiers", () =>
       HttpResponse.json({
+        count: 1,
+        next_page: null,
+        previous_page: null,
         data: [{ socle_commun: { dossier_number: dossierNumber } }],
       }),
     ),
