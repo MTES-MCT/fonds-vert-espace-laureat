@@ -53,7 +53,10 @@ async function postCorrection({
         },
       );
 
-      return { status: response.status, body: await response.json() };
+      return {
+        status: response.status,
+        body: await response.json().catch(() => null),
+      };
     },
     {
       dossierNumber: DOSSIER_NUMBER,
@@ -208,6 +211,44 @@ test("rejects an invalid metric type without creating a revision", async ({
     body: { error: "Valeur invalide pour le type de la métrique" },
   });
   expect(await storedRevisions()).toHaveLength(1);
+});
+
+test("keeps the metric value and author when an authorized HTTP correction fails in PostgreSQL", async ({
+  page,
+}) => {
+  const before = await storedRevisions();
+  const sql = createTestDatabaseClient();
+  const constraint = "metric_test_insert_failure_89000031";
+  try {
+    await sql.unsafe(
+      `alter table dossier_metric_revisions add constraint ${constraint} check (dossier_number <> ${DOSSIER_NUMBER} or revision < 2)`,
+    );
+    const failed = await postCorrection({
+      page,
+      metricCode: "metric",
+      value: 13,
+      expectedRevision: 1,
+    });
+    expect(failed.status).toBe(500);
+    expect(await storedRevisions()).toEqual(before);
+  } finally {
+    await sql.unsafe(
+      `alter table dossier_metric_revisions drop constraint if exists ${constraint}`,
+    );
+    await sql.end();
+  }
+  const retry = await postCorrection({
+    page,
+    metricCode: "metric",
+    value: 13,
+    expectedRevision: 1,
+  });
+  expect(retry.status).toBe(200);
+  expect((await storedRevisions())[1]).toMatchObject({
+    revision: 2,
+    number_value: 13,
+    author_email: PORTEUR_EMAIL,
+  });
 });
 
 test("requires the opened revision on every correction request", async ({

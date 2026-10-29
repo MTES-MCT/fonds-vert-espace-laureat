@@ -1,46 +1,19 @@
-import {
-  expect,
-  http,
-  HttpResponse,
-  test,
-} from "next/experimental/testmode/playwright/msw";
+import { expect, test } from "next/experimental/testmode/playwright/msw";
 
 import { resetDemoDossierMetrics } from "@/db/demoMetrics";
 import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
 
-import { gristChampsDS } from "./fixtures/grist";
 import { createTestDatabaseClient } from "./setup/db";
-
-test.use({
-  mswHandlers: [
-    [
-      http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
-        return HttpResponse.json(gristChampsDS);
-      }),
-    ],
-    { scope: "test" },
-  ],
-});
 
 test("demo page loads, corrects and persists its database-backed metrics", async ({
   page,
-  msw,
 }) => {
   await resetDemoDossierMetrics();
-
-  let gristRequestCount = 0;
-  msw.use(
-    http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
-      gristRequestCount += 1;
-      return HttpResponse.json(gristChampsDS);
-    }),
-  );
 
   await page.goto("/projets/demo");
   await page.waitForSelector('[data-fr-js-modal-button="true"]', {
     state: "attached",
   });
-  expect(gristRequestCount).toBe(0);
 
   const anomaliesSection = page.getByRole("region", {
     name: "Données à vérifier",

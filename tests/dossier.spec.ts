@@ -31,7 +31,6 @@ import {
 } from "./fixtures/constants";
 import {
   getDossierData,
-  makeDemarcheDossiersData,
   makeDossierDataWithNumber,
   makeDossierDataWithTitle,
 } from "./fixtures/ds";
@@ -41,9 +40,9 @@ import {
   fondsVertFinancesEJ2Data,
   fondsVertLoginData,
 } from "./fixtures/fondsvert";
-import { gristChampsDS } from "./fixtures/grist";
 import { authenticatePage } from "./setup/auth";
 import {
+  createTestDatabaseClient,
   deleteStoredDossierMetrics,
   getStoredDossierMetrics,
   importStoredDossierMetricsIfMissing,
@@ -82,10 +81,6 @@ test.use({
         });
       }),
 
-      ds.query("getDemarcheDossiers", () => {
-        return HttpResponse.json(makeDemarcheDossiersData());
-      }),
-
       http.post("http://fondsvert/fonds_vert/login", () => {
         return HttpResponse.json(fondsVertLoginData);
       }),
@@ -96,10 +91,6 @@ test.use({
           return HttpResponse.json(fondsVertDossierData);
         },
       ),
-
-      http.get("http://grist/docs/id/tables/Champs_DS/records", () => {
-        return HttpResponse.json(gristChampsDS);
-      }),
 
       http.get("http://fondsvert/fonds_vert/v2/finances/2105212345", () => {
         return HttpResponse.json(fondsVertFinancesEJ1Data);
@@ -772,6 +763,127 @@ test("refreshes a conflicting correction without replaying the discarded entry",
     ).resolves.toMatchObject({
       conflict_metric: { revision: 3, effectiveValue: 15 },
     });
+  } finally {
+    await deleteStoredDossierMetrics(dossierNumber);
+  }
+});
+
+test("persists successive metric corrections by an ordinary porteur and instructeur from the project list", async ({
+  page,
+  msw,
+}) => {
+  const dossierNumber = 89000033;
+  const porteurEmail = "porteur.metrics.ui@example.com";
+  const instructeurEmail = "instructeur.metrics.ui@example.com";
+  const dossier = {
+    ...makeDossierDataWithNumber(dossierNumber).data.dossier,
+    usager: { email: porteurEmail },
+    groupeInstructeur: { instructeurs: [{ email: instructeurEmail }] },
+  };
+  msw.use(
+    ds.query("getDossier", () => HttpResponse.json({ data: { dossier } })),
+    ds.query("getDossierAccess", () =>
+      HttpResponse.json({
+        data: {
+          dossier: {
+            demandeur: dossier.demandeur,
+            usager: dossier.usager,
+            groupeInstructeur: dossier.groupeInstructeur,
+          },
+        },
+      }),
+    ),
+    http.get("http://fondsvert/fonds_vert/dossiers", () =>
+      HttpResponse.json({
+        data: [{ socle_commun: { dossier_number: dossierNumber } }],
+      }),
+    ),
+    http.get(`http://fondsvert/fonds_vert/v2/dossiers/${dossierNumber}`, () =>
+      HttpResponse.json(fondsVertDossierData),
+    ),
+  );
+  await deleteStoredDossierMetrics(dossierNumber);
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber,
+    metrics: {
+      shared_metric: {
+        label: "Métrique des deux acteurs",
+        unite: "ha",
+        valeur_estimee: 10,
+      },
+    },
+  });
+
+  try {
+    await authenticatePage(page, { email: porteurEmail });
+    await page.goto("/projets");
+    await page
+      .getByRole("row")
+      .filter({ hasText: String(dossierNumber) })
+      .getByRole("link", { name: "Ouvrir" })
+      .click();
+    await waitForDsfrModal(page);
+    const card = page.getByRole("region", {
+      name: "Métrique des deux acteurs",
+    });
+    await card.getByRole("button", { name: "Modifier", exact: true }).click();
+    let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Métrique des deux acteurs").fill("12");
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(dialog).toBeHidden();
+    await page.reload();
+    await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
+
+    await page.context().clearCookies();
+    await authenticatePage(page, { email: instructeurEmail });
+    await page.goto("/projets");
+    await page
+      .getByRole("row")
+      .filter({ hasText: String(dossierNumber) })
+      .getByRole("link", { name: "Ouvrir" })
+      .click();
+    await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
+    await waitForDsfrModal(page);
+    await card.getByRole("button", { name: "Modifier", exact: true }).click();
+    dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+    await dialog.getByLabel("Métrique des deux acteurs").fill("15");
+    await dialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    await expect(dialog).toBeHidden();
+    await page.reload();
+    await expect(card.getByLabel("Valeur effective")).toHaveText(/15\s*ha/);
+
+    const sql = createTestDatabaseClient();
+    try {
+      expect(
+        await sql`select revision, number_value::float8 as value, author_email, created_at
+        from dossier_metric_revisions where dossier_number=${dossierNumber} and metric_code='shared_metric' order by revision`,
+      ).toEqual([
+        {
+          revision: 1,
+          value: 10,
+          author_email: null,
+          created_at: expect.any(Date),
+        },
+        {
+          revision: 2,
+          value: 12,
+          author_email: porteurEmail,
+          created_at: expect.any(Date),
+        },
+        {
+          revision: 3,
+          value: 15,
+          author_email: instructeurEmail,
+          created_at: expect.any(Date),
+        },
+      ]);
+    } finally {
+      await sql.end();
+    }
   } finally {
     await deleteStoredDossierMetrics(dossierNumber);
   }
