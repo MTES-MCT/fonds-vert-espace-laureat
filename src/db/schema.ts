@@ -15,6 +15,32 @@ import {
 } from "drizzle-orm/pg-core";
 
 import type { FondsVertCorrection } from "@/db/fondsVertCorrectionProjection";
+import { DOSSIER_PROGRESS_STATUSES } from "@/utils/dossierProgress";
+
+export const dossierProgressStatus = pgEnum(
+  "dossier_progress_status",
+  DOSSIER_PROGRESS_STATUSES,
+);
+
+export const dossierProgressRevisions = pgTable(
+  "dossier_progress_revisions",
+  {
+    dossierNumber: integer("dossier_number").notNull(),
+    revision: integer("revision").notNull(),
+    status: dossierProgressStatus("status").notNull(),
+    authorEmail: text("author_email"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.dossierNumber, table.revision] }),
+    check(
+      "dossier_progress_revisions_revision_positive",
+      sql`${table.revision} > 0`,
+    ),
+  ],
+);
 
 export const metricValueType = pgEnum("metric_value_type", [
   "number",
