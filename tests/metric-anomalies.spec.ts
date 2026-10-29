@@ -437,6 +437,26 @@ test("les états des avertissements sont conservés indépendamment de la sectio
   ).toEqual({ status: "unavailable" });
 });
 
+for (const labels of [[], ["Donnée connue manquante"]]) {
+  test(`la normalisation conserve des avertissements incomplets avec une liste ${labels.length === 0 ? "vide" : "de libellés connus"}`, () => {
+    const signals = {
+      anomalies: readFondsVertSignals({ anomalies: noSignals }).anomalies,
+      avertissements: { status: "incomplete" as const, data: labels },
+    };
+
+    const normalized = normalizeFondsVertAnomalies(signals);
+
+    expect(normalized.warnings).toEqual({ status: "incomplete", data: labels });
+    if (!("data" in normalized.warnings))
+      throw new Error("Libellés conservés attendus");
+    normalized.warnings.data.push("Modification de la copie");
+    expect(signals.avertissements.data).toEqual(labels);
+    expect(signals.avertissements.data).not.toContain(
+      "Modification de la copie",
+    );
+  });
+}
+
 test("la normalisation ne modifie ni les sources ni le mapping des appels suivants", () => {
   const signals = readFondsVertSignals({
     anomalies: {

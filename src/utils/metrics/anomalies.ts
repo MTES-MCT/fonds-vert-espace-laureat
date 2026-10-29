@@ -139,8 +139,11 @@ export function normalizeFondsVertAnomalies(
 ): NormalizedFondsVertAnomalies {
   const section = signals.anomalies;
   const warnings: AvertissementsSection =
-    signals.avertissements.status === "loaded"
-      ? { status: "loaded", data: [...signals.avertissements.data] }
+    "data" in signals.avertissements
+      ? {
+          status: signals.avertissements.status,
+          data: [...signals.avertissements.data],
+        }
       : { status: signals.avertissements.status };
   const normalized: NormalizedFondsVertAnomalies = {
     status: section.status,

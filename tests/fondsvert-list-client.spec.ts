@@ -235,6 +235,80 @@ test("deux sources divergentes conservent tous les libellés et qualifient leur 
   });
 });
 
+for (const invalidSource of ["SIRET", "instructeur"] as const) {
+  for (const validWarnings of [[], ["Donnée connue manquante"]]) {
+    test(`des avertissements invalides côté ${invalidSource} conservent l’incertitude et la liste valide ${validWarnings.length === 0 ? "vide" : "avec libellé"}`, async () => {
+      mockFondsVert((url) => {
+        const source = url.searchParams.has("siret") ? "SIRET" : "instructeur";
+        return Response.json(
+          envelope(
+            [
+              dossier(1, {
+                anomalies: noSignals,
+                avertissements:
+                  source === invalidSource ? [false] : validWarnings,
+              }),
+            ],
+            1,
+          ),
+        );
+      });
+
+      const result = await getAllDossierNumbers({
+        siret: "siret",
+        email: "instructeur@example.com",
+      });
+
+      expect(result).toMatchObject({
+        success: true,
+        summaries: {
+          1: {
+            signals: {
+              avertissements: { status: "incomplete", data: validWarnings },
+            },
+          },
+        },
+      });
+    });
+  }
+  test(`des avertissements invalides côté ${invalidSource} restent invalides si l’autre source ne les fournit pas`, async () => {
+    mockFondsVert((url) => {
+      const source = url.searchParams.has("siret") ? "SIRET" : "instructeur";
+      return Response.json(
+        envelope(
+          [
+            dossier(1, {
+              anomalies: noSignals,
+              avertissements: source === invalidSource ? [false] : null,
+            }),
+          ],
+          1,
+        ),
+      );
+    });
+
+    const result = await getAllDossierNumbers({
+      siret: "siret",
+      email: "instructeur@example.com",
+    });
+
+    expect(result).toMatchObject({
+      success: true,
+      summaries: {
+        1: {
+          signals: {
+            avertissements: { status: "invalid" },
+          },
+        },
+      },
+    });
+    if (!result.success) throw new Error("Liste attendue disponible");
+    expect(result.summaries[1].signals.avertissements).not.toHaveProperty(
+      "data",
+    );
+  });
+}
+
 test("une page en panne conserve explicitement le premier résultat partiel", async () => {
   const requests = mockFondsVert((url) =>
     url.searchParams.get("page") === "1"

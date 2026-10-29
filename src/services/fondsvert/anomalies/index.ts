@@ -15,7 +15,7 @@ export type AnomaliesSection =
   | { status: "absent" | "unavailable" };
 
 export type AvertissementsSection =
-  | { status: "loaded"; data: string[] }
+  | { status: "loaded" | "incomplete"; data: string[] }
   | { status: "absent" | "invalid" | "unavailable" };
 
 export interface FondsVertSignals {

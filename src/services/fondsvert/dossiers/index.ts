@@ -257,22 +257,24 @@ function mergeSignals(
   }
   const firstWarnings = first.avertissements;
   const secondWarnings = second.avertissements;
-  const avertissements =
-    firstWarnings.status === "loaded"
-      ? {
-          status: "loaded" as const,
-          data: [
-            ...new Set([
-              ...firstWarnings.data,
-              ...(secondWarnings.status === "loaded"
-                ? secondWarnings.data
-                : []),
-            ]),
-          ],
-        }
-      : secondWarnings.status === "loaded" || firstWarnings.status === "absent"
-        ? secondWarnings
-        : firstWarnings;
+  let avertissements: FondsVertSignals["avertissements"];
+  if ("data" in firstWarnings || "data" in secondWarnings) {
+    const incomplete = [firstWarnings, secondWarnings].some(
+      (section) => section.status !== "loaded" && section.status !== "absent",
+    );
+    avertissements = {
+      status: incomplete ? "incomplete" : "loaded",
+      data: [
+        ...new Set([
+          ...("data" in firstWarnings ? firstWarnings.data : []),
+          ...("data" in secondWarnings ? secondWarnings.data : []),
+        ]),
+      ],
+    };
+  } else {
+    avertissements =
+      firstWarnings.status === "absent" ? secondWarnings : firstWarnings;
+  }
   return { anomalies, avertissements };
 }
 
