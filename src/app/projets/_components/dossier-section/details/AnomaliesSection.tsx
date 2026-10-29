@@ -125,18 +125,7 @@ export function AnomaliesSection({
                           const editorId = metricEditorId(target.metricCode);
                           return (
                             <li key={target.metricCode}>
-                              <a
-                                href={`#${encodeURIComponent(editorId)}`}
-                                onClick={(event) => {
-                                  const editor = document
-                                    .getElementById(editorId)
-                                    ?.querySelector("button");
-                                  if (!editor) return;
-                                  event.preventDefault();
-                                  editor.focus();
-                                  editor.scrollIntoView({ block: "center" });
-                                }}
-                              >
+                              <a href={`#${encodeURIComponent(editorId)}`}>
                                 Vérifier {target.label}
                               </a>
                             </li>

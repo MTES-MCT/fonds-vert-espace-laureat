@@ -375,6 +375,89 @@ test("un ratio ne propose que sa valeur source disponible", async ({
   ).toBeFocused();
 });
 
+test("le porteur suit un signalement avant que son éditeur soit utilisable sans perdre son choix de focus", async ({
+  page,
+  msw,
+}, testInfo) => {
+  msw.use(
+    fondsVertResponse({
+      ...noAnomalies,
+      est_anomalie: true,
+      anomalie_indicateur_list: ["Gain énergétique estimé (en %)"],
+    }),
+  );
+  await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
+  const ratio = page.getByRole("region", {
+    name: "Gain énergétique estimé (en %)",
+    exact: true,
+  });
+  const beforeLink = ratio.getByRole("link", {
+    name: "Vérifier Consommation énergétique avant travaux",
+    exact: true,
+  });
+  const afterLink = ratio.getByRole("link", {
+    name: "Vérifier Consommation énergétique après travaux",
+    exact: true,
+  });
+  const before = page
+    .getByTestId("impact-section")
+    .getByRole("region", { name: "Consommation énergétique", exact: true })
+    .getByRole("group", { name: "Avant travaux", exact: true })
+    .getByRole("button", { name: "Modifier", exact: true });
+  await expect(before).toBeEnabled();
+  const anchor = page.locator("#metric-editor-conso_energetique_avant_travaux");
+
+  // Hold the existing control in the unavailable state observed before hydration.
+  await before.evaluate((button: HTMLButtonElement) => {
+    button.disabled = true;
+    button.removeAttribute("data-fr-js-modal-button");
+  });
+  await beforeLink.press("Enter");
+  await expect(page).toHaveURL(
+    /#metric-editor-conso_energetique_avant_travaux$/,
+  );
+  await expect(before).toBeDisabled();
+  await expect(anchor).toBeFocused();
+  await before.evaluate((button: HTMLButtonElement) => {
+    button.disabled = false;
+  });
+  await expect(anchor).toBeFocused();
+  await before.evaluate((button: HTMLButtonElement) => {
+    button.setAttribute("data-fr-js-modal-button", "true");
+  });
+  await expect(before).toBeFocused();
+  await before.press("Enter");
+  const dialog = page.getByRole("dialog", {
+    name: "Modifier la valeur",
+    exact: true,
+  });
+  await expect(
+    dialog.getByLabel("Consommation énergétique avant travaux"),
+  ).toBeFocused();
+  await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(before).toBeFocused();
+
+  await before.evaluate((button: HTMLButtonElement) => {
+    button.disabled = true;
+  });
+  await beforeLink.press("Enter");
+  await expect(anchor).toBeFocused();
+  await anchor.press("Shift+Tab");
+  await expect(afterLink).toBeFocused();
+  await before.evaluate((button: HTMLButtonElement) => {
+    button.disabled = false;
+  });
+  await expect(afterLink).toBeFocused();
+  await afterLink.press("Enter");
+  await expect(
+    page
+      .getByTestId("impact-section")
+      .getByRole("region", { name: "Consommation énergétique", exact: true })
+      .getByRole("group", { name: "Après travaux", exact: true })
+      .getByRole("button", { name: "Modifier", exact: true }),
+  ).toBeFocused();
+});
+
 for (const [actor, email, correctedValue] of [
   ["porteur", PORTEUR, 60],
   ["instructeur", INSTRUCTEUR, 65],

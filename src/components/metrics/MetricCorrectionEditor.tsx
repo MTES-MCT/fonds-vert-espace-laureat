@@ -8,6 +8,8 @@ import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
 import {
   type FormEvent,
+  useCallback,
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -116,6 +118,49 @@ export function MetricCorrectionEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
+  const anchorRef = useRef<HTMLDivElement>(null);
+  const cancelPendingFocus = useRef<(() => void) | undefined>(undefined);
+  const focusOpenerWhenReady = useCallback(() => {
+    const anchor = anchorRef.current;
+    const opener = openerRef.current;
+    if (!anchor || !opener || document.activeElement !== anchor) return;
+    cancelPendingFocus.current?.();
+    const ready = () =>
+      !opener.disabled && opener.hasAttribute("data-fr-js-modal-button");
+    const focus = () => {
+      opener.focus();
+      opener.scrollIntoView({ block: "center" });
+    };
+    if (ready()) {
+      focus();
+      return;
+    }
+    const cancel = () => {
+      observer.disconnect();
+      anchor.removeEventListener("blur", cancel);
+      if (cancelPendingFocus.current === cancel)
+        cancelPendingFocus.current = undefined;
+    };
+    const observer = new MutationObserver(() => {
+      if (!anchor.isConnected || document.activeElement !== anchor) {
+        cancel();
+        return;
+      }
+      if (!ready()) return;
+      cancel();
+      focus();
+    });
+    cancelPendingFocus.current = cancel;
+    anchor.addEventListener("blur", cancel, { once: true });
+    observer.observe(opener, {
+      attributes: true,
+      attributeFilter: ["disabled", "data-fr-js-modal-button"],
+    });
+  }, []);
+  useEffect(() => {
+    focusOpenerWhenReady();
+    return () => cancelPendingFocus.current?.();
+  }, [focusOpenerWhenReady, hydrated]);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const textArrayInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   useIsModalOpen(modal, {
@@ -363,7 +408,14 @@ export function MetricCorrectionEditor({
   };
 
   return (
-    <div id={metricEditorId(target.metricCode)}>
+    <div
+      id={metricEditorId(target.metricCode)}
+      ref={anchorRef}
+      tabIndex={-1}
+      onFocus={(event) => {
+        if (event.target === event.currentTarget) focusOpenerWhenReady();
+      }}
+    >
       <Button
         disabled={!hydrated}
         ref={openerRef}
