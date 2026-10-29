@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { StartDsfrOnHydration } from "@/components/dsfr";
+
 export default async function Versement({
   params,
 }: {
@@ -9,6 +11,7 @@ export default async function Versement({
 
   return (
     <div className="fr-container my-8 pb-8">
+      <StartDsfrOnHydration />
       <div className="max-w-xl">
         <h1>Demande de versement</h1>
         <h2>Dossier n°{dossierNumber}</h2>

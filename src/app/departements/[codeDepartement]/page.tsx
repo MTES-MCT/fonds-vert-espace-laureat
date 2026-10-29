@@ -5,6 +5,7 @@ import {
 } from "@/app/departements/_components/getParams";
 import { ProjetsPanel } from "@/app/departements/_components/ProjetsPanel";
 import { TabButton } from "@/app/departements/_components/TabButton";
+import { StartDsfrOnHydration } from "@/components/dsfr";
 import {
   communesParDepartements,
   nomDepartements,
@@ -26,6 +27,7 @@ export default async function ProjetsDepartement({
   if (!projetsParDepartementsAnneesDemarches[codeDepartement]) {
     return (
       <div className="fr-container my-8">
+        <StartDsfrOnHydration />
         <h1>Département introuvable</h1>
       </div>
     );
@@ -41,6 +43,7 @@ export default async function ProjetsDepartement({
 
   return (
     <div className="fr-container my-8">
+      <StartDsfrOnHydration />
       <h1 className="mb-4">{nomDepartements[codeDepartement]}</h1>
       <CommunesFilter
         communes={communes}

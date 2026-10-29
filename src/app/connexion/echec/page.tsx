@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getSession } from "@/utils/session";
 import { getAuthenticatedReturnUrl } from "@/utils/url";
 
@@ -15,6 +16,7 @@ export default async function ConnexionEchec({
 
   return (
     <div className="fr-container my-8">
+      <StartDsfrOnHydration />
       <h1>
         {mfaRequired
           ? "Double authentification requise"

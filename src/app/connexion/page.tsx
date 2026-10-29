@@ -1,6 +1,8 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 
+import { StartDsfrOnHydration } from "@/components/dsfr";
+
 export default async function ConnexionPage({
   searchParams,
 }: {
@@ -16,6 +18,7 @@ export default async function ConnexionPage({
 
   return (
     <div className="fr-container my-8 pb-48">
+      <StartDsfrOnHydration />
       <div className="max-w-xl">
         {errorMessage && (
           <Alert

@@ -13,6 +13,7 @@ import {
 } from "@/app/projets/_components/dossier-section/Summary";
 import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
 import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
+import { StartDsfrOnHydration } from "@/components/dsfr";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import {
@@ -218,6 +219,7 @@ export async function DossierSection({
           </div>
         </div>
       </div>
+      <StartDsfrOnHydration />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   SearchParams,
 } from "@/app/projets/_components/getParams";
 import { loadAuthorizedDossiers } from "@/app/projets/_components/loadAuthorizedDossiers";
+import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser, getSession } from "@/utils/session";
@@ -33,12 +34,15 @@ export default async function Projets({
 
   if (!dossierNumbersResult.success) {
     return (
-      <Alert
-        severity="error"
-        className="max-w-xl bg-white"
-        small
-        description={dossierNumbersResult.error}
-      />
+      <>
+        <StartDsfrOnHydration />
+        <Alert
+          severity="error"
+          className="max-w-xl bg-white"
+          small
+          description={dossierNumbersResult.error}
+        />
+      </>
     );
   }
 
@@ -62,6 +66,7 @@ export default async function Projets({
 
   return (
     <div className="fr-container my-8">
+      <StartDsfrOnHydration />
       <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
         <h1>{getPageTitle(view)}</h1>
 

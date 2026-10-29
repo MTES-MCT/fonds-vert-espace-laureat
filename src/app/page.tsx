@@ -1,8 +1,11 @@
 import Link from "next/link";
 
+import { StartDsfrOnHydration } from "@/components/dsfr";
+
 export default function Home() {
   return (
     <div className="fr-container my-8 pt-2 pb-12">
+      <StartDsfrOnHydration />
       <div className="max-w-2xl">
         <h1>Accélérer la transition écologique dans les territoires</h1>
         <p className="fr-text--lead">

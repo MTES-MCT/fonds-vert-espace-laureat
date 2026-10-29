@@ -3,6 +3,7 @@ import { getDossier } from "@/app/projets/_components/getDossier";
 import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
+import { StartDsfrOnHydration } from "@/components/dsfr";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
 import { getDossierProgress } from "@/db/dossierProgress";
@@ -31,7 +32,12 @@ export async function DossierPage({
   });
 
   if (!dossierSubventionResult.success) {
-    return <div className="fr-container my-8">Introuvable</div>;
+    return (
+      <div className="fr-container my-8">
+        Introuvable
+        <StartDsfrOnHydration />
+      </div>
+    );
   }
 
   const metricLoading = startDossierMetricLoading({
