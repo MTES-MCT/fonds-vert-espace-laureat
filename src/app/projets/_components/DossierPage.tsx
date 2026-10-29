@@ -24,11 +24,15 @@ export async function DossierPage({
 
   const numeroDossier = Number(dossierNumber);
 
-  // 1. Start independent lookups in parallel
-  const dossierSubventionPromise = getDossier({
+  const dossierSubventionResult = await getDossier({
     numeroDossier,
     userEmail: user.email,
   });
+
+  if (!dossierSubventionResult.success) {
+    return <div className="fr-container my-8">Introuvable</div>;
+  }
+
   const metricLoading = startDossierMetricLoading({
     numeroDossier,
     loadDossierFondsVert: (includeMetrics) =>
@@ -38,7 +42,6 @@ export async function DossierPage({
       }),
   });
   const dossierFondsVertPromise = metricLoading.externalDossierPromise;
-  // 2. Chain EJ finances loading from FV promise immediately
   const financesEJPromise = dossierFondsVertPromise.then(async (fvResult) => {
     if (!fvResult.success || !fvResult.data.information_financiere) {
       return {};
@@ -48,14 +51,6 @@ export async function DossierPage({
     return buildFinancesResult(results);
   });
 
-  // 3. Authorization guard: await getDossier
-  const dossierSubventionResult = await dossierSubventionPromise;
-
-  if (!dossierSubventionResult.success) {
-    return <div className="fr-container my-8">Introuvable</div>;
-  }
-
-  // 4. Await remaining promises
   const [progressTarget, metricLoadingResult] = await Promise.all([
     getDossierProgress({ numeroDossier }),
     metricLoading.resultPromise,

@@ -8,6 +8,7 @@ import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
 import { getDossierProgress } from "@/db/dossierProgress";
+import { readFondsVertSignals } from "@/services/fondsvert/anomalies";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import {
   demoDossier1,
@@ -32,6 +33,7 @@ export default async function EspaceLaureatDemo() {
           : undefined,
       },
       metricsStatus: includeMetrics ? "loaded" : "not-requested",
+      signals: readFondsVertSignals({ ...demoDossierFondsVert }),
     }),
   });
   const { dossierFondsVertResult, metricRevisionTargets } =

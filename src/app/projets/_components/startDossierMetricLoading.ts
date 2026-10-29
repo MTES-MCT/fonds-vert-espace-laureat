@@ -43,6 +43,7 @@ export function startDossierMetricLoading({
       externalDossierResult.success && localMetrics
         ? {
             success: true as const,
+            signals: externalDossierResult.signals,
             data: {
               ...externalDossierResult.data,
               metrique_specifique: localMetrics,

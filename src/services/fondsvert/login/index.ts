@@ -1,6 +1,9 @@
 import { URLSearchParams } from "url";
 
-import { defaultHeaders } from "@/services/fondsvert/helpers";
+import {
+  defaultHeaders,
+  FONDS_VERT_TIMEOUT_MS,
+} from "@/services/fondsvert/helpers";
 import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
 import { createTokenCache } from "@/utils/token-cache";
@@ -17,6 +20,8 @@ async function fetchToken(): Promise<string | undefined> {
   try {
     const loginResponse = await fetch(new URL("/fonds_vert/login", endpoint), {
       method: "POST",
+      signal: AbortSignal.timeout(FONDS_VERT_TIMEOUT_MS),
+      redirect: "error",
       headers: {
         ...defaultHeaders(),
         "Content-Type": "application/x-www-form-urlencoded",
@@ -37,7 +42,7 @@ async function fetchToken(): Promise<string | undefined> {
     const loginData = await loginResponse.json();
     const token = loginData.access_token;
 
-    if (!token) {
+    if (typeof token !== "string" || !token) {
       console.error("Aucun jeton d'accès n'a été reçu de l'API Fonds Vert");
       return;
     }

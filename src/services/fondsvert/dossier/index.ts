@@ -1,9 +1,16 @@
 import { URLSearchParams } from "url";
 
+import {
+  type FondsVertSignals,
+  isRecord,
+  readFondsVertSignals,
+  unavailableFondsVertSignals,
+} from "@/services/fondsvert/anomalies";
 import { fetchFondsVert } from "@/services/fondsvert/helpers";
 
 const defaultDossierSearchParams = {
   include_finances: "true",
+  include_anomalies: "true",
   type_export: "JSON",
 };
 
@@ -92,6 +99,15 @@ export interface DossierFondsVert {
   socle_commun?: SocleCommun;
 }
 
+function readDossierResponse(value: unknown) {
+  if (!isRecord(value) || !isRecord(value.data)) return null;
+  const data = value.data;
+  return {
+    data: data as DossierFondsVert,
+    signals: readFondsVertSignals(data),
+  };
+}
+
 function requestedMetrics({
   metrics,
   includeMetrics,
@@ -119,11 +135,12 @@ export async function getDossierFondsVert({
   numeroDossier: number;
   includeMetrics: boolean;
 }): Promise<
-  | { success: false; error: string }
+  | { success: false; error: string; signals: FondsVertSignals }
   | {
       success: true;
       data: DossierFondsVert;
       metricsStatus: "loaded" | "unavailable" | "not-requested";
+      signals: FondsVertSignals;
     }
 > {
   const params = new URLSearchParams({
@@ -131,7 +148,7 @@ export async function getDossierFondsVert({
     include_metrics: String(includeMetrics),
   });
 
-  const dossierResult = await fetchFondsVert<{ data: DossierFondsVert }>(
+  const dossierResult = await fetchFondsVert<unknown>(
     `v2/dossiers/${numeroDossier}?${params.toString()}`,
   );
 
@@ -140,6 +157,7 @@ export async function getDossierFondsVert({
       return {
         success: false,
         error: "Impossible de trouver les détails pour ce dossier",
+        signals: unavailableFondsVertSignals(),
       };
     }
 
@@ -149,19 +167,22 @@ export async function getDossierFondsVert({
         include_metrics: "false",
       });
 
-      const retryResult = await fetchFondsVert<{ data: DossierFondsVert }>(
+      const retryResult = await fetchFondsVert<unknown>(
         `v2/dossiers/${numeroDossier}?${paramsWithoutMetrics.toString()}`,
       );
 
-      if (retryResult.success) {
-        const retryData = retryResult.data.data;
+      const retry = retryResult.success
+        ? readDossierResponse(retryResult.data)
+        : null;
+      if (retry) {
         return {
           success: true,
           data: {
-            ...retryData,
+            ...retry.data,
             metrique_specifique: undefined,
           },
           metricsStatus: "unavailable",
+          signals: retry.signals,
         };
       }
 
@@ -169,6 +190,7 @@ export async function getDossierFondsVert({
         success: false,
         error:
           "L'historique n'est pas encore disponible pour ce type de démarche.",
+        signals: unavailableFondsVertSignals(),
       };
     }
 
@@ -178,10 +200,19 @@ export async function getDossierFondsVert({
     return {
       success: false,
       error: `L'historique financier est temporairement indisponible.`,
+      signals: unavailableFondsVertSignals(),
     };
   }
 
-  const data = dossierResult.data.data;
+  const response = readDossierResponse(dossierResult.data);
+  if (!response) {
+    return {
+      success: false,
+      error: "L'historique financier est temporairement indisponible.",
+      signals: unavailableFondsVertSignals(),
+    };
+  }
+  const { data, signals } = response;
 
   return {
     success: true,
@@ -193,5 +224,6 @@ export async function getDossierFondsVert({
       }),
     },
     metricsStatus: includeMetrics ? "loaded" : "not-requested",
+    signals,
   };
 }

@@ -3,6 +3,7 @@ import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
 
 const [endpoint] = requireEnv("FONDSVERT_API_ENDPOINT");
+export const FONDS_VERT_TIMEOUT_MS = 10_000;
 
 export function defaultHeaders({ token }: { token?: string } = {}) {
   return {
@@ -19,10 +20,18 @@ export async function fetchFondsVert<T>(
 > {
   try {
     const token = await login();
+    if (!token)
+      return {
+        success: false,
+        status: 401,
+        statusText: "Authentication unavailable",
+      };
     const url = new URL(`/fonds_vert/${path}`, endpoint);
 
     const dossiersResponse = await fetch(url, {
       method: "GET",
+      signal: AbortSignal.timeout(FONDS_VERT_TIMEOUT_MS),
+      redirect: "error",
       headers: {
         ...defaultHeaders({ token }),
       },
