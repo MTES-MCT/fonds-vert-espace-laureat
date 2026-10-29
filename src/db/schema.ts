@@ -36,6 +36,7 @@ export const dossierMetricRevisions = pgTable(
     textValue: text("text_value"),
     booleanValue: boolean("boolean_value"),
     textArrayValue: text("text_array_value").array(),
+    authorEmail: text("author_email"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

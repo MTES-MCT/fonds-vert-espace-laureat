@@ -1,0 +1,1 @@
+ALTER TABLE "dossier_metric_revisions" ADD COLUMN "author_email" text;
