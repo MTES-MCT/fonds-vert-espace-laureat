@@ -402,7 +402,7 @@ test("engagement with multiple payments shows each payment as separate row", asy
 });
 
 test("dossier page displays impact metrics correctly", async ({ page }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/impact`);
 
   // Métriques avant/après travaux
 
@@ -495,7 +495,7 @@ test("validates and submits a numeric metric correction once", async ({
   });
 
   try {
-    await page.goto(`/projets/${correctionDossierNumber}`);
+    await page.goto(`/projets/${correctionDossierNumber}/impact`);
     await waitForDsfrModal(page);
 
     const numberCard = page.getByRole("region", {
@@ -615,7 +615,7 @@ test("persists a correction submitted from the standard dossier page", async ({
   });
 
   try {
-    await page.goto(`/projets/${correctionDossierNumber}`);
+    await page.goto(`/projets/${correctionDossierNumber}/impact`);
     await waitForDsfrModal(page);
 
     const metricCard = page.getByRole("region", {
@@ -690,7 +690,7 @@ test("refreshes a conflicting correction without replaying the discarded entry",
   });
 
   try {
-    await page.goto(`/projets/${dossierNumber}`);
+    await page.goto(`/projets/${dossierNumber}/impact`);
     await waitForDsfrModal(page);
     const card = page.getByRole("region", { name: "Métrique partagée" });
     await card.getByRole("button", { name: "Modifier" }).click();
@@ -825,6 +825,10 @@ test("persists successive metric corrections by an ordinary porteur and instruct
       .filter({ hasText: String(dossierNumber) })
       .getByRole("link", { name: "Ouvrir" })
       .click();
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
     await waitForDsfrModal(page);
     const card = page.getByRole("region", {
       name: "Métrique des deux acteurs",
@@ -846,6 +850,10 @@ test("persists successive metric corrections by an ordinary porteur and instruct
       .getByRole("row")
       .filter({ hasText: String(dossierNumber) })
       .getByRole("link", { name: "Ouvrir" })
+      .click();
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
       .click();
     await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
     await waitForDsfrModal(page);
@@ -930,7 +938,7 @@ test("edits text, boolean and multiple metrics from their cards", async ({
   });
 
   try {
-    await page.goto(`/projets/${correctionDossierNumber}`);
+    await page.goto(`/projets/${correctionDossierNumber}/impact`);
     await waitForDsfrModal(page);
 
     const textCard = page.getByRole("region", { name: "Métrique texte" });
@@ -1046,7 +1054,7 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
   });
 
   try {
-    await page.goto(`/projets/${correctionDossierNumber}`);
+    await page.goto(`/projets/${correctionDossierNumber}/impact`);
     await waitForDsfrModal(page);
 
     const beforeAfterCard = page.getByRole("region", { name: "Énergie test" });
@@ -1133,7 +1141,7 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
   );
 
   try {
-    await page.goto(`/projets/${storedMetricsDossierNumber}`);
+    await page.goto(`/projets/${storedMetricsDossierNumber}/impact`);
 
     const impactSection = page.getByTestId("impact-section");
     await expect(impactSection).toBeVisible();
@@ -1149,10 +1157,14 @@ test("dossier page displays stored metrics before Fonds Vert API metrics", async
     await expect(
       impactSection.getByTestId("metric-metrique-fonds-vert-api"),
     ).not.toBeAttached();
+    expect(includeMetricsRequests).toEqual(["false"]);
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Financement", exact: true })
+      .click();
     await expect(
       page.getByLabel("Montant total des dépenses du projet"),
     ).toContainText("18 939 933,00 €");
-    expect(includeMetricsRequests).toEqual(["false"]);
 
     await expect
       .poll(() => getStoredDossierMetrics(storedMetricsDossierNumber))
@@ -1215,7 +1227,7 @@ test("dossier page stores Fonds Vert API metrics when no stored metrics exist", 
   );
 
   try {
-    await page.goto(`/projets/${apiMetricsDossierNumber}`);
+    await page.goto(`/projets/${apiMetricsDossierNumber}/impact`);
 
     const apiMetric = page
       .getByTestId("impact-section")
@@ -1280,7 +1292,20 @@ test("dossier page retries an empty metric import on the next load", async ({
   );
 
   try {
-    await page.goto(`/projets/${emptyMetricsDossierNumber}`);
+    await page.goto(`/projets/${emptyMetricsDossierNumber}/impact`);
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "Données d’impact",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        "Aucune donnée d’impact n’est disponible pour ce projet.",
+        { exact: true },
+      ),
+    ).toBeVisible();
 
     await expect
       .poll(() => getStoredDossierMetrics(emptyMetricsDossierNumber))
@@ -1294,6 +1319,60 @@ test("dossier page retries an empty metric import on the next load", async ({
     expect(includeMetricsRequests).toEqual(["true", "true"]);
   } finally {
     await deleteStoredDossierMetrics(emptyMetricsDossierNumber);
+  }
+});
+
+test("la page Impact conserve les valeurs locales quand Fonds vert est indisponible", async ({
+  page,
+  msw,
+}) => {
+  const dossierNumber = 89000034;
+  await deleteStoredDossierMetrics(dossierNumber);
+  await importStoredDossierMetricsIfMissing({
+    dossierNumber,
+    metrics: {
+      stored_metric: {
+        label: "Surface conservée localement",
+        unite: "ha",
+        valeur_estimee: 42,
+      },
+    },
+  });
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json(makeDossierDataWithNumber(dossierNumber)),
+    ),
+    http.get(`http://fondsvert/fonds_vert/v2/dossiers/${dossierNumber}`, () =>
+      HttpResponse.json({ error: "FV indisponible" }, { status: 503 }),
+    ),
+  );
+  try {
+    await page.goto(`/projets/${dossierNumber}/impact`);
+    await expect(
+      page
+        .getByTestId("impact-section")
+        .getByRole("region", { name: "Surface conservée localement" })
+        .getByLabel("Valeur effective"),
+    ).toHaveText("42ha");
+    await expect(
+      page.getByRole("alert").filter({
+        hasText: "Les données Fonds vert sont temporairement indisponibles.",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Modifier", exact: true }),
+    ).toBeEnabled();
+    await expect(
+      page
+        .getByRole("navigation", { name: "Pages du projet" })
+        .getByRole("link", { name: "Financement", exact: true }),
+    ).toBeVisible();
+    expect(
+      (await getStoredDossierMetrics(dossierNumber))?.stored_metric
+        .valeur_estimee,
+    ).toBe(42);
+  } finally {
+    await deleteStoredDossierMetrics(dossierNumber);
   }
 });
 
@@ -1339,7 +1418,7 @@ test("dossier page retries when Fonds Vert only returns unavailable metrics", as
   );
 
   try {
-    await page.goto(`/projets/${unavailableMetricsDossierNumber}`);
+    await page.goto(`/projets/${unavailableMetricsDossierNumber}/impact`);
 
     await expect
       .poll(() => getStoredDossierMetrics(unavailableMetricsDossierNumber))
@@ -1359,7 +1438,7 @@ test("dossier page retries when Fonds Vert only returns unavailable metrics", as
 test("dossier page organizes metrics by thematic groups correctly", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/impact`);
 
   // 1- Vérification des titres de chaque groupe de métriques
 
@@ -1532,7 +1611,10 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
       await getStoredDossierMetrics(retryWithoutMetricsDossierNumber),
     ).toBeUndefined();
 
-    await page.reload();
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
 
     await expect(
       page.getByRole("region", {
@@ -1556,7 +1638,7 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
 test("dossier page filters out metrics with 'Donnée non disponible' in label", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/impact`);
 
   await expect(
     page.getByTestId("metric-surface-du-batiment-avant-projet"),
@@ -1855,7 +1937,7 @@ test("dossier page displays metrics", async ({ page, msw }) => {
   );
 
   try {
-    await page.goto(`/projets/${metricsDossierNumber}`);
+    await page.goto(`/projets/${metricsDossierNumber}/impact`);
 
     const impactSection = page.getByTestId("impact-section");
     await expect(impactSection).toBeVisible();
@@ -1925,7 +2007,7 @@ test("dossier page displays boolean metric as Oui/Non", async ({
   );
 
   try {
-    await page.goto(`/projets/${booleanMetricDossierNumber}`);
+    await page.goto(`/projets/${booleanMetricDossierNumber}/impact`);
 
     const impactSection = page.getByTestId("impact-section");
     await expect(impactSection).toBeVisible();

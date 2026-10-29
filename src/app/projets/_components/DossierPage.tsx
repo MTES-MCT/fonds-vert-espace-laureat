@@ -1,3 +1,4 @@
+import type { ProjectSection } from "@/app/projets/_components/DossierSection";
 import { DossierSection } from "@/app/projets/_components/DossierSection";
 import { getDossier } from "@/app/projets/_components/getDossier";
 import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibility";
@@ -18,8 +19,10 @@ import { getAuthenticatedUser, getSession } from "@/utils/session";
 
 export async function DossierPage({
   dossierNumber,
+  section = "summary",
 }: {
   dossierNumber: string;
+  section?: ProjectSection;
 }) {
   const user = await getAuthenticatedUser();
   const session = await getSession();
@@ -49,20 +52,26 @@ export async function DossierPage({
       }),
   });
   const dossierFondsVertPromise = metricLoading.externalDossierPromise;
-  const financesEJPromise = dossierFondsVertPromise.then(async (fvResult) => {
-    if (!fvResult.success || !fvResult.data.information_financiere) {
-      return {};
-    }
-    const ejNumbers = extractEJNumbers(fvResult.data.information_financiere);
-    const results = await Promise.all(ejNumbers.map(loadFinancesEJ));
-    return buildFinancesResult(results);
-  });
+  const financesEJPromise =
+    section === "impact"
+      ? Promise.resolve({})
+      : dossierFondsVertPromise.then(async (fvResult) => {
+          if (!fvResult.success || !fvResult.data.information_financiere) {
+            return {};
+          }
+          const ejNumbers = extractEJNumbers(
+            fvResult.data.information_financiere,
+          );
+          const results = await Promise.all(ejNumbers.map(loadFinancesEJ));
+          return buildFinancesResult(results);
+        });
 
   const [progressTarget, metricLoadingResult] = await Promise.all([
     getDossierProgress({ numeroDossier }),
     metricLoading.resultPromise,
   ]);
-  const { dossierFondsVertResult, metricRevisionTargets } = metricLoadingResult;
+  const { dossierFondsVertResult, metricRevisionTargets, metrics } =
+    metricLoadingResult;
 
   const dossierSubvention = dossierSubventionResult.data;
   return (
@@ -75,6 +84,8 @@ export async function DossierPage({
           initialTargets={metricRevisionTargets}
         >
           <DossierSection
+            section={section}
+            metrics={metrics}
             isAdmin={isAdmin({ userEmail: user.email })}
             view={
               isAdmin({ userEmail: user.email })

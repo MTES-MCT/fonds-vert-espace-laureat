@@ -6,7 +6,14 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
-import { type FormEvent, useId, useMemo, useRef, useState } from "react";
+import {
+  type FormEvent,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
@@ -19,6 +26,8 @@ import {
   MetricRevisionConflictError,
   useMetricRevisions,
 } from "./MetricRevisionContext";
+
+const subscribeToHydration = () => () => {};
 
 function inputValue(value: MetricValue): string {
   if (Array.isArray(value)) {
@@ -91,6 +100,11 @@ export function MetricCorrectionEditor({
     [instanceId, target.metricCode],
   );
   const { correctMetric } = useMetricRevisions();
+  const hydrated = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
   const [openedRevision, setOpenedRevision] = useState(target.revision);
   const [rawValue, setRawValue] = useState(inputValue(target.effectiveValue));
   const [textArrayValues, setTextArrayValues] = useState(() =>
@@ -350,6 +364,7 @@ export function MetricCorrectionEditor({
   return (
     <div>
       <Button
+        disabled={!hydrated}
         ref={openerRef}
         className="bg-white"
         priority="tertiary"
@@ -378,7 +393,7 @@ export function MetricCorrectionEditor({
           <div className="space-y-2">{correctionField()}</div>
 
           <ButtonsGroup
-            alignment="right"
+            alignment="between"
             inlineLayoutWhen="sm and up"
             isReverseOrder
             buttons={[

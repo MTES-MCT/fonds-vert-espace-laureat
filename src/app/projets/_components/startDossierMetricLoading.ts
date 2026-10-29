@@ -53,6 +53,11 @@ export function startDossierMetricLoading({
 
     return {
       dossierFondsVertResult,
+      metrics:
+        localMetrics ??
+        (externalDossierResult.success
+          ? externalDossierResult.data.metrique_specifique
+          : undefined),
       metricRevisionTargets: finalSnapshot.targets,
     };
   });

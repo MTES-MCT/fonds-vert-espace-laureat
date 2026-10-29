@@ -282,6 +282,10 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
         .locator(".fr-badge")
         .filter({ hasText: finalStatus }),
     ).toBeVisible();
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
     await expect(
       page
         .getByTestId("impact-section")
@@ -289,6 +293,10 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
         .first(),
     ).toBeEnabled();
 
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Synthèse du projet", exact: true })
+      .click();
     await saveOrdinaryProgress(page, "Non-commencé");
     expect(
       (await progressRows(dossierNumber)).map(

@@ -131,6 +131,23 @@ for (const [email, listTitle, projectContext] of [
         .getByRole("navigation", { name: "Pages du projet" })
         .getByRole("link"),
     ).toHaveText(["Synthèse du projet", "Données d’impact", "Financement"]);
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
+    await expect(page).toHaveURL(`/projets/${dossierNumber}/impact`);
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "Données d’impact",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByTestId("impact-section")
+        .getByText(METRIC_LABEL, { exact: true }),
+    ).toBeVisible();
     const refused = await page.evaluate(async () => {
       const response = await fetch("/api/session/project-view", {
         method: "POST",
@@ -184,6 +201,11 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     ["instructeur", "12", "Bloqué"],
     ["porteur", "15", "En cours de réalisation"],
   ] as const) {
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
+    await expect(page).toHaveURL(`/projets/${dossierNumber}/impact`);
     const path = new URL(page.url()).pathname;
     await changeAdminView(page, view);
     expect(new URL(page.url()).pathname).toBe(path);
@@ -209,6 +231,10 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
       .click();
     await expect(metricDialog).toBeHidden();
 
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Synthèse du projet", exact: true })
+      .click();
     await page
       .getByRole("button", { name: "Modifier l’avancement", exact: true })
       .click();

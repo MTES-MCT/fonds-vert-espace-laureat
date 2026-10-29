@@ -77,9 +77,20 @@ test("mesure le dossier autorisé avec DN 40 ms, FV 80 ms et EJ 30 ms", async ({
     }
     expect(dossierCalls).toBe(6);
     expect(ejCalls).toBe(12);
+    const impactDurations: number[] = [];
+    for (let pass = 0; pass < 6; pass++) {
+      const started = performance.now();
+      await page.goto(`/projets/${DOSSIER}/impact`);
+      await expect(page.getByTestId("impact-section")).toBeVisible();
+      if (pass > 0)
+        impactDurations.push(Math.round(performance.now() - started));
+    }
+    expect(dossierCalls).toBe(12);
+    expect(ejCalls).toBe(12);
+    expect(Math.max(...impactDurations)).toBeLessThan(1500);
     console.log(
       "FV024 DETAIL",
-      JSON.stringify({ durations, dossierCalls, ejCalls }),
+      JSON.stringify({ durations, impactDurations, dossierCalls, ejCalls }),
     );
   } finally {
     await deleteStoredDossierMetrics(DOSSIER);
@@ -133,11 +144,15 @@ test("un dossier existant refusé ne lance ni FV ni EJ ni import, puis son porte
 
   try {
     await authenticatePage(page, { email: "sans-acces.client024@example.com" });
-    await page.goto(`/projets/${dossierNumber}`);
-    await expect(page.getByText("Introuvable", { exact: true })).toBeVisible();
-    expect(fvCalls).toBe(0);
-    expect(ejCalls).toBe(0);
-    expect(await getStoredDossierMetrics(dossierNumber)).toBeUndefined();
+    for (const section of ["", "/impact"]) {
+      await page.goto(`/projets/${dossierNumber}${section}`);
+      await expect(
+        page.getByText("Introuvable", { exact: true }),
+      ).toBeVisible();
+      expect(fvCalls).toBe(0);
+      expect(ejCalls).toBe(0);
+      expect(await getStoredDossierMetrics(dossierNumber)).toBeUndefined();
+    }
 
     await authenticatePage(page, { email: ownerEmail });
     await page.goto(`/projets/${dossierNumber}`);

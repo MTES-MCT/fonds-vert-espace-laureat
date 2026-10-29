@@ -19,9 +19,12 @@ import { Dossier } from "@/services/ds/subvention";
 import {
   DossierFondsVert,
   InformationFinanciere,
+  Metrics,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { projectListLabel, type ProjectView } from "@/utils/projectView";
+
+export type ProjectSection = "summary" | "impact";
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,
@@ -44,6 +47,8 @@ function buildEngagementsSection(
 
 export async function DossierSection({
   isAdmin,
+  section = "summary",
+  metrics,
   view,
   dossierSubvention,
   dossierFondsVertResult,
@@ -54,6 +59,8 @@ export async function DossierSection({
   pageAction,
 }: {
   isAdmin: boolean;
+  section?: ProjectSection;
+  metrics?: Metrics;
   view?: ProjectView;
   dossierSubvention: Dossier;
   dossierFondsVertResult:
@@ -67,21 +74,24 @@ export async function DossierSection({
 }) {
   const subvention = dossierSubvention.champs;
 
-  const { errorMessage, metriques, informationFinanciere, socleCommun } =
+  const { errorMessage, informationFinanciere, socleCommun } =
     dossierFondsVertResult.success
       ? {
           errorMessage: null,
-          metriques: dossierFondsVertResult.data.metrique_specifique,
           informationFinanciere:
             dossierFondsVertResult.data.information_financiere,
           socleCommun: dossierFondsVertResult.data.socle_commun,
         }
       : {
           errorMessage: dossierFondsVertResult.error,
-          metriques: {},
           informationFinanciere: undefined,
           socleCommun: undefined,
         };
+  const metriques =
+    metrics ??
+    (dossierFondsVertResult.success
+      ? dossierFondsVertResult.data.metrique_specifique
+      : undefined);
 
   const backLink = {
     label: isAdmin ? "Tous les projets" : projectListLabel(view),
@@ -104,6 +114,10 @@ export async function DossierSection({
           anneeMillesime={socleCommun?.annee_millesime}
           numeroDossier={dossierSubvention.numero}
           backLink={backLink}
+          pageLabel={
+            section === "impact" ? "Données d’impact" : "Synthèse du projet"
+          }
+          projectPath={section === "impact" ? basePath : undefined}
         />
         <p className="mb-6 text-sm text-[var(--text-mention-grey)]">
           {view === "porteur"
@@ -118,12 +132,20 @@ export async function DossierSection({
         >
           <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-4 p-0 pb-4">
             <li>
-              <Link href={basePath} aria-current="page">
+              <Link
+                href={basePath}
+                aria-current={section === "summary" ? "page" : undefined}
+              >
                 Synthèse du projet
               </Link>
             </li>
             <li>
-              <Link href={`${basePath}#donnees-impact`}>Données d’impact</Link>
+              <Link
+                href={`${basePath}/impact`}
+                aria-current={section === "impact" ? "page" : undefined}
+              >
+                Données d’impact
+              </Link>
             </li>
             <li>
               <Link href={`${basePath}#financement`}>Financement</Link>
@@ -131,93 +153,107 @@ export async function DossierSection({
           </ul>
         </nav>
 
-        <div className="flex flex-wrap items-start gap-8">
-          <div className="flex min-w-0 flex-1 flex-col gap-y-8">
+        {section === "impact" ? (
+          <div className="space-y-8">
+            <h2>Données d’impact</h2>
             {anomaliesSection}
-
-            <section
-              id="financement"
-              className="border-b border-[var(--border-default-grey)] pb-8"
-            >
-              <h3 className="mb-3">Financement du projet</h3>
-              {errorMessage && (
-                <Alert severity="error" small description={errorMessage} />
-              )}
-              <SubventionDetails
-                montantSubventionAttribuee={
-                  socleCommun?.montant_subvention_attribuee
+            {errorMessage && (
+              <Alert
+                severity="error"
+                small
+                description={
+                  metriques && Object.keys(metriques).length > 0
+                    ? "Les données Fonds vert sont temporairement indisponibles. Les valeurs déjà enregistrées restent consultables."
+                    : "Les données Fonds vert sont temporairement indisponibles."
                 }
-                totalDesDepenses={socleCommun?.total_des_depenses}
-                informationFinanciere={informationFinanciere}
-                engagementsSection={buildEngagementsSection(
-                  informationFinanciere,
-                  financesEJPromise,
-                )}
               />
-            </section>
-
-            {metriques && Object.keys(metriques).length > 0 && (
-              <div
-                id="donnees-impact"
-                className="pb-8"
-                data-testid="impact-section"
-              >
-                <h3>Engagements écologiques</h3>
+            )}
+            {metriques && Object.keys(metriques).length > 0 ? (
+              <div data-testid="impact-section">
                 <MetricsGrid metriques={metriques} />
               </div>
+            ) : (
+              <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
             )}
-
-            <Link
-              className="fr-btn fr-btn--tertiary bg-white"
-              href={backLink.linkProps.href}
-              data-testid="footer-back"
-            >
-              Retour
-            </Link>
           </div>
+        ) : (
+          <div className="flex flex-wrap items-start gap-8">
+            <div className="flex min-w-0 flex-1 flex-col gap-y-8">
+              <section
+                id="financement"
+                className="border-b border-[var(--border-default-grey)] pb-8"
+              >
+                <h3 className="mb-3">Financement du projet</h3>
+                {errorMessage && (
+                  <Alert severity="error" small description={errorMessage} />
+                )}
+                <SubventionDetails
+                  montantSubventionAttribuee={
+                    socleCommun?.montant_subvention_attribuee
+                  }
+                  totalDesDepenses={socleCommun?.total_des_depenses}
+                  informationFinanciere={informationFinanciere}
+                  engagementsSection={buildEngagementsSection(
+                    informationFinanciere,
+                    financesEJPromise,
+                  )}
+                />
+              </section>
+            </div>
 
-          <div className="flex w-full min-w-0 flex-col gap-y-4 lg:w-[22rem]">
-            <div>
-              <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
-                <StatutRealisation
-                  dossierNumber={dossierSubvention.numero}
-                  initialTarget={progressTarget}
-                  correctionApiPath={progressApiPath}
+            <div className="flex w-full min-w-0 flex-col gap-y-4 lg:w-[22rem]">
+              <div>
+                <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
+                  <StatutRealisation
+                    dossierNumber={dossierSubvention.numero}
+                    initialTarget={progressTarget}
+                    correctionApiPath={progressApiPath}
+                  />
+                </div>
+                {socleCommun && (
+                  <Timeline
+                    steps={[
+                      {
+                        label: "Dépôt du dossier",
+                        date: socleCommun.date_depot,
+                      },
+                      {
+                        label: "Notification",
+                        date: socleCommun.date_notification,
+                      },
+                      {
+                        label: "Début d'exécution",
+                        date: socleCommun.date_debut_execution,
+                      },
+                      {
+                        label: "Fin d'exécution",
+                        date: socleCommun.date_fin_execution,
+                      },
+                    ]}
+                  />
+                )}
+                <ProjectPresentation
+                  resume={subvention.resumeProjet}
+                  numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+                  departementImplantation={subvention.departementImplantation}
+                  socleCommun={socleCommun}
+                />
+                <ProjectHolder
+                  emailRepresentantLegal={subvention.emailRepresentantLegal}
+                  emailResponsableSuivi={subvention.emailResponsableSuivi}
+                  socleCommun={socleCommun}
                 />
               </div>
-              {socleCommun && (
-                <Timeline
-                  steps={[
-                    { label: "Dépôt du dossier", date: socleCommun.date_depot },
-                    {
-                      label: "Notification",
-                      date: socleCommun.date_notification,
-                    },
-                    {
-                      label: "Début d'exécution",
-                      date: socleCommun.date_debut_execution,
-                    },
-                    {
-                      label: "Fin d'exécution",
-                      date: socleCommun.date_fin_execution,
-                    },
-                  ]}
-                />
-              )}
-              <ProjectPresentation
-                resume={subvention.resumeProjet}
-                numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-                departementImplantation={subvention.departementImplantation}
-                socleCommun={socleCommun}
-              />
-              <ProjectHolder
-                emailRepresentantLegal={subvention.emailRepresentantLegal}
-                emailResponsableSuivi={subvention.emailResponsableSuivi}
-                socleCommun={socleCommun}
-              />
             </div>
           </div>
-        </div>
+        )}
+        <Link
+          className="fr-btn fr-btn--tertiary mt-8 bg-white"
+          href={backLink.linkProps.href}
+          data-testid="footer-back"
+        >
+          Retour
+        </Link>
       </div>
       <StartDsfrOnHydration />
     </div>

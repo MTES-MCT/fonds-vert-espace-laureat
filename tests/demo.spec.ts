@@ -11,6 +11,10 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await resetDemoDossierMetrics();
 
   await page.goto("/projets/demo");
+  await page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Données d’impact", exact: true })
+    .click();
   await page.waitForSelector('[data-fr-js-modal-button="true"]', {
     state: "attached",
   });
@@ -188,6 +192,10 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await dialog.getByRole("button", { name: "Annuler" }).click();
 
   await page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Synthèse du projet", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Modifier l’avancement", exact: true })
     .click();
   const progressDialog = page.getByRole("dialog", {
@@ -272,17 +280,21 @@ test("demo page loads, corrects and persists its database-backed metrics", async
       .click(),
   ]);
 
+  await expect(
+    page
+      .getByRole("region", { name: "Avancement du projet" })
+      .getByText("Non renseigné", { exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Données d’impact", exact: true })
+    .click();
   await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
   await expect(anomaliesSection.getByText(/2\s*055\s*650\s*kWh/)).toBeVisible();
   await expect(anomaliesSection.getByText("448kgCO₂e")).toBeVisible();
   await expect(energyBeforeAnomaly).toContainText(
     "Consommation surfacique hors plage",
   );
-  await expect(
-    page
-      .getByRole("region", { name: "Avancement du projet" })
-      .getByText("Non renseigné", { exact: true }),
-  ).toBeVisible();
 
   await page.reload();
   await expect(anomaliesSection.getByLabel("3 anomalies")).toBeVisible();
@@ -294,6 +306,10 @@ test("fits related energy metric values and actions on mobile", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/projets/demo");
+  await page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Données d’impact", exact: true })
+    .click();
 
   const card = page
     .getByTestId("impact-section")

@@ -11,12 +11,16 @@ export const SummaryHeader = ({
   anneeMillesime,
   numeroDossier,
   backLink,
+  pageLabel = "Synthèse du projet",
+  projectPath,
 }: {
   intitule?: string;
   titreDemarche: string;
   anneeMillesime?: number;
   numeroDossier: number;
   backLink: { label: string; linkProps: { href: string } };
+  pageLabel?: string;
+  projectPath?: string;
 }) => {
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
@@ -27,8 +31,18 @@ export const SummaryHeader = ({
         homeLinkProps={{
           href: "/",
         }}
-        segments={[backLink]}
-        currentPageLabel="Synthèse du projet"
+        segments={
+          projectPath
+            ? [
+                backLink,
+                {
+                  label: `Projet n°${numeroDossier}`,
+                  linkProps: { href: projectPath },
+                },
+              ]
+            : [backLink]
+        }
+        currentPageLabel={pageLabel}
         data-testid="breadcrumb-current"
       />
       <div className="flex items-start justify-between gap-8">
