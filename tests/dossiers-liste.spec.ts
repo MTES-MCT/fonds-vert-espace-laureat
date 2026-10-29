@@ -799,8 +799,17 @@ test("displays empty state when no dossiers in any source", async ({
   await page.goto("/projets");
 
   await expect(
-    page.getByText("Assurez-vous de vous connecter avec l'adresse e-mail"),
+    page.getByText(
+      "Assurez-vous de vous connecter avec une adresse e-mail disposant d'un accès au projet dans Démarche numérique. Si vous avez besoin d'aide, n'hésitez pas à nous contacter.",
+      { exact: true },
+    ),
   ).toBeVisible();
+  await expect(page.locator("main")).not.toContainText(
+    "dépôt de votre demande",
+  );
+  await expect(page.locator("main")).not.toContainText(
+    "votre groupe instructeur",
+  );
 });
 
 for (const [situation, viewport] of [
