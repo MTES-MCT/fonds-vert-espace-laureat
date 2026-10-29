@@ -21,46 +21,45 @@ export const SummaryHeader = ({
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
 
   return (
-    <div className="bg-[#efebe8]">
-      <div className="fr-container pt-8 pb-40">
-        <Breadcrumb
-          className="mt-0 mb-4"
-          homeLinkProps={{
-            href: "/",
-          }}
-          segments={[backLink]}
-          currentPageLabel={`Dossier n°${numeroDossier}`}
-          data-testid="breadcrumb-current"
-        />
-        <div className="flex min-h-[116px] items-start justify-between gap-8">
-          <div className="flex flex-col justify-center">
-            <h1 className="mb-3 max-w-4xl text-4xl font-bold text-balance">
-              {intitule && intitule.length > 80
-                ? `${intitule.slice(0, 80)}...`
-                : (intitule ?? "N/A")}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3">
+    <header className="mb-8">
+      <Breadcrumb
+        className="mt-0 mb-4"
+        homeLinkProps={{
+          href: "/",
+        }}
+        segments={[backLink]}
+        currentPageLabel="Synthèse du projet"
+        data-testid="breadcrumb-current"
+      />
+      <div className="flex items-start justify-between gap-8">
+        <div className="flex flex-col justify-center">
+          <h1 className="mb-3 max-w-4xl text-4xl font-bold text-balance">
+            {intitule && intitule.length > 80
+              ? `${intitule.slice(0, 80)}...`
+              : (intitule ?? "N/A")}
+          </h1>
+          <p className="mb-3 text-sm">Dossier n°{numeroDossier}</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <Tag
+              small
+              className="bg-white shadow-sm"
+              iconId="fr-icon-award-fill"
+            >
+              {mesureFondsVert}
+            </Tag>
+            {anneeMillesime && (
               <Tag
                 small
                 className="bg-white shadow-sm"
-                iconId="fr-icon-award-fill"
+                iconId="fr-icon-calendar-2-line"
               >
-                {mesureFondsVert}
+                Édition {anneeMillesime}
               </Tag>
-              {anneeMillesime && (
-                <Tag
-                  small
-                  className="bg-white shadow-sm"
-                  iconId="fr-icon-calendar-2-line"
-                >
-                  Édition {anneeMillesime}
-                </Tag>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 };
 

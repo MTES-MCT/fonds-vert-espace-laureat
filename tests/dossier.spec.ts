@@ -1437,7 +1437,7 @@ test("navigation links work correctly", async ({ page }) => {
     page.locator('[data-testid="breadcrumb-current"] ol > li:first-child > a'),
   ).toHaveAttribute("href", "/");
 
-  const backLink = "/projets?siret=12345678910111";
+  const backLink = "/projets";
 
   await expect(
     page.locator('[data-testid="breadcrumb-current"] ol > li:nth-child(2) > a'),

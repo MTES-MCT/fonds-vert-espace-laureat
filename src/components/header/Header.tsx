@@ -6,11 +6,20 @@ import {
 } from "@codegouvfr/react-dsfr/Header";
 
 import { Navigation } from "@/components/header/Navigation";
+import { ProjectViewSwitch } from "@/components/header/ProjectViewSwitch";
+import type { ProjectView } from "@/utils/projectView";
 
-export const Header = ({ userEmail }: { userEmail?: string }) => {
+export const Header = ({
+  userEmail,
+  adminView,
+}: {
+  userEmail?: string;
+  adminView?: ProjectView;
+}) => {
   const quickAccessItems = userEmail
     ? [
-        <div key={0} className="mb-4 items-center gap-x-2 sm:flex">
+        <div key={0} className="mb-4 flex flex-wrap items-center gap-4">
+          {adminView && <ProjectViewSwitch view={adminView} />}
           <div className="text-sm font-medium">{userEmail}</div>
           <HeaderQuickAccessItem
             quickAccessItem={{

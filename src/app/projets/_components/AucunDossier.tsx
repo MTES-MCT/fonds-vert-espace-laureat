@@ -19,8 +19,8 @@ export function AucunDossier({
         aria-hidden="true"
       ></span>
       <h2 className="mb-0 max-w-lg text-lg">
-        Aucun dossier n'est associé à l'adresse email {email} et au siret{" "}
-        {siret}
+        Aucun projet accessible n'est associé à l'adresse email {email} et au
+        SIRET {siret}
       </h2>
       <p className="mb-0 max-w-3xl text-balance text-gray-700">{noResultMsg}</p>
     </div>

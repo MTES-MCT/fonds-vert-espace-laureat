@@ -13,7 +13,7 @@ import {
 } from "@/services/fondsvert/finances";
 import { extractEJNumbers } from "@/utils/finance";
 import { isAdmin } from "@/utils/roles";
-import { getAuthenticatedUser } from "@/utils/session";
+import { getAuthenticatedUser, getSession } from "@/utils/session";
 
 export async function DossierPage({
   dossierNumber,
@@ -21,6 +21,7 @@ export async function DossierPage({
   dossierNumber: string;
 }) {
   const user = await getAuthenticatedUser();
+  const session = await getSession();
 
   const numeroDossier = Number(dossierNumber);
 
@@ -69,6 +70,11 @@ export async function DossierPage({
         >
           <DossierSection
             isAdmin={isAdmin({ userEmail: user.email })}
+            view={
+              isAdmin({ userEmail: user.email })
+                ? (session.projectView ?? "porteur")
+                : dossierSubvention.viewerRelationship
+            }
             dossierSubvention={dossierSubvention}
             dossierFondsVertResult={dossierFondsVertResult}
             financesEJPromise={financesEJPromise}

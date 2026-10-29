@@ -15,7 +15,7 @@ export function Navigation() {
           isActive: segment === null,
         },
         {
-          text: "Dossiers",
+          text: "Projets",
           linkProps: {
             href: "/projets",
           },

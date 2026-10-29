@@ -2,6 +2,7 @@ import { loadEnvConfig } from "@next/env";
 import { sealData } from "iron-session";
 import { Page } from "next/experimental/testmode/playwright/msw";
 
+import type { ProjectView } from "@/utils/projectView";
 import { getSessionOptions, type Session } from "@/utils/session";
 
 const projectDir = process.cwd();
@@ -13,9 +14,11 @@ const DEFAULT_SIRET = "12345678910111";
 async function createAuthCookie({
   email = DEFAULT_EMAIL,
   siret = DEFAULT_SIRET,
+  projectView,
 }: {
   email?: string;
   siret?: string;
+  projectView?: ProjectView;
 } = {}): Promise<{
   name: string;
   value: string;
@@ -23,6 +26,7 @@ async function createAuthCookie({
   const options = getSessionOptions();
 
   const sessionData: Session = {
+    projectView,
     user: {
       id: "test-user-id",
       isProConnectIdentityProvider: true,
@@ -45,9 +49,13 @@ async function createAuthCookie({
 
 export async function authenticatePage(
   page: Page,
-  { email, siret }: { email?: string; siret?: string } = {},
+  {
+    email,
+    siret,
+    projectView,
+  }: { email?: string; siret?: string; projectView?: ProjectView } = {},
 ): Promise<void> {
-  const cookie = await createAuthCookie({ email, siret });
+  const cookie = await createAuthCookie({ email, siret, projectView });
 
   await page.context().addCookies([
     {

@@ -10,7 +10,8 @@ import {
 } from "@/app/projets/_components/getParams";
 import { loadAuthorizedDossiers } from "@/app/projets/_components/loadAuthorizedDossiers";
 import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
-import { getAuthenticatedUser } from "@/utils/session";
+import { isAdmin } from "@/utils/roles";
+import { getAuthenticatedUser, getSession } from "@/utils/session";
 
 export default async function Projets({
   searchParams,
@@ -18,6 +19,8 @@ export default async function Projets({
   searchParams: SearchParams;
 }) {
   const user = await getAuthenticatedUser();
+  const admin = isAdmin({ userEmail: user.email });
+  const session = await getSession();
 
   const params = await getSearchParams({ searchParams });
   const siret = params.siret ?? user.siret;
@@ -25,6 +28,7 @@ export default async function Projets({
   const dossierNumbersResult = await getAllDossierNumbers({
     siret,
     email: user.email,
+    global: admin,
   });
 
   if (!dossierNumbersResult.success) {
@@ -45,6 +49,10 @@ export default async function Projets({
   const dossiersSubvention = authorized.dossiers.sort(
     compareDateSignatureDecision,
   );
+  const view = admin
+    ? (session.projectView ?? "porteur")
+    : dossiersSubvention.find((dossier) => dossier.viewerRelationship)
+        ?.viewerRelationship;
   const partial =
     dossierNumbersResult.completeness === "partial" ||
     authorized.unavailableCount > 0;
@@ -55,9 +63,7 @@ export default async function Projets({
   return (
     <div className="fr-container my-8">
       <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
-        <h1>
-          {getPageTitle({ successDossiersLength: dossiersSubvention.length })}
-        </h1>
+        <h1>{getPageTitle(view)}</h1>
 
         {partial && (
           <Alert
@@ -80,7 +86,7 @@ export default async function Projets({
 
         {dossiersSubvention.length > 0 && (
           <p className="my-6 max-w-lg text-sm">
-            Vous ne trouvez pas votre dossier ? {noResultMsg}
+            Vous ne trouvez pas votre projet ? {noResultMsg}
           </p>
         )}
       </div>

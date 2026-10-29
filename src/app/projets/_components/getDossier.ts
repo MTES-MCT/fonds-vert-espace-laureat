@@ -97,6 +97,14 @@ export async function getDossier({
     return {
       success: true,
       data: {
+        viewerRelationship:
+          dossier.usager.email === userEmail
+            ? "porteur"
+            : dossier.groupeInstructeur.instructeurs.some(
+                  (instructeur) => instructeur.email === userEmail,
+                )
+              ? "instructeur"
+              : undefined,
         numero: dossier.number,
         dateTraitement: dossier.dateTraitement,
         demandeur: {

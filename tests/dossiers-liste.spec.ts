@@ -8,15 +8,11 @@ import {
 
 import { getSessionOptions } from "@/utils/session";
 
+import { DOSSIER_NUMBER, INSTRUCTEUR_EMAIL } from "./fixtures/constants";
 import {
-  DEMANDEUR_EMAIL,
-  DOSSIER_NUMBER,
-  INSTRUCTEUR_EMAIL,
-} from "./fixtures/constants";
-import {
-  getDossierData,
+  getDossierData as originalDossierData,
   makeDossierDataForInstructeur,
-  makeDossierDataWithNumber,
+  makeDossierDataWithNumber as makeOriginalDossierDataWithNumber,
 } from "./fixtures/ds";
 import {
   fondsVertDossiersListByInstructeurData,
@@ -28,6 +24,26 @@ import { authenticatePage } from "./setup/auth";
 import { createTestDatabaseClient } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
+const DEMANDEUR_EMAIL = "porteur.liste@example.com";
+const getDossierData = {
+  ...originalDossierData,
+  data: {
+    dossier: {
+      ...originalDossierData.data.dossier,
+      usager: { email: DEMANDEUR_EMAIL },
+    },
+  },
+};
+
+function makeDossierDataWithNumber(number: number) {
+  const response = makeOriginalDossierDataWithNumber(number);
+  return {
+    ...response,
+    data: {
+      dossier: { ...response.data.dossier, usager: { email: DEMANDEUR_EMAIL } },
+    },
+  };
+}
 
 type DossiersResponse =
   | {
@@ -324,7 +340,7 @@ test("un projet présent dans les deux sources ne demande qu’une seule autoris
   msw,
 }) => {
   let dnCalls = 0;
-  await authenticatePage(page);
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(
     http.get("http://fondsvert/fonds_vert/v2/dossiers", () =>
       HttpResponse.json(fondsVertDossiersListBySiretData),
@@ -345,7 +361,7 @@ test("une panne DN laisse visible le projet autorisé et annonce une liste parti
   page,
   msw,
 }) => {
-  await authenticatePage(page);
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(
     makeDossiersHandler({
       siret: {
@@ -388,7 +404,7 @@ test("une source vide et une source en panne ne présentent pas un état vide d�
   page,
   msw,
 }) => {
-  await authenticatePage(page);
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(
     makeDossiersHandler({ siret: emptyList, instructeur: errorResponse }),
   );
@@ -407,7 +423,7 @@ test("le tri utilise toutes les dates de décision DN plutôt que l’ordre FV o
   page,
   msw,
 }) => {
-  await authenticatePage(page);
+  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
   msw.use(
     makeDossiersHandler({
       siret: {

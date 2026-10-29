@@ -1,15 +1,1 @@
-export function getPageTitle({
-  successDossiersLength,
-}: {
-  successDossiersLength: number;
-}): string {
-  if (successDossiersLength === 0) {
-    return "Aucun dossier";
-  }
-
-  if (successDossiersLength === 1) {
-    return "Dossier";
-  }
-
-  return "Dossiers";
-}
+export { projectListLabel as getPageTitle } from "@/utils/projectView";

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { ProConnectUserInfo } from "@/services/proconnect";
 import { requireEnv } from "@/utils/env";
+import type { ProjectView } from "@/utils/projectView";
 import { ttl } from "@/utils/session/ttl";
 
 type User = {
@@ -16,6 +17,7 @@ type User = {
 
 export type Session = {
   user: User | null;
+  projectView?: ProjectView;
   state?: string;
   nonce?: string;
   pkceCodeVerifier?: string;

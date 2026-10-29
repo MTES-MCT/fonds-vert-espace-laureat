@@ -64,6 +64,7 @@ export default async function EspaceLaureatDemo() {
               <DemoMetricAnomalyProvider>
                 <DossierSection
                   isAdmin={false}
+                  view="porteur"
                   dossierSubvention={dossier}
                   dossierFondsVertResult={dossierFondsVertResult}
                   financesEJPromise={financesEJPromise}

@@ -7,6 +7,7 @@ import { defaultColorScheme } from "@/components/dsfr/defaultColorScheme";
 import { DsfrHead } from "@/components/dsfr/DsfrHead";
 import { Footer } from "@/components/footer/Footer";
 import { Header } from "@/components/header/Header";
+import { isAdmin } from "@/utils/roles";
 import { getSession } from "@/utils/session";
 
 export default async function RootLayout({
@@ -28,7 +29,14 @@ export default async function RootLayout({
       </head>
       <body>
         <DsfrProvider lang={lang}>
-          <Header userEmail={user?.email} />
+          <Header
+            userEmail={user?.email}
+            adminView={
+              user && isAdmin({ userEmail: user.email })
+                ? (session.projectView ?? "porteur")
+                : undefined
+            }
+          />
           <main className="min-h-80">{children}</main>
           <Footer />
           <StartDsfrOnHydration />
