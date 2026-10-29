@@ -16,7 +16,7 @@ export default function Loading() {
       role="status"
       aria-label="Chargement du projet"
     >
-      <div className="bg-white p-4 shadow-sm sm:p-8">
+      <div className="bg-white p-4 sm:p-8">
         <Breadcrumb
           className="mt-0 mb-4"
           homeLinkProps={{ href: "/" }}
@@ -30,7 +30,7 @@ export default function Loading() {
             <Skeleton key={item} className="h-6 w-40" />
           ))}
         </div>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
           <Skeleton className="h-96 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>

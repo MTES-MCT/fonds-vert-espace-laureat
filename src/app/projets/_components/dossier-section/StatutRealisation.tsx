@@ -180,10 +180,7 @@ export function StatutRealisation({
 
   return (
     <section aria-labelledby="status-heading" className="space-y-3 text-left">
-      <h3
-        id="status-heading"
-        className="text-left text-base font-medium text-[var(--text-label-grey)]"
-      >
+      <h3 id="status-heading" className="mb-4 text-xl">
         Avancement du projet
       </h3>
       <div className="space-y-2">

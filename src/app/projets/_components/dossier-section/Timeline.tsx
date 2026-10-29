@@ -52,17 +52,11 @@ export function Timeline({ steps }: TimelineProps) {
   const headingId = "timeline-heading";
 
   return (
-    <section
-      aria-labelledby={headingId}
-      className="mb-6 border-b border-[var(--border-default-grey)] pb-3"
-    >
-      <h3
-        id={headingId}
-        className="mb-3 text-left text-base font-medium text-[var(--text-label-grey)]"
-      >
+    <section aria-labelledby={headingId}>
+      <h3 id={headingId} className="mb-6 text-xl">
         Calendrier
       </h3>
-      <ul role="list" className="list-none space-y-0 pl-0">
+      <ol role="list" className="mb-0 list-none space-y-0 pl-0">
         {steps.map((step, index) => {
           const isDone = isStepDone(steps, index, today);
           const isLast = index === steps.length - 1;
@@ -70,7 +64,10 @@ export function Timeline({ steps }: TimelineProps) {
 
           return (
             <li key={step.label} className="grid grid-cols-[1rem_1fr] gap-3">
-              <div className="relative flex h-full items-start justify-center pt-0.5">
+              <div
+                aria-hidden="true"
+                className="relative flex h-full items-start justify-center pt-0.5"
+              >
                 {!isLast && (
                   <div
                     className={`absolute top-[7px] left-1/2 -ml-px h-full w-0.5 ${
@@ -103,20 +100,25 @@ export function Timeline({ steps }: TimelineProps) {
               <div
                 className={`flex flex-col gap-0 ${isLast ? "pb-0" : "pb-4"}`}
               >
-                <p className="m-0 text-xs leading-tight font-medium text-[var(--text-default-grey)]">
+                <p className="m-0 text-sm font-medium text-[var(--text-default-grey)]">
                   {step.label}
                   <span className="sr-only">
                     {isDone ? " - terminé" : " - à venir"}
                   </span>
                 </p>
-                <time className="text-xs leading-tight text-[var(--text-mention-grey)]">
+                <time
+                  dateTime={
+                    step.date && parseDate(step.date) ? step.date : undefined
+                  }
+                  className="text-sm text-[var(--text-mention-grey)]"
+                >
                   {formatDate(step.date)}
                 </time>
               </div>
             </li>
           );
         })}
-      </ul>
+      </ol>
     </section>
   );
 }

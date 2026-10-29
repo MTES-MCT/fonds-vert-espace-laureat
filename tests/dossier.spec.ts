@@ -115,8 +115,9 @@ test("dossier page displays project presentation correctly", async ({
   await expect(page.getByText(PROGRAM_TITLE)).toBeVisible();
   await expect(page.getByText("Édition 2023")).toBeVisible();
 
-  const projectSection = page.locator("section", {
-    has: page.getByRole("heading", { name: "Présentation du projet" }),
+  const projectSection = page.getByRole("region", {
+    name: "Présentation du projet",
+    exact: true,
   });
 
   await expect(projectSection).toContainText(PROJECT_SUMMARY);
@@ -127,6 +128,12 @@ test("dossier page displays project presentation correctly", async ({
     projectSection.getByLabel("Commune principale impactée"),
   ).toContainText(COMMUNE);
   await expect(projectSection.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
+  await expect(projectSection.locator("dl")).toHaveCount(1);
+  await expect(projectSection.locator("dt")).toHaveText([
+    "Département d'implantation",
+    "Commune principale impactée",
+    "Numéro de dossier agence de l'eau",
+  ]);
 });
 
 test("dossier page displays project owner identity correctly", async ({
@@ -134,8 +141,9 @@ test("dossier page displays project owner identity correctly", async ({
 }) => {
   await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
-  const identitySection = page.locator("section", {
-    has: page.getByRole("heading", { name: "Identité du porteur de projet" }),
+  const identitySection = page.getByRole("region", {
+    name: "Identité du porteur de projet",
+    exact: true,
   });
 
   await expect(identitySection.getByLabel("Nom du porteur")).toContainText(
@@ -148,7 +156,171 @@ test("dossier page displays project owner identity correctly", async ({
   await expect(
     identitySection.getByLabel("Responsable du suivi"),
   ).toContainText(CONTACT_EMAIL);
+  await expect(
+    identitySection.getByRole("link", {
+      name: LEGAL_REPRESENTATIVE_EMAIL,
+      exact: true,
+    }),
+  ).toHaveAttribute("href", `mailto:${LEGAL_REPRESENTATIVE_EMAIL}`);
+  await expect(
+    identitySection.getByRole("link", { name: CONTACT_EMAIL, exact: true }),
+  ).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
 });
+
+test("le lecteur voit une absence explicite quand les deux courriels de contact ne sont pas renseignés dans DN", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    ds.query("getDossier", () =>
+      HttpResponse.json({
+        data: {
+          dossier: {
+            ...getDossierData.data.dossier,
+            champs: getDossierData.data.dossier.champs.map((champ) =>
+              champ.champDescriptorId === "Q2hhbXAtMzgwNTc1Mw==" ||
+              champ.champDescriptorId === "Q2hhbXAtMjkzNDQwMA=="
+                ? { ...champ, stringValue: "" }
+                : champ,
+            ),
+          },
+        },
+      }),
+    ),
+  );
+
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+
+  const identite = page.getByRole("region", {
+    name: "Identité du porteur de projet",
+  });
+  for (const label of ["Représentant légal", "Responsable du suivi"]) {
+    const courriel = identite.getByLabel(label);
+    await expect(courriel).toHaveText("Email non disponible");
+    await expect(courriel.getByRole("link")).toHaveCount(0);
+  }
+  await expect(identite.getByLabel("Nom du porteur")).toHaveText(COMPANY_NAME);
+  await expect(identite.getByLabel("SIRET")).toHaveText(SIRET);
+});
+
+for (const viewport of [
+  { width: 1440, height: 1000 },
+  { width: 390, height: 844 },
+]) {
+  test(`le lecteur consulte la présentation, l’identité, l’avancement et le calendrier dans la synthèse à ${viewport.width} px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto(`/projets/${DOSSIER_NUMBER}`);
+
+    const synthese = page.getByRole("region", {
+      name: "Synthèse du projet",
+      exact: true,
+    });
+    await expect(
+      synthese.getByRole("heading", {
+        level: 2,
+        name: "Synthèse du projet",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(synthese.getByRole("heading", { level: 3 })).toHaveText([
+      "Présentation du projet",
+      "Identité du porteur de projet",
+      "Avancement du projet",
+      "Calendrier",
+    ]);
+    await expect
+      .poll(() =>
+        synthese.evaluate((element) => {
+          let cadre: Element | null = element;
+          while (
+            cadre &&
+            cadre !== document.body &&
+            getComputedStyle(cadre).backgroundColor === "rgba(0, 0, 0, 0)"
+          ) {
+            cadre = cadre.parentElement;
+          }
+          return (
+            cadre !== null &&
+            cadre !== document.body &&
+            getComputedStyle(cadre).backgroundColor === "rgb(255, 255, 255)"
+          );
+        }),
+      )
+      .toBe(true);
+
+    const presentation = synthese.getByRole("region", {
+      name: "Présentation du projet",
+    });
+    const identite = synthese.getByRole("region", {
+      name: "Identité du porteur de projet",
+    });
+    const avancement = synthese.getByRole("region", {
+      name: "Avancement du projet",
+    });
+    const calendrier = synthese.getByRole("region", { name: "Calendrier" });
+    const zones = [presentation, identite, avancement, calendrier];
+    for (const zone of zones) {
+      await expect(zone).toBeVisible();
+    }
+    const rectangles = await Promise.all(
+      zones.map((zone) => zone.boundingBox()),
+    );
+    const [
+      presentationBounds,
+      identiteBounds,
+      avancementBounds,
+      calendrierBounds,
+    ] = rectangles;
+    expect(presentationBounds).not.toBeNull();
+    expect(identiteBounds).not.toBeNull();
+    expect(avancementBounds).not.toBeNull();
+    expect(calendrierBounds).not.toBeNull();
+    if (
+      !presentationBounds ||
+      !identiteBounds ||
+      !avancementBounds ||
+      !calendrierBounds
+    ) {
+      throw new Error(
+        "Les quatre zones de la synthèse doivent être affichées.",
+      );
+    }
+
+    expect(identiteBounds.y).toBeGreaterThanOrEqual(
+      presentationBounds.y + presentationBounds.height,
+    );
+    expect(avancementBounds.y).toBeGreaterThanOrEqual(
+      identiteBounds.y + identiteBounds.height,
+    );
+    if (viewport.width === 1440) {
+      expect(calendrierBounds.x).toBeGreaterThanOrEqual(
+        presentationBounds.x + presentationBounds.width,
+      );
+      expect(
+        Math.abs(calendrierBounds.y - presentationBounds.y),
+      ).toBeLessThanOrEqual(1);
+    } else {
+      expect(calendrierBounds.y).toBeGreaterThanOrEqual(
+        avancementBounds.y + avancementBounds.height,
+      );
+      expect(
+        Math.abs(calendrierBounds.x - presentationBounds.x),
+      ).toBeLessThanOrEqual(1);
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.body.scrollWidth <= document.documentElement.clientWidth &&
+            document.documentElement.scrollWidth <=
+              document.documentElement.clientWidth,
+        ),
+      )
+      .toBe(true);
+  });
+}
 
 for (const projectPath of [`/projets/${DOSSIER_NUMBER}`, "/projets/demo"]) {
   test(`le lecteur accède au financement depuis la synthèse ${projectPath}`, async ({
@@ -2008,6 +2180,147 @@ test("dossier page displays calendar timeline with correct dates and status", as
   await expect(timelineItems.nth(3)).toContainText("à venir");
 });
 
+for (const [situation, serviceIndisponible] of [
+  ["le socle Fonds vert est absent", false],
+  ["Fonds vert est indisponible", true],
+] as const) {
+  test(`le lecteur conserve les quatre jalons et les données DN quand ${situation}`, async ({
+    page,
+    msw,
+  }) => {
+    const siretDemandeurDN = "44455566600077";
+    msw.use(
+      ds.query("getDossier", () =>
+        HttpResponse.json({
+          data: {
+            dossier: {
+              ...getDossierData.data.dossier,
+              demandeur: {
+                ...getDossierData.data.dossier.demandeur,
+                siret: siretDemandeurDN,
+              },
+            },
+          },
+        }),
+      ),
+      http.get(
+        `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+        () =>
+          serviceIndisponible
+            ? HttpResponse.json({ error: "Server Error" }, { status: 503 })
+            : HttpResponse.json({
+                data: {
+                  ...fondsVertDossierData.data,
+                  socle_commun: undefined,
+                },
+              }),
+      ),
+    );
+
+    await page.goto(`/projets/${DOSSIER_NUMBER}`);
+
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      PROJECT_TITLE,
+    );
+    const presentation = page.getByRole("region", {
+      name: "Présentation du projet",
+    });
+    await expect(presentation).toContainText(PROJECT_SUMMARY);
+    await expect(
+      presentation.getByLabel("Département d'implantation"),
+    ).toHaveText(DEPARTMENT);
+    await expect(presentation.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
+
+    const identite = page.getByRole("region", {
+      name: "Identité du porteur de projet",
+    });
+    await expect(identite.getByLabel("Nom du porteur")).toHaveText(
+      "Non renseigné",
+    );
+    await expect(identite.getByLabel("SIRET")).toHaveText(siretDemandeurDN);
+    await expect(
+      identite.getByRole("link", {
+        name: LEGAL_REPRESENTATIVE_EMAIL,
+        exact: true,
+      }),
+    ).toHaveAttribute("href", `mailto:${LEGAL_REPRESENTATIVE_EMAIL}`);
+    await expect(
+      identite.getByRole("link", { name: CONTACT_EMAIL, exact: true }),
+    ).toHaveAttribute("href", `mailto:${CONTACT_EMAIL}`);
+
+    const calendrier = page.getByRole("region", { name: "Calendrier" });
+    const jalons = calendrier.getByRole("listitem");
+    await expect(jalons).toHaveCount(4);
+    for (const [index, libelle] of [
+      "Dépôt du dossier",
+      "Notification",
+      "Début d'exécution",
+      "Fin d'exécution",
+    ].entries()) {
+      await expect(jalons.nth(index)).toContainText(libelle);
+      await expect(
+        jalons.nth(index).getByText("Date non renseignée", { exact: true }),
+      ).toBeVisible();
+    }
+  });
+}
+
+test("le lecteur conserve les quatre jalons et les données DN quand les dates Fonds vert sont invalides", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get(`http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`, () =>
+      HttpResponse.json({
+        data: {
+          ...fondsVertDossierData.data,
+          socle_commun: {
+            ...fondsVertDossierData.data.socle_commun,
+            date_depot: "date inconnue",
+            date_notification: "2024-99-99",
+            date_debut_execution: "date à confirmer",
+            date_fin_execution: "2099-14-45",
+          },
+        },
+      }),
+    ),
+  );
+
+  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+
+  const calendrier = page.getByRole("region", { name: "Calendrier" });
+  const jalons = calendrier.getByRole("listitem");
+  await expect(jalons).toHaveCount(4);
+  for (const [index, libelle] of [
+    "Dépôt du dossier",
+    "Notification",
+    "Début d'exécution",
+    "Fin d'exécution",
+  ].entries()) {
+    await expect(jalons.nth(index)).toContainText(libelle);
+    await expect(
+      jalons.nth(index).getByText("Date non renseignée", { exact: true }),
+    ).toBeVisible();
+  }
+
+  const presentation = page.getByRole("region", {
+    name: "Présentation du projet",
+  });
+  await expect(presentation).toContainText(PROJECT_SUMMARY);
+  await expect(
+    presentation.getByLabel("Département d'implantation"),
+  ).toHaveText(DEPARTMENT);
+  const identite = page.getByRole("region", {
+    name: "Identité du porteur de projet",
+  });
+  await expect(
+    identite.getByRole("link", { name: LEGAL_REPRESENTATIVE_EMAIL }),
+  ).toBeVisible();
+  await expect(
+    identite.getByRole("link", { name: CONTACT_EMAIL }),
+  ).toBeVisible();
+});
+
 test("dossier page removes the external impact form and invitation", async ({
   page,
 }) => {
@@ -2201,23 +2514,86 @@ test("le lecteur conserve un engagement complet quand les détails de l’autre 
   ).toHaveText("1009876546");
 });
 
-test("long project titles are truncated with ellipsis", async ({
-  page,
-  msw,
-}) => {
-  msw.use(
-    ds.query("getDossier", () => {
-      return HttpResponse.json(makeDossierDataWithTitle(PROJECT_TITLE_LONG));
-    }),
-  );
+for (const viewport of [
+  { width: 1440, height: 1000 },
+  { width: 390, height: 844 },
+]) {
+  test(`le lecteur lit le titre et le résumé longs en entier à ${viewport.width} px`, async ({
+    page,
+    msw,
+  }) => {
+    const resumeLong =
+      "La rénovation du complexe sportif prévoit une isolation complète des façades, le remplacement des équipements de chauffage et la réfection des vestiaires pour améliorer les conditions d’accueil des associations et des écoles. ".repeat(
+        4,
+      ) +
+      "La dernière phase prévoit la remise en service de la piscine et des espaces accessibles au public.";
+    const dossierAvecTitreLong =
+      makeDossierDataWithTitle(PROJECT_TITLE_LONG).data.dossier;
+    msw.use(
+      ds.query("getDossier", () =>
+        HttpResponse.json({
+          data: {
+            dossier: {
+              ...dossierAvecTitreLong,
+              champs: dossierAvecTitreLong.champs.map((champ) =>
+                champ.champDescriptorId === "Q2hhbXAtMjk5Nzg3Mw=="
+                  ? { ...champ, stringValue: resumeLong }
+                  : champ,
+              ),
+            },
+          },
+        }),
+      ),
+    );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+    await page.setViewportSize(viewport);
+    await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
-  const heading = page.getByRole("heading", { level: 1 });
-  await expect(heading).toContainText("...");
-  await expect(heading).not.toContainText(PROJECT_TITLE_LONG);
-  await expect(heading).toContainText(PROJECT_TITLE_LONG.slice(0, 80));
-});
+    const titre = page.getByRole("heading", { level: 1 });
+    await expect(titre).toHaveText(PROJECT_TITLE_LONG);
+    const resume = page
+      .getByRole("region", { name: "Présentation du projet" })
+      .getByText(resumeLong, { exact: true });
+    await expect(resume).toHaveText(resumeLong);
+    await expect(resume).not.toHaveAttribute("title");
+    for (const texte of [titre, resume]) {
+      await expect(texte).toBeVisible();
+      await expect
+        .poll(() =>
+          texte.evaluate((element) => {
+            const style = getComputedStyle(element);
+            const bounds = element.getBoundingClientRect();
+            const contenu = document.createRange();
+            contenu.selectNodeContents(element);
+            const lignes = [...contenu.getClientRects()];
+            const derniereLigne = lignes.at(-1);
+            return (
+              style.webkitLineClamp === "none" &&
+              style.textOverflow !== "ellipsis" &&
+              element.scrollWidth <= element.clientWidth + 1 &&
+              derniereLigne !== undefined &&
+              (style.overflowY === "visible" ||
+                (element.scrollHeight <= element.clientHeight + 1 &&
+                  derniereLigne.bottom <= bounds.bottom + 1)) &&
+              bounds.left >= 0 &&
+              bounds.right <= window.innerWidth
+            );
+          }),
+        )
+        .toBe(true);
+    }
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document.body.scrollWidth <= document.documentElement.clientWidth &&
+            document.documentElement.scrollWidth <=
+              document.documentElement.clientWidth,
+        ),
+      )
+      .toBe(true);
+  });
+}
 
 for (const [etatEngagement, statutAffiche] of [
   ["en cours", "En cours"],

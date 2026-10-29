@@ -111,7 +111,7 @@ export async function DossierSection({
 
   return (
     <div className="fr-container my-8">
-      <div className="relative bg-white p-4 shadow-sm sm:p-8">
+      <div className="relative bg-white p-4 sm:p-8" data-testid="project-frame">
         <RefreshIndicator />
         {pageAction && (
           <div className="mb-4 flex justify-end">{pageAction}</div>
@@ -208,38 +208,18 @@ export async function DossierSection({
             />
           </section>
         ) : (
-          <div className="flex flex-wrap items-start gap-8">
-            <div className="flex w-full min-w-0 flex-col gap-y-4">
-              <div>
-                <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
-                  <StatutRealisation
-                    dossierNumber={dossierSubvention.numero}
-                    initialTarget={progressTarget}
-                    correctionApiPath={progressApiPath}
-                  />
-                </div>
-                {socleCommun && (
-                  <Timeline
-                    steps={[
-                      {
-                        label: "Dépôt du dossier",
-                        date: socleCommun.date_depot,
-                      },
-                      {
-                        label: "Notification",
-                        date: socleCommun.date_notification,
-                      },
-                      {
-                        label: "Début d'exécution",
-                        date: socleCommun.date_debut_execution,
-                      },
-                      {
-                        label: "Fin d'exécution",
-                        date: socleCommun.date_fin_execution,
-                      },
-                    ]}
-                  />
-                )}
+          <section aria-labelledby="summary-heading">
+            <h2 id="summary-heading">Synthèse du projet</h2>
+            {errorMessage && (
+              <Alert
+                className="mb-6"
+                severity="error"
+                small
+                description="Les données Fonds vert sont temporairement indisponibles."
+              />
+            )}
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+              <div className="min-w-0 space-y-8">
                 <ProjectPresentation
                   resume={subvention.resumeProjet}
                   numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
@@ -250,10 +230,45 @@ export async function DossierSection({
                   emailRepresentantLegal={subvention.emailRepresentantLegal}
                   emailResponsableSuivi={subvention.emailResponsableSuivi}
                   socleCommun={socleCommun}
+                  siret={dossierSubvention.demandeur.siret}
+                />
+                <div>
+                  <StatutRealisation
+                    dossierNumber={dossierSubvention.numero}
+                    initialTarget={progressTarget}
+                    correctionApiPath={progressApiPath}
+                  />
+                </div>
+              </div>
+              <div
+                className={`
+                  min-w-0 border-t border-[var(--border-default-grey)] pt-8
+                  lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8
+                `}
+              >
+                <Timeline
+                  steps={[
+                    {
+                      label: "Dépôt du dossier",
+                      date: socleCommun?.date_depot ?? null,
+                    },
+                    {
+                      label: "Notification",
+                      date: socleCommun?.date_notification ?? null,
+                    },
+                    {
+                      label: "Début d'exécution",
+                      date: socleCommun?.date_debut_execution ?? null,
+                    },
+                    {
+                      label: "Fin d'exécution",
+                      date: socleCommun?.date_fin_execution ?? null,
+                    },
+                  ]}
                 />
               </div>
             </div>
-          </div>
+          </section>
         )}
         <Link
           className="fr-btn fr-btn--tertiary mt-8 bg-white"
