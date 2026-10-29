@@ -1,3 +1,4 @@
+import { AnomaliesSection } from "@/app/projets/_components/dossier-section/details/AnomaliesSection";
 import type { ProjectSection } from "@/app/projets/_components/DossierSection";
 import { DossierSection } from "@/app/projets/_components/DossierSection";
 import { getDossier } from "@/app/projets/_components/getDossier";
@@ -14,6 +15,10 @@ import {
   loadFinancesEJ,
 } from "@/services/fondsvert/finances";
 import { extractEJNumbers } from "@/utils/finance";
+import {
+  normalizeFondsVertAnomalies,
+  resolveEditableAnomalyTargets,
+} from "@/utils/metrics/anomalies";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser, getSession } from "@/utils/session";
 
@@ -96,6 +101,16 @@ export async function DossierPage({
             dossierFondsVertResult={dossierFondsVertResult}
             financesEJPromise={financesEJPromise}
             progressTarget={progressTarget}
+            anomaliesSection={
+              <AnomaliesSection
+                anomalies={resolveEditableAnomalyTargets(
+                  normalizeFondsVertAnomalies(dossierFondsVertResult.signals),
+                  metrics,
+                )}
+                sourceUnavailable={!dossierFondsVertResult.success}
+                hasLocalMetrics={Object.keys(metrics ?? {}).length > 0}
+              />
+            }
           />
         </MetricRevisionProvider>
       </RefreshStatusProvider>

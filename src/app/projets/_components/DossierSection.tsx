@@ -157,7 +157,7 @@ export async function DossierSection({
           <div className="space-y-8">
             <h2>Données d’impact</h2>
             {anomaliesSection}
-            {errorMessage && (
+            {errorMessage && !anomaliesSection && (
               <Alert
                 severity="error"
                 small

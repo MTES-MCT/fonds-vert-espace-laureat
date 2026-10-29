@@ -184,9 +184,9 @@ const AvantApresTravauxRows = ({
 
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
-      <h5 className="mb-4 text-base font-normal text-[var(--text-label-grey)]">
+      <h4 className="mb-4 text-base font-normal text-[var(--text-label-grey)]">
         {metric.label}
-      </h5>
+      </h4>
       <dl className="space-y-3">
         {rows.map(({ label, value, metricCode, target, testId }) => (
           <div
@@ -283,7 +283,7 @@ export function MetricsGrid({
             data-testid={`metric-group-${groupId}`}
           >
             {group.theme && (
-              <h4
+              <h3
                 className="mb-4 flex items-center gap-2 text-lg font-medium"
                 data-testid={`metric-group-title-${groupId}`}
               >
@@ -292,7 +292,7 @@ export function MetricsGrid({
                   className={`${group.theme.iconClass} ${group.theme.accentTextColor}`}
                 />
                 {group.theme.label}
-              </h4>
+              </h3>
             )}
             <div className="space-y-4">
               {Object.entries(group.metrics).map(([key, metric]) => {

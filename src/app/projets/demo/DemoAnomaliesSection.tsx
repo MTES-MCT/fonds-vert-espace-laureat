@@ -6,10 +6,14 @@ import { AnomaliesSection } from "@/app/projets/_components/dossier-section/deta
 import {
   type MetricAnomaly,
   MetricAnomalyProvider,
-  useAllMetricAnomalies,
 } from "@/components/metrics/MetricAnomalyContext";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import type { Metrics } from "@/services/fondsvert/dossier";
+import { demoInitialSignals } from "@/utils/demo/anomalies";
+import {
+  normalizeFondsVertAnomalies,
+  resolveEditableAnomalyTargets,
+} from "@/utils/metrics/anomalies";
 
 type NumericAnomalyRule = MetricAnomaly & {
   comparison: "greater-than" | "less-than";
@@ -86,6 +90,12 @@ export function DemoMetricAnomalyProvider({
 }
 
 export function DemoAnomaliesSection({ metriques }: { metriques: Metrics }) {
-  const anomalies = useAllMetricAnomalies();
-  return <AnomaliesSection anomalies={anomalies} metriques={metriques} />;
+  return (
+    <AnomaliesSection
+      anomalies={resolveEditableAnomalyTargets(
+        normalizeFondsVertAnomalies(demoInitialSignals),
+        metriques,
+      )}
+    />
+  );
 }
