@@ -24,7 +24,13 @@ import {
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { projectListLabel, type ProjectView } from "@/utils/projectView";
 
-export type ProjectSection = "summary" | "impact";
+export type ProjectSection = "summary" | "impact" | "finance";
+
+const projectPageLabels: Record<ProjectSection, string> = {
+  summary: "Synthèse du projet",
+  impact: "Données d’impact",
+  finance: "Financement",
+};
 
 function buildEngagementsSection(
   informationFinanciere: InformationFinanciere | undefined,
@@ -116,11 +122,9 @@ export async function DossierSection({
           anneeMillesime={socleCommun?.annee_millesime}
           numeroDossier={dossierSubvention.numero}
           backLink={backLink}
-          pageLabel={
-            section === "impact" ? "Données d’impact" : "Synthèse du projet"
-          }
+          pageLabel={projectPageLabels[section]}
           projectPath={
-            section === "impact" ? `${basePath}${navigationQuery}` : undefined
+            section !== "summary" ? `${basePath}${navigationQuery}` : undefined
           }
         />
         <p className="mb-6 text-sm text-[var(--text-mention-grey)]">
@@ -152,7 +156,10 @@ export async function DossierSection({
               </Link>
             </li>
             <li>
-              <Link href={`${basePath}${navigationQuery}#financement`}>
+              <Link
+                href={`${basePath}/financement${navigationQuery}`}
+                aria-current={section === "finance" ? "page" : undefined}
+              >
                 Financement
               </Link>
             </li>
@@ -182,32 +189,27 @@ export async function DossierSection({
               <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
             )}
           </div>
+        ) : section === "finance" ? (
+          <section id="financement" aria-labelledby="finance-heading">
+            <h2 id="finance-heading">Financement du projet</h2>
+            {errorMessage && (
+              <Alert severity="error" small description={errorMessage} />
+            )}
+            <SubventionDetails
+              montantSubventionAttribuee={
+                socleCommun?.montant_subvention_attribuee
+              }
+              totalDesDepenses={socleCommun?.total_des_depenses}
+              informationFinanciere={informationFinanciere}
+              engagementsSection={buildEngagementsSection(
+                informationFinanciere,
+                financesEJPromise,
+              )}
+            />
+          </section>
         ) : (
           <div className="flex flex-wrap items-start gap-8">
-            <div className="flex min-w-0 flex-1 flex-col gap-y-8">
-              <section
-                id="financement"
-                className="border-b border-[var(--border-default-grey)] pb-8"
-              >
-                <h3 className="mb-3">Financement du projet</h3>
-                {errorMessage && (
-                  <Alert severity="error" small description={errorMessage} />
-                )}
-                <SubventionDetails
-                  montantSubventionAttribuee={
-                    socleCommun?.montant_subvention_attribuee
-                  }
-                  totalDesDepenses={socleCommun?.total_des_depenses}
-                  informationFinanciere={informationFinanciere}
-                  engagementsSection={buildEngagementsSection(
-                    informationFinanciere,
-                    financesEJPromise,
-                  )}
-                />
-              </section>
-            </div>
-
-            <div className="flex w-full min-w-0 flex-col gap-y-4 lg:w-[22rem]">
+            <div className="flex w-full min-w-0 flex-col gap-y-4">
               <div>
                 <div className="mb-6 border-b border-[var(--border-default-grey)] pb-6">
                   <StatutRealisation

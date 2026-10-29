@@ -59,7 +59,7 @@ export async function DossierPage({
   });
   const dossierFondsVertPromise = metricLoading.externalDossierPromise;
   const financesEJPromise =
-    section === "impact"
+    section !== "finance"
       ? Promise.resolve({})
       : dossierFondsVertPromise.then(async (fvResult) => {
           if (!fvResult.success || !fvResult.data.information_financiere) {

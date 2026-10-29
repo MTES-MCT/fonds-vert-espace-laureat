@@ -19,7 +19,7 @@ export function DernierPaiement({ group, scope }: DernierPaiementProps) {
   }
 
   return (
-    <dl className="grid grid-cols-3 text-sm">
+    <dl className="grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
       <MoneyField
         label="Dernier paiement"
         value={lastPayment.montant_paye}
@@ -33,7 +33,10 @@ export function DernierPaiement({ group, scope }: DernierPaiementProps) {
       </div>
       <div>
         <dt id={`numero-demande-${scope}-label`}>Numéro de demande</dt>
-        <dd aria-labelledby={`numero-demande-${scope}-label`}>
+        <dd
+          aria-labelledby={`numero-demande-${scope}-label`}
+          className="[overflow-wrap:anywhere]"
+        >
           {lastPayment.numero_dp}
         </dd>
       </div>

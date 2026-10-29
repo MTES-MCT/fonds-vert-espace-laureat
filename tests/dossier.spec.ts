@@ -150,10 +150,52 @@ test("dossier page displays project owner identity correctly", async ({
   ).toContainText(CONTACT_EMAIL);
 });
 
-test("dossier page displays subvention financial details correctly", async ({
+for (const projectPath of [`/projets/${DOSSIER_NUMBER}`, "/projets/demo"]) {
+  test(`le lecteur accède au financement depuis la synthèse ${projectPath}`, async ({
+    page,
+  }) => {
+    await page.goto(projectPath);
+
+    await expect(
+      page.getByRole("region", { name: "Aide du Fonds vert" }),
+    ).not.toBeAttached();
+    await expect(
+      page.getByRole("region", { name: /Engagement juridique n°/ }),
+    ).not.toBeAttached();
+
+    const financementLink = page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: "Financement", exact: true });
+    await expect(financementLink).toHaveAttribute(
+      "href",
+      `${projectPath}/financement`,
+    );
+    await financementLink.click();
+
+    await expect(page).toHaveURL(`${projectPath}/financement`);
+    await expect(financementLink).toHaveAttribute("aria-current", "page");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      PROJECT_TITLE,
+    );
+    await expect(
+      page.getByRole("heading", { level: 2, name: "Financement du projet" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 3, name: "Aide du Fonds vert" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        level: 3,
+        name: "Engagement juridique n°2105212345",
+      }),
+    ).toBeVisible();
+  });
+}
+
+test("le lecteur consulte les montants du projet et de sa subvention sur la page Financement", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
 
   await expect(
     page.getByLabel("Montant total des dépenses du projet"),
@@ -186,10 +228,11 @@ test("dossier page displays subvention financial details correctly", async ({
   );
 });
 
-test("displays two engagement juridique sections with tabs", async ({
+test("le lecteur parcourt les trois onglets d’un engagement au clavier sans changer l’autre engagement", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+  await waitForDsfrTabs(page);
 
   const allEngagements = page.getByRole("region", {
     name: /Engagement juridique n°/,
@@ -215,12 +258,54 @@ test("displays two engagement juridique sections with tabs", async ({
   await expect(
     engagement2.getByRole("tab", { name: "Historique" }),
   ).toBeVisible();
+
+  const informationsTab = engagement1.getByRole("tab", {
+    name: "Informations",
+  });
+  const historiqueTab = engagement1.getByRole("tab", { name: "Historique" });
+  const contactTab = engagement1.getByRole("tab", { name: "Contact" });
+  await informationsTab.focus();
+  await expect(informationsTab).toHaveAttribute("aria-selected", "true");
+
+  await informationsTab.press("ArrowRight");
+  await expect(historiqueTab).toBeFocused();
+  await expect(historiqueTab).toHaveAttribute("aria-selected", "true");
+  await expect(
+    engagement1.getByRole("tabpanel", { name: "Historique" }),
+  ).toBeVisible();
+  await expect(informationsTab).toHaveAttribute("aria-selected", "false");
+
+  await historiqueTab.press("ArrowRight");
+  await expect(contactTab).toBeFocused();
+  await expect(contactTab).toHaveAttribute("aria-selected", "true");
+  await expect(
+    engagement1.getByRole("tabpanel", { name: "Contact" }),
+  ).toBeVisible();
+  await expect(
+    engagement1.getByRole("tabpanel", { name: "Contact" }),
+  ).toContainText("Voir les informations dans votre convention / arrêté.");
+  await expect(
+    engagement1.getByRole("tabpanel", { name: "Historique" }),
+  ).toBeHidden();
+
+  await contactTab.press("ArrowRight");
+  await expect(informationsTab).toBeFocused();
+  await expect(informationsTab).toHaveAttribute("aria-selected", "true");
+  await expect(
+    engagement1.getByRole("tabpanel", { name: "Informations" }),
+  ).toBeVisible();
+  await expect(
+    engagement2.getByRole("tab", { name: "Informations" }),
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(
+    engagement2.getByRole("tabpanel", { name: "Informations" }),
+  ).toBeVisible();
 });
 
-test("engagement information tab shows amounts, fournisseur, centre de coût and last payment", async ({
+test("le lecteur retrouve les montants, le fournisseur et le dernier paiement dans Informations", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
   await waitForDsfrTabs(page);
 
   const engagement1 = page.getByRole("region", {
@@ -244,12 +329,18 @@ test("engagement information tab shows amounts, fournisseur, centre de coût and
   await expect(engagement1.getByLabel("Dernier paiement")).toContainText(
     "3 422 079,20 €",
   );
+  await expect(engagement1.getByLabel("Date de paiement")).toContainText(
+    "7 octobre 2024",
+  );
+  await expect(engagement1.getByLabel("Numéro de demande")).toHaveText(
+    "1001234567",
+  );
 });
 
-test("engagement history tab displays yearly breakdown with payments", async ({
+test("le lecteur consulte l’historique annuel d’un engagement et ses années sans paiement", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
   await waitForDsfrTabs(page);
 
   const engagement = page.getByRole("region", {
@@ -297,10 +388,10 @@ test("engagement history tab displays yearly breakdown with payments", async ({
   );
 });
 
-test("engagement with multiple payments shows each payment as separate row", async ({
+test("le lecteur consulte séparément chaque demande de paiement, de la plus récente à la plus ancienne", async ({
   page,
 }) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
   await waitForDsfrTabs(page);
 
   const engagement = page.getByRole("region", {
@@ -327,6 +418,9 @@ test("engagement with multiple payments shows each payment as separate row", asy
   );
   await expect(engagement.getByLabel("Date de paiement")).toContainText(
     "10 février 2025",
+  );
+  await expect(engagement.getByLabel("Numéro de demande")).toHaveText(
+    "1009876546",
   );
 
   const historiqueTab = engagement.getByRole("tab", { name: "Historique" });
@@ -399,6 +493,235 @@ test("engagement with multiple payments shows each payment as separate row", asy
   await expect(payment2023.getByRole("cell").nth(4)).toContainText(
     "1009876543",
   );
+});
+
+test("le lecteur distingue un engagement sans aucun paiement d’un engagement déjà payé", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get(`http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`, () =>
+      HttpResponse.json({
+        data: {
+          ...fondsVertDossierData.data,
+          information_financiere: {
+            informations_engagement:
+              fondsVertDossierData.data.information_financiere!.informations_engagement.map(
+                (annee) => {
+                  const engagements = annee.engagements_juridiques.map(
+                    (engagement) => ({
+                      ...engagement,
+                      demandes_paiement:
+                        engagement.numero_ej === "2105212345"
+                          ? []
+                          : engagement.demandes_paiement,
+                    }),
+                  );
+
+                  return {
+                    ...annee,
+                    engagements_juridiques: engagements,
+                    montant_paye_per_dossier: engagements
+                      .flatMap((engagement) => engagement.demandes_paiement)
+                      .reduce(
+                        (total, paiement) => total + paiement.montant_paye,
+                        0,
+                      ),
+                  };
+                },
+              ),
+          },
+        },
+      }),
+    ),
+  );
+
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+  await waitForDsfrTabs(page);
+
+  const engagementSansPaiement = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(
+    engagementSansPaiement.getByText("Aucun paiement n'a été réalisé."),
+  ).toBeVisible();
+  await expect(
+    engagementSansPaiement.getByLabel("Dernier paiement"),
+  ).not.toBeAttached();
+  await expect(
+    engagementSansPaiement.getByLabel("Date de paiement"),
+  ).not.toBeAttached();
+  await expect(
+    engagementSansPaiement.getByLabel("Numéro de demande"),
+  ).not.toBeAttached();
+  await expect(
+    engagementSansPaiement.getByLabel("Montant restant"),
+  ).toContainText("6 651 494,80 €");
+
+  await engagementSansPaiement.getByRole("tab", { name: "Historique" }).click();
+  const lignesSansPaiement = engagementSansPaiement.getByRole("row");
+  await expect(lignesSansPaiement).toHaveCount(4);
+  for (const index of [1, 2, 3]) {
+    const cellules = lignesSansPaiement.nth(index).getByRole("cell");
+    await expect(cellules.nth(2)).toHaveText("Aucun paiement");
+    await expect(cellules.nth(3)).toHaveText("—");
+    await expect(cellules.nth(4)).toHaveText("—");
+  }
+
+  const engagementPaye = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+  await expect(engagementPaye.getByLabel("Dernier paiement")).toContainText(
+    "200 000,00 €",
+  );
+  await expect(engagementPaye.getByLabel("Numéro de demande")).toHaveText(
+    "1009876546",
+  );
+});
+
+test("le lecteur mobile lit entièrement les fournisseurs et centres de coût multiples très longs", async ({
+  page,
+  msw,
+}) => {
+  const fournisseurs = [
+    "Communauté de communes des vallées et des plateaux pour la rénovation énergétique des bâtiments publics et des équipements scolaires intercommunaux",
+    "Syndicat mixte départemental de coordination des travaux de transition écologique et de modernisation des infrastructures territoriales",
+  ];
+  const centresCouts = [
+    "CENTRECOUTSRENOVATIONENERGETIQUEBATIMENTSPUBLICSDEPARTEMENTAUXETINTERCOMMUNAUX000000001",
+    "CENTRECOUTSTRANSITIONECOLOGIQUEEQUIPEMENTSSCOLAIRESETINFRASTRUCTURESTERRITORIALES000000002",
+  ];
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/v2/finances/2106789012", () =>
+      HttpResponse.json({
+        ...fondsVertFinancesEJ2Data,
+        data: {
+          ...fondsVertFinancesEJ2Data.data,
+          annees_informations_financieres:
+            fondsVertFinancesEJ2Data.data.annees_informations_financieres.map(
+              (annee) => ({
+                ...annee,
+                postes: annee.postes.map((poste, index) => ({
+                  ...poste,
+                  fournisseur_titulaire_nom: fournisseurs[index],
+                  centre_couts: centresCouts[index],
+                })),
+              }),
+            ),
+        },
+      }),
+    ),
+  );
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+  for (const [label, valeurs] of [
+    ["Fournisseurs", fournisseurs],
+    ["Centres de coût", centresCouts],
+  ] as const) {
+    const champ = engagement.getByLabel(label, { exact: true });
+    await expect(champ).toHaveText(valeurs.join(", "));
+    await expect(champ).toBeVisible();
+    await expect(champ).not.toHaveAttribute("title");
+    await expect
+      .poll(() =>
+        champ.evaluate((element) => {
+          const style = getComputedStyle(element);
+          const bounds = element.getBoundingClientRect();
+          return (
+            style.whiteSpace !== "nowrap" &&
+            style.textOverflow !== "ellipsis" &&
+            element.scrollWidth <= element.clientWidth + 1 &&
+            element.scrollHeight <= element.clientHeight + 1 &&
+            bounds.left >= 0 &&
+            bounds.right <= window.innerWidth
+          );
+        }),
+      )
+      .toBe(true);
+  }
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.documentElement.scrollWidth <=
+          document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
+});
+
+test("le lecteur mobile parcourt les cinq colonnes de l’historique dans le tableau sans élargir la page", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+  await waitForDsfrTabs(page);
+
+  const engagement = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+  await engagement.getByRole("tab", { name: "Historique" }).click();
+  const historique = engagement.getByRole("tabpanel", { name: "Historique" });
+  await expect(historique.getByRole("columnheader")).toHaveText([
+    "Année",
+    "Montant engagé",
+    "Montant payé",
+    "Date de demande",
+    "Numéro de demande",
+  ]);
+  await expect(historique.getByRole("row")).toHaveCount(5);
+
+  const defilementTableau = historique.locator(".fr-table__container");
+  await expect
+    .poll(() =>
+      defilementTableau.evaluate(
+        (element) => element.scrollWidth > element.clientWidth,
+      ),
+    )
+    .toBe(true);
+  await defilementTableau.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  await expect
+    .poll(() => defilementTableau.evaluate((element) => element.scrollLeft))
+    .toBeGreaterThan(0);
+
+  const dernierNumero = historique
+    .getByRole("row")
+    .nth(1)
+    .getByRole("cell")
+    .nth(4);
+  await expect(dernierNumero).toHaveText("1009876546");
+  await expect
+    .poll(() =>
+      dernierNumero.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        const container = element
+          .closest(".fr-table__container")
+          ?.getBoundingClientRect();
+        return Boolean(
+          container &&
+            bounds.left >= container.left - 1 &&
+            bounds.right <= container.right + 1,
+        );
+      }),
+    )
+    .toBe(true);
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          document.body.scrollWidth <= document.documentElement.clientWidth &&
+          document.documentElement.scrollWidth <=
+            document.documentElement.clientWidth,
+      ),
+    )
+    .toBe(true);
 });
 
 test("dossier page displays impact metrics correctly", async ({ page }) => {
@@ -1587,7 +1910,7 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
   );
 
   try {
-    await page.goto(`/projets/${retryWithoutMetricsDossierNumber}`);
+    await page.goto(`/projets/${retryWithoutMetricsDossierNumber}/financement`);
 
     const aideFondsVert = page.getByRole("region", {
       name: "Aide du Fonds vert",
@@ -1753,7 +2076,7 @@ test("access denied shows error page and does not render FV/EJ data", async ({
     }),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
 
   await expect(page.getByText("Introuvable")).toBeVisible();
   await expect(
@@ -1764,7 +2087,7 @@ test("access denied shows error page and does not render FV/EJ data", async ({
   ).not.toBeAttached();
 });
 
-test("EJ finances error shows alert but rest of page remains intact", async ({
+test("le lecteur conserve les montants disponibles quand les détails de tous les engagements échouent", async ({
   page,
   msw,
 }) => {
@@ -1777,7 +2100,7 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
     }),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
 
   await expect(
     page.getByText(
@@ -1806,6 +2129,78 @@ test("EJ finances error shows alert but rest of page remains intact", async ({
   ).not.toBeAttached();
 });
 
+test("le lecteur conserve un engagement complet quand les détails de l’autre échouent", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    http.get("http://fondsvert/fonds_vert/v2/finances/2105212345", () =>
+      HttpResponse.json({ error: "Server Error" }, { status: 500 }),
+    ),
+  );
+
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+  await waitForDsfrTabs(page);
+
+  await expect(
+    page.getByText(
+      "Les détails des engagements juridiques (montant attribué initial, fournisseur, centre de coût) sont temporairement indisponibles.",
+    ),
+  ).toBeVisible();
+  const engagementIncomplet = page.getByRole("region", {
+    name: "Engagement juridique n°2105212345",
+  });
+  await expect(
+    engagementIncomplet.getByLabel("Montant attribué initial"),
+  ).not.toBeAttached();
+  await expect(
+    engagementIncomplet.getByLabel("Fournisseur"),
+  ).not.toBeAttached();
+  await expect(
+    engagementIncomplet.getByLabel("Centre de coût"),
+  ).not.toBeAttached();
+  await expect(
+    engagementIncomplet.getByLabel("Montant attribué en 2025"),
+  ).toContainText("6 651 494,80 €");
+  await expect(
+    engagementIncomplet.getByLabel("Dernier paiement"),
+  ).toContainText("3 422 079,20 €");
+
+  const engagementComplet = page.getByRole("region", {
+    name: "Engagement juridique n°2106789012",
+  });
+  await expect(
+    engagementComplet.getByLabel("Montant attribué initial"),
+  ).toContainText("2 500 000,00 €");
+  await expect(
+    engagementComplet.getByLabel("Montant attribué en 2025"),
+  ).toContainText("500 000,00 €");
+  await expect(engagementComplet.getByLabel("Montant restant")).toContainText(
+    "300 000,00 €",
+  );
+  await expect(engagementComplet.getByLabel("Fournisseur")).toHaveText(
+    COMPANY_NAME,
+  );
+  await expect(engagementComplet.getByLabel("Centres de coût")).toHaveText(
+    `${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`,
+  );
+  await expect(engagementComplet.getByLabel("Dernier paiement")).toContainText(
+    "200 000,00 €",
+  );
+  await expect(engagementComplet.getByLabel("Date de paiement")).toContainText(
+    "10 février 2025",
+  );
+  await expect(engagementComplet.getByLabel("Numéro de demande")).toHaveText(
+    "1009876546",
+  );
+
+  await engagementComplet.getByRole("tab", { name: "Historique" }).click();
+  await expect(engagementComplet.getByRole("row")).toHaveCount(5);
+  await expect(
+    engagementComplet.getByRole("row").nth(1).getByRole("cell").nth(4),
+  ).toHaveText("1009876546");
+});
+
 test("long project titles are truncated with ellipsis", async ({
   page,
   msw,
@@ -1824,20 +2219,52 @@ test("long project titles are truncated with ellipsis", async ({
   await expect(heading).toContainText(PROJECT_TITLE_LONG.slice(0, 80));
 });
 
-test("engagement juridique displays etat engagement badge", async ({
-  page,
-}) => {
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+for (const [etatEngagement, statutAffiche] of [
+  ["en cours", "En cours"],
+  ["non démarré", "Non démarré"],
+  ["soldé", "Soldé"],
+  ["clos", "Clos"],
+  ["inconnu", "Inconnu"],
+  ["sans paiement", "Sans paiement"],
+] as const) {
+  test(`le lecteur voit le statut « ${statutAffiche} » de son engagement`, async ({
+    page,
+    msw,
+  }) => {
+    msw.use(
+      http.get(
+        `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+        () =>
+          HttpResponse.json({
+            data: {
+              ...fondsVertDossierData.data,
+              information_financiere: {
+                informations_engagement:
+                  fondsVertDossierData.data.information_financiere!.informations_engagement.map(
+                    (annee) => ({
+                      ...annee,
+                      etat_engagement: etatEngagement,
+                    }),
+                  ),
+              },
+            },
+          }),
+      ),
+    );
 
-  const engagement = page.getByRole("region", {
-    name: "Engagement juridique n°2105212345",
+    await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+
+    const engagement = page.getByRole("region", {
+      name: "Engagement juridique n°2105212345",
+    });
+    await expect(
+      engagement.getByText("Statut des paiements de la subvention"),
+    ).toBeVisible();
+    await expect(
+      engagement.getByText(statutAffiche, { exact: true }),
+    ).toBeVisible();
   });
-
-  await expect(
-    engagement.getByText("Statut des paiements de la subvention"),
-  ).toBeVisible();
-  await expect(engagement.getByText("En cours")).toBeVisible();
-});
+}
 
 test("engagement juridique hides badge for unknown etat engagement", async ({
   page,
@@ -1876,7 +2303,7 @@ test("engagement juridique hides badge for unknown etat engagement", async ({
     ),
   );
 
-  await page.goto(`/projets/${DOSSIER_NUMBER}`);
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
 
   const engagement = page.getByRole("region", {
     name: "Engagement juridique n°2105212345",

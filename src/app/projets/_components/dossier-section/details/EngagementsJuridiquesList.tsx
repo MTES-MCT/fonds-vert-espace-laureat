@@ -20,7 +20,7 @@ export function EngagementsJuridiquesList({
   const engagementsList = groupEngagementsByEJ(informationFinanciere);
 
   return (
-    <div className="space-y-8">
+    <div className="min-w-0 space-y-8">
       {engagementsList.map((group, index) => {
         const montantRestant = getMontantRestant(
           group.historique,
@@ -34,12 +34,12 @@ export function EngagementsJuridiquesList({
             aria-labelledby={`engagement-juridique-${index}-heading`}
           >
             <div className="mb-3 flex flex-wrap items-baseline justify-between gap-4">
-              <h4
+              <h3
                 id={`engagement-juridique-${index}-heading`}
                 className="text-lg font-bold"
               >
                 Engagement juridique n°{group.numero_ej}
-              </h4>
+              </h3>
               <EtatEngagementBadge
                 etatEngagement={group.latest_etat_engagement}
               />

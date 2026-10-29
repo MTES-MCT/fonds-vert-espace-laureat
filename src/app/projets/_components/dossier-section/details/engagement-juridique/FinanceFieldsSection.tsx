@@ -22,9 +22,9 @@ function FinanceField({
   const id = `${baseId}-${scope}-label`;
 
   return (
-    <div className="max-w-[220px]">
+    <div className="min-w-0">
       <dt id={id}>{label}</dt>
-      <dd aria-labelledby={id} className="truncate" title={text}>
+      <dd aria-labelledby={id} className="[overflow-wrap:anywhere]">
         {text}
       </dd>
     </div>

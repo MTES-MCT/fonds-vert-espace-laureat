@@ -69,14 +69,19 @@ test("mesure le dossier autorisé avec DN 40 ms, FV 80 ms et EJ 30 ms", async ({
       const started = performance.now();
       await page.goto(`/projets/${DOSSIER}`);
       await expect(
-        page
-          .getByRole("region", { name: "Engagement juridique n°2105212345" })
-          .getByLabel("Montant attribué initial", { exact: true }),
-      ).toContainText("10 073 574,00 €");
+        page.getByRole("region", {
+          name: "Présentation du projet",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("region", { name: /Engagement juridique n°/ }),
+      ).toHaveCount(0);
       if (pass > 0) durations.push(Math.round(performance.now() - started));
     }
     expect(dossierCalls).toBe(6);
-    expect(ejCalls).toBe(12);
+    expect(ejCalls).toBe(0);
+    expect(Math.max(...durations)).toBeLessThan(1500);
     const impactDurations: number[] = [];
     for (let pass = 0; pass < 6; pass++) {
       const started = performance.now();
@@ -86,11 +91,32 @@ test("mesure le dossier autorisé avec DN 40 ms, FV 80 ms et EJ 30 ms", async ({
         impactDurations.push(Math.round(performance.now() - started));
     }
     expect(dossierCalls).toBe(12);
-    expect(ejCalls).toBe(12);
+    expect(ejCalls).toBe(0);
     expect(Math.max(...impactDurations)).toBeLessThan(1500);
+    const financeDurations: number[] = [];
+    for (let pass = 0; pass < 6; pass++) {
+      const started = performance.now();
+      await page.goto(`/projets/${DOSSIER}/financement`);
+      await expect(
+        page
+          .getByRole("region", { name: "Engagement juridique n°2105212345" })
+          .getByLabel("Montant attribué initial", { exact: true }),
+      ).toContainText("10 073 574,00 €");
+      if (pass > 0)
+        financeDurations.push(Math.round(performance.now() - started));
+    }
+    expect(dossierCalls).toBe(18);
+    expect(ejCalls).toBe(12);
+    expect(Math.max(...financeDurations)).toBeLessThan(1500);
     console.log(
       "FV024 DETAIL",
-      JSON.stringify({ durations, impactDurations, dossierCalls, ejCalls }),
+      JSON.stringify({
+        durations,
+        impactDurations,
+        financeDurations,
+        dossierCalls,
+        ejCalls,
+      }),
     );
   } finally {
     await deleteStoredDossierMetrics(DOSSIER);
@@ -144,7 +170,7 @@ test("un dossier existant refusé ne lance ni FV ni EJ ni import, puis son porte
 
   try {
     await authenticatePage(page, { email: "sans-acces.client024@example.com" });
-    for (const section of ["", "/impact"]) {
+    for (const section of ["", "/impact", "/financement"]) {
       await page.goto(`/projets/${dossierNumber}${section}`);
       await expect(
         page.getByText("Introuvable", { exact: true }),
@@ -163,7 +189,7 @@ test("un dossier existant refusé ne lance ni FV ni EJ ni import, puis son porte
       .poll(() => getStoredDossierMetrics(dossierNumber))
       .toBeDefined();
     expect(fvCalls).toBe(1);
-    expect(ejCalls).toBe(2);
+    expect(ejCalls).toBe(0);
     expect(requestedOptions).toEqual([["true", "true"]]);
 
     await page.reload();
@@ -172,6 +198,18 @@ test("un dossier existant refusé ne lance ni FV ni EJ ni import, puis son porte
     );
     expect(requestedOptions).toEqual([
       ["true", "true"],
+      ["false", "true"],
+    ]);
+    await page.goto(`/projets/${dossierNumber}/financement`);
+    await expect(
+      page
+        .getByRole("region", { name: "Engagement juridique n°2105212345" })
+        .getByLabel("Montant attribué initial", { exact: true }),
+    ).toContainText("10 073 574,00 €");
+    expect(ejCalls).toBe(2);
+    expect(requestedOptions).toEqual([
+      ["true", "true"],
+      ["false", "true"],
       ["false", "true"],
     ]);
   } finally {

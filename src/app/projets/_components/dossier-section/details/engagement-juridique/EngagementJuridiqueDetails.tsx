@@ -18,7 +18,7 @@ export function EngagementJuridiqueDetails({
 
   return (
     <>
-      <dl className="mb-4 grid grid-cols-3 gap-y-4 text-sm">
+      <dl className="mb-4 grid gap-x-8 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
         <MoneyField
           label={`Montant attribué en ${group.latest_year}`}
           value={group.latest_montant_engage}
