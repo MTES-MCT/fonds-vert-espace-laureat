@@ -17,6 +17,7 @@ import {
 
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
+import { metricEditorId } from "@/utils/metrics/editor";
 import {
   type MetricValueValidation,
   normalizeMetricValue,
@@ -362,7 +363,7 @@ export function MetricCorrectionEditor({
   };
 
   return (
-    <div>
+    <div id={metricEditorId(target.metricCode)}>
       <Button
         disabled={!hydrated}
         ref={openerRef}

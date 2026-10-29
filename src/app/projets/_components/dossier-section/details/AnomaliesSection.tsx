@@ -4,10 +4,12 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
 import { FondsVertAnomalyStatus } from "@/components/metrics/FondsVertAnomalyStatus";
+import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import type {
   FondsVertAnomalyCategory,
   ResolvedFondsVertAnomalies,
 } from "@/utils/metrics/anomalies";
+import { metricEditorId } from "@/utils/metrics/editor";
 import { METRIC_THEMES } from "@/utils/metrics/themes";
 
 export const anomalyCategoryLabels: Record<FondsVertAnomalyCategory, string> = {
@@ -27,6 +29,14 @@ export function AnomaliesSection({
   const incomplete =
     anomalies.status === "incomplete" || anomalies.status === "invalid";
   const warnings = anomalies.warnings;
+  const { targets } = useMetricRevisions();
+  const hasCorrections = Object.values(targets).some(
+    (target) => target.revision > 1,
+  );
+  const hasSignals =
+    anomalies.indicatorCount > 0 ||
+    anomalies.unspecifiedCategories.length > 0 ||
+    anomalies.contextLabels.length > 0;
 
   return (
     <section
@@ -48,6 +58,12 @@ export function AnomaliesSection({
           <FondsVertAnomalyStatus anomalies={anomalies} />
         </span>
       </div>
+      {hasCorrections && hasSignals && (
+        <p className="mb-4 text-sm" role="note">
+          Des corrections sont enregistrées localement. Le recalcul des
+          signalements par Fonds vert est différé.
+        </p>
+      )}
 
       {sourceUnavailable ? (
         <Alert
@@ -106,6 +122,33 @@ export function AnomaliesSection({
                       </span>
                     )}
                   </div>
+                  {indicator.editableTargets.length > 0 && (
+                    <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-2 p-0">
+                      {indicator.editableTargets
+                        .filter((target) => targets[target.metricCode])
+                        .map((target) => {
+                          const editorId = metricEditorId(target.metricCode);
+                          return (
+                            <li key={target.metricCode}>
+                              <a
+                                href={`#${encodeURIComponent(editorId)}`}
+                                onClick={(event) => {
+                                  const editor = document
+                                    .getElementById(editorId)
+                                    ?.querySelector("button");
+                                  if (!editor) return;
+                                  event.preventDefault();
+                                  editor.focus();
+                                  editor.scrollIntoView({ block: "center" });
+                                }}
+                              >
+                                Vérifier {target.label}
+                              </a>
+                            </li>
+                          );
+                        })}
+                    </ul>
+                  )}
                   {indicator.editableTargets.length === 0 ? (
                     <p className="mb-0 text-sm">
                       Aucune valeur modifiable n’est disponible pour ce
