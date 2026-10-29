@@ -1,43 +1,27 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
-import {
-  MetricValueContent,
-  type ScalarMetricValue,
-} from "@/components/metrics/MetricValue";
-
-export type MetricAnomalyProblem = {
-  label: string;
-  metric?: {
-    value: ScalarMetricValue;
-    unite?: string | null;
-  };
-};
+import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStatus";
+import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
 export function MetricAnomalyMessage({
-  problem,
-  helpText,
+  anomaly,
 }: {
-  problem: MetricAnomalyProblem;
-  helpText: string;
+  anomaly: NormalizedMetricAnomaly;
 }) {
   return (
-    <>
-      <Badge small severity="warning">
-        {problem.label}
-        {problem.metric && (
-          <span className="ml-1 normal-case [&_span]:!text-[0.625rem]">
-            <MetricValueContent
-              value={problem.metric.value}
-              unite={problem.metric.unite}
-            />
-          </span>
-        )}
-      </Badge>
-      <div
-        className={`text-xs leading-tight font-normal text-[var(--text-mention-grey)]`}
-      >
-        {helpText}
+    <div className="space-y-1">
+      <div className="flex flex-wrap gap-2">
+        {anomaly.categories.map((category) => (
+          <Badge
+            key={category}
+            small
+            severity={category === "strong-inconsistency" ? "error" : "warning"}
+          >
+            {anomalyCategoryLabels[category]}
+          </Badge>
+        ))}
       </div>
-    </>
+      <p className="mb-0 text-sm">{anomaly.label}</p>
+    </div>
   );
 }

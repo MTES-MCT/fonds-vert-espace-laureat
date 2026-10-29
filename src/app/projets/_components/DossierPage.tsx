@@ -6,6 +6,7 @@ import { RefreshOnVisibility } from "@/app/projets/_components/RefreshOnVisibili
 import { RefreshStatusProvider } from "@/app/projets/_components/RefreshStatusContext";
 import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { MetricAnomalyProvider } from "@/components/metrics/MetricAnomalyContext";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
 import { getDossierProgress } from "@/db/dossierProgress";
@@ -79,6 +80,10 @@ export async function DossierPage({
     metricLoadingResult;
 
   const dossierSubvention = dossierSubventionResult.data;
+  const anomalies = resolveEditableAnomalyTargets(
+    normalizeFondsVertAnomalies(dossierFondsVertResult.signals),
+    metrics,
+  );
   return (
     <>
       <ToastViewport />
@@ -88,30 +93,29 @@ export async function DossierPage({
           dossierNumber={numeroDossier}
           initialTargets={metricRevisionTargets}
         >
-          <DossierSection
-            section={section}
-            metrics={metrics}
-            isAdmin={isAdmin({ userEmail: user.email })}
-            view={
-              isAdmin({ userEmail: user.email })
-                ? (session.projectView ?? "porteur")
-                : dossierSubvention.viewerRelationship
-            }
-            dossierSubvention={dossierSubvention}
-            dossierFondsVertResult={dossierFondsVertResult}
-            financesEJPromise={financesEJPromise}
-            progressTarget={progressTarget}
-            anomaliesSection={
-              <AnomaliesSection
-                anomalies={resolveEditableAnomalyTargets(
-                  normalizeFondsVertAnomalies(dossierFondsVertResult.signals),
-                  metrics,
-                )}
-                sourceUnavailable={!dossierFondsVertResult.success}
-                hasLocalMetrics={Object.keys(metrics ?? {}).length > 0}
-              />
-            }
-          />
+          <MetricAnomalyProvider anomalies={anomalies.indicators}>
+            <DossierSection
+              section={section}
+              metrics={metrics}
+              isAdmin={isAdmin({ userEmail: user.email })}
+              view={
+                isAdmin({ userEmail: user.email })
+                  ? (session.projectView ?? "porteur")
+                  : dossierSubvention.viewerRelationship
+              }
+              dossierSubvention={dossierSubvention}
+              dossierFondsVertResult={dossierFondsVertResult}
+              financesEJPromise={financesEJPromise}
+              progressTarget={progressTarget}
+              anomaliesSection={
+                <AnomaliesSection
+                  anomalies={anomalies}
+                  sourceUnavailable={!dossierFondsVertResult.success}
+                  hasLocalMetrics={Object.keys(metrics ?? {}).length > 0}
+                />
+              }
+            />
+          </MetricAnomalyProvider>
         </MetricRevisionProvider>
       </RefreshStatusProvider>
     </>

@@ -48,6 +48,7 @@ function buildEngagementsSection(
 export async function DossierSection({
   isAdmin,
   section = "summary",
+  navigationQuery = "",
   metrics,
   view,
   dossierSubvention,
@@ -60,6 +61,7 @@ export async function DossierSection({
 }: {
   isAdmin: boolean;
   section?: ProjectSection;
+  navigationQuery?: string;
   metrics?: Metrics;
   view?: ProjectView;
   dossierSubvention: Dossier;
@@ -117,7 +119,9 @@ export async function DossierSection({
           pageLabel={
             section === "impact" ? "Données d’impact" : "Synthèse du projet"
           }
-          projectPath={section === "impact" ? basePath : undefined}
+          projectPath={
+            section === "impact" ? `${basePath}${navigationQuery}` : undefined
+          }
         />
         <p className="mb-6 text-sm text-[var(--text-mention-grey)]">
           {view === "porteur"
@@ -133,7 +137,7 @@ export async function DossierSection({
           <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-4 p-0 pb-4">
             <li>
               <Link
-                href={basePath}
+                href={`${basePath}${navigationQuery}`}
                 aria-current={section === "summary" ? "page" : undefined}
               >
                 Synthèse du projet
@@ -141,14 +145,16 @@ export async function DossierSection({
             </li>
             <li>
               <Link
-                href={`${basePath}/impact`}
+                href={`${basePath}/impact${navigationQuery}`}
                 aria-current={section === "impact" ? "page" : undefined}
               >
                 Données d’impact
               </Link>
             </li>
             <li>
-              <Link href={`${basePath}#financement`}>Financement</Link>
+              <Link href={`${basePath}${navigationQuery}#financement`}>
+                Financement
+              </Link>
             </li>
           </ul>
         </nav>

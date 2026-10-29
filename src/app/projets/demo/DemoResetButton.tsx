@@ -23,7 +23,7 @@ export function DemoResetButton() {
         );
       }
 
-      window.location.reload();
+      window.location.assign(window.location.pathname);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

@@ -1,6 +1,14 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
-import type { NormalizedFondsVertAnomalies } from "@/utils/metrics/anomalies";
+import type {
+  FondsVertAnomalyCategory,
+  NormalizedFondsVertAnomalies,
+} from "@/utils/metrics/anomalies";
+
+export const anomalyCategoryLabels: Record<FondsVertAnomalyCategory, string> = {
+  statistical: "Anomalie statistique",
+  "strong-inconsistency": "Incohérence forte",
+};
 
 export function fondsVertAnomalySummary(
   anomalies: NormalizedFondsVertAnomalies,

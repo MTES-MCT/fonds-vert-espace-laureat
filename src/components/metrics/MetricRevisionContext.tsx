@@ -27,6 +27,11 @@ const MetricRevisionContext = createContext<MetricRevisionContextValue | null>(
   null,
 );
 
+type CorrectedTarget = {
+  target: DossierMetricRevisionTarget;
+  replacedInitialRevision?: number;
+};
+
 export class MetricRevisionConflictError extends Error {
   constructor(
     public readonly target: DossierMetricRevisionTarget,
@@ -49,16 +54,36 @@ export function MetricRevisionProvider({
   children: ReactNode;
 }) {
   const [correctedTargets, setCorrectedTargets] = useState<
-    Record<string, DossierMetricRevisionTarget>
+    Record<string, CorrectedTarget>
   >({});
+
+  const replacedInitialTargets = Object.entries(correctedTargets).filter(
+    ([metricCode, correction]) =>
+      correction.replacedInitialRevision !== undefined &&
+      initialTargets[metricCode]?.revision !==
+        correction.replacedInitialRevision,
+  );
+  if (replacedInitialTargets.length > 0) {
+    const next = { ...correctedTargets };
+    for (const [metricCode, correction] of replacedInitialTargets) {
+      next[metricCode] = { target: correction.target };
+    }
+    setCorrectedTargets(next);
+  }
+
   const targets = useMemo(() => {
     const mergedTargets = { ...initialTargets };
 
-    for (const [metricCode, target] of Object.entries(correctedTargets)) {
-      mergedTargets[metricCode] = keepNewestMetricRevision(
-        mergedTargets[metricCode],
-        target,
-      );
+    for (const [metricCode, correction] of Object.entries(correctedTargets)) {
+      mergedTargets[metricCode] =
+        correction.replacedInitialRevision !== undefined &&
+        initialTargets[metricCode]?.revision ===
+          correction.replacedInitialRevision
+          ? correction.target
+          : keepNewestMetricRevision(
+              mergedTargets[metricCode],
+              correction.target,
+            );
     }
 
     return mergedTargets;
@@ -100,11 +125,24 @@ export function MetricRevisionProvider({
       const updatedTarget = body.target;
 
       setCorrectedTargets((current) => {
-        const currentTarget = current[metricCode] ?? targets[metricCode];
+        const currentCorrection = current[metricCode];
+        const currentTarget = currentCorrection?.target ?? targets[metricCode];
 
         return {
           ...current,
-          [metricCode]: keepNewestMetricRevision(currentTarget, updatedTarget),
+          [metricCode]:
+            response.status === 409
+              ? {
+                  target: updatedTarget,
+                  replacedInitialRevision: initialTargets[metricCode]?.revision,
+                }
+              : {
+                  ...currentCorrection,
+                  target: keepNewestMetricRevision(
+                    currentTarget,
+                    updatedTarget,
+                  ),
+                },
         };
       });
 
@@ -122,7 +160,7 @@ export function MetricRevisionProvider({
 
       return updatedTarget;
     },
-    [correctionApiPath, dossierNumber, targets],
+    [correctionApiPath, dossierNumber, initialTargets, targets],
   );
 
   const value = useMemo(

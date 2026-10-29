@@ -2,27 +2,12 @@
 
 import { createContext, type ReactNode, useContext, useMemo } from "react";
 
-import type { MetricAnomalyProblem } from "@/components/metrics/MetricAnomalyMessage";
+import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
-export type MetricAnomaly = {
-  metricCode: string;
-  indicator: string;
-  problem: MetricAnomalyProblem;
-  helpText: string;
-};
+export type MetricAnomaly = NormalizedMetricAnomaly;
 
-type MetricAnomalyContextValue = {
-  anomalies: MetricAnomaly[];
-  anomaliesByMetricCode: Record<string, MetricAnomaly[]>;
-};
-
-const EMPTY_ANOMALIES: MetricAnomaly[] = [];
-const EMPTY_CONTEXT: MetricAnomalyContextValue = {
-  anomalies: EMPTY_ANOMALIES,
-  anomaliesByMetricCode: {},
-};
-const MetricAnomalyContext =
-  createContext<MetricAnomalyContextValue>(EMPTY_CONTEXT);
+type MetricAnomalyContextValue = Record<string, MetricAnomaly[]>;
+const MetricAnomalyContext = createContext<MetricAnomalyContextValue>({});
 
 export function MetricAnomalyProvider({
   anomalies,
@@ -35,10 +20,12 @@ export function MetricAnomalyProvider({
     const anomaliesByMetricCode: Record<string, MetricAnomaly[]> = {};
 
     for (const anomaly of anomalies) {
-      (anomaliesByMetricCode[anomaly.metricCode] ??= []).push(anomaly);
+      for (const metricCode of anomaly.metricCodes) {
+        (anomaliesByMetricCode[metricCode] ??= []).push(anomaly);
+      }
     }
 
-    return { anomalies, anomaliesByMetricCode };
+    return anomaliesByMetricCode;
   }, [anomalies]);
 
   return (
@@ -48,13 +35,9 @@ export function MetricAnomalyProvider({
   );
 }
 
-export function useAllMetricAnomalies(): MetricAnomaly[] {
-  return useContext(MetricAnomalyContext).anomalies;
-}
-
 export function useMetricAnomaliesByMetricCode(): Record<
   string,
   MetricAnomaly[]
 > {
-  return useContext(MetricAnomalyContext).anomaliesByMetricCode;
+  return useContext(MetricAnomalyContext);
 }

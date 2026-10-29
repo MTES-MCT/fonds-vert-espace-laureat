@@ -70,15 +70,8 @@ function indexRelatedMetrics(metrics: Record<string, ProcessedMetric>) {
 
 const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
   anomalies?.map((anomaly) => (
-    <div
-      key={`${anomaly.metricCode}-${anomaly.problem.label}`}
-      aria-label="Anomalie détectée"
-      role="note"
-    >
-      <MetricAnomalyMessage
-        problem={anomaly.problem}
-        helpText={anomaly.helpText}
-      />
+    <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
+      <MetricAnomalyMessage anomaly={anomaly} />
     </div>
   ));
 

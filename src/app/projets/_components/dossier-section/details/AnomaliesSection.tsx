@@ -3,19 +3,14 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
-import { FondsVertAnomalyStatus } from "@/components/metrics/FondsVertAnomalyStatus";
+import {
+  anomalyCategoryLabels,
+  FondsVertAnomalyStatus,
+} from "@/components/metrics/FondsVertAnomalyStatus";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
-import type {
-  FondsVertAnomalyCategory,
-  ResolvedFondsVertAnomalies,
-} from "@/utils/metrics/anomalies";
+import type { ResolvedFondsVertAnomalies } from "@/utils/metrics/anomalies";
 import { metricEditorId } from "@/utils/metrics/editor";
 import { METRIC_THEMES } from "@/utils/metrics/themes";
-
-export const anomalyCategoryLabels: Record<FondsVertAnomalyCategory, string> = {
-  statistical: "Anomalie statistique",
-  "strong-inconsistency": "Incohérence forte",
-};
 
 export function AnomaliesSection({
   anomalies,
