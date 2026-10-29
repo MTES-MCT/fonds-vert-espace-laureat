@@ -29,7 +29,7 @@ const MetricRevisionContext = createContext<MetricRevisionContextValue | null>(
 
 type CorrectedTarget = {
   target: DossierMetricRevisionTarget;
-  replacedInitialRevision?: number;
+  replacedInitialTarget?: DossierMetricRevisionTarget;
 };
 
 export class MetricRevisionConflictError extends Error {
@@ -59,9 +59,8 @@ export function MetricRevisionProvider({
 
   const replacedInitialTargets = Object.entries(correctedTargets).filter(
     ([metricCode, correction]) =>
-      correction.replacedInitialRevision !== undefined &&
-      initialTargets[metricCode]?.revision !==
-        correction.replacedInitialRevision,
+      correction.replacedInitialTarget !== undefined &&
+      initialTargets[metricCode] !== correction.replacedInitialTarget,
   );
   if (replacedInitialTargets.length > 0) {
     const next = { ...correctedTargets };
@@ -76,9 +75,8 @@ export function MetricRevisionProvider({
 
     for (const [metricCode, correction] of Object.entries(correctedTargets)) {
       mergedTargets[metricCode] =
-        correction.replacedInitialRevision !== undefined &&
-        initialTargets[metricCode]?.revision ===
-          correction.replacedInitialRevision
+        correction.replacedInitialTarget !== undefined &&
+        initialTargets[metricCode] === correction.replacedInitialTarget
           ? correction.target
           : keepNewestMetricRevision(
               mergedTargets[metricCode],
@@ -134,7 +132,7 @@ export function MetricRevisionProvider({
             response.status === 409
               ? {
                   target: updatedTarget,
-                  replacedInitialRevision: initialTargets[metricCode]?.revision,
+                  replacedInitialTarget: initialTargets[metricCode],
                 }
               : {
                   ...currentCorrection,

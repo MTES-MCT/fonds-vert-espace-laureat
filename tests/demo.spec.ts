@@ -493,6 +493,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
       .click();
     await expect(dialog).toBeHidden();
   }
+  await page.reload();
   await modifier.click();
   await input.fill("1800000");
 
@@ -565,10 +566,6 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   const source = page.getByRole("combobox", {
     name: "Réponse Fonds vert simulée",
   });
-  await source.selectOption("recalculated");
-  await expect(
-    page.getByText("Aucun signalement", { exact: true }),
-  ).toBeVisible();
   await appendDossierMetricRevision({
     numeroDossier: DEMO_DOSSIER_NUMBER,
     metricCode: "conso_energetique_avant_travaux",
@@ -576,7 +573,10 @@ test("replaces a demo metric after another tab resets its revisions and permits 
     expectedRevision: 2,
     authorEmail: null,
   });
-  await source.selectOption("initial");
+  await source.selectOption("recalculated");
+  await expect(
+    page.getByText("Aucun signalement", { exact: true }),
+  ).toBeVisible();
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /1\s*700\s*000\s*kWh/,
   );
