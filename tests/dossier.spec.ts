@@ -2184,17 +2184,24 @@ for (const [situation, serviceIndisponible] of [
   ["le socle Fonds vert est absent", false],
   ["Fonds vert est indisponible", true],
 ] as const) {
-  test(`le lecteur conserve les quatre jalons et les données DN quand ${situation}`, async ({
+  test(`le lecteur conserve les quatre jalons et les données DN quand ${situation} et que le département n’est pas renseigné`, async ({
     page,
     msw,
   }) => {
     const siretDemandeurDN = "44455566600077";
+    const champsSansDepartement = getDossierData.data.dossier.champs.map(
+      (champ) =>
+        champ.champDescriptorId === "Q2hhbXAtMzM0ODkyMw=="
+          ? { ...champ, stringValue: "" }
+          : champ,
+    );
     msw.use(
       ds.query("getDossier", () =>
         HttpResponse.json({
           data: {
             dossier: {
               ...getDossierData.data.dossier,
+              champs: champsSansDepartement,
               demandeur: {
                 ...getDossierData.data.dossier.demandeur,
                 siret: siretDemandeurDN,
@@ -2228,7 +2235,10 @@ for (const [situation, serviceIndisponible] of [
     await expect(presentation).toContainText(PROJECT_SUMMARY);
     await expect(
       presentation.getByLabel("Département d'implantation"),
-    ).toHaveText(DEPARTMENT);
+    ).toHaveText("Aucun département précisé");
+    await expect(
+      presentation.getByLabel("Commune principale impactée"),
+    ).toHaveText("Non renseignée");
     await expect(presentation.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
 
     const identite = page.getByRole("region", {
@@ -2375,6 +2385,289 @@ test("calendar timeline marks step as done when later step is done, even with mi
   await expect(timelineItems.nth(1)).toContainText("terminé");
   await expect(timelineItems.nth(2)).toContainText("terminé");
   await expect(timelineItems.nth(3)).toContainText("à venir");
+});
+
+test.describe("consultation d’un dossier par un porteur ordinaire", () => {
+  const emailPorteur = "porteur-dossier@example.test";
+  const cheminProjet = `/projets/${DOSSIER_NUMBER}`;
+  const cheminFinancement = `${cheminProjet}/financement`;
+
+  test.beforeEach(async ({ page, msw }) => {
+    const adminEmails = process.env.ADMIN_EMAILS?.split(",") ?? [];
+    expect(adminEmails.includes(emailPorteur)).toBe(false);
+    await authenticatePage(page, {
+      email: emailPorteur,
+      projectView: "porteur",
+    });
+
+    const dossierPorteur = {
+      ...getDossierData.data.dossier,
+      usager: { ...getDossierData.data.dossier.usager, email: emailPorteur },
+    };
+    msw.use(
+      ds.query("getDossier", () =>
+        HttpResponse.json({ data: { dossier: dossierPorteur } }),
+      ),
+      ds.query("getDossierAccess", () => {
+        const { demandeur, groupeInstructeur, usager } = dossierPorteur;
+        return HttpResponse.json({
+          data: { dossier: { demandeur, groupeInstructeur, usager } },
+        });
+      }),
+    );
+  });
+
+  test("le porteur distingue le total payé inconnu des montants connus sans informations financières", async ({
+    page,
+    msw,
+  }) => {
+    msw.use(
+      http.get(
+        `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+        () =>
+          HttpResponse.json({
+            data: {
+              ...fondsVertDossierData.data,
+              information_financiere: undefined,
+            },
+          }),
+      ),
+    );
+
+    await page.goto(cheminFinancement);
+
+    const financement = page.getByRole("region", {
+      name: "Financement du projet",
+      exact: true,
+    });
+    await expect(
+      financement.getByLabel("Montant total des dépenses du projet"),
+    ).toHaveText("18 939 933,00 €");
+    const aide = financement.getByRole("region", {
+      name: "Aide du Fonds vert",
+    });
+    await expect(
+      aide.getByLabel("Montant attribué", { exact: true }),
+    ).toHaveText("10 073 564,00 €");
+    await expect(aide.getByLabel("Montant total payé")).toHaveText("N/A");
+    await expect(
+      financement.getByRole("region", { name: /Engagement juridique n°/ }),
+    ).toHaveCount(0);
+
+    const navigation = page.getByRole("navigation", {
+      name: "Pages du projet",
+    });
+    await expect(navigation.getByRole("link")).toHaveText([
+      "Synthèse du projet",
+      "Données d’impact",
+      "Financement",
+    ]);
+    await expect(
+      navigation.getByRole("link", { name: "Synthèse du projet", exact: true }),
+    ).toHaveAttribute("href", cheminProjet);
+    await expect(
+      navigation.getByRole("link", { name: "Données d’impact", exact: true }),
+    ).toHaveAttribute("href", `${cheminProjet}/impact`);
+    await expect(
+      navigation.getByRole("link", { name: "Financement", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("le porteur conserve le financement et sa navigation après une panne globale de Fonds vert et un rechargement", async ({
+    page,
+    msw,
+  }) => {
+    msw.use(
+      http.get(
+        `http://fondsvert/fonds_vert/v2/dossiers/${DOSSIER_NUMBER}`,
+        () =>
+          HttpResponse.json({ error: "Service Unavailable" }, { status: 503 }),
+      ),
+    );
+
+    await page.goto(cheminFinancement);
+
+    const financement = page.getByRole("region", {
+      name: "Financement du projet",
+      exact: true,
+    });
+    await expect(
+      financement.getByText(
+        "L'historique financier est temporairement indisponible.",
+        {
+          exact: true,
+        },
+      ),
+    ).toBeVisible();
+    for (const libelle of [
+      "Montant total des dépenses du projet",
+      "Montant attribué",
+      "Montant total payé",
+    ]) {
+      await expect(financement.getByLabel(libelle, { exact: true })).toHaveText(
+        "N/A",
+      );
+    }
+    await expect(financement).not.toContainText(/0,00\s*€/);
+    await expect(
+      financement.getByRole("region", { name: /Engagement juridique n°/ }),
+    ).toHaveCount(0);
+    const navigation = page.getByRole("navigation", {
+      name: "Pages du projet",
+    });
+    await expect(navigation.getByRole("link")).toHaveText([
+      "Synthèse du projet",
+      "Données d’impact",
+      "Financement",
+    ]);
+
+    await page.reload();
+
+    await expect(page).toHaveURL(cheminFinancement);
+    await expect(
+      financement.getByText(
+        "L'historique financier est temporairement indisponible.",
+        {
+          exact: true,
+        },
+      ),
+    ).toBeVisible();
+    for (const libelle of [
+      "Montant total des dépenses du projet",
+      "Montant attribué",
+      "Montant total payé",
+    ]) {
+      await expect(financement.getByLabel(libelle, { exact: true })).toHaveText(
+        "N/A",
+      );
+    }
+    await expect(
+      navigation.getByRole("link", { name: "Financement", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+
+    const lienProjet = page
+      .getByTestId("breadcrumb-current")
+      .getByRole("link", { name: `Projet n°${DOSSIER_NUMBER}`, exact: true });
+    await expect(lienProjet).toHaveAttribute("href", cheminProjet);
+    await lienProjet.click();
+
+    await expect(page).toHaveURL(cheminProjet);
+    await expect(
+      page.getByRole("region", { name: "Synthèse du projet", exact: true }),
+    ).toBeVisible();
+    await expect(
+      navigation.getByRole("link", { name: "Synthèse du projet", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("le porteur consulte les trois pages du dossier sur ordinateur puis la synthèse sur mobile et en conserve les captures", async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(cheminProjet);
+    await waitForDsfrModal(page);
+
+    const synthese = page.getByRole("region", {
+      name: "Synthèse du projet",
+      exact: true,
+    });
+    await expect(
+      synthese.getByRole("region", { name: "Présentation du projet" }),
+    ).toContainText(PROJECT_SUMMARY);
+    await expect(
+      synthese.getByRole("region", { name: "Identité du porteur de projet" }),
+    ).toBeVisible();
+    await expect(
+      synthese.getByRole("region", { name: "Avancement du projet" }),
+    ).toBeVisible();
+    await expect(
+      synthese.getByRole("region", { name: "Calendrier" }),
+    ).toBeVisible();
+    await expect(
+      synthese.getByRole("button", {
+        name: "Modifier l’avancement",
+        exact: true,
+      }),
+    ).toBeEnabled();
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+    await page.screenshot({
+      path: testInfo.outputPath("synthese-desktop.png"),
+      fullPage: true,
+    });
+
+    const navigation = page.getByRole("navigation", {
+      name: "Pages du projet",
+    });
+    await navigation
+      .getByRole("link", { name: "Données d’impact", exact: true })
+      .click();
+    await expect(page).toHaveURL(`${cheminProjet}/impact`);
+    await expect(
+      page.getByRole("heading", {
+        level: 2,
+        name: "Données d’impact",
+        exact: true,
+      }),
+    ).toBeVisible();
+    const consommation = page.getByRole("region", {
+      name: "Consommation énergétique",
+      exact: true,
+    });
+    await expect(consommation).toBeVisible();
+    await expect(consommation.getByTestId("valeur-0")).toContainText(
+      "2 055 650",
+    );
+    await expect(consommation.getByTestId("valeur-1")).toContainText(
+      "1 935 960",
+    );
+    await page.screenshot({
+      path: testInfo.outputPath("impact-desktop.png"),
+      fullPage: true,
+    });
+
+    await navigation
+      .getByRole("link", { name: "Financement", exact: true })
+      .click();
+    await expect(page).toHaveURL(cheminFinancement);
+    await waitForDsfrTabs(page);
+    await expect(
+      page.getByRole("region", { name: "Aide du Fonds vert" }),
+    ).toBeVisible();
+    const engagements = page.getByRole("region", {
+      name: /Engagement juridique n°/,
+    });
+    await expect(engagements).toHaveCount(2);
+    await expect(
+      engagements.nth(0).getByLabel("Montant attribué initial"),
+    ).toContainText("10 073 574,00 €");
+    await expect(
+      engagements.nth(1).getByLabel("Montant attribué initial"),
+    ).toContainText("2 500 000,00 €");
+    await page.screenshot({
+      path: testInfo.outputPath("financement-desktop.png"),
+      fullPage: true,
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await navigation
+      .getByRole("link", { name: "Synthèse du projet", exact: true })
+      .click();
+    await expect(page).toHaveURL(cheminProjet);
+    for (const nom of [
+      "Présentation du projet",
+      "Identité du porteur de projet",
+      "Avancement du projet",
+      "Calendrier",
+    ]) {
+      await expect(synthese.getByRole("region", { name: nom })).toBeVisible();
+    }
+    await page.screenshot({
+      path: testInfo.outputPath("synthese-mobile.png"),
+      fullPage: true,
+    });
+  });
 });
 
 test("access denied shows error page and does not render FV/EJ data", async ({

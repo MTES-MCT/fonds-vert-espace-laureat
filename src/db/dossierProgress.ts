@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
 import { dossierProgressRevisions } from "@/db/schema";
@@ -70,6 +70,30 @@ export async function getDossierProgress({
     .orderBy(desc(dossierProgressRevisions.revision))
     .limit(1);
   return targetFromRow(row);
+}
+
+export async function getDossiersProgress({
+  dossierNumbers,
+}: {
+  dossierNumbers: number[];
+}): Promise<Record<number, DossierProgressTarget>> {
+  if (dossierNumbers.length === 0) return {};
+  const rows = await getDb()
+    .selectDistinctOn([dossierProgressRevisions.dossierNumber], {
+      dossierNumber: dossierProgressRevisions.dossierNumber,
+      ...progressSelection,
+    })
+    .from(dossierProgressRevisions)
+    .where(inArray(dossierProgressRevisions.dossierNumber, dossierNumbers))
+    .orderBy(
+      asc(dossierProgressRevisions.dossierNumber),
+      desc(dossierProgressRevisions.revision),
+    );
+  const targets = Object.fromEntries(
+    dossierNumbers.map((number) => [number, emptyProgress]),
+  );
+  for (const row of rows) targets[row.dossierNumber] = targetFromRow(row);
+  return targets;
 }
 
 export async function appendDossierProgressRevision({

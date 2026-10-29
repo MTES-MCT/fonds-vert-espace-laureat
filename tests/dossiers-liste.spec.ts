@@ -8,7 +8,13 @@ import {
 
 import { getSessionOptions } from "@/utils/session";
 
-import { DOSSIER_NUMBER, INSTRUCTEUR_EMAIL } from "./fixtures/constants";
+import {
+  DEPARTMENT,
+  DOSSIER_NUMBER,
+  INSTRUCTEUR_EMAIL,
+  PROGRAM_TITLE,
+  PROJECT_TITLE,
+} from "./fixtures/constants";
 import {
   getDossierData as originalDossierData,
   makeDossierDataForInstructeur,
@@ -71,6 +77,13 @@ const instructeurList: DossiersResponse = {
   ...fondsVertDossiersListByInstructeurData,
 };
 const errorResponse: DossiersResponse = { success: false };
+const noSignals = {
+  est_error: false,
+  est_anomalie: false,
+  anomalie_demarche_list: [],
+  anomalie_indicateur_list: [],
+  error_indicateur_list: [],
+};
 
 function makeDossiersHandler({
   siret,
@@ -197,6 +210,277 @@ test("instructeur sees dossiers filtered by DS authorization", async ({
   ).toBeVisible();
 });
 
+test("l’instructeur voit les informations des projets autorisés, leur dernier avancement local et les différents états de signalement", async ({
+  page,
+  msw,
+}, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const first = 89993800 + testInfo.parallelIndex * 10;
+  const [rich, absent, incomplete, complete, warning, statistical] = Array.from(
+    { length: 6 },
+    (_, index) => first + index,
+  );
+  const indicator = "Surface du bâtiment avant projet";
+  const unknownIndicator = "Indicateur partenaire à conserver";
+  let detailCalls = 0;
+  const sql = createTestDatabaseClient();
+  try {
+    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql`insert into dossier_progress_revisions (dossier_number,revision,status,author_email) values
+      (${rich},1,'En cours de réalisation',${INSTRUCTEUR_EMAIL}),
+      (${rich},2,'Bloqué',${INSTRUCTEUR_EMAIL})`;
+    await authenticatePage(page, { email: INSTRUCTEUR_EMAIL });
+    msw.use(
+      http.get("http://fondsvert/fonds_vert/v2/dossiers", ({ request }) => {
+        const siret = new URL(request.url).searchParams.has("siret");
+        const data = siret
+          ? [
+              {
+                socle_commun: { dossier_number: warning },
+                anomalies: noSignals,
+                avertissements: ["Vérifier le périmètre de calcul"],
+              },
+            ]
+          : [
+              {
+                socle_commun: {
+                  dossier_number: rich,
+                  entreprise_raison_sociale: "COMMUNE DE REZÉ",
+                  nom_commune: "REZÉ",
+                  annee_millesime: 2025,
+                  statut_realisation_projet: "Terminé",
+                  montant_subvention_attribuee: 999,
+                  date_notification: "2020-01-01",
+                },
+                anomalies: {
+                  ...noSignals,
+                  est_error: true,
+                  est_anomalie: true,
+                  anomalie_indicateur_list: [
+                    indicator,
+                    indicator,
+                    unknownIndicator,
+                  ],
+                  error_indicateur_list: [indicator, indicator],
+                },
+                avertissements: ["Justificatif partenaire à vérifier"],
+              },
+              { socle_commun: { dossier_number: absent } },
+              {
+                socle_commun: { dossier_number: incomplete },
+                anomalies: { est_anomalie: false },
+              },
+              {
+                socle_commun: { dossier_number: complete },
+                anomalies: noSignals,
+                avertissements: [],
+              },
+              {
+                socle_commun: { dossier_number: warning },
+                anomalies: noSignals,
+                avertissements: [42],
+              },
+              {
+                socle_commun: { dossier_number: statistical },
+                anomalies: {
+                  est_anomalie: true,
+                  anomalie_indicateur_list: [indicator],
+                },
+              },
+            ];
+        return HttpResponse.json({
+          count: data.length,
+          next_page: null,
+          previous_page: null,
+          data,
+        });
+      }),
+      ds.query("getDossier", ({ variables }) => {
+        const response = makeDossierDataForInstructeur(
+          variables.number,
+          INSTRUCTEUR_EMAIL,
+        );
+        return HttpResponse.json({
+          data: {
+            dossier: {
+              ...response.data.dossier,
+              annotations: response.data.dossier.annotations.map((champ) =>
+                champ.champDescriptorId === "Q2hhbXAtMjk4MjQ5NA=="
+                  ? { ...champ, date: "2026-10-01" }
+                  : champ,
+              ),
+            },
+          },
+        });
+      }),
+      http.get("http://fondsvert/fonds_vert/v2/dossiers/:number", () => {
+        detailCalls++;
+        return new HttpResponse(null, { status: 500 });
+      }),
+    );
+
+    await page.goto("/projets");
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Projets suivis" }),
+    ).toBeVisible();
+    await expect(page.getByRole("columnheader")).toHaveText([
+      "Dossier",
+      "Projet",
+      "Signalements",
+      "Porteur",
+      "Territoire",
+      "Dispositif",
+      "Avancement",
+      "Subvention attribuée",
+      "Actions",
+    ]);
+    const richProject = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: String(rich), exact: true }),
+    });
+    const richSignals = richProject.getByRole("cell").nth(2);
+    const initialSignalsPosition = await richSignals.evaluate((cell) => {
+      const bounds = cell.getBoundingClientRect();
+      const container = cell.closest(".fr-table__container")!;
+      const containerBounds = container.getBoundingClientRect();
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        top: bounds.top,
+        bottom: bounds.bottom,
+        visibleLeft: Math.max(0, containerBounds.left),
+        visibleRight: Math.min(window.innerWidth, containerBounds.right),
+        viewportHeight: window.innerHeight,
+        tableScroll: container.scrollLeft,
+        pageScroll: { x: window.scrollX, y: window.scrollY },
+      };
+    });
+    expect(initialSignalsPosition.tableScroll).toBe(0);
+    expect(initialSignalsPosition.pageScroll).toEqual({ x: 0, y: 0 });
+    expect(initialSignalsPosition.left).toBeGreaterThanOrEqual(
+      initialSignalsPosition.visibleLeft,
+    );
+    expect(initialSignalsPosition.right).toBeLessThanOrEqual(
+      initialSignalsPosition.visibleRight,
+    );
+    expect(initialSignalsPosition.top).toBeGreaterThanOrEqual(0);
+    expect(initialSignalsPosition.bottom).toBeLessThanOrEqual(
+      initialSignalsPosition.viewportHeight,
+    );
+    await expect(richProject.getByRole("cell").nth(1)).toHaveText(
+      PROJECT_TITLE,
+    );
+    await expect(richProject.getByRole("cell").nth(3)).toHaveText(
+      "COMMUNE DE REZÉ",
+    );
+    await expect(richProject.getByRole("cell").nth(4)).toContainText("REZÉ");
+    await expect(richProject.getByRole("cell").nth(4)).toContainText(
+      DEPARTMENT,
+    );
+    await expect(richProject.getByRole("cell").nth(5)).toContainText(
+      PROGRAM_TITLE,
+    );
+    await expect(richProject.getByRole("cell").nth(5)).toContainText("2025");
+    await expect(richProject.getByRole("cell").nth(6)).toHaveText("Bloqué");
+    await expect(richProject.getByRole("cell").nth(7)).toContainText(
+      /10\s*073\s*564,00\s*€/,
+    );
+    await expect(richProject.getByRole("cell").nth(7)).toContainText(
+      "1 octobre 2026",
+    );
+    await expect(
+      richSignals.getByRole("link", {
+        name: `2 données à vérifier pour le projet n°${rich}`,
+        exact: true,
+      }),
+    ).toHaveAttribute("href", `/projets/${rich}/impact#signalements`);
+    await expect(richSignals.locator(".fr-badge--error")).toHaveText(
+      "2 données à vérifier",
+    );
+    await expect(richSignals.getByRole("listitem")).toHaveText([
+      `${indicator} — Anomalie statistique, Incohérence forte`,
+      `${unknownIndicator} — Anomalie statistique`,
+    ]);
+    await expect(
+      richSignals.getByText("Justificatif partenaire à vérifier", {
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    const missingProject = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: String(absent), exact: true }),
+    });
+    await expect(missingProject.getByRole("cell").nth(3)).toHaveText(
+      "Non renseigné",
+    );
+    await expect(missingProject.getByRole("cell").nth(4)).toContainText(
+      "Non renseignée",
+    );
+    await expect(missingProject.getByRole("cell").nth(5)).toContainText(
+      "Millésime non renseigné",
+    );
+    await expect(missingProject.getByRole("cell").nth(6)).toHaveText(
+      "Non renseigné",
+    );
+    for (const [number, label] of [
+      [absent, "Signalements non renseignés"],
+      [incomplete, "Signalements incomplets"],
+      [complete, "Aucun signalement"],
+    ] as const) {
+      const project = page.getByRole("row").filter({
+        has: page.getByRole("cell", { name: String(number), exact: true }),
+      });
+      await expect(
+        project.getByRole("link", {
+          name: `${label} pour le projet n°${number}`,
+          exact: true,
+        }),
+      ).toHaveAttribute("href", `/projets/${number}/impact#signalements`);
+    }
+    const warnings = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: String(warning), exact: true }),
+    });
+    await expect(warnings).toContainText("Vérifier le périmètre de calcul");
+    await expect(warnings).toContainText("Avertissements incomplets");
+    const statisticalProject = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: String(statistical), exact: true }),
+    });
+    await expect(
+      statisticalProject
+        .getByRole("link", {
+          name: `1 donnée à vérifier pour le projet n°${statistical}`,
+          exact: true,
+        })
+        .locator(".fr-badge--warning"),
+    ).toBeVisible();
+    await expect(statisticalProject).toContainText("Signalements incomplets");
+    await expect(statisticalProject.getByRole("listitem")).toHaveText([
+      `${indicator} — Anomalie statistique`,
+    ]);
+    expect(detailCalls).toBe(0);
+    const [stored] = await sql<
+      { count: string }[]
+    >`select count(*) from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    expect(Number(stored.count)).toBe(0);
+    await page.screenshot({
+      path: testInfo.outputPath("liste-instructeur-desktop.png"),
+      fullPage: true,
+    });
+    await page.locator(".fr-table__container").evaluate((element) => {
+      element.scrollLeft = element.scrollWidth;
+    });
+    await page.screenshot({
+      path: testInfo.outputPath("liste-instructeur-signalements-desktop.png"),
+      fullPage: true,
+    });
+  } finally {
+    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql.end();
+  }
+});
+
 test("displays only SIRET dossiers when instructeur API fails", async ({
   page,
   msw,
@@ -267,7 +551,11 @@ test("205 candidats paginés ne masquent pas le voisin autorisé d’un dossier 
               est_anomalie: false,
               anomalie_demarche_list: [],
               anomalie_indicateur_list: [],
-              error_indicateur_list: ["Signalement privé"],
+              error_indicateur_list: [
+                first + offset + index === denied
+                  ? "Signalement privé du dossier refusé"
+                  : "Signalement du dossier autorisé",
+              ],
             },
           }),
         ),
@@ -297,6 +585,15 @@ test("205 candidats paginés ne masquent pas le voisin autorisé d’un dossier 
   await expect(
     page.getByRole("cell", { name: String(denied), exact: true }),
   ).toHaveCount(0);
+  await expect(
+    page.getByText("Signalement privé du dossier refusé"),
+  ).toHaveCount(0);
+  expect(await page.content()).not.toContain(
+    "Signalement privé du dossier refusé",
+  );
+  await expect(page.getByText("Signalement du dossier autorisé")).toHaveCount(
+    204,
+  );
   await expect(
     page.getByRole("cell", { name: String(denied + 1), exact: true }),
   ).toBeVisible();

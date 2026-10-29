@@ -10,6 +10,7 @@ import {
 } from "@/app/projets/_components/getParams";
 import { loadAuthorizedDossiers } from "@/app/projets/_components/loadAuthorizedDossiers";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { getDossiersProgress } from "@/db/dossierProgress";
 import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser, getSession } from "@/utils/session";
@@ -57,6 +58,12 @@ export default async function Projets({
     ? (session.projectView ?? "porteur")
     : dossiersSubvention.find((dossier) => dossier.viewerRelationship)
         ?.viewerRelationship;
+  const progress =
+    view === "instructeur"
+      ? await getDossiersProgress({
+          dossierNumbers: dossiersSubvention.map((dossier) => dossier.numero),
+        })
+      : {};
   const partial =
     dossierNumbersResult.completeness === "partial" ||
     authorized.unavailableCount > 0;
@@ -67,7 +74,7 @@ export default async function Projets({
   return (
     <div className="fr-container my-8">
       <StartDsfrOnHydration />
-      <div className="bg-white px-8 pt-6 pb-2 shadow-sm">
+      <div className="bg-white p-4 sm:p-8">
         <h1>{getPageTitle(view)}</h1>
 
         {partial && (
@@ -86,7 +93,12 @@ export default async function Projets({
             noResultMsg={noResultMsg}
           />
         ) : dossiersSubvention.length > 0 ? (
-          <DossiersTable dossiers={dossiersSubvention} />
+          <DossiersTable
+            dossiers={dossiersSubvention}
+            view={view}
+            summaries={dossierNumbersResult.summaries}
+            progress={progress}
+          />
         ) : null}
 
         {dossiersSubvention.length > 0 && (

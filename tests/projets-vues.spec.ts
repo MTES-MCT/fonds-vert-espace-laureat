@@ -23,6 +23,13 @@ const INSTRUCTEUR = "instructeur.vue@example.com";
 const ADMIN = "alice.doe@example.com";
 const METRIC_CODE = "surface_batiment_m2_avant_projet";
 const METRIC_LABEL = "Surface du bâtiment avant projet";
+const signals = {
+  est_anomalie: true,
+  est_error: true,
+  anomalie_demarche_list: [],
+  anomalie_indicateur_list: [METRIC_LABEL],
+  error_indicateur_list: [METRIC_LABEL],
+};
 
 async function resetProject(dossierNumber: number) {
   await deleteStoredDossierMetrics(dossierNumber);
@@ -73,7 +80,13 @@ test.beforeEach(async ({ page, msw }, testInfo) => {
         count: 1,
         next_page: null,
         previous_page: null,
-        data: [{ socle_commun: { dossier_number: dossierNumber } }],
+        data: [
+          {
+            socle_commun: { dossier_number: dossierNumber },
+            anomalies: signals,
+            avertissements: [],
+          },
+        ],
       }),
     ),
     http.get(`http://fondsvert/fonds_vert/v2/dossiers/${dossierNumber}`, () =>
@@ -81,6 +94,8 @@ test.beforeEach(async ({ page, msw }, testInfo) => {
         data: {
           ...fondsVertDossierData.data,
           information_financiere: { informations_engagement: [] },
+          anomalies: signals,
+          avertissements: [],
           metrique_specifique: {
             [METRIC_CODE]: {
               label: METRIC_LABEL,
@@ -103,7 +118,7 @@ for (const [email, listTitle, projectContext] of [
   [PORTEUR, "Mes projets", "Suivi de votre projet"],
   [INSTRUCTEUR, "Projets suivis", "Projet suivi"],
 ] as const) {
-  test(`la personne ${email} entre depuis ses projets avec sa vue DN et ne peut pas basculer`, async ({
+  test(`la personne ${email} parcourt ses projets avec sa vue DN, corrige une donnée signalée et ne peut pas basculer`, async ({
     page,
   }, testInfo) => {
     const dossierNumber = 89330000 + testInfo.parallelIndex;
@@ -119,6 +134,27 @@ for (const [email, listTitle, projectContext] of [
     await expect(
       page.getByRole("combobox", { name: "Vue super admin" }),
     ).toHaveCount(0);
+    await expect(page.getByRole("columnheader")).toHaveText(
+      email === PORTEUR
+        ? [
+            "Dossier",
+            "Projet",
+            "Signalements",
+            "Subvention attribuée",
+            "Actions",
+          ]
+        : [
+            "Dossier",
+            "Projet",
+            "Signalements",
+            "Porteur",
+            "Territoire",
+            "Dispositif",
+            "Avancement",
+            "Subvention attribuée",
+            "Actions",
+          ],
+    );
 
     await page
       .getByRole("row")
@@ -127,27 +163,113 @@ for (const [email, listTitle, projectContext] of [
       .click();
     await expect(page.getByText(projectContext, { exact: true })).toBeVisible();
     await expect(
+      page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
+    ).toHaveText("Synthèse du projet");
+    await expect(
       page
         .getByRole("navigation", { name: "Pages du projet" })
         .getByRole("link"),
     ).toHaveText(["Synthèse du projet", "Données d’impact", "Financement"]);
-    await page
-      .getByRole("navigation", { name: "Pages du projet" })
-      .getByRole("link", { name: "Données d’impact", exact: true })
-      .click();
-    await expect(page).toHaveURL(`/projets/${dossierNumber}/impact`);
-    await expect(
-      page.getByRole("heading", {
-        level: 2,
-        name: "Données d’impact",
+    for (const [label, path, heading] of [
+      ["Synthèse du projet", "", "Synthèse du projet"],
+      ["Financement", "/financement", "Financement du projet"],
+      ["Données d’impact", "/impact", "Données d’impact"],
+    ] as const) {
+      await page
+        .getByRole("navigation", { name: "Pages du projet" })
+        .getByRole("link", { name: label, exact: true })
+        .click();
+      await expect(page).toHaveURL(`/projets/${dossierNumber}${path}`);
+      await page.reload();
+      await expect(page).toHaveURL(`/projets/${dossierNumber}${path}`);
+      await expect(
+        page.getByRole("heading", { level: 2, name: heading, exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
+      ).toHaveText(label);
+      await expect(
+        page
+          .getByRole("navigation", { name: "Pages du projet" })
+          .getByRole("link", { name: label, exact: true }),
+      ).toHaveAttribute("aria-current", "page");
+      await expect(
+        page.getByText(projectContext, { exact: true }),
+      ).toBeVisible();
+    }
+
+    await page.getByTestId("footer-back").click();
+    await expect(page).toHaveURL("/projets");
+    const project = page.getByRole("row").filter({
+      has: page.getByRole("cell", { name: String(dossierNumber), exact: true }),
+    });
+    await project
+      .getByRole("link", {
+        name: `1 donnée à vérifier pour le projet n°${dossierNumber}`,
         exact: true,
-      }),
-    ).toBeVisible();
+      })
+      .click();
+    await expect(page).toHaveURL(
+      `/projets/${dossierNumber}/impact#signalements`,
+    );
+    const anomalies = page.getByRole("region", {
+      name: "Données à vérifier",
+      exact: true,
+    });
+    await anomalies
+      .getByRole("link", { name: `Vérifier ${METRIC_LABEL}`, exact: true })
+      .press("Enter");
+    const metric = page
+      .getByTestId("impact-section")
+      .getByRole("region", { name: METRIC_LABEL, exact: true });
+    const editMetric = metric.getByRole("button", {
+      name: "Modifier",
+      exact: true,
+    });
+    await expect(editMetric).toBeFocused();
+    await page.waitForSelector('[data-fr-js-modal-button="true"]', {
+      state: "attached",
+    });
+    await editMetric.press("Enter");
+    const metricDialog = page.getByRole("dialog", {
+      name: "Modifier la valeur",
+    });
+    await metricDialog.getByLabel(METRIC_LABEL).fill("17");
+    const saved = page.waitForResponse((response) =>
+      response
+        .url()
+        .endsWith(`/api/projets/${dossierNumber}/metrics/${METRIC_CODE}`),
+    );
+    await metricDialog
+      .getByRole("button", { name: "Enregistrer", exact: true })
+      .click();
+    const response = await saved;
+    expect(response.request().method()).toBe("POST");
+    expect(response.status()).toBe(200);
+    await expect(metricDialog).toBeHidden();
+    const sql = createTestDatabaseClient();
+    try {
+      const revisions = await sql`
+        select number_value,author_email from dossier_metric_revisions
+        where dossier_number=${dossierNumber} and metric_code=${METRIC_CODE} and revision>1`;
+      expect(
+        revisions.map((row) => ({
+          value: Number(row.number_value),
+          email: row.author_email,
+        })),
+      ).toEqual([{ value: 17, email }]);
+    } finally {
+      await sql.end();
+    }
+    await page.reload();
+    await expect(metric).toContainText(/17\s*m²/);
     await expect(
-      page
-        .getByTestId("impact-section")
-        .getByText(METRIC_LABEL, { exact: true }),
+      anomalies.getByText("1 donnée à vérifier", { exact: true }),
     ).toBeVisible();
+    await expect(anomalies).toContainText(
+      "Le recalcul des signalements par Fonds vert est différé.",
+    );
+
     const refused = await page.evaluate(async () => {
       const response = await fetch("/api/session/project-view", {
         method: "POST",
@@ -165,6 +287,14 @@ for (const [email, listTitle, projectContext] of [
     await expect(
       page.getByRole("combobox", { name: "Vue super admin" }),
     ).toHaveCount(0);
+    await page.getByTestId("footer-back").click();
+    await expect(page).toHaveURL("/projets");
+    await expect(
+      project.getByRole("link", {
+        name: `1 donnée à vérifier pour le projet n°${dossierNumber}`,
+        exact: true,
+      }),
+    ).toBeVisible();
   });
 }
 
@@ -196,6 +326,35 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     .filter({ hasText: String(dossierNumber) })
     .getByRole("link", { name: "Ouvrir" })
     .click();
+
+  for (const [label, suffix] of [
+    ["Synthèse du projet", ""],
+    ["Données d’impact", "/impact"],
+    ["Financement", "/financement"],
+  ] as const) {
+    await page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link", { name: label, exact: true })
+      .click();
+    const path = `/projets/${dossierNumber}${suffix}`;
+    for (const view of ["instructeur", "porteur"] as const) {
+      await changeAdminView(page, view);
+      await expect(page).toHaveURL(path);
+      await expect(
+        page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
+      ).toHaveText(label);
+      await expect(
+        page
+          .getByRole("navigation", { name: "Pages du projet" })
+          .getByRole("link", { name: label, exact: true }),
+      ).toHaveAttribute("aria-current", "page");
+    }
+    await page.reload();
+    await expect(page).toHaveURL(path);
+    await expect(
+      page.getByText("Suivi de votre projet", { exact: true }),
+    ).toBeVisible();
+  }
 
   for (const [view, value, progress] of [
     ["instructeur", "12", "Bloqué"],

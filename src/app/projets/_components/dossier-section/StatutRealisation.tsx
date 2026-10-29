@@ -1,6 +1,5 @@
 "use client";
 
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
@@ -15,6 +14,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
 import { successToast } from "@/components/toast/toast";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import {
@@ -24,13 +24,6 @@ import {
   requiresProgressConfirmation,
 } from "@/utils/dossierProgress";
 
-const severityByStatus = {
-  "Non-commencé": "new",
-  "En cours de réalisation": "info",
-  Bloqué: "warning",
-  Abandonné: "error",
-  Terminé: "success",
-} as const;
 const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "long",
   timeStyle: "short",
@@ -183,19 +176,8 @@ export function StatutRealisation({
       <h3 id="status-heading" className="mb-4 text-xl">
         Avancement du projet
       </h3>
-      <div className="space-y-2">
-        {target.status ? (
-          <Badge
-            small
-            noIcon
-            className="whitespace-nowrap"
-            severity={severityByStatus[target.status]}
-          >
-            {target.status}
-          </Badge>
-        ) : (
-          <p className="mb-0">Non renseigné</p>
-        )}
+      <div className="flex flex-col items-start gap-2">
+        <DossierProgressBadge status={target.status} />
         {target.updatedAt && (
           <p className="fr-text--xs text-[var(--text-mention-grey)]">
             Dernière modification :{" "}
