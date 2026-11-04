@@ -187,7 +187,7 @@ export async function DossierSection({
           ]}
         />
 
-        <div className="mt-8 grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="mt-8 grid items-start gap-x-16 gap-y-8 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <div className="min-w-0">
             {section === "impact" ? (
               <div id="signalements" className="space-y-8">
