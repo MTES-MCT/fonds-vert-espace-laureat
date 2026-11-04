@@ -231,3 +231,62 @@ export const ProjectHolder = ({
     </dl>
   </section>
 );
+
+export const SignalsCallout = ({
+  notice,
+  indicators,
+  href,
+}: {
+  notice: { label: string; severity: "error" | "warning" };
+  indicators: { label: string; category: string }[];
+  href: string;
+}) => (
+  <section
+    aria-labelledby="signals-callout-heading"
+    className={`
+      mb-8 border-l-4 px-4 py-3
+      ${
+        notice.severity === "error"
+          ? "border-[var(--border-plain-error)] bg-[var(--background-contrast-error)]"
+          : "border-[var(--border-plain-warning)] bg-[var(--background-contrast-warning)]"
+      }
+    `}
+  >
+    <h3
+      id="signals-callout-heading"
+      className="mb-1 flex items-center gap-2 text-base font-bold"
+    >
+      <span
+        aria-hidden="true"
+        className={`
+          fr-icon--sm
+          ${
+            notice.severity === "error"
+              ? "fr-icon-error-warning-fill text-[var(--text-default-error)]"
+              : "fr-icon-warning-fill text-[var(--text-default-warning)]"
+          }
+        `}
+      />
+      {notice.label}
+    </h3>
+    {indicators.length > 0 && (
+      <ul className="mb-2 list-none p-0 text-sm">
+        {indicators.map((indicator) => (
+          <li key={indicator.label} className="p-0">
+            {indicator.label}
+            <span className="text-[var(--text-mention-grey)]">
+              {" "}
+              · {indicator.category}
+            </span>
+          </li>
+        ))}
+      </ul>
+    )}
+    <Link
+      className="fr-link fr-link--sm fr-icon-arrow-right-line fr-link--icon-right"
+      href={href}
+    >
+      Voir les signalements
+    </Link>
+  </section>
+);

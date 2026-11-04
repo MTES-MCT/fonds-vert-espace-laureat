@@ -10,12 +10,16 @@ import {
   ProjectHolder,
   ProjectPagesNav,
   ProjectPresentation,
+  SignalsCallout,
   SummaryHeader,
 } from "@/app/projets/_components/dossier-section/Summary";
 import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
 import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import { fondsVertAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
+import {
+  anomalyCategoryLabels,
+  fondsVertAnomalySummary,
+} from "@/components/metrics/FondsVertAnomalyStatus";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import {
@@ -113,6 +117,22 @@ export async function DossierSection({
   const basePath = progressApiPath
     ? "/projets/demo"
     : `/projets/${dossierSubvention.numero}`;
+  const presentation = (
+    <ProjectPresentation
+      resume={subvention.resumeProjet}
+      numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+      departementImplantation={subvention.departementImplantation}
+      socleCommun={socleCommun}
+    />
+  );
+  const holder = (
+    <ProjectHolder
+      emailRepresentantLegal={subvention.emailRepresentantLegal}
+      emailResponsableSuivi={subvention.emailResponsableSuivi}
+      socleCommun={socleCommun}
+      siret={dossierSubvention.demandeur.siret}
+    />
+  );
   const anomalySummary = anomalies && fondsVertAnomalySummary(anomalies);
   const impactNotice =
     anomalySummary &&
@@ -225,20 +245,29 @@ export async function DossierSection({
                   description="Les données Fonds vert sont temporairement indisponibles."
                 />
               )}
+              {impactNotice && anomalies && (
+                <SignalsCallout
+                  notice={impactNotice}
+                  indicators={anomalies.indicators.map((indicator) => ({
+                    label: indicator.label,
+                    category: anomalyCategoryLabels[indicator.severity],
+                  }))}
+                  href={`${basePath}/impact${navigationQuery}#signalements`}
+                />
+              )}
               <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="min-w-0 space-y-8">
-                  <ProjectPresentation
-                    resume={subvention.resumeProjet}
-                    numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-                    departementImplantation={subvention.departementImplantation}
-                    socleCommun={socleCommun}
-                  />
-                  <ProjectHolder
-                    emailRepresentantLegal={subvention.emailRepresentantLegal}
-                    emailResponsableSuivi={subvention.emailResponsableSuivi}
-                    socleCommun={socleCommun}
-                    siret={dossierSubvention.demandeur.siret}
-                  />
+                  {view === "instructeur" ? (
+                    <>
+                      {holder}
+                      {presentation}
+                    </>
+                  ) : (
+                    <>
+                      {presentation}
+                      {holder}
+                    </>
+                  )}
                 </div>
                 <div className="min-w-0 space-y-8">
                   <StatutRealisation

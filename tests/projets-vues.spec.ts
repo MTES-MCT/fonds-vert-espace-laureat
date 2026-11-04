@@ -185,6 +185,38 @@ for (const [email, listTitle, projectContext] of [
     await expect(
       page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
     ).toHaveText("Synthèse du projet");
+    const synthese = page.getByRole("region", {
+      name: "Synthèse du projet",
+      exact: true,
+    });
+    await expect(synthese.getByRole("heading", { level: 3 })).toHaveText(
+      email === PORTEUR
+        ? [
+            "1 donnée à vérifier",
+            "Présentation du projet",
+            "Identité du porteur de projet",
+            "Avancement du projet",
+            "Calendrier",
+          ]
+        : [
+            "1 donnée à vérifier",
+            "Identité du porteur de projet",
+            "Présentation du projet",
+            "Avancement du projet",
+            "Calendrier",
+          ],
+    );
+    const signalements = synthese.getByRole("region", {
+      name: "1 donnée à vérifier",
+      exact: true,
+    });
+    await expect(signalements).toContainText(
+      `${METRIC_LABEL} · Incohérence forte`,
+    );
+    await expect(
+      signalements.getByRole("link", { name: "Voir les signalements" }),
+    ).toHaveAttribute("href", `/projets/${dossierNumber}/impact#signalements`);
+
     const projectPages = page
       .getByRole("navigation", { name: "Pages du projet" })
       .getByRole("link");
