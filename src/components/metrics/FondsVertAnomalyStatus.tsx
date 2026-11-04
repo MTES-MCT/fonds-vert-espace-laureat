@@ -23,6 +23,10 @@ export function FondsVertCategoryBadge({
     </Badge>
   ) : (
     <Badge small className="fr-badge--yellow-tournesol">
+      <span
+        aria-hidden="true"
+        className="fr-icon-warning-fill fr-icon--xs mr-1"
+      />
       {anomalyCategoryLabels[category]}
     </Badge>
   );
