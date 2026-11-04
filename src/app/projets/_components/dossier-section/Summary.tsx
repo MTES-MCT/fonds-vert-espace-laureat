@@ -132,6 +132,11 @@ export const ProjectPagesNav = ({
   </nav>
 );
 
+const factListClassName = `
+  m-0 divide-y divide-[var(--border-default-grey)] border
+  border-[var(--border-default-grey)] px-4
+`;
+
 function ProjectFact({
   id,
   label,
@@ -142,16 +147,13 @@ function ProjectFact({
   children: ReactNode;
 }) {
   return (
-    <div className="grid gap-x-6 gap-y-1 sm:grid-cols-[10rem_minmax(0,1fr)]">
-      <dt
-        id={id}
-        className="text-sm font-medium text-[var(--text-mention-grey)]"
-      >
+    <div className="grid items-baseline gap-x-6 gap-y-1 py-3 sm:grid-cols-[15rem_minmax(0,1fr)]">
+      <dt id={id} className="mb-0 text-sm text-[var(--text-mention-grey)]">
         {label}
       </dt>
       <dd
         aria-labelledby={id}
-        className="m-0 min-w-0 text-sm [overflow-wrap:anywhere]"
+        className="m-0 min-w-0 font-medium [overflow-wrap:anywhere]"
       >
         {children}
       </dd>
@@ -170,19 +172,16 @@ export const ProjectPresentation = ({
   departementImplantation?: string;
   socleCommun?: SocleCommun;
 }) => (
-  <section
-    aria-labelledby="project-presentation-heading"
-    className="border-b border-[var(--border-default-grey)] pb-8"
-  >
-    <h3 id="project-presentation-heading" className="mb-4 text-xl">
+  <section aria-labelledby="project-presentation-heading">
+    <h3 id="project-presentation-heading" className="fr-h6 mb-3">
       Présentation du projet
     </h3>
     {resume && (
-      <p className="mb-6 whitespace-pre-line [overflow-wrap:anywhere]">
+      <p className="mb-4 whitespace-pre-line [overflow-wrap:anywhere]">
         {resume}
       </p>
     )}
-    <dl className="mb-0 space-y-4">
+    <dl className={factListClassName}>
       <ProjectFact id="department-label" label="Département d'implantation">
         {departementImplantation || "Aucun département précisé"}
       </ProjectFact>
@@ -212,14 +211,11 @@ export const ProjectHolder = ({
   socleCommun?: SocleCommun;
   siret?: string;
 }) => (
-  <section
-    aria-labelledby="project-holder-heading"
-    className="border-b border-[var(--border-default-grey)] pb-8"
-  >
-    <h3 id="project-holder-heading" className="mb-4 text-xl">
+  <section aria-labelledby="project-holder-heading">
+    <h3 id="project-holder-heading" className="fr-h6 mb-3">
       Identité du porteur de projet
     </h3>
-    <dl className="mb-0 space-y-4">
+    <dl className={factListClassName}>
       <ProjectFact id="company-name-label" label="Nom du porteur">
         {socleCommun?.entreprise_raison_sociale || "Non renseigné"}
       </ProjectFact>

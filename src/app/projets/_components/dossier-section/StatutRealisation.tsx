@@ -172,20 +172,29 @@ export function StatutRealisation({
   };
 
   return (
-    <section aria-labelledby="status-heading" className="space-y-3 text-left">
-      <h3 id="status-heading" className="mb-4 text-xl">
+    <section
+      aria-labelledby="status-heading"
+      className={`
+        border-l-4 border-[var(--border-active-blue-france)] bg-[var(--background-alt-blue-france)]
+        px-4 py-3 text-left
+      `}
+    >
+      <h3 id="status-heading" className="mb-2 text-base font-bold">
         Avancement du projet
       </h3>
-      <div className="flex flex-col items-start gap-2">
-        <DossierProgressBadge status={target.status} />
-        {target.updatedAt && (
-          <p className="fr-text--xs text-[var(--text-mention-grey)]">
-            Dernière modification :{" "}
-            {dateFormatter.format(new Date(target.updatedAt))}
-          </p>
-        )}
+      <div className="flex flex-col items-start gap-3">
+        <div>
+          <DossierProgressBadge status={target.status} />
+          {target.updatedAt && (
+            <p className="mt-1 mb-0 text-xs text-[var(--text-mention-grey)]">
+              Dernière modification :{" "}
+              {dateFormatter.format(new Date(target.updatedAt))}
+            </p>
+          )}
+        </div>
         <Button
           ref={openerRef}
+          className="bg-white"
           disabled={!isReady}
           priority="secondary"
           size="small"

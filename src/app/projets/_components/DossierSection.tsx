@@ -225,7 +225,7 @@ export async function DossierSection({
                   description="Les données Fonds vert sont temporairement indisponibles."
                 />
               )}
-              <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+              <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="min-w-0 space-y-8">
                   <ProjectPresentation
                     resume={subvention.resumeProjet}
@@ -239,20 +239,13 @@ export async function DossierSection({
                     socleCommun={socleCommun}
                     siret={dossierSubvention.demandeur.siret}
                   />
-                  <div>
-                    <StatutRealisation
-                      dossierNumber={dossierSubvention.numero}
-                      initialTarget={progressTarget}
-                      correctionApiPath={progressApiPath}
-                    />
-                  </div>
                 </div>
-                <div
-                  className={`
-                    min-w-0 border-t border-[var(--border-default-grey)] pt-8
-                    lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8
-                  `}
-                >
+                <div className="min-w-0 space-y-8">
+                  <StatutRealisation
+                    dossierNumber={dossierSubvention.numero}
+                    initialTarget={progressTarget}
+                    correctionApiPath={progressApiPath}
+                  />
                   <Timeline
                     steps={[
                       {

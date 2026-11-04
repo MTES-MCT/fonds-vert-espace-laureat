@@ -291,19 +291,21 @@ for (const viewport of [
     expect(identiteBounds.y).toBeGreaterThanOrEqual(
       presentationBounds.y + presentationBounds.height,
     );
-    expect(avancementBounds.y).toBeGreaterThanOrEqual(
-      identiteBounds.y + identiteBounds.height,
+    expect(calendrierBounds.y).toBeGreaterThanOrEqual(
+      avancementBounds.y + avancementBounds.height,
     );
     if (viewport.width === 1440) {
-      expect(calendrierBounds.x).toBeGreaterThanOrEqual(
-        presentationBounds.x + presentationBounds.width,
-      );
+      for (const colonneDroite of [avancementBounds, calendrierBounds]) {
+        expect(colonneDroite.x).toBeGreaterThanOrEqual(
+          presentationBounds.x + presentationBounds.width,
+        );
+      }
       expect(
-        Math.abs(calendrierBounds.y - presentationBounds.y),
+        Math.abs(avancementBounds.y - presentationBounds.y),
       ).toBeLessThanOrEqual(1);
     } else {
-      expect(calendrierBounds.y).toBeGreaterThanOrEqual(
-        avancementBounds.y + avancementBounds.height,
+      expect(avancementBounds.y).toBeGreaterThanOrEqual(
+        identiteBounds.y + identiteBounds.height,
       );
       expect(
         Math.abs(calendrierBounds.x - presentationBounds.x),
