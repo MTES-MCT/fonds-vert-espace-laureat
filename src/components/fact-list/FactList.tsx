@@ -57,7 +57,7 @@ export function FactRow({
       {...props}
       className={`
         m-0 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 gap-y-1 py-3
-        sm:grid-cols-[15rem_minmax(0,1fr)_auto]
+        sm:grid-cols-[15rem_minmax(0,1fr)_auto] sm:items-center
         lg:grid-cols-[15rem_minmax(0,1fr)_minmax(0,1fr)_auto]
       `}
     >
@@ -65,7 +65,6 @@ export function FactRow({
         id={id}
         className={`
           col-start-1 row-start-1 mb-0 text-sm text-[var(--text-mention-grey)]
-          sm:pt-0.5
           ${indented ? "sm:pl-4" : ""}
         `}
       >
