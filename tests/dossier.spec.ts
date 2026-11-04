@@ -725,11 +725,8 @@ test("le lecteur distingue un engagement sans aucun paiement d’un engagement d
     name: "Engagement juridique n°2105212345",
   });
   await expect(
-    engagementSansPaiement.getByText("Aucun paiement n'a été réalisé."),
-  ).toBeVisible();
-  await expect(
     engagementSansPaiement.getByLabel("Dernier paiement"),
-  ).not.toBeAttached();
+  ).toHaveText("Aucun paiement n'a été réalisé.");
   await expect(
     engagementSansPaiement.getByLabel("Date de paiement"),
   ).not.toBeAttached();

@@ -5,7 +5,10 @@ import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { groupEngagementsByEJ } from "@/utils/finance";
 
 import { FinanceFieldsErrorAlert } from "./engagement-juridique/FinanceFieldsErrorAlert";
-import { FinanceFieldsSection } from "./engagement-juridique/FinanceFieldsSection";
+import {
+  type FinanceFieldsPart,
+  FinanceFieldsSection,
+} from "./engagement-juridique/FinanceFieldsSection";
 import { EngagementsJuridiquesList } from "./EngagementsJuridiquesList";
 import { FinanceFieldsSkeleton } from "./EngagementsSkeleton";
 
@@ -20,14 +23,18 @@ export function EngagementsSection({
 }: EngagementsSectionProps) {
   const engagementsList = groupEngagementsByEJ(informationFinanciere);
 
-  const financeFieldsSlots = engagementsList.map((group) => (
-    <Suspense key={group.numero_ej} fallback={<FinanceFieldsSkeleton />}>
-      <FinanceFieldsSection
-        numeroEJ={group.numero_ej}
-        financesEJPromise={financesEJPromise}
-      />
-    </Suspense>
-  ));
+  const financeFieldsSlots = engagementsList.map((group) => {
+    const slot = (part: FinanceFieldsPart) => (
+      <Suspense fallback={<FinanceFieldsSkeleton part={part} />}>
+        <FinanceFieldsSection
+          part={part}
+          numeroEJ={group.numero_ej}
+          financesEJPromise={financesEJPromise}
+        />
+      </Suspense>
+    );
+    return { initialAmount: slot("initialAmount"), parties: slot("parties") };
+  });
 
   return (
     <>

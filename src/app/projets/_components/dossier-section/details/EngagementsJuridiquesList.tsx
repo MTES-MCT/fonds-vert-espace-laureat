@@ -15,7 +15,7 @@ export function EngagementsJuridiquesList({
   financeFieldsSlots,
 }: {
   informationFinanciere: InformationFinanciere;
-  financeFieldsSlots: ReactNode[];
+  financeFieldsSlots: { initialAmount: ReactNode; parties: ReactNode }[];
 }) {
   const engagementsList = groupEngagementsByEJ(informationFinanciere);
 
@@ -53,7 +53,7 @@ export function EngagementsJuridiquesList({
                     <EngagementJuridiqueDetails
                       group={group}
                       montantRestant={montantRestant}
-                      financeFieldsSlot={financeFieldsSlots[index]}
+                      financeFieldsSlots={financeFieldsSlots[index]}
                     />
                   ),
                 },

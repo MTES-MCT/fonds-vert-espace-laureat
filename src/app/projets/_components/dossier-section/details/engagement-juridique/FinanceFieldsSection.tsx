@@ -1,3 +1,4 @@
+import { FactRow } from "@/components/fact-list/FactList";
 import { MoneyField } from "@/components/money-field/MoneyField";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import { getLatestYearPostesField } from "@/utils/finance";
@@ -16,27 +17,26 @@ function FinanceField({
 }) {
   if (values.length === 0) return null;
 
-  const label = values.length > 1 ? plural : singular;
-  const text = values.join(", ");
-  const baseId = slugify(singular);
-  const id = `${baseId}-${scope}-label`;
-
   return (
-    <div className="min-w-0">
-      <dt id={id}>{label}</dt>
-      <dd aria-labelledby={id} className="[overflow-wrap:anywhere]">
-        {text}
-      </dd>
-    </div>
+    <FactRow
+      id={`${slugify(singular)}-${scope}-label`}
+      label={values.length > 1 ? plural : singular}
+    >
+      {values.join(", ")}
+    </FactRow>
   );
 }
 
+export type FinanceFieldsPart = "initialAmount" | "parties";
+
 interface FinanceFieldsSectionProps {
+  part: FinanceFieldsPart;
   numeroEJ: string;
   financesEJPromise: Promise<FinancesEJResult>;
 }
 
 export async function FinanceFieldsSection({
+  part,
   numeroEJ,
   financesEJPromise,
 }: FinanceFieldsSectionProps) {
@@ -47,6 +47,16 @@ export async function FinanceFieldsSection({
     return null;
   }
 
+  if (part === "initialAmount") {
+    return (
+      <MoneyField
+        label="Montant attribué initial"
+        value={ejResult.data.montant_engage_initial}
+        scope={numeroEJ}
+      />
+    );
+  }
+
   const fournisseurs = getLatestYearPostesField(
     ejResult.data,
     "fournisseur_titulaire_nom",
@@ -55,12 +65,6 @@ export async function FinanceFieldsSection({
 
   return (
     <>
-      <MoneyField
-        label="Montant attribué initial"
-        value={ejResult.data.montant_engage_initial}
-        className="order-first"
-        scope={numeroEJ}
-      />
       <FinanceField
         values={fournisseurs}
         singular="Fournisseur"

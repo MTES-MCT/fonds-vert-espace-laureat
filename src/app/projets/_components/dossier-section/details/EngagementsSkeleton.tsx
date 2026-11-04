@@ -1,3 +1,7 @@
+import { FactRow } from "@/components/fact-list/FactList";
+
+import type { FinanceFieldsPart } from "./engagement-juridique/FinanceFieldsSection";
+
 function SkeletonBox({ className }: { className?: string }) {
   return (
     <div
@@ -7,39 +11,38 @@ function SkeletonBox({ className }: { className?: string }) {
   );
 }
 
-export function FinanceFieldsSkeleton() {
-  return (
-    <>
-      <div
-        className="order-first"
+export function FinanceFieldsSkeleton({ part }: { part: FinanceFieldsPart }) {
+  if (part === "initialAmount") {
+    return (
+      <FactRow
+        id="montant-attribue-initial-label"
+        label="Montant attribué initial"
         role="status"
         aria-label="Chargement du montant attribué initial"
       >
-        <dt id="montant-attribue-initial-label">Montant attribué initial</dt>
-        <dd aria-labelledby="montant-attribue-initial-label">
-          <SkeletonBox className="h-5 w-24" />
-        </dd>
-      </div>
-      <div
-        className="max-w-[225px]"
+        <SkeletonBox className="h-5 w-24" />
+      </FactRow>
+    );
+  }
+
+  return (
+    <>
+      <FactRow
+        id="fournisseur-label"
+        label="Fournisseur"
         role="status"
         aria-label="Chargement du fournisseur"
       >
-        <dt id="fournisseur-label">Fournisseur</dt>
-        <dd aria-labelledby="fournisseur-label">
-          <SkeletonBox className="h-5 w-32" />
-        </dd>
-      </div>
-      <div
-        className="max-w-[225px]"
+        <SkeletonBox className="h-5 w-32" />
+      </FactRow>
+      <FactRow
+        id="centre-de-cout-label"
+        label="Centre de coût"
         role="status"
         aria-label="Chargement du centre de coût"
       >
-        <dt id="centre-de-cout-label">Centre de coût</dt>
-        <dd aria-labelledby="centre-de-cout-label">
-          <SkeletonBox className="h-5 w-32" />
-        </dd>
-      </div>
+        <SkeletonBox className="h-5 w-32" />
+      </FactRow>
     </>
   );
 }
