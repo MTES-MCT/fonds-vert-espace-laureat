@@ -34,9 +34,8 @@ function metricValueClassName({
   isStringValue: boolean;
   compact: boolean;
 }): string {
-  if (isStringValue) return "max-w-[18rem] text-sm";
-  if (compact) return "text-base whitespace-nowrap sm:text-lg";
-  return "text-lg";
+  if (compact) return "text-base whitespace-nowrap";
+  return isStringValue ? "max-w-[32rem] text-base" : "text-base";
 }
 
 export const MetricValue = ({
@@ -71,7 +70,7 @@ export const MetricValue = ({
       ) : (
         <div
           aria-label={accessibleName}
-          className={`font-semibold ${metricValueClassName({
+          className={`font-medium ${metricValueClassName({
             isStringValue,
             compact,
           })}`}

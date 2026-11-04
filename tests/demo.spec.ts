@@ -328,11 +328,8 @@ for (const width of [1440, 390]) {
   });
 }
 
-for (const [situation, width, sideBySide] of [
-  ["sur ordinateur, côte à côte", 1440, true],
-  ["sur mobile, l’une sous l’autre", 390, false],
-] as const) {
-  test(`le lecteur compare avant et après travaux et les données liées ${situation}`, async ({
+for (const width of [1440, 390]) {
+  test(`le lecteur trouve avant et après travaux et les données liées sur des lignes consécutives à ${width} px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -372,19 +369,10 @@ for (const [situation, width, sideBySide] of [
         throw new Error("Les deux données liées doivent être affichées.");
       }
 
-      if (sideBySide) {
-        expect(secondBounds.x).toBeGreaterThanOrEqual(
-          firstBounds.x + firstBounds.width,
-        );
-        expect(Math.abs(secondBounds.y - firstBounds.y)).toBeLessThanOrEqual(1);
-        expect(
-          Math.abs(secondBounds.height - firstBounds.height),
-        ).toBeLessThanOrEqual(1);
-      } else {
-        expect(secondBounds.y).toBeGreaterThanOrEqual(
-          firstBounds.y + firstBounds.height,
-        );
-      }
+      expect(Math.abs(secondBounds.x - firstBounds.x)).toBeLessThanOrEqual(1);
+      expect(
+        Math.abs(secondBounds.y - (firstBounds.y + firstBounds.height)),
+      ).toBeLessThanOrEqual(2);
     }
   });
 }

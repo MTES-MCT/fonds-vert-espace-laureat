@@ -4,6 +4,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
+import {
+  factLabelClassName,
+  factListClassName,
+} from "@/components/fact-list/factList";
 import { SocleCommun } from "@/services/fondsvert/dossier";
 
 export const SummaryHeader = ({
@@ -102,11 +106,6 @@ export const ProjectPagesNav = ({
   </nav>
 );
 
-const factListClassName = `
-  m-0 divide-y divide-[var(--border-default-grey)] border
-  border-[var(--border-default-grey)] px-4
-`;
-
 function ProjectFact({
   id,
   label,
@@ -118,7 +117,7 @@ function ProjectFact({
 }) {
   return (
     <div className="grid items-baseline gap-x-6 gap-y-1 py-3 sm:grid-cols-[15rem_minmax(0,1fr)]">
-      <dt id={id} className="mb-0 text-sm text-[var(--text-mention-grey)]">
+      <dt id={id} className={factLabelClassName}>
         {label}
       </dt>
       <dd

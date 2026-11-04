@@ -1,7 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
+import {
+  factLabelClassName,
+  factListClassName,
+} from "@/components/fact-list/factList";
 import {
   type MetricAnomaly,
   useMetricAnomaliesByMetricCode,
@@ -10,6 +14,7 @@ import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage"
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
+import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
 import { slugify } from "@/utils/format";
 import { isMetricFields } from "@/utils/metrics/guards";
@@ -83,7 +88,7 @@ const MetricAnomalyNotices = ({
   anomalies: MetricAnomaly[];
   corrected: boolean;
 }) => (
-  <div className="col-span-full mt-3 space-y-3">
+  <div className="mt-2 space-y-2">
     {anomalies.map((anomaly) => (
       <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
         <MetricAnomalyMessage anomaly={anomaly} />
@@ -98,15 +103,48 @@ const MetricAnomalyNotices = ({
   </div>
 );
 
-const MetricCard = ({ children }: { children: ReactNode }) => (
+const MetricRow = ({
+  label,
+  target,
+  anomalies,
+  indented = false,
+  children,
+}: {
+  label: string;
+  target?: DossierMetricRevisionTarget;
+  anomalies?: MetricAnomaly[];
+  indented?: boolean;
+  children: ReactNode;
+}) => (
   <div
     className={`
-      relative grid h-full grid-cols-1 content-start items-start gap-x-6
-      bg-[var(--background-alt-grey)] p-4
-      sm:grid-cols-[minmax(0,1fr)_auto]
+      grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 gap-y-1 py-3
+      sm:grid-cols-[15rem_minmax(0,1fr)_auto]
     `}
   >
-    {children}
+    <p
+      className={`
+        ${factLabelClassName}
+        col-start-1 row-start-1 sm:pt-0.5
+        ${indented ? "sm:pl-4" : ""}
+      `}
+    >
+      {label}
+    </p>
+    <div className="col-start-1 row-start-2 min-w-0 sm:col-start-2 sm:row-start-1">
+      {children}
+      {anomalies?.length ? (
+        <MetricAnomalyNotices
+          anomalies={anomalies}
+          corrected={(target?.revision ?? 1) > 1}
+        />
+      ) : null}
+    </div>
+    {target && (
+      <div className="col-start-2 row-span-2 row-start-1 sm:col-start-3 sm:row-span-1">
+        <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
+      </div>
+    )}
   </div>
 );
 
@@ -115,43 +153,23 @@ const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
   const estimee = metric.valeur_estimee ?? undefined;
   const { targets } = useMetricRevisions();
   const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
-  const target = targets[metric.metricCode];
-  const anomalies = anomaliesByMetricCode[metric.metricCode];
 
   return (
-    <section
-      aria-label={metric.label}
-      className="h-full"
-      data-testid={`metric-${metricId}`}
-    >
-      <MetricCard>
-        <div className="pr-24 sm:pr-0">
-          <dl className="space-y-1">
-            <dt className="text-[var(--text-label-grey)]">{metric.label}</dt>
-            {estimee !== undefined && (
-              <dd className="!mb-0">
-                <MetricValue
-                  value={estimee}
-                  accessibleName="Valeur effective"
-                  unite={metric.unite}
-                  testId="valeur-estimee"
-                />
-              </dd>
-            )}
-          </dl>
-        </div>
-        {target && (
-          <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
-            <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
-          </div>
-        )}
-        {anomalies?.length ? (
-          <MetricAnomalyNotices
-            anomalies={anomalies}
-            corrected={(target?.revision ?? 1) > 1}
+    <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
+      <MetricRow
+        label={metric.label}
+        target={targets[metric.metricCode]}
+        anomalies={anomaliesByMetricCode[metric.metricCode]}
+      >
+        {estimee !== undefined && (
+          <MetricValue
+            value={estimee}
+            accessibleName="Valeur effective"
+            unite={metric.unite}
+            testId="valeur-estimee"
           />
-        ) : null}
-      </MetricCard>
+        )}
+      </MetricRow>
     </section>
   );
 };
@@ -168,24 +186,19 @@ const AvantApresTravauxRows = ({
   const metricId = slugify(metric.label);
   const { targets } = useMetricRevisions();
   const anomaliesByMetricCode = useMetricAnomaliesByMetricCode();
-  const beforeTarget = targets[metric.beforeMetricCode];
-  const afterTarget = targets[metric.afterMetricCode];
-  const relatedTarget = relatedMetric
-    ? targets[relatedMetric.metricCode]
-    : undefined;
   const rows = [
     {
       label: "Avant travaux",
       value: metric.valeur_avant_travaux,
+      unite: metric.unite,
       metricCode: metric.beforeMetricCode,
-      target: beforeTarget,
       testId: "valeur-0",
     },
     {
       label: "Après travaux",
       value: metric.valeur_apres_travaux,
+      unite: metric.unite,
       metricCode: metric.afterMetricCode,
-      target: afterTarget,
       testId: "valeur-1",
     },
     ...(relatedMetric
@@ -193,8 +206,8 @@ const AvantApresTravauxRows = ({
           {
             label: relatedMetric.label,
             value: relatedMetric.valeur_estimee,
+            unite: relatedMetric.unite,
             metricCode: relatedMetric.metricCode,
-            target: relatedTarget,
             testId: "valeur-estimee",
           },
         ]
@@ -205,61 +218,38 @@ const AvantApresTravauxRows = ({
   );
 
   return (
-    <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
-      <h4 className="mb-4 text-base font-normal text-[var(--text-label-grey)]">
-        {metric.label}
-      </h4>
-      <dl className="grid gap-4 sm:grid-cols-2">
-        {rows.map(({ label, value, metricCode, target, testId }) => (
-          <div
-            key={label}
-            className={
-              relatedMetric?.label === label ? "sm:col-span-2" : "h-full"
-            }
-            aria-label={label}
-            data-testid={
-              relatedMetric?.label === label
-                ? `metric-${slugify(label)}`
-                : undefined
-            }
-            role="group"
+    <section
+      aria-label={metric.label}
+      className="divide-y divide-[var(--border-default-grey)]"
+      data-testid={`metric-${metricId}`}
+    >
+      <h4 className="mb-0 pt-3 pb-1 text-sm font-bold">{metric.label}</h4>
+      {rows.map(({ label, value, unite, metricCode, testId }) => (
+        <div
+          key={label}
+          aria-label={label}
+          data-testid={
+            relatedMetric?.label === label
+              ? `metric-${slugify(label)}`
+              : undefined
+          }
+          role="group"
+        >
+          <MetricRow
+            label={label}
+            target={targets[metricCode]}
+            anomalies={anomaliesByMetricCode[metricCode]}
+            indented
           >
-            <MetricCard>
-              <div className="pr-24 sm:pr-0">
-                <div className="space-y-1">
-                  <dt className="text-[var(--text-label-grey)]">{label}</dt>
-                  <dd className="!mb-0">
-                    <MetricValue
-                      value={value}
-                      accessibleName={label}
-                      unite={
-                        relatedMetric?.label === label
-                          ? relatedMetric.unite
-                          : metric.unite
-                      }
-                      testId={testId}
-                    />
-                  </dd>
-                </div>
-              </div>
-              {target && (
-                <div className="absolute top-4 right-4 sm:static sm:justify-self-end">
-                  <MetricCorrectionEditor
-                    target={target}
-                    buttonLabel="Modifier"
-                  />
-                </div>
-              )}
-              {anomaliesByMetricCode[metricCode]?.length ? (
-                <MetricAnomalyNotices
-                  anomalies={anomaliesByMetricCode[metricCode]}
-                  corrected={(target?.revision ?? 1) > 1}
-                />
-              ) : null}
-            </MetricCard>
-          </div>
-        ))}
-      </dl>
+            <MetricValue
+              value={value}
+              accessibleName={label}
+              unite={unite}
+              testId={testId}
+            />
+          </MetricRow>
+        </div>
+      ))}
     </section>
   );
 };
@@ -331,7 +321,7 @@ export function MetricsGrid({
                 {group.theme.label}
               </h3>
             )}
-            <div className="space-y-4">
+            <div className={factListClassName}>
               {Object.entries(group.metrics).map(([key, metric]) => {
                 if (
                   metric._typename === "Simple" &&
@@ -349,10 +339,10 @@ export function MetricsGrid({
                   );
                   if (partner && isMetricVisible(partner, visibleMetricCodes)) {
                     return (
-                      <div key={key} className="grid gap-4 sm:grid-cols-2">
+                      <Fragment key={key}>
                         <SimpleMetricRow metric={metric} />
                         <SimpleMetricRow metric={partner} />
-                      </div>
+                      </Fragment>
                     );
                   }
 
