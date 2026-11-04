@@ -52,13 +52,13 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("group", { name: "Avant travaux" })
     .getByRole("note", { name: "Anomalie détectée" });
   await expect(energyBeforeAnomaly).toHaveCount(1);
-  await expect(energyBeforeAnomaly).toHaveText("Anomalie statistique");
+  await expect(energyBeforeAnomaly).toHaveText("Anomalie");
 
   const energyGainAnomaly = energyMetrics
     .getByRole("group", { name: "Gain énergétique estimé" })
     .getByRole("note", { name: "Anomalie détectée" });
   await expect(energyGainAnomaly).toHaveText(
-    "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
   );
   await expect(
     energyMetrics
@@ -70,7 +70,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("region", { name: "Émissions de GES" })
     .getByRole("group", { name: "Avant travaux" })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(gesBeforeAnomaly).toHaveText("Incohérence forte");
+  await expect(gesBeforeAnomaly).toHaveText("Erreur");
 
   let anomaly = energyMetrics.getByRole("group", {
     name: "Avant travaux",

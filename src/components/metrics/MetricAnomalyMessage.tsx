@@ -1,6 +1,4 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
-
-import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStatus";
+import { FondsVertCategoryBadge } from "@/components/metrics/FondsVertAnomalyStatus";
 import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
 export function MetricAnomalyMessage({
@@ -12,13 +10,7 @@ export function MetricAnomalyMessage({
     <div className="space-y-1">
       <div className="flex flex-wrap gap-2">
         {anomaly.categories.map((category) => (
-          <Badge
-            key={category}
-            small
-            severity={category === "strong-inconsistency" ? "error" : "warning"}
-          >
-            {anomalyCategoryLabels[category]}
-          </Badge>
+          <FondsVertCategoryBadge key={category} category={category} />
         ))}
       </div>
       <p className="mb-0 text-sm">{anomaly.label}</p>

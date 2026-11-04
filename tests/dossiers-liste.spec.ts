@@ -399,8 +399,8 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
       "2 données à vérifier",
     );
     await expect(richSignals.getByRole("listitem")).toHaveText([
-      `${indicator} — Anomalie statistique, Incohérence forte`,
-      `${unknownIndicator} — Anomalie statistique`,
+      `${indicator} — Anomalie, Erreur`,
+      `${unknownIndicator} — Anomalie`,
     ]);
     await expect(
       richSignals.getByText("Justificatif partenaire à vérifier", {
@@ -456,7 +456,7 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
     ).toBeVisible();
     await expect(statisticalProject).toContainText("Signalements incomplets");
     await expect(statisticalProject.getByRole("listitem")).toHaveText([
-      `${indicator} — Anomalie statistique`,
+      `${indicator} — Anomalie`,
     ]);
     expect(detailCalls).toBe(0);
     const [stored] = await sql<

@@ -267,7 +267,7 @@ for (const [email, listTitle] of [
       .getByRole("region", { name: METRIC_LABEL, exact: true });
     await expect(
       metric.getByRole("note", { name: "Anomalie détectée" }),
-    ).toContainText("Incohérence forte");
+    ).toContainText("Erreur");
     const editMetric = metric.getByRole("button", {
       name: "Modifier",
       exact: true,

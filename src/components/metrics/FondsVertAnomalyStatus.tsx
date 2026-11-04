@@ -5,10 +5,28 @@ import type {
   NormalizedFondsVertAnomalies,
 } from "@/utils/metrics/anomalies";
 
+// Named after the two Fonds vert lists: anomalie_indicateur_list and
+// error_indicateur_list.
 export const anomalyCategoryLabels: Record<FondsVertAnomalyCategory, string> = {
-  statistical: "Anomalie statistique",
-  "strong-inconsistency": "Incohérence forte",
+  statistical: "Anomalie",
+  "strong-inconsistency": "Erreur",
 };
+
+export function FondsVertCategoryBadge({
+  category,
+}: {
+  category: FondsVertAnomalyCategory;
+}) {
+  return category === "strong-inconsistency" ? (
+    <Badge small severity="error">
+      {anomalyCategoryLabels[category]}
+    </Badge>
+  ) : (
+    <Badge small className="fr-badge--yellow-tournesol">
+      {anomalyCategoryLabels[category]}
+    </Badge>
+  );
+}
 
 export function fondsVertAnomalySummary(
   anomalies: NormalizedFondsVertAnomalies,

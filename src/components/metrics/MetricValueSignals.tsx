@@ -1,6 +1,6 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
-import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStatus";
+import { FondsVertCategoryBadge } from "@/components/metrics/FondsVertAnomalyStatus";
 import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
 // Summarizes every Fonds vert signal attached to one displayed value. Once the
@@ -33,12 +33,7 @@ export function MetricValueSignals({
 
   return (
     <div aria-label="Anomalie détectée" role="note" className="space-y-1">
-      <Badge
-        small
-        severity={category === "strong-inconsistency" ? "error" : "warning"}
-      >
-        {anomalyCategoryLabels[category]}
-      </Badge>
+      <FondsVertCategoryBadge category={category} />
       {sourcesLabels.map((sourcesLabel) => (
         <p key={sourcesLabel} className="mb-0 text-sm">
           À vérifier avec les {sourcesLabel}.

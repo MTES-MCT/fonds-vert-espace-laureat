@@ -141,7 +141,7 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
   const beforeNotes = energy
     .getByRole("group", { name: "Avant travaux", exact: true })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(beforeNotes).toHaveText("Incohérence forte");
+  await expect(beforeNotes).toHaveText("Erreur");
   await expect(
     energy
       .getByRole("group", { name: "Après travaux", exact: true })
@@ -152,7 +152,7 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
       .getByRole("group", { name: "Gain énergétique estimé", exact: true })
       .getByRole("note", { name: "Anomalie détectée" }),
   ).toHaveText(
-    "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
   );
 
   const others = otherSignals(page);
@@ -273,7 +273,7 @@ test("un signalement global sans indicateur reste visible sans compteur trompeur
 
   const others = otherSignals(page);
   await expect(
-    others.getByText("Incohérence forte sans indicateur précisé.", {
+    others.getByText("Erreur sans indicateur précisé.", {
       exact: true,
     }),
   ).toBeVisible();
@@ -325,7 +325,7 @@ test("un ratio signalé apparaît une seule fois, sur sa propre valeur", async (
       .getByRole("group", { name: "Gain énergétique estimé", exact: true })
       .getByRole("note", { name: "Anomalie détectée" }),
   ).toHaveText(
-    "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
   );
   await expect(otherSignals(page)).toHaveCount(0);
 });
@@ -400,7 +400,7 @@ for (const [actor, email, correctedValue] of [
       exact: true,
     });
     await expect(gainNotes).toHaveText(
-      "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+      "AnomalieÀ vérifier avec les consommations avant et après travaux.",
     );
     await expect(pendingAnalysis).toHaveCount(0);
     await expect(
