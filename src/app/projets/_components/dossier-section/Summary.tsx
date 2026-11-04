@@ -15,7 +15,6 @@ export const SummaryHeader = ({
   backLink,
   pageLabel = "Synthèse du projet",
   projectPath,
-  actions,
 }: {
   intitule?: string;
   titreDemarche: string;
@@ -25,7 +24,6 @@ export const SummaryHeader = ({
   backLink: { label: string; linkProps: { href: string } };
   pageLabel?: string;
   projectPath?: string;
-  actions?: ReactNode;
 }) => {
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
   const context = [
@@ -71,7 +69,6 @@ export const SummaryHeader = ({
             ))}
           </p>
         </div>
-        {actions && <div className="shrink-0 lg:max-w-1/3">{actions}</div>}
       </div>
     </header>
   );

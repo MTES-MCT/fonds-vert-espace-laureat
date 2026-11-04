@@ -67,7 +67,6 @@ export async function DossierSection({
   progressApiPath,
   anomalies,
   anomaliesSection,
-  pageAction,
 }: {
   isAdmin: boolean;
   section?: ProjectSection;
@@ -83,7 +82,6 @@ export async function DossierSection({
   progressApiPath?: string;
   anomalies?: NormalizedFondsVertAnomalies;
   anomaliesSection?: ReactNode;
-  pageAction?: ReactNode;
 }) {
   const subvention = dossierSubvention.champs;
 
@@ -165,7 +163,6 @@ export async function DossierSection({
           projectPath={
             section !== "summary" ? `${basePath}${navigationQuery}` : undefined
           }
-          actions={pageAction}
         />
         <ProjectPagesNav
           links={[

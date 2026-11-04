@@ -21,10 +21,11 @@ export function DemoSourceControl({ state }: { state: DemoSourceState }) {
   );
   return (
     <Select
-      className="mb-0 min-w-56"
+      className="mb-0"
       label="Réponse Fonds vert simulée"
       disabled={!hydrated || pending}
       nativeSelectProps={{
+        className: "box-border",
         value: state,
         onChange: (event) => {
           const sourceState = readDemoSourceState(event.target.value);

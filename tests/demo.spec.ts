@@ -295,6 +295,39 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
+for (const width of [1440, 390]) {
+  test(`les outils de démonstration flottent en bas à droite à ${width} px sans élargir la page`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/projets/demo/impact");
+
+    const tools = page.getByRole("complementary", {
+      name: "Outils de démonstration",
+    });
+    await expect(
+      tools.getByRole("combobox", { name: "Réponse Fonds vert simulée" }),
+    ).toBeVisible();
+    await expect(
+      tools.getByRole("button", { name: "Réinitialiser la démo" }),
+    ).toBeVisible();
+    await expect(page.getByTestId("project-frame")).not.toContainText(
+      "Réponse Fonds vert simulée",
+    );
+
+    await expect(tools).toHaveCSS("position", "fixed");
+    const bounds = await tools.boundingBox();
+    if (!bounds) throw new Error("Les outils doivent être affichés.");
+    expect(width - (bounds.x + bounds.width)).toBeLessThanOrEqual(16);
+    expect(900 - (bounds.y + bounds.height)).toBeLessThanOrEqual(16);
+    await expect
+      .poll(() =>
+        tools.evaluate((element) => element.scrollWidth <= element.clientWidth),
+      )
+      .toBe(true);
+  });
+}
+
 for (const [situation, width, sideBySide] of [
   ["sur ordinateur, côte à côte", 1440, true],
   ["sur mobile, l’une sous l’autre", 390, false],

@@ -4,8 +4,7 @@ import {
   type ProjectSection,
 } from "@/app/projets/_components/DossierSection";
 import { startDossierMetricLoading } from "@/app/projets/_components/startDossierMetricLoading";
-import { DemoResetButton } from "@/app/projets/demo/DemoResetButton";
-import { DemoSourceControl } from "@/app/projets/demo/DemoSourceControl";
+import { DemoToolsPanel } from "@/app/projets/demo/DemoToolsPanel";
 import { MetricAnomalyProvider } from "@/components/metrics/MetricAnomalyContext";
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
@@ -72,6 +71,7 @@ export async function DemoDossierPage({
   return (
     <>
       <ToastViewport />
+      <DemoToolsPanel state={sourceState} />
       <div className="flex flex-col gap-y-8">
         {dossiers.map((dossier, index) => {
           return (
@@ -104,12 +104,6 @@ export async function DemoDossierPage({
                       sourceUnavailable={!dossierFondsVertResult.success}
                       hasLocalMetrics={Object.keys(metrics ?? {}).length > 0}
                     />
-                  }
-                  pageAction={
-                    <div className="flex flex-wrap items-end gap-4">
-                      <DemoSourceControl state={sourceState} />
-                      <DemoResetButton />
-                    </div>
                   }
                 />
               </MetricAnomalyProvider>
