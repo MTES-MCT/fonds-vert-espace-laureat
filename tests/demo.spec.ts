@@ -295,6 +295,67 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
+for (const [situation, width, sideBySide] of [
+  ["sur ordinateur, côte à côte", 1440, true],
+  ["sur mobile, l’une sous l’autre", 390, false],
+] as const) {
+  test(`le lecteur compare avant et après travaux et les données liées ${situation}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/projets/demo/impact");
+    const values = page.getByTestId("impact-section");
+    const energy = values.getByRole("region", {
+      name: "Consommation énergétique",
+      exact: true,
+    });
+
+    for (const [first, second] of [
+      [
+        energy.getByRole("group", { name: "Avant travaux", exact: true }),
+        energy.getByRole("group", { name: "Après travaux", exact: true }),
+      ],
+      [
+        values.getByRole("region", {
+          name: "Surface du bâtiment avant projet",
+          exact: true,
+        }),
+        values.getByRole("region", { name: "Type de surface", exact: true }),
+      ],
+      [
+        values.getByRole("region", {
+          name: "Nature des opérations",
+          exact: true,
+        }),
+        values.getByRole("region", {
+          name: "Types des bâtiments",
+          exact: true,
+        }),
+      ],
+    ]) {
+      const firstBounds = await first.boundingBox();
+      const secondBounds = await second.boundingBox();
+      if (!firstBounds || !secondBounds) {
+        throw new Error("Les deux données liées doivent être affichées.");
+      }
+
+      if (sideBySide) {
+        expect(secondBounds.x).toBeGreaterThanOrEqual(
+          firstBounds.x + firstBounds.width,
+        );
+        expect(Math.abs(secondBounds.y - firstBounds.y)).toBeLessThanOrEqual(1);
+        expect(
+          Math.abs(secondBounds.height - firstBounds.height),
+        ).toBeLessThanOrEqual(1);
+      } else {
+        expect(secondBounds.y).toBeGreaterThanOrEqual(
+          firstBounds.y + firstBounds.height,
+        );
+      }
+    }
+  });
+}
+
 test("fits related energy metric values and actions on mobile", async ({
   page,
 }) => {

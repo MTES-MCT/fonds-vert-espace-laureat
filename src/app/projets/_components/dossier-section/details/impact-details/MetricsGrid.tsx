@@ -21,6 +21,14 @@ const RELATED_METRIC_LABELS: Record<string, string> = {
   "Émissions de GES": "Émissions de GES évitées",
 };
 
+const PAIRED_METRIC_CODES: Record<string, string> = {
+  nature_operations: "type_batiment",
+  surface_batiment_m2_avant_projet: "type_surface",
+  nombre_habitant_gestion_proximite: "tonnage_annuel_entrant_gestion_proximite",
+  nombre_habitant_collecte_separee:
+    "quantite_globale_annuel_biodechets_collectes",
+};
+
 type MetricsGridProps = {
   metriques?: Metrics;
   visibleMetricCodes?: ReadonlySet<string>;
@@ -93,7 +101,8 @@ const MetricAnomalyNotices = ({
 const MetricCard = ({ children }: { children: ReactNode }) => (
   <div
     className={`
-      relative grid grid-cols-1 items-start gap-x-6 bg-[var(--background-alt-grey)] p-4
+      relative grid h-full grid-cols-1 content-start items-start gap-x-6
+      bg-[var(--background-alt-grey)] p-4
       sm:grid-cols-[minmax(0,1fr)_auto]
     `}
   >
@@ -110,7 +119,11 @@ const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
   const anomalies = anomaliesByMetricCode[metric.metricCode];
 
   return (
-    <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
+    <section
+      aria-label={metric.label}
+      className="h-full"
+      data-testid={`metric-${metricId}`}
+    >
       <MetricCard>
         <div className="pr-24 sm:pr-0">
           <dl className="space-y-1">
@@ -196,10 +209,13 @@ const AvantApresTravauxRows = ({
       <h4 className="mb-4 text-base font-normal text-[var(--text-label-grey)]">
         {metric.label}
       </h4>
-      <dl className="space-y-3">
+      <dl className="grid gap-4 sm:grid-cols-2">
         {rows.map(({ label, value, metricCode, target, testId }) => (
           <div
             key={label}
+            className={
+              relatedMetric?.label === label ? "sm:col-span-2" : "h-full"
+            }
             aria-label={label}
             data-testid={
               relatedMetric?.label === label
@@ -283,6 +299,19 @@ export function MetricsGrid({
       {Object.entries(metricGroups).map(([groupId, group]) => {
         const { relatedMetricsByParentLabel, relatedMetricCodes } =
           indexRelatedMetrics(group.metrics);
+        const simpleMetrics = new Map(
+          Object.values(group.metrics)
+            .filter((metric) => metric._typename === "Simple")
+            .map((metric) => [metric.metricCode, metric]),
+        );
+        const pairedMetricCodes = new Set(
+          Object.entries(PAIRED_METRIC_CODES)
+            .filter(([first]) => {
+              const metric = simpleMetrics.get(first);
+              return metric && isMetricVisible(metric, visibleMetricCodes);
+            })
+            .map(([, second]) => second),
+        );
 
         return (
           <div
@@ -306,13 +335,26 @@ export function MetricsGrid({
               {Object.entries(group.metrics).map(([key, metric]) => {
                 if (
                   metric._typename === "Simple" &&
-                  relatedMetricCodes.has(metric.metricCode)
+                  (relatedMetricCodes.has(metric.metricCode) ||
+                    pairedMetricCodes.has(metric.metricCode))
                 ) {
                   return null;
                 }
 
                 if (metric._typename === "Simple") {
                   if (!isMetricVisible(metric, visibleMetricCodes)) return null;
+
+                  const partner = simpleMetrics.get(
+                    PAIRED_METRIC_CODES[metric.metricCode],
+                  );
+                  if (partner && isMetricVisible(partner, visibleMetricCodes)) {
+                    return (
+                      <div key={key} className="grid gap-4 sm:grid-cols-2">
+                        <SimpleMetricRow metric={metric} />
+                        <SimpleMetricRow metric={partner} />
+                      </div>
+                    );
+                  }
 
                   return <SimpleMetricRow key={key} metric={metric} />;
                 }
