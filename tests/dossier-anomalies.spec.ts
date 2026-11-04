@@ -151,9 +151,7 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
     energy
       .getByRole("group", { name: "Gain énergétique estimé", exact: true })
       .getByRole("note", { name: "Anomalie détectée" }),
-  ).toHaveText(
-    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
-  );
+  ).toHaveText("Anomalie");
 
   const others = otherSignals(page);
   await expect(
@@ -324,9 +322,7 @@ test("un ratio signalé apparaît une seule fois, sur sa propre valeur", async (
     impactValues(page)
       .getByRole("group", { name: "Gain énergétique estimé", exact: true })
       .getByRole("note", { name: "Anomalie détectée" }),
-  ).toHaveText(
-    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
-  );
+  ).toHaveText("Anomalie");
   await expect(otherSignals(page)).toHaveCount(0);
 });
 
@@ -399,9 +395,7 @@ for (const [actor, email, correctedValue] of [
     const pendingAnalysis = gain.getByText("En attente d’analyse", {
       exact: true,
     });
-    await expect(gainNotes).toHaveText(
-      "AnomalieÀ vérifier avec les consommations avant et après travaux.",
-    );
+    await expect(gainNotes).toHaveText("Anomalie");
     await expect(pendingAnalysis).toHaveCount(0);
     await expect(
       values.getByRole("button", { name: "Modifier", exact: true }),

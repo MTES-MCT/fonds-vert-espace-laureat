@@ -30,7 +30,6 @@ const confirmedLabels: {
   label: string;
   themeId: FondsVertAnomalyTheme;
   metricCodes: string[];
-  sourcesLabel?: string;
 }[] = [
   {
     label: "Surface du bâtiment avant projet",
@@ -92,25 +91,21 @@ const confirmedLabels: {
     label: "Gain énergétique estimé (en %)",
     themeId: "energy",
     metricCodes: ["gain_energetique_estime_percentage"],
-    sourcesLabel: "consommations avant et après travaux",
   },
   {
     label: "Gain énergétique estimé",
     themeId: "energy",
     metricCodes: ["gain_energetique_estime_percentage"],
-    sourcesLabel: "consommations avant et après travaux",
   },
   {
     label: "Emissions de GES évitées (en %)",
     themeId: "ges",
     metricCodes: ["emission_ges_evitees_percentage"],
-    sourcesLabel: "émissions de GES avant et après travaux",
   },
   {
     label: "Émissions de GES évitées",
     themeId: "ges",
     metricCodes: ["emission_ges_evitees_percentage"],
-    sourcesLabel: "émissions de GES avant et après travaux",
   },
   {
     label: "Quantité globale de biodéchets collectés visée (en t/an)",
@@ -124,7 +119,7 @@ const confirmedLabels: {
   },
 ];
 
-for (const { label, themeId, metricCodes, sourcesLabel } of confirmedLabels) {
+for (const { label, themeId, metricCodes } of confirmedLabels) {
   test(`le libellé exact « ${label} » conserve sa provenance et désigne ses codes confirmés`, () => {
     const normalized = normalize({
       ...noSignals,
@@ -144,7 +139,6 @@ for (const { label, themeId, metricCodes, sourcesLabel } of confirmedLabels) {
         severity: "statistical",
         themeId,
         metricCodes,
-        sourcesLabel,
         provenance: "fonds-vert",
       },
     ]);
@@ -525,19 +519,11 @@ for (const { label, metricCodes } of confirmedLabels) {
   });
 }
 
-for (const [label, metricCode, sourcesLabel] of [
-  [
-    "Gain énergétique estimé",
-    "gain_energetique_estime_percentage",
-    "consommations avant et après travaux",
-  ],
-  [
-    "Émissions de GES évitées",
-    "emission_ges_evitees_percentage",
-    "émissions de GES avant et après travaux",
-  ],
+for (const [label, metricCode] of [
+  ["Gain énergétique estimé", "gain_energetique_estime_percentage"],
+  ["Émissions de GES évitées", "emission_ges_evitees_percentage"],
 ] as const) {
-  test(`le ratio « ${label} » signalé désigne sa propre valeur et nomme ses valeurs sources`, () => {
+  test(`le ratio « ${label} » signalé désigne sa propre valeur`, () => {
     const normalized = normalize({
       ...noSignals,
       est_anomalie: true,
@@ -551,7 +537,6 @@ for (const [label, metricCode, sourcesLabel] of [
       categories: ["statistical", "strong-inconsistency"],
       severity: "strong-inconsistency",
       metricCodes: [metricCode],
-      sourcesLabel,
     });
   });
 }

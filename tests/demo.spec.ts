@@ -57,9 +57,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   const energyGainAnomaly = energyMetrics
     .getByRole("group", { name: "Gain énergétique estimé" })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(energyGainAnomaly).toHaveText(
-    "AnomalieÀ vérifier avec les consommations avant et après travaux.",
-  );
+  await expect(energyGainAnomaly).toHaveText("Anomalie");
   await expect(
     energyMetrics
       .getByRole("group", { name: "Gain énergétique estimé" })

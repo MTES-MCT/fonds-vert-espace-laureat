@@ -21,7 +21,6 @@ export type NormalizedMetricAnomaly = {
   severity: FondsVertAnomalyCategory;
   themeId: FondsVertAnomalyTheme | null;
   metricCodes: string[];
-  sourcesLabel?: string;
   provenance: "fonds-vert";
 };
 
@@ -52,7 +51,6 @@ type IndicatorMapping = {
   labels: readonly string[];
   themeId: FondsVertAnomalyTheme;
   metricCodes: readonly string[];
-  sourcesLabel?: string;
 };
 
 const indicatorMappings: IndicatorMapping[] = [
@@ -107,13 +105,11 @@ const indicatorMappings: IndicatorMapping[] = [
     labels: ["Gain énergétique estimé (en %)", "Gain énergétique estimé"],
     themeId: "energy",
     metricCodes: ["gain_energetique_estime_percentage"],
-    sourcesLabel: "consommations avant et après travaux",
   },
   {
     labels: ["Emissions de GES évitées (en %)", "Émissions de GES évitées"],
     themeId: "ges",
     metricCodes: ["emission_ges_evitees_percentage"],
-    sourcesLabel: "émissions de GES avant et après travaux",
   },
   {
     labels: [
@@ -196,7 +192,6 @@ export function normalizeFondsVertAnomalies(
         severity: category,
         themeId: mapping?.themeId ?? null,
         metricCodes: mapping ? [...mapping.metricCodes] : [],
-        sourcesLabel: mapping?.sourcesLabel,
         provenance: "fonds-vert",
       });
     }
