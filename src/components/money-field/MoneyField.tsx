@@ -5,12 +5,14 @@ export function MoneyField({
   value,
   className,
   bold,
+  valueClassName,
   scope,
 }: {
   label: string;
   value?: number;
   className?: string;
   bold?: boolean;
+  valueClassName?: string;
   scope?: string;
 }) {
   const baseId = slugify(label);
@@ -19,7 +21,10 @@ export function MoneyField({
   return (
     <div className={className}>
       <dt id={id}>{label}</dt>
-      <dd aria-labelledby={id} className={bold ? "font-semibold" : undefined}>
+      <dd
+        aria-labelledby={id}
+        className={valueClassName ?? (bold ? "font-semibold" : undefined)}
+      >
         {formatEuros(value)}
       </dd>
     </div>

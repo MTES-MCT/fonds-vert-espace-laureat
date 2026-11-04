@@ -21,7 +21,7 @@ export function SubventionDetails({
         <MoneyField
           label="Montant total des dépenses du projet"
           value={totalDesDepenses}
-          bold
+          valueClassName="text-3xl font-bold"
         />
       </dl>
 
@@ -29,7 +29,14 @@ export function SubventionDetails({
         <h3 id="aide-fonds-vert-heading" className="mb-2 text-lg font-bold">
           Aide du Fonds vert
         </h3>
-        <dl className="grid gap-4 border border-gray-200 p-6 sm:grid-cols-2">
+        <dl
+          className={`
+            grid gap-x-8 gap-y-4 border border-gray-200 px-4 py-6
+            sm:grid-cols-2
+            md:px-8
+            lg:grid-cols-3
+          `}
+        >
           <MoneyField
             label="Montant attribué"
             value={montantSubventionAttribuee}
