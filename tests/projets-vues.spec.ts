@@ -312,7 +312,7 @@ for (const [email, listTitle] of [
       metric.getByRole("note", { name: "Anomalie détectée" }),
     ).toBeVisible();
     await expect(metric).toContainText(
-      "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.",
+      "Corrigée, en attente de la prochaine analyse Fonds vert.",
     );
 
     const refused = await page.evaluate(async () => {

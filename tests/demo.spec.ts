@@ -16,7 +16,7 @@ import { createTestDatabaseClient } from "./setup/db";
 test.describe.configure({ mode: "default" });
 
 const CORRECTION_NOTE =
-  "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.";
+  "Corrigée, en attente de la prochaine analyse Fonds vert.";
 
 function impactTab(page: Page) {
   return page
@@ -52,15 +52,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   const energyBeforeAnomaly = energyMetrics
     .getByRole("group", { name: "Avant travaux" })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(energyBeforeAnomaly).toHaveCount(2);
-  await expect(energyBeforeAnomaly.nth(0)).toContainText(
-    "Consommation énergétique avant travaux",
-  );
-  await expect(energyBeforeAnomaly.nth(1)).toContainText(
-    "Gain énergétique estimé (en %)",
-  );
-  await expect(energyBeforeAnomaly.nth(0)).toContainText(
-    "Anomalie statistique",
+  await expect(energyBeforeAnomaly).toHaveCount(1);
+  await expect(energyBeforeAnomaly).toHaveText(
+    "Anomalie statistiqueVia le ratio : Gain énergétique estimé (en %)",
   );
 
   const energyGainAnomaly = energyMetrics
@@ -77,10 +71,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("region", { name: "Émissions de GES" })
     .getByRole("group", { name: "Avant travaux" })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(gesBeforeAnomaly).toContainText(
-    "Émissions de GES avant travaux",
-  );
-  await expect(gesBeforeAnomaly).toContainText("Incohérence forte");
+  await expect(gesBeforeAnomaly).toHaveText("Incohérence forte");
 
   let anomaly = energyMetrics.getByRole("group", {
     name: "Avant travaux",
@@ -124,7 +115,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(
     impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
-  await expect(energyBeforeAnomaly).toHaveCount(2);
+  await expect(energyBeforeAnomaly).toHaveCount(1);
   await expect(
     energyMetrics
       .getByRole("group", { name: "Avant travaux" })
@@ -169,9 +160,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
   );
-  await expect(gesBeforeAnomaly).toContainText(
-    "Émissions de GES avant travaux",
-  );
+  await expect(gesBeforeAnomaly).toHaveText(/^Incohérence forte/);
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -286,7 +275,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     impactSection.getByText(/2\s*055\s*650\s*kWh/).first(),
   ).toBeVisible();
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
-  await expect(energyBeforeAnomaly).toHaveCount(2);
+  await expect(energyBeforeAnomaly).toHaveCount(1);
 
   await page.reload();
   await expect(impactTab(page)).toHaveAccessibleDescription(
@@ -494,7 +483,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   );
   await expect(
     before.getByRole("note", { name: "Anomalie détectée" }),
-  ).toHaveCount(2);
+  ).toHaveCount(1);
   await page.reload();
   await expect(
     before.getByText(CORRECTION_NOTE, { exact: true }),

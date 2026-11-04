@@ -7,10 +7,10 @@ import {
   type MetricAnomaly,
   useMetricAnomaliesByMetricCode,
 } from "@/components/metrics/MetricAnomalyContext";
-import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
+import { MetricValueSignals } from "@/components/metrics/MetricValueSignals";
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { Metrics, ProcessedMetric } from "@/services/fondsvert/dossier";
 import { slugify } from "@/utils/format";
@@ -78,28 +78,6 @@ function indexRelatedMetrics(metrics: Record<string, ProcessedMetric>) {
   return { relatedMetricsByParentLabel, relatedMetricCodes };
 }
 
-const MetricAnomalyNotices = ({
-  anomalies,
-  corrected,
-}: {
-  anomalies: MetricAnomaly[];
-  corrected: boolean;
-}) => (
-  <div className="space-y-2">
-    {anomalies.map((anomaly) => (
-      <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
-        <MetricAnomalyMessage anomaly={anomaly} />
-      </div>
-    ))}
-    {corrected && (
-      <p className="mb-0 text-sm text-[var(--text-mention-grey)]">
-        Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine
-        analyse de Fonds vert.
-      </p>
-    )}
-  </div>
-);
-
 const MetricRow = ({
   id,
   label,
@@ -121,7 +99,7 @@ const MetricRow = ({
     indented={indented}
     aside={
       anomalies?.length ? (
-        <MetricAnomalyNotices
+        <MetricValueSignals
           anomalies={anomalies}
           corrected={(target?.revision ?? 1) > 1}
         />

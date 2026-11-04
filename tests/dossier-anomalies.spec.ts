@@ -141,20 +141,21 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
   const beforeNotes = energy
     .getByRole("group", { name: "Avant travaux", exact: true })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(beforeNotes).toHaveCount(2);
-  await expect(beforeNotes.nth(0)).toContainText("Anomalie statistique");
-  await expect(beforeNotes.nth(0)).toContainText("Incohérence forte");
-  await expect(beforeNotes.nth(0)).toContainText(
+  await expect(beforeNotes).toHaveCount(1);
+  await expect(beforeNotes).toContainText("Incohérence forte");
+  await expect(beforeNotes).not.toContainText("Anomalie statistique");
+  await expect(beforeNotes).not.toContainText(
     "Consommation énergétique avant travaux",
   );
-  await expect(beforeNotes.nth(1)).toContainText(
-    "Gain énergétique estimé (en %)",
+  await expect(beforeNotes).toContainText(
+    "Via le ratio : Gain énergétique estimé (en %)",
   );
-  await expect(
-    energy
-      .getByRole("group", { name: "Après travaux", exact: true })
-      .getByRole("note", { name: "Anomalie détectée" }),
-  ).toContainText("Gain énergétique estimé (en %)");
+  const afterNotes = energy
+    .getByRole("group", { name: "Après travaux", exact: true })
+    .getByRole("note", { name: "Anomalie détectée" });
+  await expect(afterNotes).toHaveText(
+    "Anomalie statistiqueVia le ratio : Gain énergétique estimé (en %)",
+  );
 
   const others = otherSignals(page);
   await expect(
@@ -332,7 +333,7 @@ test("un ratio signalé n’apparaît que sur sa valeur source disponible", asyn
         exact: true,
       })
       .getByRole("note", { name: "Anomalie détectée" }),
-  ).toContainText("Gain énergétique estimé (en %)");
+  ).toContainText("Via le ratio : Gain énergétique estimé (en %)");
   await expect(otherSignals(page)).toHaveCount(0);
 });
 
@@ -403,7 +404,7 @@ for (const [actor, email, correctedValue] of [
     const opener = after.getByRole("button", { name: "Modifier", exact: true });
     const afterNotes = after.getByRole("note", { name: "Anomalie détectée" });
     const correctionNote = after.getByText(
-      "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.",
+      "Corrigée, en attente de la prochaine analyse Fonds vert.",
       { exact: true },
     );
     await expect(afterNotes).toContainText("Gain énergétique estimé (en %)");
