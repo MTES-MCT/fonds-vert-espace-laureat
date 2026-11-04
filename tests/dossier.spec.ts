@@ -494,7 +494,7 @@ test("le lecteur retrouve les montants, le fournisseur et le dernier paiement da
     name: "Engagement juridique n°2105212345",
   });
   await expect(
-    engagement1.getByLabel("Montant attribué initial"),
+    engagement1.getByLabel("Montant attribué initial", { exact: true }),
   ).toContainText("10 073 574,00 €");
   await expect(
     engagement1.getByLabel("Montant attribué en 2025"),
@@ -502,12 +502,12 @@ test("le lecteur retrouve les montants, le fournisseur et le dernier paiement da
   await expect(engagement1.getByLabel("Montant restant")).toContainText(
     "6 651 494,80 €",
   );
-  await expect(engagement1.getByLabel("Fournisseur")).toContainText(
-    COMPANY_NAME,
-  );
-  await expect(engagement1.getByLabel("Centre de coût")).toContainText(
-    CENTRE_COUTS,
-  );
+  await expect(
+    engagement1.getByLabel("Fournisseur", { exact: true }),
+  ).toContainText(COMPANY_NAME);
+  await expect(
+    engagement1.getByLabel("Centre de coût", { exact: true }),
+  ).toContainText(CENTRE_COUTS);
   await expect(engagement1.getByLabel("Dernier paiement")).toContainText(
     "3 422 079,20 €",
   );
@@ -580,21 +580,21 @@ test("le lecteur consulte séparément chaque demande de paiement, de la plus r�
     name: "Engagement juridique n°2106789012",
   });
 
-  await expect(engagement.getByLabel("Montant attribué initial")).toContainText(
-    "2 500 000,00 €",
-  );
+  await expect(
+    engagement.getByLabel("Montant attribué initial", { exact: true }),
+  ).toContainText("2 500 000,00 €");
   await expect(engagement.getByLabel("Montant attribué en 2025")).toContainText(
     "500 000,00 €",
   );
   await expect(engagement.getByLabel("Montant restant")).toContainText(
     "300 000,00 €",
   );
-  await expect(engagement.getByLabel("Fournisseur")).toContainText(
-    COMPANY_NAME,
-  );
-  await expect(engagement.getByLabel("Centres de coût")).toContainText(
-    `${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`,
-  );
+  await expect(
+    engagement.getByLabel("Fournisseur", { exact: true }),
+  ).toContainText(COMPANY_NAME);
+  await expect(
+    engagement.getByLabel("Centres de coût", { exact: true }),
+  ).toContainText(`${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`);
   await expect(engagement.getByLabel("Dernier paiement")).toContainText(
     "200 000,00 €",
   );
@@ -2105,7 +2105,9 @@ test("dossier page handles 422 error with retry without metrics and impact", asy
       name: "Engagement juridique n°2105212345",
     });
     await expect(
-      engagementJuridique.getByLabel("Montant attribué initial"),
+      engagementJuridique.getByLabel("Montant attribué initial", {
+        exact: true,
+      }),
     ).toContainText("10 073 574,00 €");
 
     const impactSection = page.getByTestId("impact-section");
@@ -2650,10 +2652,14 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     });
     await expect(engagements).toHaveCount(2);
     await expect(
-      engagements.nth(0).getByLabel("Montant attribué initial"),
+      engagements
+        .nth(0)
+        .getByLabel("Montant attribué initial", { exact: true }),
     ).toContainText("10 073 574,00 €");
     await expect(
-      engagements.nth(1).getByLabel("Montant attribué initial"),
+      engagements
+        .nth(1)
+        .getByLabel("Montant attribué initial", { exact: true }),
     ).toContainText("2 500 000,00 €");
     await page.screenshot({
       path: testInfo.outputPath("financement-desktop.png"),
@@ -2735,13 +2741,13 @@ test("le lecteur conserve les montants disponibles quand les détails de tous le
     name: "Engagement juridique n°2105212345",
   });
   await expect(
-    engagementJuridique.getByLabel("Montant attribué initial"),
+    engagementJuridique.getByLabel("Montant attribué initial", { exact: true }),
   ).not.toBeAttached();
   await expect(
-    engagementJuridique.getByLabel("Fournisseur"),
+    engagementJuridique.getByLabel("Fournisseur", { exact: true }),
   ).not.toBeAttached();
   await expect(
-    engagementJuridique.getByLabel("Centre de coût"),
+    engagementJuridique.getByLabel("Centre de coût", { exact: true }),
   ).not.toBeAttached();
 });
 
@@ -2767,13 +2773,13 @@ test("le lecteur conserve un engagement complet quand les détails de l’autre 
     name: "Engagement juridique n°2105212345",
   });
   await expect(
-    engagementIncomplet.getByLabel("Montant attribué initial"),
+    engagementIncomplet.getByLabel("Montant attribué initial", { exact: true }),
   ).not.toBeAttached();
   await expect(
-    engagementIncomplet.getByLabel("Fournisseur"),
+    engagementIncomplet.getByLabel("Fournisseur", { exact: true }),
   ).not.toBeAttached();
   await expect(
-    engagementIncomplet.getByLabel("Centre de coût"),
+    engagementIncomplet.getByLabel("Centre de coût", { exact: true }),
   ).not.toBeAttached();
   await expect(
     engagementIncomplet.getByLabel("Montant attribué en 2025"),
@@ -2786,7 +2792,7 @@ test("le lecteur conserve un engagement complet quand les détails de l’autre 
     name: "Engagement juridique n°2106789012",
   });
   await expect(
-    engagementComplet.getByLabel("Montant attribué initial"),
+    engagementComplet.getByLabel("Montant attribué initial", { exact: true }),
   ).toContainText("2 500 000,00 €");
   await expect(
     engagementComplet.getByLabel("Montant attribué en 2025"),
@@ -2794,12 +2800,12 @@ test("le lecteur conserve un engagement complet quand les détails de l’autre 
   await expect(engagementComplet.getByLabel("Montant restant")).toContainText(
     "300 000,00 €",
   );
-  await expect(engagementComplet.getByLabel("Fournisseur")).toHaveText(
-    COMPANY_NAME,
-  );
-  await expect(engagementComplet.getByLabel("Centres de coût")).toHaveText(
-    `${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`,
-  );
+  await expect(
+    engagementComplet.getByLabel("Fournisseur", { exact: true }),
+  ).toHaveText(COMPANY_NAME);
+  await expect(
+    engagementComplet.getByLabel("Centres de coût", { exact: true }),
+  ).toHaveText(`${CENTRE_COUTS_2C}, ${CENTRE_COUTS_2D}`);
   await expect(engagementComplet.getByLabel("Dernier paiement")).toContainText(
     "200 000,00 €",
   );
