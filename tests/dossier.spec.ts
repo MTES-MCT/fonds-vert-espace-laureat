@@ -141,6 +141,7 @@ test("dossier page displays project presentation correctly", async ({
     "Département d'implantation",
     "Commune principale impactée",
     "Numéro de dossier agence de l'eau",
+    "Avancement",
   ]);
 });
 
