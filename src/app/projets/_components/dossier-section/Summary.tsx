@@ -8,71 +8,40 @@ import { SocleCommun } from "@/services/fondsvert/dossier";
 
 export const SummaryHeader = ({
   intitule,
-  titreDemarche,
-  anneeMillesime,
   numeroDossier,
-  holderName,
   backLink,
   pageLabel = "Synthèse du projet",
   projectPath,
 }: {
   intitule?: string;
-  titreDemarche: string;
-  anneeMillesime?: number;
   numeroDossier: number;
-  holderName?: string;
   backLink: { label: string; linkProps: { href: string } };
   pageLabel?: string;
   projectPath?: string;
-}) => {
-  const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
-  const context = [
-    holderName,
-    `Dossier n°${numeroDossier}`,
-    mesureFondsVert,
-    anneeMillesime ? `Édition ${anneeMillesime}` : undefined,
-  ].filter(Boolean);
-
-  return (
-    <header>
-      <Breadcrumb
-        className="mt-0 mb-4"
-        homeLinkProps={{ href: "/" }}
-        segments={
-          projectPath
-            ? [
-                backLink,
-                {
-                  label: `Projet n°${numeroDossier}`,
-                  linkProps: { href: projectPath },
-                },
-              ]
-            : [backLink]
-        }
-        currentPageLabel={pageLabel}
-        data-testid="breadcrumb-current"
-      />
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-        <div className="min-w-0 grow">
-          <h1 className="mb-2 text-balance [overflow-wrap:anywhere]">
-            {intitule ?? "N/A"}
-          </h1>
-          <p
-            className="mb-0 text-[var(--text-mention-grey)]"
-            data-testid="project-context"
-          >
-            {context.map((item, index) => (
-              <span key={item}>
-                {index > 0 && <span aria-hidden="true">{" · "}</span>}
-                {item}
-              </span>
-            ))}
-          </p>
-        </div>
-      </div>
-    </header>
-  );
-};
+}) => (
+  <header>
+    <Breadcrumb
+      className="mt-0 mb-4"
+      homeLinkProps={{ href: "/" }}
+      segments={
+        projectPath
+          ? [
+              backLink,
+              {
+                label: `Projet n°${numeroDossier}`,
+                linkProps: { href: projectPath },
+              },
+            ]
+          : [backLink]
+      }
+      currentPageLabel={pageLabel}
+      data-testid="breadcrumb-current"
+    />
+    <h1 className="mb-0 text-balance [overflow-wrap:anywhere]">
+      {intitule ?? "N/A"}
+    </h1>
+  </header>
+);
 
 const noticeId = "project-page-notice";
 
@@ -163,11 +132,17 @@ function ProjectFact({
 }
 
 export const ProjectPresentation = ({
+  numeroDossier,
+  titreDemarche,
+  anneeMillesime,
   resume,
   numeroDossierAgenceEau,
   departementImplantation,
   socleCommun,
 }: {
+  numeroDossier: number;
+  titreDemarche: string;
+  anneeMillesime?: number;
   resume?: string;
   numeroDossierAgenceEau?: string;
   departementImplantation?: string;
@@ -183,6 +158,15 @@ export const ProjectPresentation = ({
       </p>
     )}
     <dl className={factListClassName}>
+      <ProjectFact id="dossier-number-label" label="Numéro de dossier">
+        {numeroDossier}
+      </ProjectFact>
+      <ProjectFact id="measure-label" label="Dispositif">
+        {titreDemarche.replace("FONDS VERT - ", "")}
+      </ProjectFact>
+      <ProjectFact id="edition-label" label="Édition">
+        {anneeMillesime ?? "Non renseignée"}
+      </ProjectFact>
       <ProjectFact id="department-label" label="Département d'implantation">
         {departementImplantation || "Aucun département précisé"}
       </ProjectFact>

@@ -113,6 +113,9 @@ export async function DossierSection({
     : `/projets/${dossierSubvention.numero}`;
   const presentation = (
     <ProjectPresentation
+      numeroDossier={dossierSubvention.numero}
+      titreDemarche={dossierSubvention.demarche.title}
+      anneeMillesime={socleCommun?.annee_millesime}
       resume={subvention.resumeProjet}
       numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
       departementImplantation={subvention.departementImplantation}
@@ -150,14 +153,7 @@ export async function DossierSection({
         <RefreshIndicator />
         <SummaryHeader
           intitule={subvention.intituleProjet}
-          titreDemarche={dossierSubvention.demarche.title}
-          anneeMillesime={socleCommun?.annee_millesime}
           numeroDossier={dossierSubvention.numero}
-          holderName={
-            view === "instructeur"
-              ? socleCommun?.entreprise_raison_sociale
-              : undefined
-          }
           backLink={backLink}
           pageLabel={projectPageLabels[section]}
           projectPath={

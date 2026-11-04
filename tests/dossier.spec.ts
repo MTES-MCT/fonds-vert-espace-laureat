@@ -112,13 +112,19 @@ test("dossier page displays project presentation correctly", async ({
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     PROJECT_TITLE,
   );
-  await expect(page.getByText(PROGRAM_TITLE)).toBeVisible();
-  await expect(page.getByText("Édition 2023")).toBeVisible();
-
   const projectSection = page.getByRole("region", {
     name: "Présentation du projet",
     exact: true,
   });
+  await expect(
+    projectSection.getByLabel("Numéro de dossier", { exact: true }),
+  ).toHaveText(String(DOSSIER_NUMBER));
+  await expect(
+    projectSection.getByLabel("Dispositif", { exact: true }),
+  ).toHaveText(PROGRAM_TITLE);
+  await expect(
+    projectSection.getByLabel("Édition", { exact: true }),
+  ).toHaveText("2023");
 
   await expect(projectSection).toContainText(PROJECT_SUMMARY);
   await expect(
@@ -130,6 +136,9 @@ test("dossier page displays project presentation correctly", async ({
   await expect(projectSection.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
   await expect(projectSection.locator("dl")).toHaveCount(1);
   await expect(projectSection.locator("dt")).toHaveText([
+    "Numéro de dossier",
+    "Dispositif",
+    "Édition",
     "Département d'implantation",
     "Commune principale impactée",
     "Numéro de dossier agence de l'eau",
