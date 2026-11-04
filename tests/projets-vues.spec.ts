@@ -178,7 +178,7 @@ for (const [email, listTitle] of [
     ).toBeVisible();
     await expect(
       page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
-    ).toHaveText("Synthèse du projet");
+    ).toHaveText(`Projet n°${dossierNumber}`);
     const synthese = page.getByRole("region", {
       name: "Synthèse du projet",
       exact: true,
@@ -230,7 +230,7 @@ for (const [email, listTitle] of [
       ).toBeVisible();
       await expect(
         page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
-      ).toHaveText(label);
+      ).toHaveText(path ? label : `Projet n°${dossierNumber}`);
       await expect(
         page
           .getByRole("navigation", { name: "Pages du projet" })
@@ -394,7 +394,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
       await expect(page).toHaveURL(path);
       await expect(
         page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
-      ).toHaveText(label);
+      ).toHaveText(suffix ? label : `Projet n°${dossierNumber}`);
       await expect(
         page
           .getByRole("navigation", { name: "Pages du projet" })

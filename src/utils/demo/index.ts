@@ -32,10 +32,11 @@ const demandeur = {
   },
 };
 
+// Identifiant de stockage des corrections et de l’avancement de la démo.
 export const DEMO_DOSSIER_NUMBER = 99999999;
 
 export const demoDossier1: Dossier = {
-  numero: DEMO_DOSSIER_NUMBER,
+  numero: 482731,
   dateTraitement: new Date(),
   ...demandeur,
   demarche: {

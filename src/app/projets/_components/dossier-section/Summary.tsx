@@ -9,38 +9,42 @@ export const SummaryHeader = ({
   intitule,
   numeroDossier,
   backLink,
-  pageLabel = "Synthèse du projet",
+  pageLabel,
   projectPath,
 }: {
   intitule?: string;
   numeroDossier: number;
   backLink: { label: string; linkProps: { href: string } };
-  pageLabel?: string;
+  pageLabel: string;
   projectPath?: string;
-}) => (
-  <header>
-    <Breadcrumb
-      className="mt-0 mb-4"
-      homeLinkProps={{ href: "/" }}
-      segments={
-        projectPath
-          ? [
-              backLink,
-              {
-                label: `Projet n°${numeroDossier}`,
-                linkProps: { href: projectPath },
-              },
-            ]
-          : [backLink]
-      }
-      currentPageLabel={pageLabel}
-      data-testid="breadcrumb-current"
-    />
-    <h1 className="mb-0 text-balance [overflow-wrap:anywhere]">
-      {intitule ?? "N/A"}
-    </h1>
-  </header>
-);
+}) => {
+  const projectLabel = `Projet n°${numeroDossier}`;
+
+  return (
+    <header>
+      <Breadcrumb
+        className="mt-0 mb-4"
+        homeLinkProps={{ href: "/" }}
+        segments={
+          projectPath
+            ? [
+                backLink,
+                {
+                  label: projectLabel,
+                  linkProps: { href: projectPath },
+                },
+              ]
+            : [backLink]
+        }
+        currentPageLabel={projectPath ? pageLabel : projectLabel}
+        data-testid="breadcrumb-current"
+      />
+      <h1 className="mb-0 text-balance [overflow-wrap:anywhere]">
+        {intitule ?? "N/A"}
+      </h1>
+    </header>
+  );
+};
 
 const noticeId = "project-page-notice";
 

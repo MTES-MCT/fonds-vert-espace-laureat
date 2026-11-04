@@ -11,6 +11,7 @@ import { ToastViewport } from "@/components/toast/toast";
 import { getDossierProgress } from "@/db/dossierProgress";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
 import {
+  DEMO_DOSSIER_NUMBER,
   demoDossier1,
   demoDossierFondsVert,
   demoFinancesEJ1,
@@ -31,10 +32,10 @@ export async function DemoDossierPage({
 }) {
   const dossiers = [demoDossier1];
   const progressTarget = await getDossierProgress({
-    numeroDossier: demoDossier1.numero,
+    numeroDossier: DEMO_DOSSIER_NUMBER,
   });
   const metricLoading = startDossierMetricLoading({
-    numeroDossier: demoDossier1.numero,
+    numeroDossier: DEMO_DOSSIER_NUMBER,
     loadDossierFondsVert: async (includeMetrics) =>
       sourceState === "unavailable"
         ? {
@@ -77,7 +78,7 @@ export async function DemoDossierPage({
           return (
             <MetricRevisionProvider
               key={index}
-              dossierNumber={dossier.numero}
+              dossierNumber={DEMO_DOSSIER_NUMBER}
               initialTargets={metricRevisionTargets}
               correctionApiPath="/api/projets/demo/metrics"
             >
