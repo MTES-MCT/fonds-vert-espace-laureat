@@ -107,6 +107,7 @@ export async function DossierPage({
               dossierFondsVertResult={dossierFondsVertResult}
               financesEJPromise={financesEJPromise}
               progressTarget={progressTarget}
+              anomalies={anomalies}
               anomaliesSection={
                 <AnomaliesSection
                   anomalies={anomalies}

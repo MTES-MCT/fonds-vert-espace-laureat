@@ -2017,7 +2017,10 @@ test("navigation links work correctly", async ({ page }) => {
     page.locator('[data-testid="breadcrumb-current"] ol > li:nth-child(2) > a'),
   ).toHaveAttribute("href", backLink);
 
-  const footerBack = page.getByTestId("footer-back");
+  const footerBack = page.getByRole("link", {
+    name: "Revenir à la liste des projets",
+    exact: true,
+  });
   await expect(footerBack).toHaveAttribute("href", backLink);
 });
 

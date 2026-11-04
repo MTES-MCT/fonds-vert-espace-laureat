@@ -1,5 +1,5 @@
 import Alert from "@codegouvfr/react-dsfr/Alert";
-import Link from "next/link";
+import Button from "@codegouvfr/react-dsfr/Button";
 import { ReactNode } from "react";
 
 import { EngagementsSection } from "@/app/projets/_components/dossier-section/details/EngagementsSection";
@@ -8,12 +8,14 @@ import { SubventionDetails } from "@/app/projets/_components/dossier-section/det
 import { StatutRealisation } from "@/app/projets/_components/dossier-section/StatutRealisation";
 import {
   ProjectHolder,
+  ProjectPagesNav,
   ProjectPresentation,
   SummaryHeader,
 } from "@/app/projets/_components/dossier-section/Summary";
 import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
 import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { fondsVertAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import {
@@ -22,6 +24,7 @@ import {
   Metrics,
 } from "@/services/fondsvert/dossier";
 import { FinancesEJResult } from "@/services/fondsvert/finances";
+import type { NormalizedFondsVertAnomalies } from "@/utils/metrics/anomalies";
 import { projectListLabel, type ProjectView } from "@/utils/projectView";
 
 export type ProjectSection = "summary" | "impact" | "finance";
@@ -62,6 +65,7 @@ export async function DossierSection({
   financesEJPromise,
   progressTarget,
   progressApiPath,
+  anomalies,
   anomaliesSection,
   pageAction,
 }: {
@@ -77,6 +81,7 @@ export async function DossierSection({
   financesEJPromise: Promise<FinancesEJResult>;
   progressTarget: DossierProgressTarget;
   progressApiPath?: string;
+  anomalies?: NormalizedFondsVertAnomalies;
   anomaliesSection?: ReactNode;
   pageAction?: ReactNode;
 }) {
@@ -108,175 +113,180 @@ export async function DossierSection({
   const basePath = progressApiPath
     ? "/projets/demo"
     : `/projets/${dossierSubvention.numero}`;
+  const anomalySummary = anomalies && fondsVertAnomalySummary(anomalies);
+  const impactNotice =
+    anomalySummary &&
+    (anomalySummary.severity === "error" ||
+      anomalySummary.severity === "warning") &&
+    anomalies.status !== "incomplete" &&
+    anomalies.status !== "invalid"
+      ? { label: anomalySummary.label, severity: anomalySummary.severity }
+      : undefined;
 
   return (
-    <div className="fr-container my-8">
-      <div className="relative bg-white p-4 sm:p-8" data-testid="project-frame">
+    <div className="fr-container py-8">
+      <div
+        className="relative bg-white p-4 shadow-sm sm:p-8"
+        data-testid="project-frame"
+      >
         <RefreshIndicator />
-        {pageAction && (
-          <div className="mb-4 flex justify-end">{pageAction}</div>
-        )}
         <SummaryHeader
           intitule={subvention.intituleProjet}
           titreDemarche={dossierSubvention.demarche.title}
           anneeMillesime={socleCommun?.annee_millesime}
           numeroDossier={dossierSubvention.numero}
+          holderName={
+            view === "instructeur"
+              ? socleCommun?.entreprise_raison_sociale
+              : undefined
+          }
           backLink={backLink}
           pageLabel={projectPageLabels[section]}
           projectPath={
             section !== "summary" ? `${basePath}${navigationQuery}` : undefined
           }
+          actions={pageAction}
         />
-        <p className="mb-6 text-sm text-[var(--text-mention-grey)]">
-          {view === "porteur"
-            ? "Suivi de votre projet"
-            : view === "instructeur"
-              ? "Projet suivi"
-              : "Projet"}
-        </p>
-        <nav
-          aria-label="Pages du projet"
-          className="mb-8 border-b border-[var(--border-default-grey)]"
-        >
-          <ul className="m-0 flex list-none flex-wrap gap-x-6 gap-y-4 p-0 pb-4">
-            <li>
-              <Link
-                href={`${basePath}${navigationQuery}`}
-                aria-current={section === "summary" ? "page" : undefined}
-              >
-                Synthèse du projet
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`${basePath}/impact${navigationQuery}`}
-                aria-current={section === "impact" ? "page" : undefined}
-              >
-                Données d’impact
-              </Link>
-            </li>
-            <li>
-              <Link
-                href={`${basePath}/financement${navigationQuery}`}
-                aria-current={section === "finance" ? "page" : undefined}
-              >
-                Financement
-              </Link>
-            </li>
-          </ul>
-        </nav>
+        <ProjectPagesNav
+          links={[
+            {
+              label: projectPageLabels.summary,
+              href: `${basePath}${navigationQuery}`,
+              current: section === "summary",
+            },
+            {
+              label: projectPageLabels.impact,
+              href: `${basePath}/impact${navigationQuery}`,
+              current: section === "impact",
+              notice: impactNotice,
+            },
+            {
+              label: projectPageLabels.finance,
+              href: `${basePath}/financement${navigationQuery}`,
+              current: section === "finance",
+            },
+          ]}
+        />
 
-        {section === "impact" ? (
-          <div className="space-y-8">
-            <h2>Données d’impact</h2>
-            {anomaliesSection}
-            {errorMessage && !anomaliesSection && (
-              <Alert
-                severity="error"
-                small
-                description={
-                  metriques && Object.keys(metriques).length > 0
-                    ? "Les données Fonds vert sont temporairement indisponibles. Les valeurs déjà enregistrées restent consultables."
-                    : "Les données Fonds vert sont temporairement indisponibles."
-                }
-              />
-            )}
-            {metriques && Object.keys(metriques).length > 0 ? (
-              <div data-testid="impact-section">
-                <MetricsGrid metriques={metriques} />
-              </div>
-            ) : (
-              <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
-            )}
-          </div>
-        ) : section === "finance" ? (
-          <section id="financement" aria-labelledby="finance-heading">
-            <h2 id="finance-heading">Financement du projet</h2>
-            {errorMessage && (
-              <Alert severity="error" small description={errorMessage} />
-            )}
-            <SubventionDetails
-              montantSubventionAttribuee={
-                socleCommun?.montant_subvention_attribuee
-              }
-              totalDesDepenses={socleCommun?.total_des_depenses}
-              informationFinanciere={informationFinanciere}
-              engagementsSection={buildEngagementsSection(
-                informationFinanciere,
-                financesEJPromise,
+        <div className="mt-8">
+          {section === "impact" ? (
+            <div className="space-y-8">
+              <h2 className="sr-only">Données d’impact</h2>
+              {anomaliesSection}
+              {errorMessage && !anomaliesSection && (
+                <Alert
+                  severity="error"
+                  small
+                  description={
+                    metriques && Object.keys(metriques).length > 0
+                      ? "Les données Fonds vert sont temporairement indisponibles. Les valeurs déjà enregistrées restent consultables."
+                      : "Les données Fonds vert sont temporairement indisponibles."
+                  }
+                />
               )}
-            />
-          </section>
-        ) : (
-          <section aria-labelledby="summary-heading">
-            <h2 id="summary-heading">Synthèse du projet</h2>
-            {errorMessage && (
-              <Alert
-                className="mb-6"
-                severity="error"
-                small
-                description="Les données Fonds vert sont temporairement indisponibles."
+              {metriques && Object.keys(metriques).length > 0 ? (
+                <div data-testid="impact-section">
+                  <MetricsGrid metriques={metriques} />
+                </div>
+              ) : (
+                <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
+              )}
+            </div>
+          ) : section === "finance" ? (
+            <section id="financement" aria-labelledby="finance-heading">
+              <h2 id="finance-heading" className="sr-only">
+                Financement du projet
+              </h2>
+              {errorMessage && (
+                <Alert severity="error" small description={errorMessage} />
+              )}
+              <SubventionDetails
+                montantSubventionAttribuee={
+                  socleCommun?.montant_subvention_attribuee
+                }
+                totalDesDepenses={socleCommun?.total_des_depenses}
+                informationFinanciere={informationFinanciere}
+                engagementsSection={buildEngagementsSection(
+                  informationFinanciere,
+                  financesEJPromise,
+                )}
               />
-            )}
-            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
-              <div className="min-w-0 space-y-8">
-                <ProjectPresentation
-                  resume={subvention.resumeProjet}
-                  numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
-                  departementImplantation={subvention.departementImplantation}
-                  socleCommun={socleCommun}
+            </section>
+          ) : (
+            <section aria-labelledby="summary-heading">
+              <h2 id="summary-heading" className="sr-only">
+                Synthèse du projet
+              </h2>
+              {errorMessage && (
+                <Alert
+                  className="mb-6"
+                  severity="error"
+                  small
+                  description="Les données Fonds vert sont temporairement indisponibles."
                 />
-                <ProjectHolder
-                  emailRepresentantLegal={subvention.emailRepresentantLegal}
-                  emailResponsableSuivi={subvention.emailResponsableSuivi}
-                  socleCommun={socleCommun}
-                  siret={dossierSubvention.demandeur.siret}
-                />
-                <div>
-                  <StatutRealisation
-                    dossierNumber={dossierSubvention.numero}
-                    initialTarget={progressTarget}
-                    correctionApiPath={progressApiPath}
+              )}
+              <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(16rem,1fr)]">
+                <div className="min-w-0 space-y-8">
+                  <ProjectPresentation
+                    resume={subvention.resumeProjet}
+                    numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
+                    departementImplantation={subvention.departementImplantation}
+                    socleCommun={socleCommun}
+                  />
+                  <ProjectHolder
+                    emailRepresentantLegal={subvention.emailRepresentantLegal}
+                    emailResponsableSuivi={subvention.emailResponsableSuivi}
+                    socleCommun={socleCommun}
+                    siret={dossierSubvention.demandeur.siret}
+                  />
+                  <div>
+                    <StatutRealisation
+                      dossierNumber={dossierSubvention.numero}
+                      initialTarget={progressTarget}
+                      correctionApiPath={progressApiPath}
+                    />
+                  </div>
+                </div>
+                <div
+                  className={`
+                    min-w-0 border-t border-[var(--border-default-grey)] pt-8
+                    lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8
+                  `}
+                >
+                  <Timeline
+                    steps={[
+                      {
+                        label: "Dépôt du dossier",
+                        date: socleCommun?.date_depot ?? null,
+                      },
+                      {
+                        label: "Notification",
+                        date: socleCommun?.date_notification ?? null,
+                      },
+                      {
+                        label: "Début d'exécution",
+                        date: socleCommun?.date_debut_execution ?? null,
+                      },
+                      {
+                        label: "Fin d'exécution",
+                        date: socleCommun?.date_fin_execution ?? null,
+                      },
+                    ]}
                   />
                 </div>
               </div>
-              <div
-                className={`
-                  min-w-0 border-t border-[var(--border-default-grey)] pt-8
-                  lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8
-                `}
-              >
-                <Timeline
-                  steps={[
-                    {
-                      label: "Dépôt du dossier",
-                      date: socleCommun?.date_depot ?? null,
-                    },
-                    {
-                      label: "Notification",
-                      date: socleCommun?.date_notification ?? null,
-                    },
-                    {
-                      label: "Début d'exécution",
-                      date: socleCommun?.date_debut_execution ?? null,
-                    },
-                    {
-                      label: "Fin d'exécution",
-                      date: socleCommun?.date_fin_execution ?? null,
-                    },
-                  ]}
-                />
-              </div>
-            </div>
-          </section>
-        )}
-        <Link
-          className="fr-btn fr-btn--tertiary mt-8 bg-white"
-          href={backLink.linkProps.href}
-          data-testid="footer-back"
-        >
-          Retour
-        </Link>
+            </section>
+          )}
+        </div>
+        <div className="mt-8 border-t border-[var(--border-default-grey)] pt-6">
+          <Button
+            priority="secondary"
+            iconId="fr-icon-arrow-left-line"
+            linkProps={{ href: backLink.linkProps.href }}
+          >
+            Revenir à la liste des projets
+          </Button>
+        </div>
       </div>
       <StartDsfrOnHydration />
     </div>

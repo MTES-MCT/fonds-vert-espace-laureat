@@ -41,12 +41,18 @@ async function resetProject(dossierNumber: number) {
   }
 }
 
+const projectContexts = {
+  porteur: /^Dossier n°/,
+  instructeur: /^COMMUNE DE NANTES · Dossier n°/,
+};
+
 async function changeAdminView(page: Page, view: "porteur" | "instructeur") {
-  const switchTo = page.getByRole("button", {
+  const quickAccess = page.locator(".fr-header__tools-links");
+  const switchTo = quickAccess.getByRole("button", {
     name: `Passer en vue ${view}`,
     exact: true,
   });
-  const switchBack = page.getByRole("button", {
+  const switchBack = quickAccess.getByRole("button", {
     name: `Passer en vue ${view === "porteur" ? "instructeur" : "porteur"}`,
     exact: true,
   });
@@ -58,12 +64,9 @@ async function changeAdminView(page: Page, view: "porteur" | "instructeur") {
   await switchTo.click();
   expect((await changed).status()).toBe(200);
   await expect(switchBack).toBeEnabled();
-  await expect(
-    page.getByText(
-      view === "porteur" ? "Suivi de votre projet" : "Projet suivi",
-      { exact: true },
-    ),
-  ).toBeVisible();
+  await expect(page.getByTestId("project-context")).toHaveText(
+    projectContexts[view],
+  );
 }
 
 test.beforeEach(async ({ page, msw }, testInfo) => {
@@ -122,8 +125,8 @@ test.afterEach(async ({}, testInfo) => {
 });
 
 for (const [email, listTitle, projectContext] of [
-  [PORTEUR, "Mes projets", "Suivi de votre projet"],
-  [INSTRUCTEUR, "Projets suivis", "Projet suivi"],
+  [PORTEUR, "Mes projets", projectContexts.porteur],
+  [INSTRUCTEUR, "Projets suivis", projectContexts.instructeur],
 ] as const) {
   test(`la personne ${email} parcourt ses projets avec sa vue DN, corrige une donnée signalée et ne peut pas basculer`, async ({
     page,
@@ -176,15 +179,26 @@ for (const [email, listTitle, projectContext] of [
       .filter({ hasText: String(dossierNumber) })
       .getByRole("link", { name: "Ouvrir" })
       .click();
-    await expect(page.getByText(projectContext, { exact: true })).toBeVisible();
+    await expect(page.getByTestId("project-context")).toHaveText(
+      projectContext,
+    );
     await expect(
       page.getByTestId("breadcrumb-current").locator('[aria-current="page"]'),
     ).toHaveText("Synthèse du projet");
-    await expect(
-      page
-        .getByRole("navigation", { name: "Pages du projet" })
-        .getByRole("link"),
-    ).toHaveText(["Synthèse du projet", "Données d’impact", "Financement"]);
+    const projectPages = page
+      .getByRole("navigation", { name: "Pages du projet" })
+      .getByRole("link");
+    await expect(projectPages).toHaveCount(3);
+    for (const [index, name] of [
+      "Synthèse du projet",
+      "Données d’impact",
+      "Financement",
+    ].entries()) {
+      await expect(projectPages.nth(index)).toHaveAccessibleName(name);
+    }
+    await expect(projectPages.nth(1)).toHaveAccessibleDescription(
+      "1 donnée à vérifier",
+    );
     for (const [label, path, heading] of [
       ["Synthèse du projet", "", "Synthèse du projet"],
       ["Financement", "/financement", "Financement du projet"],
@@ -208,12 +222,17 @@ for (const [email, listTitle, projectContext] of [
           .getByRole("navigation", { name: "Pages du projet" })
           .getByRole("link", { name: label, exact: true }),
       ).toHaveAttribute("aria-current", "page");
-      await expect(
-        page.getByText(projectContext, { exact: true }),
-      ).toBeVisible();
+      await expect(page.getByTestId("project-context")).toHaveText(
+        projectContext,
+      );
     }
 
-    await page.getByTestId("footer-back").click();
+    await page
+      .getByRole("link", {
+        name: "Revenir à la liste des projets",
+        exact: true,
+      })
+      .click();
     await expect(page).toHaveURL("/projets");
     const project = page.getByRole("row").filter({
       has: page.getByRole("cell", { name: String(dossierNumber), exact: true }),
@@ -298,11 +317,18 @@ for (const [email, listTitle, projectContext] of [
       body: { error: "Cette vue est réservée au super admin." },
     });
     await page.reload();
-    await expect(page.getByText(projectContext, { exact: true })).toBeVisible();
+    await expect(page.getByTestId("project-context")).toHaveText(
+      projectContext,
+    );
     await expect(
       page.getByRole("button", { name: /^Passer en vue / }),
     ).toHaveCount(0);
-    await page.getByTestId("footer-back").click();
+    await page
+      .getByRole("link", {
+        name: "Revenir à la liste des projets",
+        exact: true,
+      })
+      .click();
     await expect(page).toHaveURL("/projets");
     await expect(
       project.getByRole("link", {
@@ -366,9 +392,9 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     }
     await page.reload();
     await expect(page).toHaveURL(path);
-    await expect(
-      page.getByText("Suivi de votre projet", { exact: true }),
-    ).toBeVisible();
+    await expect(page.getByTestId("project-context")).toHaveText(
+      projectContexts.porteur,
+    );
   }
 
   for (const [view, value, progress] of [
@@ -558,7 +584,7 @@ test("la préférence de vue exige une session admin et une valeur reconnue", as
   expect(invalid).toEqual({ status: 400, body: { error: "Vue invalide" } });
   await page.reload();
   await expect(
-    page.getByRole("button", {
+    page.locator(".fr-header__tools-links").getByRole("button", {
       name: "Passer en vue instructeur",
       exact: true,
     }),

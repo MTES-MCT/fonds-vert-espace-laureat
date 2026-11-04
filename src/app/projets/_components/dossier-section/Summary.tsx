@@ -1,5 +1,6 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
-import Tag from "@codegouvfr/react-dsfr/Tag";
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
@@ -10,22 +11,32 @@ export const SummaryHeader = ({
   titreDemarche,
   anneeMillesime,
   numeroDossier,
+  holderName,
   backLink,
   pageLabel = "Synthèse du projet",
   projectPath,
+  actions,
 }: {
   intitule?: string;
   titreDemarche: string;
   anneeMillesime?: number;
   numeroDossier: number;
+  holderName?: string;
   backLink: { label: string; linkProps: { href: string } };
   pageLabel?: string;
   projectPath?: string;
+  actions?: ReactNode;
 }) => {
   const mesureFondsVert = titreDemarche.replace("FONDS VERT - ", "");
+  const context = [
+    holderName,
+    `Dossier n°${numeroDossier}`,
+    mesureFondsVert,
+    anneeMillesime ? `Édition ${anneeMillesime}` : undefined,
+  ].filter(Boolean);
 
   return (
-    <header className="mb-8">
+    <header>
       <Breadcrumb
         className="mt-0 mb-4"
         homeLinkProps={{ href: "/" }}
@@ -43,23 +54,83 @@ export const SummaryHeader = ({
         currentPageLabel={pageLabel}
         data-testid="breadcrumb-current"
       />
-      <h1 className="mb-3 text-4xl font-bold text-balance [overflow-wrap:anywhere]">
-        {intitule ?? "N/A"}
-      </h1>
-      <p className="mb-3 text-sm">Dossier n°{numeroDossier}</p>
-      <div className="flex flex-wrap items-center gap-3">
-        <Tag small iconId="fr-icon-award-fill">
-          {mesureFondsVert}
-        </Tag>
-        {anneeMillesime && (
-          <Tag small iconId="fr-icon-calendar-2-line">
-            Édition {anneeMillesime}
-          </Tag>
-        )}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+        <div className="min-w-0 grow">
+          <h1 className="mb-2 text-balance [overflow-wrap:anywhere]">
+            {intitule ?? "N/A"}
+          </h1>
+          <p
+            className="mb-0 text-[var(--text-mention-grey)]"
+            data-testid="project-context"
+          >
+            {context.map((item, index) => (
+              <span key={item}>
+                {index > 0 && <span aria-hidden="true">{" · "}</span>}
+                {item}
+              </span>
+            ))}
+          </p>
+        </div>
+        {actions && <div className="shrink-0 lg:max-w-1/3">{actions}</div>}
       </div>
     </header>
   );
 };
+
+const noticeId = "project-page-notice";
+
+export const ProjectPagesNav = ({
+  links,
+}: {
+  links: {
+    label: string;
+    href: string;
+    current: boolean;
+    notice?: { label: string; severity: "error" | "warning" };
+  }[];
+}) => (
+  <nav
+    aria-label="Pages du projet"
+    className="mt-8 border-b border-[var(--border-default-grey)]"
+  >
+    <ul className="m-0 flex list-none gap-x-2 overflow-x-auto p-0">
+      {links.map((link, index) => (
+        <li key={link.href} className="p-0">
+          <Link
+            href={link.href}
+            aria-current={link.current ? "page" : undefined}
+            aria-describedby={link.notice ? `${noticeId}-${index}` : undefined}
+            className={`
+              flex items-center gap-2 border-b-2 bg-none px-4 py-3 font-medium whitespace-nowrap
+              hover:bg-[var(--background-default-grey-hover)]
+              ${
+                link.current
+                  ? `
+                    border-[var(--border-active-blue-france)] text-[var(--text-active-blue-france)]
+                  `
+                  : "border-transparent text-[var(--text-default-grey)]"
+              }
+            `}
+          >
+            {link.label}
+            {link.notice && (
+              <span aria-hidden="true">
+                <Badge as="span" small noIcon severity={link.notice.severity}>
+                  {link.notice.label}
+                </Badge>
+              </span>
+            )}
+          </Link>
+          {link.notice && (
+            <span id={`${noticeId}-${index}`} className="sr-only">
+              {link.notice.label}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </nav>
+);
 
 function ProjectFact({
   id,

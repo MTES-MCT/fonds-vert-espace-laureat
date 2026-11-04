@@ -97,6 +97,7 @@ export async function DemoDossierPage({
                   financesEJPromise={financesEJPromise}
                   progressTarget={progressTarget}
                   progressApiPath="/api/projets/demo/progress"
+                  anomalies={anomalies}
                   anomaliesSection={
                     <AnomaliesSection
                       anomalies={anomalies}
