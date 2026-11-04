@@ -464,7 +464,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     await page.reload();
     await expect(
       page
-        .getByRole("region", { name: "Avancement du projet" })
+        .getByTestId("project-progress-row")
         .locator(".fr-badge"),
     ).toHaveText(progress);
   }

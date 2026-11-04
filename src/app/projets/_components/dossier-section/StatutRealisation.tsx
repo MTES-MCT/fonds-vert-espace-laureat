@@ -6,7 +6,6 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import Select from "@codegouvfr/react-dsfr/Select";
-import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import {
   type FormEvent,
   useId,
@@ -17,6 +16,7 @@ import {
 } from "react";
 
 import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
+import { FactRow } from "@/components/fact-list/FactList";
 import { successToast } from "@/components/toast/toast";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import {
@@ -173,108 +173,109 @@ export function StatutRealisation({
     }
   };
 
-  const modificationTooltipId = target.updatedAt
-    ? `dossier-progress-date-${instanceId}`
-    : undefined;
-
   return (
-    <section aria-label="Avancement du projet">
-      <div className="flex items-center gap-2">
-        {target.updatedAt ? (
-          <Tooltip
-            id={modificationTooltipId}
-            title={`Dernière modification : ${dateFormatter.format(new Date(target.updatedAt))}`}
+    <FactRow
+      id="project-progress-label"
+      label="Avancement"
+      data-testid="project-progress-row"
+      action={
+        <>
+          <Button
+            ref={openerRef}
+            disabled={!isReady}
+            priority="tertiary no outline"
+            size="small"
+            nativeButtonProps={{
+              ...modal.buttonProps,
+              type: "button",
+              "aria-label": "Modifier l’avancement",
+              onClick: openEditor,
+            }}
           >
-            <DossierProgressBadge status={target.status} />
-          </Tooltip>
-        ) : target.status ? (
-          <DossierProgressBadge status={target.status} />
-        ) : (
-          <Badge as="span" small noIcon>
-            Non renseigné
-          </Badge>
-        )}
-        <Button
-          ref={openerRef}
-          disabled={!isReady}
-          priority="tertiary no outline"
-          size="small"
-          iconId="fr-icon-edit-line"
-          title="Modifier l’avancement"
-          nativeButtonProps={{
-            ...modal.buttonProps,
-            type: "button",
-            "aria-describedby": modificationTooltipId,
-            onClick: openEditor,
-          }}
-        />
-      </div>
-      <modal.Component
-        title={
-          isConfirming ? "Confirmer l’avancement" : "Modifier l’avancement"
-        }
-        size="medium"
-      >
-        <form className="space-y-6" onSubmit={submit}>
-          {isConfirming ? (
-            <p ref={confirmationRef} tabIndex={-1}>
-              Passer l’avancement à « {selectedStatus} » ?
-            </p>
-          ) : (
-            <Select
-              label="Avancement du projet"
-              disabled={isSubmitting}
-              state={error ? "error" : "default"}
-              stateRelatedMessage={
-                error ? <span role="alert">{error}</span> : undefined
-              }
-              nativeSelectProps={{
-                value: selectedStatus,
-                ref: selectRef,
-                onChange: (event) => {
-                  const value = event.target.value;
-                  setSelectedStatus(
-                    isDossierProgressStatus(value) ? value : "",
-                  );
-                  setError(undefined);
-                },
-              }}
-            >
-              <option value="" disabled>
-                Sélectionner un avancement
-              </option>
-              {DOSSIER_PROGRESS_STATUSES.map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </Select>
-          )}
-          <ButtonsGroup
-            alignment="right"
-            inlineLayoutWhen="sm and up"
-            isReverseOrder
-            buttons={[
-              {
-                children: isSubmitting
-                  ? "Enregistrement…"
-                  : isConfirming
-                    ? "Confirmer"
-                    : "Enregistrer",
-                type: "submit",
-                disabled: isSubmitting,
-              },
-              {
-                children: "Annuler",
-                type: "button",
-                priority: "secondary",
-                disabled: isSubmitting,
-                onClick: () => modal.close(),
-              },
-            ]}
-          />
-        </form>
-      </modal.Component>
-    </section>
+            Modifier
+          </Button>
+          <modal.Component
+            title={
+              isConfirming ? "Confirmer l’avancement" : "Modifier l’avancement"
+            }
+            size="medium"
+          >
+            {openedTarget.updatedAt && (
+              <p className="fr-text--sm text-[var(--text-mention-grey)]">
+                Dernière modification :{" "}
+                {dateFormatter.format(new Date(openedTarget.updatedAt))}
+              </p>
+            )}
+            <form className="space-y-6" onSubmit={submit}>
+              {isConfirming ? (
+                <p ref={confirmationRef} tabIndex={-1}>
+                  Passer l’avancement à « {selectedStatus} » ?
+                </p>
+              ) : (
+                <Select
+                  label="Avancement du projet"
+                  disabled={isSubmitting}
+                  state={error ? "error" : "default"}
+                  stateRelatedMessage={
+                    error ? <span role="alert">{error}</span> : undefined
+                  }
+                  nativeSelectProps={{
+                    value: selectedStatus,
+                    ref: selectRef,
+                    onChange: (event) => {
+                      const value = event.target.value;
+                      setSelectedStatus(
+                        isDossierProgressStatus(value) ? value : "",
+                      );
+                      setError(undefined);
+                    },
+                  }}
+                >
+                  <option value="" disabled>
+                    Sélectionner un avancement
+                  </option>
+                  {DOSSIER_PROGRESS_STATUSES.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </Select>
+              )}
+              <ButtonsGroup
+                alignment="right"
+                inlineLayoutWhen="sm and up"
+                isReverseOrder
+                buttons={[
+                  {
+                    children: isSubmitting
+                      ? "Enregistrement…"
+                      : isConfirming
+                        ? "Confirmer"
+                        : "Enregistrer",
+                    type: "submit",
+                    disabled: isSubmitting,
+                  },
+                  {
+                    children: "Annuler",
+                    type: "button",
+                    priority: "secondary",
+                    disabled: isSubmitting,
+                    onClick: () => modal.close(),
+                  },
+                ]}
+              />
+            </form>
+          </modal.Component>
+        </>
+      }
+    >
+      {target.status ? (
+        <DossierProgressBadge status={target.status} />
+      ) : (
+        <Badge as="span" small noIcon>
+          Non renseigné
+        </Badge>
+      )}
+    </FactRow>
   );
 }

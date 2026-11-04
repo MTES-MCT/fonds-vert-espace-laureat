@@ -203,7 +203,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await page.reload();
   await expect(
     page
-      .getByRole("region", { name: "Avancement du projet" })
+      .getByTestId("project-progress-row")
       .locator(".fr-badge")
       .filter({ hasText: /^En cours de réalisation$/ }),
   ).toBeVisible();
@@ -236,9 +236,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   );
   await expect(progressDialog.getByRole("combobox")).toHaveValue("");
   await progressDialog.getByRole("button", { name: "Annuler" }).click();
-  const progressSection = page.getByRole("region", {
-    name: "Avancement du projet",
-  });
+  const progressSection = page.getByTestId("project-progress-row");
   await expect(
     progressSection.locator(".fr-badge").filter({ hasText: /^Non renseigné$/ }),
   ).toBeVisible();
@@ -272,7 +270,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await expect(
     page
-      .getByRole("region", { name: "Avancement du projet" })
+      .getByTestId("project-progress-row")
       .getByText("Non renseigné", { exact: true }),
   ).toBeVisible();
   await page

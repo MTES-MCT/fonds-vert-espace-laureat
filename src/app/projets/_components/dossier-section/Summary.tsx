@@ -1,5 +1,6 @@
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
 import { FactList, FactRow } from "@/components/fact-list/FactList";
@@ -117,6 +118,7 @@ export const ProjectPresentation = ({
   numeroDossierAgenceEau,
   departementImplantation,
   socleCommun,
+  progress,
 }: {
   numeroDossier: number;
   titreDemarche: string;
@@ -125,6 +127,7 @@ export const ProjectPresentation = ({
   numeroDossierAgenceEau?: string;
   departementImplantation?: string;
   socleCommun?: SocleCommun;
+  progress: ReactNode;
 }) => (
   <section aria-labelledby="project-presentation-heading">
     <h3 id="project-presentation-heading" className="fr-h6 mb-3">
@@ -159,6 +162,7 @@ export const ProjectPresentation = ({
           {numeroDossierAgenceEau}
         </FactRow>
       )}
+      {progress}
     </FactList>
   </section>
 );

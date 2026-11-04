@@ -263,55 +263,37 @@ for (const viewport of [
     const identite = synthese.getByRole("region", {
       name: "Identité du porteur de projet",
     });
-    const avancement = synthese.getByRole("region", {
-      name: "Avancement du projet",
-    });
+    const avancement = presentation.getByTestId("project-progress-row");
+    await expect(
+      avancement.getByText("Avancement", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      avancement.getByRole("button", { name: "Modifier l’avancement" }),
+    ).toBeVisible();
+
     const calendrier = synthese.getByRole("region", { name: "Calendrier" });
-    const zones = [presentation, identite, avancement, calendrier];
+    const zones = [presentation, identite, calendrier];
     for (const zone of zones) {
       await expect(zone).toBeVisible();
     }
-    const rectangles = await Promise.all(
-      zones.map((zone) => zone.boundingBox()),
-    );
-    const [
-      presentationBounds,
-      identiteBounds,
-      avancementBounds,
-      calendrierBounds,
-    ] = rectangles;
-    expect(presentationBounds).not.toBeNull();
-    expect(identiteBounds).not.toBeNull();
-    expect(avancementBounds).not.toBeNull();
-    expect(calendrierBounds).not.toBeNull();
-    if (
-      !presentationBounds ||
-      !identiteBounds ||
-      !avancementBounds ||
-      !calendrierBounds
-    ) {
-      throw new Error(
-        "Les quatre zones de la synthèse doivent être affichées.",
-      );
+    const [presentationBounds, identiteBounds, calendrierBounds] =
+      await Promise.all(zones.map((zone) => zone.boundingBox()));
+    if (!presentationBounds || !identiteBounds || !calendrierBounds) {
+      throw new Error("Les trois zones de la synthèse doivent être affichées.");
     }
 
     expect(identiteBounds.y).toBeGreaterThanOrEqual(
       presentationBounds.y + presentationBounds.height,
     );
-    expect(calendrierBounds.y).toBeGreaterThanOrEqual(
-      avancementBounds.y + avancementBounds.height,
-    );
     if (viewport.width === 1440) {
-      for (const colonneDroite of [avancementBounds, calendrierBounds]) {
-        expect(colonneDroite.x).toBeGreaterThanOrEqual(
-          presentationBounds.x + presentationBounds.width,
-        );
-      }
+      expect(calendrierBounds.x).toBeGreaterThanOrEqual(
+        presentationBounds.x + presentationBounds.width,
+      );
       expect(
-        Math.abs(avancementBounds.y - presentationBounds.y),
+        Math.abs(calendrierBounds.y - presentationBounds.y),
       ).toBeLessThanOrEqual(1);
     } else {
-      expect(avancementBounds.y).toBeGreaterThanOrEqual(
+      expect(calendrierBounds.y).toBeGreaterThanOrEqual(
         identiteBounds.y + identiteBounds.height,
       );
       expect(
@@ -2357,7 +2339,7 @@ test("dossier page removes the external impact form and invitation", async ({
   await page.goto(`/projets/${DOSSIER_NUMBER}`);
   await expect(
     page
-      .getByRole("region", { name: "Avancement du projet" })
+      .getByTestId("project-progress-row")
       .getByText("Non renseigné"),
   ).toBeVisible();
   await expect(
@@ -2598,7 +2580,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       synthese.getByRole("region", { name: "Identité du porteur de projet" }),
     ).toBeVisible();
     await expect(
-      synthese.getByRole("region", { name: "Avancement du projet" }),
+      synthese.getByTestId("project-progress-row"),
     ).toBeVisible();
     await expect(
       synthese.getByRole("region", { name: "Calendrier" }),
@@ -2681,7 +2663,6 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     for (const nom of [
       "Présentation du projet",
       "Identité du porteur de projet",
-      "Avancement du projet",
       "Calendrier",
     ]) {
       await expect(synthese.getByRole("region", { name: nom })).toBeVisible();

@@ -150,7 +150,7 @@ test("shares progress saved from the project list between the porteur, instructe
     .filter({ hasText: String(dossierNumber) })
     .getByRole("link", { name: "Ouvrir" })
     .click();
-  const section = page.getByRole("region", { name: "Avancement du projet" });
+  const section = page.getByTestId("project-progress-row");
   await expect(
     section.locator(".fr-badge").filter({ hasText: /^Non renseigné$/ }),
   ).toBeVisible();
@@ -164,20 +164,11 @@ test("shares progress saved from the project list between the porteur, instructe
   const badge = section
     .locator(".fr-badge")
     .filter({ hasText: /^Non-commencé$/ });
-  const modificationDate = section.getByRole("tooltip", {
-    includeHidden: true,
-  });
   await expect(badge).toBeVisible();
-  await expect(modificationDate).toBeHidden();
 
-  await badge.hover();
-  await expect(modificationDate).toBeVisible();
-  await expect(modificationDate).toContainText("Dernière modification");
-
-  await page.getByRole("heading", { level: 1 }).hover();
-  await expect(modificationDate).toBeHidden();
-  await section.getByRole("button", { name: "Modifier l’avancement" }).focus();
-  await expect(modificationDate).toBeVisible();
+  const dialog = await openProgress(page);
+  await expect(dialog.getByText(/^Dernière modification/)).toBeVisible();
+  await dialog.getByRole("button", { name: "Annuler" }).click();
 
   await page.context().clearCookies();
   await authenticatePage(page, { email: INSTRUCTEUR });
@@ -292,7 +283,7 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
     await expect(confirmation).toBeHidden();
     await expect(
       page
-        .getByRole("region", { name: "Avancement du projet" })
+        .getByTestId("project-progress-row")
         .locator(".fr-badge")
         .filter({ hasText: finalStatus }),
     ).toBeVisible();
@@ -406,7 +397,7 @@ test("preserves the opening revision across refresh and replaces an obsolete ent
     confirmed: false,
   });
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  const section = page.getByRole("region", { name: "Avancement du projet" });
+  const section = page.getByTestId("project-progress-row");
   await expect(
     section
       .locator(".fr-badge")
@@ -471,7 +462,7 @@ test("refreshes a newer revision even when its server date has the same millisec
   }
 
   await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-  const section = page.getByRole("region", { name: "Avancement du projet" });
+  const section = page.getByTestId("project-progress-row");
   await expect(section.locator(".fr-badge")).toHaveText("Bloqué");
   const dialog = await openProgress(page);
   await expect(dialog.getByRole("combobox")).toHaveValue("Bloqué");

@@ -119,6 +119,13 @@ export async function DossierSection({
       resume={subvention.resumeProjet}
       numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
       departementImplantation={subvention.departementImplantation}
+      progress={
+        <StatutRealisation
+          dossierNumber={dossierSubvention.numero}
+          initialTarget={progressTarget}
+          correctionApiPath={progressApiPath}
+        />
+      }
       socleCommun={socleCommun}
     />
   );
@@ -252,11 +259,6 @@ export async function DossierSection({
                   )}
                 </div>
                 <div className="min-w-0 space-y-8">
-                  <StatutRealisation
-                    dossierNumber={dossierSubvention.numero}
-                    initialTarget={progressTarget}
-                    correctionApiPath={progressApiPath}
-                  />
                   <Timeline
                     steps={[
                       {
