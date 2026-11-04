@@ -2,7 +2,7 @@
 
 import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 
 import type { ProjectView } from "@/utils/projectView";
 
@@ -16,6 +16,7 @@ const switchLabels: Record<ProjectView, string> = {
 export function ProjectViewSwitch({ view }: { view: ProjectView }) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, startRefresh] = useTransition();
   const [error, setError] = useState<string>();
   const hydrated = useSyncExternalStore(
     subscribe,
@@ -34,7 +35,7 @@ export function ProjectViewSwitch({ view }: { view: ProjectView }) {
         body: JSON.stringify({ view: nextView }),
       });
       if (!response.ok) throw new Error("La vue n’a pas pu être modifiée.");
-      router.refresh();
+      startRefresh(() => router.refresh());
     } catch (caughtError) {
       setError(
         caughtError instanceof Error
@@ -54,7 +55,7 @@ export function ProjectViewSwitch({ view }: { view: ProjectView }) {
           text: switchLabels[view],
           buttonProps: {
             type: "button",
-            disabled: !hydrated || isSaving,
+            disabled: !hydrated || isSaving || isRefreshing,
             onClick: () => void changeView(),
           },
         }}
