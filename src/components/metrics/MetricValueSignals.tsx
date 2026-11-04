@@ -4,7 +4,7 @@ import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStat
 import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
 // Summarizes every Fonds vert signal attached to one displayed value: the most
-// severe category once, then only the ratios that point at this value.
+// severe category once, then the source values to check for a signaled ratio.
 export function MetricValueSignals({
   anomalies,
   corrected,
@@ -17,7 +17,9 @@ export function MetricValueSignals({
   )
     ? "strong-inconsistency"
     : "statistical";
-  const ratios = anomalies.filter((anomaly) => anomaly.metricCodes.length > 1);
+  const sourcesLabels = [
+    ...new Set(anomalies.flatMap((anomaly) => anomaly.sourcesLabel ?? [])),
+  ];
 
   return (
     <div aria-label="Anomalie détectée" role="note" className="space-y-1">
@@ -27,9 +29,9 @@ export function MetricValueSignals({
       >
         {anomalyCategoryLabels[category]}
       </Badge>
-      {ratios.map((ratio) => (
-        <p key={ratio.id} className="mb-0 text-sm">
-          Via le ratio : {ratio.label}
+      {sourcesLabels.map((sourcesLabel) => (
+        <p key={sourcesLabel} className="mb-0 text-sm">
+          À vérifier avec les {sourcesLabel}.
         </p>
       ))}
       {corrected && (

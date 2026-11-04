@@ -141,20 +141,18 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
   const beforeNotes = energy
     .getByRole("group", { name: "Avant travaux", exact: true })
     .getByRole("note", { name: "Anomalie détectée" });
-  await expect(beforeNotes).toHaveCount(1);
-  await expect(beforeNotes).toContainText("Incohérence forte");
-  await expect(beforeNotes).not.toContainText("Anomalie statistique");
-  await expect(beforeNotes).not.toContainText(
-    "Consommation énergétique avant travaux",
-  );
-  await expect(beforeNotes).toContainText(
-    "Via le ratio : Gain énergétique estimé (en %)",
-  );
-  const afterNotes = energy
-    .getByRole("group", { name: "Après travaux", exact: true })
-    .getByRole("note", { name: "Anomalie détectée" });
-  await expect(afterNotes).toHaveText(
-    "Anomalie statistiqueVia le ratio : Gain énergétique estimé (en %)",
+  await expect(beforeNotes).toHaveText("Incohérence forte");
+  await expect(
+    energy
+      .getByRole("group", { name: "Après travaux", exact: true })
+      .getByRole("note", { name: "Anomalie détectée" }),
+  ).toHaveCount(0);
+  await expect(
+    energy
+      .getByRole("group", { name: "Gain énergétique estimé", exact: true })
+      .getByRole("note", { name: "Anomalie détectée" }),
+  ).toHaveText(
+    "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
   );
 
   const others = otherSignals(page);
@@ -305,20 +303,16 @@ test("une panne Fonds vert garde les métriques locales et une seule alerte", as
   await expect(impactValues(page)).toContainText(/100\s*kWh/);
 });
 
-test("un ratio signalé n’apparaît que sur sa valeur source disponible", async ({
+test("un ratio signalé apparaît une seule fois, sur sa propre valeur", async ({
   page,
   msw,
 }, testInfo) => {
   msw.use(
-    fondsVertResponse(
-      {
-        ...noAnomalies,
-        est_anomalie: true,
-        anomalie_indicateur_list: ["Gain énergétique estimé (en %)"],
-      },
-      [],
-      { ...metrics, conso_energetique_apres_travaux: null },
-    ),
+    fondsVertResponse({
+      ...noAnomalies,
+      est_anomalie: true,
+      anomalie_indicateur_list: ["Gain énergétique estimé (en %)"],
+    }),
   );
   await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
 
@@ -328,26 +322,25 @@ test("un ratio signalé n’apparaît que sur sa valeur source disponible", asyn
   await expect(notes).toHaveCount(1);
   await expect(
     impactValues(page)
-      .getByRole("region", {
-        name: "Consommation énergétique avant travaux",
-        exact: true,
-      })
+      .getByRole("group", { name: "Gain énergétique estimé", exact: true })
       .getByRole("note", { name: "Anomalie détectée" }),
-  ).toContainText("Via le ratio : Gain énergétique estimé (en %)");
+  ).toHaveText(
+    "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+  );
   await expect(otherSignals(page)).toHaveCount(0);
 });
 
 for (const [actor, email, correctedValue] of [
-  ["porteur", PORTEUR, 60],
-  ["instructeur", INSTRUCTEUR, 65],
+  ["porteur", PORTEUR, 25],
+  ["instructeur", INSTRUCTEUR, 28],
 ] as const) {
-  test(`${actor === "porteur" ? "le porteur" : "l’instructeur"} corrige la source d’un ratio depuis son signalement et garde le signalement jusqu’à une nouvelle réponse FV`, async ({
+  test(`${actor === "porteur" ? "le porteur" : "l’instructeur"} corrige un ratio signalé sur sa ligne et garde le signalement jusqu’à une nouvelle réponse FV`, async ({
     page,
     msw,
   }, testInfo) => {
     const dossierNumber = 89330260 + testInfo.parallelIndex;
-    const sourceCode = "conso_energetique_apres_travaux";
-    const sourceLabel = "Consommation énergétique après travaux";
+    const sourceCode = "gain_energetique_estime_percentage";
+    const sourceLabel = "Gain énergétique estimé";
     let responseState: "initial" | "recalculated" | "unavailable" = "initial";
     msw.use(
       http.get("http://fondsvert/fonds_vert/v2/dossiers/:number", () => {
@@ -397,26 +390,23 @@ for (const [actor, email, correctedValue] of [
       name: "Consommation énergétique",
       exact: true,
     });
-    const after = energy.getByRole("group", {
-      name: "Après travaux",
+    const gain = energy.getByRole("group", {
+      name: "Gain énergétique estimé",
       exact: true,
     });
-    const opener = after.getByRole("button", { name: "Modifier", exact: true });
-    const afterNotes = after.getByRole("note", { name: "Anomalie détectée" });
-    const correctionNote = after.getByText(
+    const opener = gain.getByRole("button", { name: "Modifier", exact: true });
+    const gainNotes = gain.getByRole("note", { name: "Anomalie détectée" });
+    const correctionNote = gain.getByText(
       "Corrigée, en attente de la prochaine analyse Fonds vert.",
       { exact: true },
     );
-    await expect(afterNotes).toContainText("Gain énergétique estimé (en %)");
+    await expect(gainNotes).toHaveText(
+      "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
+    );
     await expect(correctionNote).toHaveCount(0);
     await expect(
       values.getByRole("button", { name: "Modifier", exact: true }),
     ).toHaveCount(3);
-    await expect(
-      energy
-        .getByRole("group", { name: "Gain énergétique estimé", exact: true })
-        .getByRole("button", { name: "Modifier", exact: true }),
-    ).toBeEnabled();
 
     await page.waitForSelector('[data-fr-js-modal-button="true"]', {
       state: "attached",
@@ -428,7 +418,7 @@ for (const [actor, email, correctedValue] of [
         name: "Modifier la valeur",
         exact: true,
       });
-      await openedDialog.getByLabel(sourceLabel).fill("55");
+      await openedDialog.getByLabel(sourceLabel).fill("12");
       if (closeAction === "Échap") {
         await openedDialog
           .getByRole("button", { name: "Enregistrer", exact: true })
@@ -440,7 +430,7 @@ for (const [actor, email, correctedValue] of [
       }
       await expect(openedDialog).toBeHidden();
       await expect(opener).toBeFocused();
-      await expect(after.getByTestId("valeur-1")).toHaveText("70kWh");
+      await expect(gain.getByTestId("valeur-estimee")).toHaveText("30%");
     }
 
     await opener.focus();
@@ -450,9 +440,7 @@ for (const [actor, email, correctedValue] of [
       exact: true,
     });
     await expect(dialog.getByLabel(sourceLabel)).toBeFocused();
-    await expect(
-      dialog.getByText("Unité : kWh", { exact: true }),
-    ).toBeVisible();
+    await expect(dialog.getByText("Unité : %", { exact: true })).toBeVisible();
     await dialog.getByLabel(sourceLabel).fill(String(correctedValue));
     const saved = page.waitForResponse((response) =>
       response
@@ -465,10 +453,10 @@ for (const [actor, email, correctedValue] of [
     expect((await saved).status()).toBe(200);
     await expect(dialog).toBeHidden();
     await expect(opener).toBeFocused();
-    await expect(after.getByTestId("valeur-1")).toHaveText(
-      `${correctedValue}kWh`,
+    await expect(gain.getByTestId("valeur-estimee")).toHaveText(
+      `${correctedValue}%`,
     );
-    await expect(afterNotes).toBeVisible();
+    await expect(gainNotes).toBeVisible();
     await expect(correctionNote).toBeVisible();
     await expect(impactTab(page)).toHaveAccessibleDescription(
       "2 données à vérifier",
@@ -486,7 +474,7 @@ for (const [actor, email, correctedValue] of [
           date: revision.created_at,
         })),
       ).toEqual([
-        { revision: 1, value: 70, email: null, date: expect.any(Date) },
+        { revision: 1, value: 30, email: null, date: expect.any(Date) },
         { revision: 2, value: correctedValue, email, date: expect.any(Date) },
       ]);
     } finally {
@@ -494,10 +482,10 @@ for (const [actor, email, correctedValue] of [
     }
 
     await page.reload();
-    await expect(after.getByTestId("valeur-1")).toHaveText(
-      `${correctedValue}kWh`,
+    await expect(gain.getByTestId("valeur-estimee")).toHaveText(
+      `${correctedValue}%`,
     );
-    await expect(afterNotes).toBeVisible();
+    await expect(gainNotes).toBeVisible();
     await expect(correctionNote).toBeVisible();
     await expect
       .poll(() =>
@@ -509,11 +497,11 @@ for (const [actor, email, correctedValue] of [
 
     responseState = "recalculated";
     await page.reload();
-    await expect(afterNotes).toHaveCount(0);
+    await expect(gainNotes).toHaveCount(0);
     await expect(correctionNote).toHaveCount(0);
     await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
-    await expect(after.getByTestId("valeur-1")).toHaveText(
-      `${correctedValue}kWh`,
+    await expect(gain.getByTestId("valeur-estimee")).toHaveText(
+      `${correctedValue}%`,
     );
 
     responseState = "unavailable";
@@ -521,8 +509,8 @@ for (const [actor, email, correctedValue] of [
     await expect(page.locator(".fr-alert")).toContainText(
       "Les données Fonds vert sont temporairement indisponibles.",
     );
-    await expect(after.getByTestId("valeur-1")).toHaveText(
-      `${correctedValue}kWh`,
+    await expect(gain.getByTestId("valeur-estimee")).toHaveText(
+      `${correctedValue}%`,
     );
   });
 }

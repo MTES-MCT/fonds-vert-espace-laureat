@@ -30,6 +30,7 @@ const confirmedLabels: {
   label: string;
   themeId: FondsVertAnomalyTheme;
   metricCodes: string[];
+  sourcesLabel?: string;
 }[] = [
   {
     label: "Surface du bâtiment avant projet",
@@ -90,28 +91,26 @@ const confirmedLabels: {
   {
     label: "Gain énergétique estimé (en %)",
     themeId: "energy",
-    metricCodes: [
-      "conso_energetique_avant_travaux",
-      "conso_energetique_apres_travaux",
-    ],
+    metricCodes: ["gain_energetique_estime_percentage"],
+    sourcesLabel: "consommations avant et après travaux",
   },
   {
     label: "Gain énergétique estimé",
     themeId: "energy",
-    metricCodes: [
-      "conso_energetique_avant_travaux",
-      "conso_energetique_apres_travaux",
-    ],
+    metricCodes: ["gain_energetique_estime_percentage"],
+    sourcesLabel: "consommations avant et après travaux",
   },
   {
     label: "Emissions de GES évitées (en %)",
     themeId: "ges",
-    metricCodes: ["emission_ges_avant_travaux", "emission_ges_apres_travaux"],
+    metricCodes: ["emission_ges_evitees_percentage"],
+    sourcesLabel: "émissions de GES avant et après travaux",
   },
   {
     label: "Émissions de GES évitées",
     themeId: "ges",
-    metricCodes: ["emission_ges_avant_travaux", "emission_ges_apres_travaux"],
+    metricCodes: ["emission_ges_evitees_percentage"],
+    sourcesLabel: "émissions de GES avant et après travaux",
   },
   {
     label: "Quantité globale de biodéchets collectés visée (en t/an)",
@@ -125,7 +124,7 @@ const confirmedLabels: {
   },
 ];
 
-for (const { label, themeId, metricCodes } of confirmedLabels) {
+for (const { label, themeId, metricCodes, sourcesLabel } of confirmedLabels) {
   test(`le libellé exact « ${label} » conserve sa provenance et désigne ses codes confirmés`, () => {
     const normalized = normalize({
       ...noSignals,
@@ -145,6 +144,7 @@ for (const { label, themeId, metricCodes } of confirmedLabels) {
         severity: "statistical",
         themeId,
         metricCodes,
+        sourcesLabel,
         provenance: "fonds-vert",
       },
     ]);
@@ -213,10 +213,7 @@ test("la casse n’est pas une normalisation implicite du libellé ou du compteu
     {
       id: "Gain énergétique estimé",
       themeId: "energy",
-      metricCodes: [
-        "conso_energetique_avant_travaux",
-        "conso_energetique_apres_travaux",
-      ],
+      metricCodes: ["gain_energetique_estime_percentage"],
     },
     { id: "gain énergétique estimé", themeId: null, metricCodes: [] },
   ]);
@@ -235,10 +232,10 @@ test("deux libellés distincts d’un ratio comptent deux signalements et leurs 
   expect(normalized.indicatorCount).toBe(2);
   expect(
     normalized.indicators.flatMap((indicator) => indicator.metricCodes),
-  ).toHaveLength(4);
-  expect(
-    normalized.indicators.flatMap((indicator) => indicator.metricCodes),
-  ).not.toContain("gain_energetique_estime_percentage");
+  ).toEqual([
+    "gain_energetique_estime_percentage",
+    "gain_energetique_estime_percentage",
+  ]);
 });
 
 for (const label of [
@@ -482,10 +479,7 @@ test("la normalisation ne modifie ni les sources ni le mapping des appels suivan
   expect(signals).toEqual(before);
   expect(
     normalizeFondsVertAnomalies(signals).indicators[0].metricCodes,
-  ).toEqual([
-    "conso_energetique_avant_travaux",
-    "conso_energetique_apres_travaux",
-  ]);
+  ).toEqual(["gain_energetique_estime_percentage"]);
 });
 
 function metric(label: string, value: MetricValue): MetricFields {
@@ -499,6 +493,8 @@ const availableMetrics: Record<string, MetricFields> = {
   conso_energetique_apres_travaux: metric("Consommation après travaux", 800),
   emission_ges_avant_travaux: metric("Émissions avant travaux", 100),
   emission_ges_apres_travaux: metric("Émissions après travaux", 70),
+  gain_energetique_estime_percentage: metric("Gain énergétique estimé", 33),
+  emission_ges_evitees_percentage: metric("Émissions de GES évitées", 30),
   quantite_globale_annuel_biodechets_collectes: metric(
     "Biodéchets collectés",
     300,
@@ -529,35 +525,36 @@ for (const { label, metricCodes } of confirmedLabels) {
   });
 }
 
-test("un ratio avec une source absente garde un seul signalement et propose seulement l’autre source", () => {
-  const normalized = normalize({
-    ...noSignals,
-    est_anomalie: true,
-    est_error: true,
-    anomalie_indicateur_list: ["Gain énergétique estimé"],
-    error_indicateur_list: ["Gain énergétique estimé"],
-  });
-  const resolved = resolveEditableAnomalyTargets(normalized, {
-    conso_energetique_avant_travaux: metric("Consommation avant travaux", 0),
-  });
+for (const [label, metricCode, sourcesLabel] of [
+  [
+    "Gain énergétique estimé",
+    "gain_energetique_estime_percentage",
+    "consommations avant et après travaux",
+  ],
+  [
+    "Émissions de GES évitées",
+    "emission_ges_evitees_percentage",
+    "émissions de GES avant et après travaux",
+  ],
+] as const) {
+  test(`le ratio « ${label} » signalé désigne sa propre valeur et nomme ses valeurs sources`, () => {
+    const normalized = normalize({
+      ...noSignals,
+      est_anomalie: true,
+      est_error: true,
+      anomalie_indicateur_list: [label],
+      error_indicateur_list: [label],
+    });
 
-  expect(resolved.indicatorCount).toBe(1);
-  expect(resolved.indicators[0]).toMatchObject({
-    categories: ["statistical", "strong-inconsistency"],
-    severity: "strong-inconsistency",
-    metricCodes: [
-      "conso_energetique_avant_travaux",
-      "conso_energetique_apres_travaux",
-    ],
-    editableTargets: [
-      {
-        metricCode: "conso_energetique_avant_travaux",
-        label: "Consommation avant travaux",
-      },
-    ],
-    unavailableMetricCodes: ["conso_energetique_apres_travaux"],
+    expect(normalized.indicatorCount).toBe(1);
+    expect(normalized.indicators[0]).toMatchObject({
+      categories: ["statistical", "strong-inconsistency"],
+      severity: "strong-inconsistency",
+      metricCodes: [metricCode],
+      sourcesLabel,
+    });
   });
-});
+}
 
 test("un ratio sans métrique disponible reste lisible sans lien inventé", () => {
   const normalized = normalize({
@@ -571,10 +568,7 @@ test("un ratio sans métrique disponible reste lisible sans lien inventé", () =
     expect(resolved.indicators[0]).toMatchObject({
       label: "Émissions de GES évitées",
       editableTargets: [],
-      unavailableMetricCodes: [
-        "emission_ges_avant_travaux",
-        "emission_ges_apres_travaux",
-      ],
+      unavailableMetricCodes: ["emission_ges_evitees_percentage"],
     });
     expect(resolved.hasNoSignals).toBe(false);
   }
@@ -728,7 +722,7 @@ for (const label of [
   });
 }
 
-test("les sources d’un ratio n’enlèvent pas les pourcentages existants ni les autres métriques", () => {
+test("un ratio signalé désigne son pourcentage existant sans modifier les autres métriques", () => {
   const normalized = normalize({
     ...noSignals,
     est_anomalie: true,
@@ -753,10 +747,8 @@ test("les sources d’un ratio n’enlèvent pas les pourcentages existants ni l
       indicator.editableTargets.map((target) => target.metricCode),
     ),
   ).toEqual([
-    "conso_energetique_avant_travaux",
-    "conso_energetique_apres_travaux",
-    "emission_ges_avant_travaux",
-    "emission_ges_apres_travaux",
+    "gain_energetique_estime_percentage",
+    "emission_ges_evitees_percentage",
   ]);
   expect(metrics).toEqual(before);
   expect(metrics.gain_energetique_estime_percentage.valeur_estimee).toBe(33);
