@@ -185,14 +185,8 @@ for (const [email, listTitle] of [
     });
     await expect(synthese.getByRole("heading", { level: 3 })).toHaveText(
       email === PORTEUR
-        ? [
-            "Présentation du projet",
-            "Identité du porteur de projet",
-          ]
-        : [
-            "Identité du porteur de projet",
-            "Présentation du projet",
-          ],
+        ? ["Présentation du projet", "Identité du porteur de projet"]
+        : ["Identité du porteur de projet", "Présentation du projet"],
     );
     const projectPages = page
       .getByRole("navigation", { name: "Pages du projet" })
@@ -461,9 +455,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     await expect(progressDialog).toBeHidden();
     await page.reload();
     await expect(
-      page
-        .getByTestId("project-progress-row")
-        .locator(".fr-badge"),
+      page.getByTestId("project-progress-row").locator(".fr-badge"),
     ).toHaveText(progress);
   }
 

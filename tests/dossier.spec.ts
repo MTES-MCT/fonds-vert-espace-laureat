@@ -2338,9 +2338,7 @@ test("dossier page removes the external impact form and invitation", async ({
 }) => {
   await page.goto(`/projets/${DOSSIER_NUMBER}`);
   await expect(
-    page
-      .getByTestId("project-progress-row")
-      .getByText("Non renseigné"),
+    page.getByTestId("project-progress-row").getByText("Non renseigné"),
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Mettre à jour les données" }),
@@ -2582,9 +2580,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     await expect(
       synthese.getByRole("region", { name: "Identité du porteur de projet" }),
     ).toBeVisible();
-    await expect(
-      synthese.getByTestId("project-progress-row"),
-    ).toBeVisible();
+    await expect(synthese.getByTestId("project-progress-row")).toBeVisible();
     await expect(
       page.getByRole("region", { name: "Calendrier" }),
     ).toBeVisible();
@@ -2665,8 +2661,18 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     for (const [onglet, chemin, titre, capture] of [
       ["Synthèse du projet", cheminProjet, "Synthèse du projet", "synthese"],
-      ["Données d’impact", `${cheminProjet}/impact`, "Données d’impact", "impact"],
-      ["Financement", cheminFinancement, "Financement du projet", "financement"],
+      [
+        "Données d’impact",
+        `${cheminProjet}/impact`,
+        "Données d’impact",
+        "impact",
+      ],
+      [
+        "Financement",
+        cheminFinancement,
+        "Financement du projet",
+        "financement",
+      ],
     ] as const) {
       await navigation.getByRole("link", { name: onglet, exact: true }).click();
       await expect(page).toHaveURL(chemin);
