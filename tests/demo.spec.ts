@@ -1,4 +1,8 @@
-import { expect, test } from "next/experimental/testmode/playwright/msw";
+import {
+  expect,
+  type Page,
+  test,
+} from "next/experimental/testmode/playwright/msw";
 
 import { resetDemoDossierMetrics } from "@/db/demoMetrics";
 import {
@@ -10,6 +14,15 @@ import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
 import { createTestDatabaseClient } from "./setup/db";
 
 test.describe.configure({ mode: "default" });
+
+const CORRECTION_NOTE =
+  "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.";
+
+function impactTab(page: Page) {
+  return page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Données d’impact", exact: true });
+}
 
 test("demo page loads, corrects and persists its database-backed metrics", async ({
   page,
@@ -25,37 +38,12 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     state: "attached",
   });
 
-  const anomaliesSection = page.getByRole("region", {
-    name: "Données à vérifier",
-  });
-
-  await expect(anomaliesSection).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Consommation énergétique avant travaux",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Gain énergétique estimé (en %)",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await expect(
-    anomaliesSection.getByRole("heading", {
-      name: "Émissions de GES avant travaux",
-      exact: true,
-    }),
-  ).toBeVisible();
-  await expect(
-    anomaliesSection.getByText("Incohérence forte", { exact: true }),
-  ).toBeVisible();
-  await expect(anomaliesSection.getByRole("button")).toHaveCount(0);
-  await expect(anomaliesSection.getByTestId("impact-section")).toHaveCount(0);
+    page.getByRole("region", { name: "Signalements Fonds vert" }),
+  ).toHaveCount(0);
 
   const impactSection = page.getByTestId("impact-section");
   const energyMetrics = impactSection.getByRole("region", {
@@ -130,17 +118,18 @@ test("demo page loads, corrects and persists its database-backed metrics", async
       hasText: "Correction enregistrée",
     }),
   ).toBeVisible();
-  await expect(anomaliesSection.getByRole("status")).toHaveCount(0);
-  await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés"),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(
     impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
   await expect(energyBeforeAnomaly).toHaveCount(2);
-  await expect(anomaliesSection.getByRole("note")).toContainText(
-    "Le recalcul des signalements par Fonds vert est différé",
-  );
+  await expect(
+    energyMetrics
+      .getByRole("group", { name: "Avant travaux" })
+      .getByText(CORRECTION_NOTE, { exact: true }),
+  ).toBeVisible();
 
   const sql = createTestDatabaseClient();
   try {
@@ -157,9 +146,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   }
 
   await page.reload();
-  await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés"),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(
     impactSection.getByRole("region", { name: "Consommation énergétique" }),
   ).toContainText(/1\s*900\s*000,5/);
@@ -177,9 +166,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(dialog).toBeHidden();
   await expect(anomaly.getByText("420kgCO₂e")).toBeVisible();
   await expect(gesBeforeAnomaly).toContainText("Incohérence forte");
-  await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés"),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(gesBeforeAnomaly).toContainText(
     "Émissions de GES avant travaux",
   );
@@ -290,9 +279,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("navigation", { name: "Pages du projet" })
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
-  await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés"),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(
     impactSection.getByText(/2\s*055\s*650\s*kWh/).first(),
   ).toBeVisible();
@@ -300,9 +289,9 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(energyBeforeAnomaly).toHaveCount(2);
 
   await page.reload();
-  await expect(
-    anomaliesSection.getByLabel("3 indicateurs signalés"),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
@@ -365,27 +354,18 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
 
-  const signals = page.getByRole("region", { name: "Données à vérifier" });
   const before = page
     .getByTestId("impact-section")
     .getByRole("region", { name: "Consommation énergétique", exact: true })
     .getByRole("group", { name: "Avant travaux", exact: true });
-  await signals
-    .getByRole("region", {
-      name: "Gain énergétique estimé (en %)",
-      exact: true,
-    })
-    .getByRole("link", {
-      name: "Vérifier Consommation énergétique avant travaux",
-      exact: true,
-    })
-    .click();
   const modifier = before.getByRole("button", {
     name: "Modifier",
     exact: true,
   });
-  await expect(modifier).toBeFocused();
-  await modifier.press("Enter");
+  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
+    state: "attached",
+  });
+  await modifier.click();
   const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog
     .getByLabel("Consommation énergétique avant travaux")
@@ -395,14 +375,16 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     .click();
   await expect(dialog).toBeHidden();
   await expect(modifier).toBeFocused();
-  await expect(signals.getByLabel("3 indicateurs signalés")).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
   await expect(
     before.getByRole("note", { name: "Anomalie détectée" }),
   ).toHaveCount(2);
   await page.reload();
-  await expect(signals.getByRole("note")).toContainText(
-    "Le recalcul des signalements par Fonds vert est différé",
-  );
+  await expect(
+    before.getByText(CORRECTION_NOTE, { exact: true }),
+  ).toBeVisible();
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /2\s*000\s*000\s*kWh/,
   );
@@ -414,9 +396,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(page).toHaveURL(
     /\/projets\/demo\/impact\?fondsVert=recalculated$/,
   );
-  await expect(
-    signals.getByText("Aucun signalement", { exact: true }),
-  ).toBeVisible();
+  await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
   await expect(
     before.getByRole("note", { name: "Anomalie détectée" }),
   ).toHaveCount(0);
@@ -439,15 +419,9 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(source).toHaveValue("recalculated");
 
   await source.selectOption("unavailable");
-  await expect(
-    signals.getByText("Signalements indisponibles", { exact: true }),
-  ).toBeVisible();
-  await expect(signals.locator(".fr-alert")).toContainText(
+  await expect(page.locator(".fr-alert")).toContainText(
     "Les valeurs déjà enregistrées restent consultables",
   );
-  await expect(
-    signals.getByText("Aucun signalement", { exact: true }),
-  ).toHaveCount(0);
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /2\s*000\s*000\s*kWh/,
   );
@@ -458,8 +432,12 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   ]);
   await expect(page).toHaveURL(/\/projets\/demo\/impact$/);
   await expect(source).toHaveValue("initial");
-  await expect(signals.getByLabel("3 indicateurs signalés")).toBeVisible();
-  await expect(signals.getByRole("note")).toHaveCount(0);
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "3 données à vérifier",
+  );
+  await expect(before.getByText(CORRECTION_NOTE, { exact: true })).toHaveCount(
+    0,
+  );
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /2\s*055\s*650\s*kWh/,
   );
@@ -574,9 +552,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
     authorEmail: null,
   });
   await source.selectOption("recalculated");
-  await expect(
-    page.getByText("Aucun signalement", { exact: true }),
-  ).toBeVisible();
+  await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /1\s*700\s*000\s*kWh/,
   );

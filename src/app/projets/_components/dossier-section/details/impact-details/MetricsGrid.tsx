@@ -68,12 +68,27 @@ function indexRelatedMetrics(metrics: Record<string, ProcessedMetric>) {
   return { relatedMetricsByParentLabel, relatedMetricCodes };
 }
 
-const MetricAnomalyNotices = ({ anomalies }: { anomalies?: MetricAnomaly[] }) =>
-  anomalies?.map((anomaly) => (
-    <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
-      <MetricAnomalyMessage anomaly={anomaly} />
-    </div>
-  ));
+const MetricAnomalyNotices = ({
+  anomalies,
+  corrected,
+}: {
+  anomalies: MetricAnomaly[];
+  corrected: boolean;
+}) => (
+  <div className="col-span-full mt-3 space-y-3">
+    {anomalies.map((anomaly) => (
+      <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
+        <MetricAnomalyMessage anomaly={anomaly} />
+      </div>
+    ))}
+    {corrected && (
+      <p className="mb-0 text-sm text-[var(--text-mention-grey)]">
+        Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine
+        analyse de Fonds vert.
+      </p>
+    )}
+  </div>
+);
 
 const MetricCard = ({ children }: { children: ReactNode }) => (
   <div
@@ -118,9 +133,10 @@ const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
           </div>
         )}
         {anomalies?.length ? (
-          <div className="col-span-full mt-3 space-y-3">
-            <MetricAnomalyNotices anomalies={anomalies} />
-          </div>
+          <MetricAnomalyNotices
+            anomalies={anomalies}
+            corrected={(target?.revision ?? 1) > 1}
+          />
         ) : null}
       </MetricCard>
     </section>
@@ -219,11 +235,10 @@ const AvantApresTravauxRows = ({
                 </div>
               )}
               {anomaliesByMetricCode[metricCode]?.length ? (
-                <div className="col-span-full mt-3 space-y-3">
-                  <MetricAnomalyNotices
-                    anomalies={anomaliesByMetricCode[metricCode]}
-                  />
-                </div>
+                <MetricAnomalyNotices
+                  anomalies={anomaliesByMetricCode[metricCode]}
+                  corrected={(target?.revision ?? 1) > 1}
+                />
               ) : null}
             </MetricCard>
           </div>

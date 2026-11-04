@@ -3,6 +3,7 @@ import {
   graphql,
   http,
   HttpResponse,
+  type Page,
   test,
 } from "next/experimental/testmode/playwright/msw";
 
@@ -61,6 +62,23 @@ function fondsVertResponse(
   );
 }
 
+function impactValues(page: Page) {
+  return page.getByTestId("impact-section");
+}
+
+function otherSignals(page: Page) {
+  return page.getByRole("region", {
+    name: "Signalements Fonds vert",
+    exact: true,
+  });
+}
+
+function impactTab(page: Page) {
+  return page
+    .getByRole("navigation", { name: "Pages du projet" })
+    .getByRole("link", { name: "Données d’impact", exact: true });
+}
+
 test.beforeEach(async ({ page, msw }, testInfo) => {
   const dossierNumber = 89330260 + testInfo.parallelIndex;
   await deleteStoredDossierMetrics(dossierNumber);
@@ -86,7 +104,7 @@ test.afterEach(async ({}, testInfo) => {
   await deleteStoredDossierMetrics(89330260 + testInfo.parallelIndex);
 });
 
-test("la page Impact compte les indicateurs une fois et conserve leurs catégories, inconnus, contexte et avertissements", async ({
+test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux sans valeur avec le contexte et les avertissements", async ({
   page,
   msw,
 }, testInfo) => {
@@ -111,109 +129,96 @@ test("la page Impact compte les indicateurs une fois et conserve leurs catégori
     ),
   );
   await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-  const signals = page.getByRole("region", {
-    name: "Données à vérifier",
-    exact: true,
-  });
-  await expect(
-    signals.getByLabel("4 indicateurs signalés", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals
-      .getByRole("list", { name: "Indicateurs signalés" })
-      .getByRole("region"),
-  ).toHaveCount(4);
 
-  const consumption = signals.getByRole("region", {
-    name: "Consommation énergétique avant travaux",
-    exact: true,
-  });
-  await expect(
-    consumption.getByText("Anomalie statistique", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    consumption.getByText("Incohérence forte", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals.getByRole("heading", {
-      name: "Gain énergétique estimé (en %)",
-      exact: true,
-    }),
-  ).toBeVisible();
+  await expect(impactTab(page)).toHaveAccessibleDescription(
+    "4 données à vérifier",
+  );
 
-  const unknown = signals.getByRole("region", {
-    name: "Indicateur composite inconnu, à conserver",
+  const energy = impactValues(page).getByRole("region", {
+    name: "Consommation énergétique",
     exact: true,
   });
+  const beforeNotes = energy
+    .getByRole("group", { name: "Avant travaux", exact: true })
+    .getByRole("note", { name: "Anomalie détectée" });
+  await expect(beforeNotes).toHaveCount(2);
+  await expect(beforeNotes.nth(0)).toContainText("Anomalie statistique");
+  await expect(beforeNotes.nth(0)).toContainText("Incohérence forte");
+  await expect(beforeNotes.nth(0)).toContainText(
+    "Consommation énergétique avant travaux",
+  );
+  await expect(beforeNotes.nth(1)).toContainText(
+    "Gain énergétique estimé (en %)",
+  );
   await expect(
-    unknown.getByText(
-      "Aucune valeur modifiable n’est disponible pour ce signalement.",
-      { exact: true },
-    ),
+    energy
+      .getByRole("group", { name: "Après travaux", exact: true })
+      .getByRole("note", { name: "Anomalie détectée" }),
+  ).toContainText("Gain énergétique estimé (en %)");
+
+  const others = otherSignals(page);
+  await expect(
+    others
+      .getByRole("list", { name: "Signalements sans valeur affichée" })
+      .getByRole("listitem"),
+  ).toHaveText([
+    /Indicateur composite inconnu, à conserver/,
+    /Surface du batiment après le projet\. Donnée non disponible en 2024/,
+  ]);
+  await expect(others).not.toContainText(
+    "Consommation énergétique avant travaux",
+  );
+  await expect(
+    others.getByText("Démarche complémentaire", { exact: true }),
   ).toBeVisible();
-  const absentValue = signals.getByRole("region", {
-    name: "Surface du batiment après le projet. Donnée non disponible en 2024",
-    exact: true,
-  });
   await expect(
-    absentValue.getByText(
-      "Aucune valeur modifiable n’est disponible pour ce signalement.",
-      { exact: true },
-    ),
+    others.getByText("Vérifier le périmètre de calcul", { exact: true }),
   ).toBeVisible();
   await expect(
-    signals.getByText("Démarche complémentaire", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals.getByText("Vérifier le périmètre de calcul", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals.getByText("Libellé partenaire conservé", { exact: true }),
-  ).toBeVisible();
-  await expect(signals.getByTestId("impact-section")).toHaveCount(0);
-  await expect(page.getByTestId("impact-section")).toHaveCount(1);
-  await expect(
-    page.getByRole("heading", { level: 3, name: "Énergie", exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", {
-      level: 4,
-      name: "Consommation énergétique",
-      exact: true,
-    }),
+    others.getByText("Libellé partenaire conservé", { exact: true }),
   ).toBeVisible();
 });
 
-test("une réponse complète sans signalement reste distincte des avertissements", async ({
+test("une réponse complète sans signalement n’affiche que ses avertissements", async ({
   page,
   msw,
 }, testInfo) => {
   msw.use(fondsVertResponse(noAnomalies, ["Contrôler les pièces sources"]));
   await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-  const signals = page.getByRole("region", {
-    name: "Données à vérifier",
-    exact: true,
-  });
+
+  const others = otherSignals(page);
   await expect(
-    signals.getByText("Aucun signalement", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals.getByRole("heading", {
+    others.getByRole("heading", {
       name: "Avertissements Fonds vert",
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    signals.getByText("Contrôler les pièces sources", { exact: true }),
+    others.getByText("Contrôler les pièces sources", { exact: true }),
   ).toBeVisible();
   await expect(
-    signals.getByRole("list", { name: "Indicateurs signalés" }),
+    others.getByRole("list", { name: "Signalements sans valeur affichée" }),
   ).toHaveCount(0);
+
+  await expect(
+    impactValues(page).getByRole("note", { name: "Anomalie détectée" }),
+  ).toHaveCount(0);
+  await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
 });
 
 for (const [situation, anomalies, expectedState, hasLabel] of [
-  ["absente", undefined, "Signalements non renseignés", false],
-  ["nulle", null, "Signalements non renseignés", false],
+  [
+    "absente",
+    undefined,
+    "Fonds vert n’a pas renseigné les signalements de ce projet.",
+    false,
+  ],
+  [
+    "nulle",
+    null,
+    "Fonds vert n’a pas renseigné les signalements de ce projet.",
+    false,
+  ],
   [
     "partielle",
     {
@@ -234,34 +239,23 @@ for (const [situation, anomalies, expectedState, hasLabel] of [
     true,
   ],
 ] as const) {
-  test(`une réponse ${situation} ne devient pas une absence de signalement`, async ({
+  test(`une réponse ${situation} est expliquée sans devenir une absence de signalement`, async ({
     page,
     msw,
   }, testInfo) => {
     msw.use(fondsVertResponse(anomalies));
     await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-    const signals = page.getByRole("region", {
-      name: "Données à vérifier",
-      exact: true,
-    });
+
+    const others = otherSignals(page);
     await expect(
-      signals.getByText("Aucun signalement", { exact: true }),
-    ).toHaveCount(0);
-    await expect(
-      signals.getByLabel("0 indicateurs signalés", { exact: true }),
-    ).toHaveCount(0);
+      others.getByText(expectedState, { exact: true }),
+    ).toBeVisible();
     if (hasLabel) {
       await expect(
-        signals.getByRole("heading", {
-          name: "Indicateur partenaire à conserver",
-          exact: true,
-        }),
+        others.getByText("Indicateur partenaire à conserver", { exact: true }),
       ).toBeVisible();
     }
-    await expect(
-      signals.getByText(expectedState, { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByTestId("impact-section")).toBeVisible();
+    await expect(impactValues(page)).toBeVisible();
   });
 }
 
@@ -277,27 +271,19 @@ test("un signalement global sans indicateur reste visible sans compteur trompeur
     }),
   );
   await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-  const signals = page.getByRole("region", {
-    name: "Données à vérifier",
-    exact: true,
-  });
+
+  const others = otherSignals(page);
   await expect(
-    signals.getByText("Signalement à préciser", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    signals.getByText("Incohérence forte sans indicateur précisé.", {
+    others.getByText("Incohérence forte sans indicateur précisé.", {
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    signals.getByText("Démarche signalée", { exact: true }),
+    others.getByText("Démarche signalée", { exact: true }),
   ).toBeVisible();
-  await expect(
-    signals.getByText("Aucun signalement", { exact: true }),
-  ).toHaveCount(0);
 });
 
-test("une panne Fonds vert garde les métriques locales et un état indisponible sans double alerte", async ({
+test("une panne Fonds vert garde les métriques locales et une seule alerte", async ({
   page,
   msw,
 }, testInfo) => {
@@ -309,24 +295,16 @@ test("une panne Fonds vert garde les métriques locales et un état indisponible
     ),
   );
   await page.goto(`/projets/${dossierNumber}/impact`);
-  const signals = page.getByRole("region", {
-    name: "Données à vérifier",
-    exact: true,
-  });
-  await expect(
-    signals.getByText("Signalements indisponibles", { exact: true }),
-  ).toBeVisible();
+
   await expect(page.locator(".fr-alert")).toHaveCount(1);
-  await expect(signals.getByRole("alert")).toContainText(
+  await expect(page.locator(".fr-alert")).toContainText(
     "Les valeurs déjà enregistrées restent consultables.",
   );
-  await expect(
-    signals.getByText("Aucun signalement", { exact: true }),
-  ).toHaveCount(0);
-  await expect(page.getByTestId("impact-section")).toContainText(/100\s*kWh/);
+  await expect(otherSignals(page)).toHaveCount(0);
+  await expect(impactValues(page)).toContainText(/100\s*kWh/);
 });
 
-test("un ratio ne propose que sa valeur source disponible", async ({
+test("un ratio signalé n’apparaît que sur sa valeur source disponible", async ({
   page,
   msw,
 }, testInfo) => {
@@ -342,120 +320,20 @@ test("un ratio ne propose que sa valeur source disponible", async ({
     ),
   );
   await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-  const ratio = page.getByRole("region", {
-    name: "Gain énergétique estimé (en %)",
-    exact: true,
+
+  const notes = impactValues(page).getByRole("note", {
+    name: "Anomalie détectée",
   });
-  await expect(ratio.getByRole("link")).toHaveCount(1);
+  await expect(notes).toHaveCount(1);
   await expect(
-    ratio.getByRole("link", {
-      name: "Vérifier Consommation énergétique après travaux",
-      exact: true,
-    }),
-  ).toHaveCount(0);
-  await expect(
-    ratio.getByText("Certaines valeurs sources ne sont pas disponibles.", {
-      exact: true,
-    }),
-  ).toBeVisible();
-  await ratio
-    .getByRole("link", {
-      name: "Vérifier Consommation énergétique avant travaux",
-      exact: true,
-    })
-    .press("Enter");
-  await expect(
-    page
-      .getByTestId("impact-section")
+    impactValues(page)
       .getByRole("region", {
         name: "Consommation énergétique avant travaux",
         exact: true,
       })
-      .getByRole("button", { name: "Modifier", exact: true }),
-  ).toBeFocused();
-});
-
-test("le porteur suit un signalement avant que son éditeur soit utilisable sans perdre son choix de focus", async ({
-  page,
-  msw,
-}, testInfo) => {
-  msw.use(
-    fondsVertResponse({
-      ...noAnomalies,
-      est_anomalie: true,
-      anomalie_indicateur_list: ["Gain énergétique estimé (en %)"],
-    }),
-  );
-  await page.goto(`/projets/${89330260 + testInfo.parallelIndex}/impact`);
-  const ratio = page.getByRole("region", {
-    name: "Gain énergétique estimé (en %)",
-    exact: true,
-  });
-  const beforeLink = ratio.getByRole("link", {
-    name: "Vérifier Consommation énergétique avant travaux",
-    exact: true,
-  });
-  const afterLink = ratio.getByRole("link", {
-    name: "Vérifier Consommation énergétique après travaux",
-    exact: true,
-  });
-  const before = page
-    .getByTestId("impact-section")
-    .getByRole("region", { name: "Consommation énergétique", exact: true })
-    .getByRole("group", { name: "Avant travaux", exact: true })
-    .getByRole("button", { name: "Modifier", exact: true });
-  await expect(before).toBeEnabled();
-  const anchor = page.locator("#metric-editor-conso_energetique_avant_travaux");
-
-  // Hold the existing control in the unavailable state observed before hydration.
-  await before.evaluate((button: HTMLButtonElement) => {
-    button.disabled = true;
-    button.removeAttribute("data-fr-js-modal-button");
-  });
-  await beforeLink.press("Enter");
-  await expect(page).toHaveURL(
-    /#metric-editor-conso_energetique_avant_travaux$/,
-  );
-  await expect(before).toBeDisabled();
-  await expect(anchor).toBeFocused();
-  await before.evaluate((button: HTMLButtonElement) => {
-    button.disabled = false;
-  });
-  await expect(anchor).toBeFocused();
-  await before.evaluate((button: HTMLButtonElement) => {
-    button.setAttribute("data-fr-js-modal-button", "true");
-  });
-  await expect(before).toBeFocused();
-  await before.press("Enter");
-  const dialog = page.getByRole("dialog", {
-    name: "Modifier la valeur",
-    exact: true,
-  });
-  await expect(
-    dialog.getByLabel("Consommation énergétique avant travaux"),
-  ).toBeFocused();
-  await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
-  await expect(before).toBeFocused();
-
-  await before.evaluate((button: HTMLButtonElement) => {
-    button.disabled = true;
-  });
-  await beforeLink.press("Enter");
-  await expect(anchor).toBeFocused();
-  await anchor.press("Shift+Tab");
-  await expect(afterLink).toBeFocused();
-  await before.evaluate((button: HTMLButtonElement) => {
-    button.disabled = false;
-  });
-  await expect(afterLink).toBeFocused();
-  await afterLink.press("Enter");
-  await expect(
-    page
-      .getByTestId("impact-section")
-      .getByRole("region", { name: "Consommation énergétique", exact: true })
-      .getByRole("group", { name: "Après travaux", exact: true })
-      .getByRole("button", { name: "Modifier", exact: true }),
-  ).toBeFocused();
+      .getByRole("note", { name: "Anomalie détectée" }),
+  ).toContainText("Gain énergétique estimé (en %)");
+  await expect(otherSignals(page)).toHaveCount(0);
 });
 
 for (const [actor, email, correctedValue] of [
@@ -503,34 +381,17 @@ for (const [actor, email, correctedValue] of [
       await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/projets/${dossierNumber}/impact`);
 
-    const signals = page.getByRole("region", {
-      name: "Données à vérifier",
-      exact: true,
-    });
-    const ratio = signals.getByRole("region", {
-      name: "Gain énergétique estimé (en %)",
-      exact: true,
-    });
+    await expect(impactTab(page)).toHaveAccessibleDescription(
+      "2 données à vérifier",
+    );
     await expect(
-      signals.getByLabel("2 indicateurs signalés", { exact: true }),
+      otherSignals(page).getByText(
+        "Signalement partenaire sans correspondance",
+        { exact: true },
+      ),
     ).toBeVisible();
-    await expect(ratio.getByRole("link")).toHaveCount(2);
-    await expect(
-      ratio.getByRole("link", {
-        name: "Vérifier Gain énergétique estimé",
-        exact: true,
-      }),
-    ).toHaveCount(0);
-    await expect(
-      signals
-        .getByRole("region", {
-          name: "Signalement partenaire sans correspondance",
-          exact: true,
-        })
-        .getByRole("link"),
-    ).toHaveCount(0);
 
-    const values = page.getByTestId("impact-section");
+    const values = impactValues(page);
     const energy = values.getByRole("region", {
       name: "Consommation énergétique",
       exact: true,
@@ -540,6 +401,13 @@ for (const [actor, email, correctedValue] of [
       exact: true,
     });
     const opener = after.getByRole("button", { name: "Modifier", exact: true });
+    const afterNotes = after.getByRole("note", { name: "Anomalie détectée" });
+    const correctionNote = after.getByText(
+      "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.",
+      { exact: true },
+    );
+    await expect(afterNotes).toContainText("Gain énergétique estimé (en %)");
+    await expect(correctionNote).toHaveCount(0);
     await expect(
       values.getByRole("button", { name: "Modifier", exact: true }),
     ).toHaveCount(3);
@@ -549,13 +417,11 @@ for (const [actor, email, correctedValue] of [
         .getByRole("button", { name: "Modifier", exact: true }),
     ).toBeEnabled();
 
-    const sourceLink = ratio.getByRole("link", {
-      name: `Vérifier ${sourceLabel}`,
-      exact: true,
+    await page.waitForSelector('[data-fr-js-modal-button="true"]', {
+      state: "attached",
     });
     for (const closeAction of ["Annuler", "Fermer", "Échap"] as const) {
-      await sourceLink.press("Enter");
-      await expect(opener).toBeFocused();
+      await opener.focus();
       await opener.press("Enter");
       const openedDialog = page.getByRole("dialog", {
         name: "Modifier la valeur",
@@ -576,8 +442,7 @@ for (const [actor, email, correctedValue] of [
       await expect(after.getByTestId("valeur-1")).toHaveText("70kWh");
     }
 
-    await sourceLink.press("Enter");
-    await expect(opener).toBeFocused();
+    await opener.focus();
     await opener.press("Enter");
     const dialog = page.getByRole("dialog", {
       name: "Modifier la valeur",
@@ -602,11 +467,10 @@ for (const [actor, email, correctedValue] of [
     await expect(after.getByTestId("valeur-1")).toHaveText(
       `${correctedValue}kWh`,
     );
-    await expect(
-      signals.getByLabel("2 indicateurs signalés", { exact: true }),
-    ).toBeVisible();
-    await expect(signals.getByRole("note")).toHaveText(
-      "Des corrections sont enregistrées localement. Le recalcul des signalements par Fonds vert est différé.",
+    await expect(afterNotes).toBeVisible();
+    await expect(correctionNote).toBeVisible();
+    await expect(impactTab(page)).toHaveAccessibleDescription(
+      "2 données à vérifier",
     );
 
     const sql = createTestDatabaseClient();
@@ -632,10 +496,8 @@ for (const [actor, email, correctedValue] of [
     await expect(after.getByTestId("valeur-1")).toHaveText(
       `${correctedValue}kWh`,
     );
-    await expect(
-      signals.getByLabel("2 indicateurs signalés", { exact: true }),
-    ).toBeVisible();
-    await expect(signals.getByRole("note")).toBeVisible();
+    await expect(afterNotes).toBeVisible();
+    await expect(correctionNote).toBeVisible();
     await expect
       .poll(() =>
         page.evaluate(
@@ -646,22 +508,18 @@ for (const [actor, email, correctedValue] of [
 
     responseState = "recalculated";
     await page.reload();
-    await expect(
-      signals.getByText("Aucun signalement", { exact: true }),
-    ).toBeVisible();
-    await expect(signals.getByRole("note")).toHaveCount(0);
+    await expect(afterNotes).toHaveCount(0);
+    await expect(correctionNote).toHaveCount(0);
+    await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
     await expect(after.getByTestId("valeur-1")).toHaveText(
       `${correctedValue}kWh`,
     );
 
     responseState = "unavailable";
     await page.reload();
-    await expect(
-      signals.getByText("Signalements indisponibles", { exact: true }),
-    ).toBeVisible();
-    await expect(
-      signals.getByText("Aucun signalement", { exact: true }),
-    ).toHaveCount(0);
+    await expect(page.locator(".fr-alert")).toContainText(
+      "Les données Fonds vert sont temporairement indisponibles.",
+    );
     await expect(after.getByTestId("valeur-1")).toHaveText(
       `${correctedValue}kWh`,
     );

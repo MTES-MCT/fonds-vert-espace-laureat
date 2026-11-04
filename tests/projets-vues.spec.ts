@@ -266,21 +266,16 @@ for (const [email, listTitle, projectContext] of [
     await expect(page).toHaveURL(
       `/projets/${dossierNumber}/impact#signalements`,
     );
-    const anomalies = page.getByRole("region", {
-      name: "Données à vérifier",
-      exact: true,
-    });
-    await anomalies
-      .getByRole("link", { name: `Vérifier ${METRIC_LABEL}`, exact: true })
-      .press("Enter");
     const metric = page
       .getByTestId("impact-section")
       .getByRole("region", { name: METRIC_LABEL, exact: true });
+    await expect(
+      metric.getByRole("note", { name: "Anomalie détectée" }),
+    ).toContainText("Incohérence forte");
     const editMetric = metric.getByRole("button", {
       name: "Modifier",
       exact: true,
     });
-    await expect(editMetric).toBeFocused();
     await page.waitForSelector('[data-fr-js-modal-button="true"]', {
       state: "attached",
     });
@@ -318,10 +313,10 @@ for (const [email, listTitle, projectContext] of [
     await page.reload();
     await expect(metric).toContainText(/17\s*m²/);
     await expect(
-      anomalies.getByText("1 donnée à vérifier", { exact: true }),
+      metric.getByRole("note", { name: "Anomalie détectée" }),
     ).toBeVisible();
-    await expect(anomalies).toContainText(
-      "Le recalcul des signalements par Fonds vert est différé.",
+    await expect(metric).toContainText(
+      "Valeur corrigée. Le signalement restera affiché jusqu’à la prochaine analyse de Fonds vert.",
     );
 
     const refused = await page.evaluate(async () => {

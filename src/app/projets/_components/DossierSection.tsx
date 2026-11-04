@@ -190,7 +190,7 @@ export async function DossierSection({
 
         <div className="mt-8">
           {section === "impact" ? (
-            <div className="space-y-8">
+            <div id="signalements" className="space-y-8">
               <h2 className="sr-only">Données d’impact</h2>
               {anomaliesSection}
               {errorMessage && !anomaliesSection && (
