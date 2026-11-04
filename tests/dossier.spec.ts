@@ -1326,7 +1326,7 @@ test("persists successive metric corrections by an ordinary porteur and instruct
     const card = page.getByRole("region", {
       name: "Métrique des deux acteurs",
     });
-    await card.getByRole("button", { name: "Modifier", exact: true }).click();
+    await card.getByRole("button", { name: /^Modifier la valeur «/ }).click();
     let dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Métrique des deux acteurs").fill("12");
     await dialog
@@ -1350,7 +1350,7 @@ test("persists successive metric corrections by an ordinary porteur and instruct
       .click();
     await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
     await waitForDsfrModal(page);
-    await card.getByRole("button", { name: "Modifier", exact: true }).click();
+    await card.getByRole("button", { name: /^Modifier la valeur «/ }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Métrique des deux acteurs").fill("15");
     await dialog
@@ -1852,7 +1852,7 @@ test("la page Impact conserve les valeurs locales quand Fonds vert est indisponi
       }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: "Modifier", exact: true }),
+      page.getByRole("button", { name: /^Modifier la valeur «/ }),
     ).toBeEnabled();
     await expect(
       page

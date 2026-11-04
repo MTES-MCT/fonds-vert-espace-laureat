@@ -88,10 +88,8 @@ function textArrayInputValue(value: MetricValue): string[] {
 
 export function MetricCorrectionEditor({
   target,
-  buttonLabel = "Modifier la valeur",
 }: {
   target: DossierMetricRevisionTarget;
-  buttonLabel?: string;
 }) {
   const instanceId = useId().replaceAll(":", "");
   const modal = useMemo(
@@ -423,11 +421,12 @@ export function MetricCorrectionEditor({
         size="small"
         nativeButtonProps={{
           ...modal.buttonProps,
+          "aria-label": `Modifier la valeur « ${target.label} »`,
           type: "button",
           onClick: openEditor,
         }}
       >
-        {buttonLabel}
+        Modifier
       </Button>
 
       <modal.Component

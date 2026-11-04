@@ -47,11 +47,7 @@ const MetricRow = ({
         />
       ) : undefined
     }
-    action={
-      target ? (
-        <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
-      ) : undefined
-    }
+    action={target ? <MetricCorrectionEditor target={target} /> : undefined}
   >
     {children}
   </FactRow>

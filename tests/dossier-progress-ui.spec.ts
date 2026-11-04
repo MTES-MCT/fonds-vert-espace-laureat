@@ -306,7 +306,7 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
     await expect(
       page
         .getByTestId("impact-section")
-        .getByRole("button", { name: "Modifier", exact: true })
+        .getByRole("button", { name: /^Modifier la valeur «/ })
         .first(),
     ).toBeEnabled();
 

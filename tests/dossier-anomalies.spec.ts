@@ -384,7 +384,7 @@ for (const [actor, email, correctedValue] of [
 
     const values = impactValues(page);
     const gain = valueRow(page, "Gain énergétique estimé");
-    const opener = gain.getByRole("button", { name: "Modifier", exact: true });
+    const opener = gain.getByRole("button", { name: /^Modifier la valeur «/ });
     const gainNotes = gain.getByRole("note", { name: "Anomalie détectée" });
     const pendingAnalysis = gain.getByText("En attente d’analyse", {
       exact: true,
@@ -392,7 +392,7 @@ for (const [actor, email, correctedValue] of [
     await expect(gainNotes).toHaveText("Anomalie");
     await expect(pendingAnalysis).toHaveCount(0);
     await expect(
-      values.getByRole("button", { name: "Modifier", exact: true }),
+      values.getByRole("button", { name: /^Modifier la valeur «/ }),
     ).toHaveCount(3);
 
     await page.waitForSelector('[data-fr-js-modal-button="true"]', {

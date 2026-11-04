@@ -265,7 +265,7 @@ for (const [email, listTitle] of [
       metric.getByRole("note", { name: "Anomalie détectée" }),
     ).toContainText("Erreur");
     const editMetric = metric.getByRole("button", {
-      name: "Modifier",
+      name: `Modifier la valeur « ${METRIC_LABEL} »`,
       exact: true,
     });
     await page.waitForSelector('[data-fr-js-modal-button="true"]', {
@@ -430,7 +430,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
     });
     await page
       .getByTestId("impact-section")
-      .getByRole("button", { name: "Modifier", exact: true })
+      .getByRole("button", { name: /^Modifier la valeur «/ })
       .click();
     const metricDialog = page.getByRole("dialog", {
       name: "Modifier la valeur",

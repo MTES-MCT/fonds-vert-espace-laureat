@@ -67,7 +67,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
         name: "Gain énergétique estimé",
         exact: true,
       })
-      .getByRole("button", { name: "Modifier", exact: true }),
+      .getByRole("button", { name: /^Modifier la valeur «/ }),
   ).toBeVisible();
 
   const gesBeforeAnomaly = impactSection
@@ -495,8 +495,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     exact: true,
   });
   const modifier = before.getByRole("button", {
-    name: "Modifier",
-    exact: true,
+    name: /^Modifier la valeur «/,
   });
   await page.waitForSelector('[data-fr-js-modal-button="true"]', {
     state: "attached",
@@ -594,8 +593,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
     exact: true,
   });
   const modifier = before.getByRole("button", {
-    name: "Modifier",
-    exact: true,
+    name: /^Modifier la valeur «/,
   });
   const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   const input = dialog.getByLabel("Consommation énergétique avant travaux");
