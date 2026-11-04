@@ -1,232 +1,386 @@
 {
-  "version": "8",
+  "type": "diff",
+  "version": "9",
   "dialect": "postgres",
   "id": "30250557-2d79-4dba-a0eb-b4fb68215ea6",
   "prevIds": [
     "f6fe3317-f89c-4cbd-acff-89f8053a233b"
   ],
-  "ddl": [
+  "footprints": [
     {
-      "values": [
-        "number",
-        "text",
-        "boolean",
-        "text_array"
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "metric_value_type"
       ],
-      "name": "metric_value_type",
-      "entityType": "enums",
-      "schema": "public"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "dossier_metric_revisions",
-      "entityType": "tables",
-      "schema": "public"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "dossier_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "metric_code",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "revision",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "label",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "unit",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "metric_value_type",
-      "typeSchema": "public",
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "value_type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "numeric",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "number_value",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "text_value",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "boolean_value",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 1,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "text_array_value",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
-      "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "dossier_number",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "metric_code",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "revision",
-          "isExpression": false,
-          "asc": false,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|enum|public.metric_value_type",
+        "n|enum|public.metric_value_type",
+        "e|enum|public.metric_value_type",
+        "n|type|public.metric_value_type"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "dossier_metric_revisions_latest_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "columns": [
-        "dossier_number",
-        "metric_code",
-        "revision"
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "dossier_metric_revisions"
       ],
-      "nameExplicit": false,
-      "name": "dossier_metric_revisions_pkey",
-      "entityType": "pks",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
+      "writes": [
+        "s|tbl|public.dossier_metric_revisions",
+        "n|tbl|public.dossier_metric_revisions",
+        "e|tbl|public.dossier_metric_revisions",
+        "n|rel|public.dossier_metric_revisions",
+        "n|type|public.dossier_metric_revisions",
+        "n|rel|public.dossier_metric_revisions_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.metric_value_type"
+      ]
     },
     {
-      "value": "\"revision\" > 0",
-      "name": "dossier_metric_revisions_revision_positive",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "dossier_metrics"
+      ],
+      "writes": [
+        "s|tbl|public.dossier_metrics",
+        "n|tbl|public.dossier_metrics",
+        "e|tbl|public.dossier_metrics",
+        "n|rel|public.dossier_metrics",
+        "n|type|public.dossier_metrics"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "value": "\n        (\n          \"value_type\" = 'number'\n          and \"number_value\" is not null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text'\n          and \"number_value\" is null\n          and \"text_value\" is not null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'boolean'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is not null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text_array'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is not null\n        )\n      ",
-      "name": "dossier_metric_revisions_typed_value",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "dossier_metric_revisions"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "dossier_metric_revisions",
+        "dossier_metric_revisions_latest_idx"
+      ],
+      "writes": [
+        "s|idx|public.dossier_metric_revisions_latest_idx",
+        "n|idx|public.dossier_metric_revisions_latest_idx",
+        "e|idx|public.dossier_metric_revisions_latest_idx",
+        "n|rel|public.dossier_metric_revisions_latest_idx"
+      ],
+      "reads": [
+        "n|tbl|public.dossier_metric_revisions",
+        "n|sch|public",
+        "n|col|public.dossier_metric_revisions.dossier_number",
+        "n|col|public.dossier_metric_revisions.metric_code",
+        "n|col|public.dossier_metric_revisions.revision"
+      ]
     }
   ],
-  "renames": []
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "dossier_metric_revisions",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "metric_value_type",
+        "values": [
+          "number",
+          "text",
+          "boolean",
+          "text_array"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "dossier_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "metric_code",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "revision",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "label",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "unit",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "value_type",
+        "type": "metric_value_type",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "number_value",
+        "type": "numeric",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "text_value",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "boolean_value",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "text_array_value",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "dossier_metric_revisions_latest_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "dossier_number",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "metric_code",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "revision",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "dossier_metric_revisions_pkey",
+        "columns": [
+          "dossier_number",
+          "metric_code",
+          "revision"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "dossier_metric_revisions_revision_positive",
+        "value": "\"revision\" > 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dossier_metric_revisions",
+        "name": "dossier_metric_revisions_typed_value",
+        "value": "\n        (\n          \"value_type\" = 'number'\n          and \"number_value\" is not null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text'\n          and \"number_value\" is null\n          and \"text_value\" is not null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'boolean'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is not null\n          and \"text_array_value\" is null\n        )\n        or (\n          \"value_type\" = 'text_array'\n          and \"number_value\" is null\n          and \"text_value\" is null\n          and \"boolean_value\" is null\n          and \"text_array_value\" is not null\n        )\n      ",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"dossier_metrics\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"dossier_metrics\",\"dossier_number\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"dossier_metrics\",\"metrics\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"dossier_metrics\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"dossier_metrics\",\"updated_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"dossier_metrics\",\"dossier_metrics_pkey\"]"
+    }
+  ]
 }

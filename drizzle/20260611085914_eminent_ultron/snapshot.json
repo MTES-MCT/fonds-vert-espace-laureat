@@ -1,18 +1,43 @@
 {
-  "version": "8",
+  "type": "base",
+  "version": "9",
   "dialect": "postgres",
   "id": "f6fe3317-f89c-4cbd-acff-89f8053a233b",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "dossier_metrics"
+      ],
+      "writes": [
+        "s|tbl|public.dossier_metrics",
+        "n|tbl|public.dossier_metrics",
+        "e|tbl|public.dossier_metrics",
+        "n|rel|public.dossier_metrics",
+        "n|type|public.dossier_metrics",
+        "n|rel|public.dossier_metrics_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
   "ddl": [
     {
-      "isRlsEnabled": false,
+      "schema": "public",
       "name": "dossier_metrics",
-      "entityType": "tables",
-      "schema": "public"
+      "isRlsEnabled": false,
+      "entityType": "tables"
     },
     {
+      "schema": "public",
+      "table": "dossier_metrics",
+      "name": "dossier_number",
       "type": "integer",
       "typeSchema": null,
       "notNull": true,
@@ -20,12 +45,12 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "dossier_number",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metrics"
+      "entityType": "columns"
     },
     {
+      "schema": "public",
+      "table": "dossier_metrics",
+      "name": "metrics",
       "type": "jsonb",
       "typeSchema": null,
       "notNull": true,
@@ -33,25 +58,12 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "metrics",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metrics"
+      "entityType": "columns"
     },
     {
-      "type": "timestamp with time zone",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "now()",
-      "generated": null,
-      "identity": null,
+      "schema": "public",
+      "table": "dossier_metrics",
       "name": "created_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metrics"
-    },
-    {
       "type": "timestamp with time zone",
       "typeSchema": null,
       "notNull": true,
@@ -59,21 +71,30 @@
       "default": "now()",
       "generated": null,
       "identity": null,
-      "name": "updated_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "dossier_metrics"
+      "entityType": "columns"
     },
     {
+      "schema": "public",
+      "table": "dossier_metrics",
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "dossier_metrics",
+      "name": "dossier_metrics_pkey",
       "columns": [
         "dossier_number"
       ],
       "nameExplicit": false,
-      "name": "dossier_metrics_pkey",
-      "schema": "public",
-      "table": "dossier_metrics",
       "entityType": "pks"
     }
-  ],
-  "renames": []
+  ]
 }
