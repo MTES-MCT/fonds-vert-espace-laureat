@@ -419,8 +419,7 @@ export function MetricCorrectionEditor({
       <Button
         disabled={!hydrated}
         ref={openerRef}
-        className="bg-white"
-        priority="tertiary"
+        priority="tertiary no outline"
         size="small"
         nativeButtonProps={{
           ...modal.buttonProps,
