@@ -1,16 +1,20 @@
 "use client";
 
-import Select from "@codegouvfr/react-dsfr/Select";
+import { HeaderQuickAccessItem } from "@codegouvfr/react-dsfr/Header";
 import { useRouter } from "next/navigation";
-import { useId, useState, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 
-import { isProjectView, type ProjectView } from "@/utils/projectView";
+import type { ProjectView } from "@/utils/projectView";
 
 const subscribe = () => () => {};
 
+const switchLabels: Record<ProjectView, string> = {
+  porteur: "Passer en vue instructeur",
+  instructeur: "Passer en vue porteur",
+};
+
 export function ProjectViewSwitch({ view }: { view: ProjectView }) {
   const router = useRouter();
-  const id = useId();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string>();
   const hydrated = useSyncExternalStore(
@@ -18,16 +22,16 @@ export function ProjectViewSwitch({ view }: { view: ProjectView }) {
     () => true,
     () => false,
   );
+  const nextView: ProjectView = view === "porteur" ? "instructeur" : "porteur";
 
-  const changeView = async (value: string) => {
-    if (!isProjectView(value)) return;
+  const changeView = async () => {
     setIsSaving(true);
     setError(undefined);
     try {
       const response = await fetch("/api/session/project-view", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ view: value }),
+        body: JSON.stringify({ view: nextView }),
       });
       if (!response.ok) throw new Error("La vue n’a pas pu être modifiée.");
       router.refresh();
@@ -43,25 +47,23 @@ export function ProjectViewSwitch({ view }: { view: ProjectView }) {
   };
 
   return (
-    <div className="min-w-48 text-left">
-      <Select
-        label="Vue super admin"
-        className="mb-0"
-        disabled={!hydrated || isSaving}
-        nativeSelectProps={{
-          id,
-          value: view,
-          onChange: (event) => void changeView(event.target.value),
+    <>
+      <HeaderQuickAccessItem
+        quickAccessItem={{
+          iconId: "ri-arrow-left-right-line",
+          text: switchLabels[view],
+          buttonProps: {
+            type: "button",
+            disabled: !hydrated || isSaving,
+            onClick: () => void changeView(),
+          },
         }}
-      >
-        <option value="porteur">Porteur</option>
-        <option value="instructeur">Instructeur</option>
-      </Select>
+      />
       {error && (
         <p className="fr-error-text mb-0" role="alert">
           {error}
         </p>
       )}
-    </div>
+    </>
   );
 }

@@ -833,8 +833,8 @@ for (const [situation, viewport] of [
     }
     const quickAccess = page.locator(
       situation === "mobile"
-        ? "#fr-header-quick-access-item-0-mobile"
-        : "#fr-header-quick-access-item-0",
+        ? "#header-menu-modal-fr-header .fr-header__menu-links"
+        : ".fr-header__tools-links",
     );
     await expect(quickAccess).toContainText(DEMANDEUR_EMAIL);
     const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });

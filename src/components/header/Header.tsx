@@ -18,21 +18,30 @@ export const Header = ({
 }) => {
   const quickAccessItems = userEmail
     ? [
-        <div key={0} className="mb-4 flex flex-wrap items-center gap-4">
-          {adminView && <ProjectViewSwitch view={adminView} />}
-          <div className="text-sm font-medium">{userEmail}</div>
-          <HeaderQuickAccessItem
-            quickAccessItem={{
-              iconId: "fr-icon-logout-box-r-line",
-              text: "Se déconnecter",
-              buttonProps: {
-                className: "mb-0",
-                type: "submit",
-                form: "proconnect-logout-form",
-              },
-            }}
-          />
-        </div>,
+        ...(adminView
+          ? [<ProjectViewSwitch key="view" view={adminView} />]
+          : []),
+        <span
+          key="email"
+          className={`
+            fr-btn fr-btn--tertiary-no-outline fr-icon-account-circle-line fr-btn--icon-left
+            cursor-default text-[var(--text-default-grey)]
+            hover:bg-transparent
+          `}
+        >
+          {userEmail}
+        </span>,
+        <HeaderQuickAccessItem
+          key="logout"
+          quickAccessItem={{
+            iconId: "fr-icon-logout-box-r-line",
+            text: "Se déconnecter",
+            buttonProps: {
+              type: "submit",
+              form: "proconnect-logout-form",
+            },
+          }}
+        />,
       ]
     : [
         <HeaderQuickAccessItem

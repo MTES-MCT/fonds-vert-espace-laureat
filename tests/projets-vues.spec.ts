@@ -42,15 +42,22 @@ async function resetProject(dossierNumber: number) {
 }
 
 async function changeAdminView(page: Page, view: "porteur" | "instructeur") {
-  const select = page
-    .locator("#fr-header-quick-access-item-0")
-    .getByRole("combobox", { name: "Vue super admin" });
+  const switchTo = page.getByRole("button", {
+    name: `Passer en vue ${view}`,
+    exact: true,
+  });
+  const switchBack = page.getByRole("button", {
+    name: `Passer en vue ${view === "porteur" ? "instructeur" : "porteur"}`,
+    exact: true,
+  });
+  if (await switchBack.isVisible()) return;
+  await expect(switchTo).toBeEnabled();
   const changed = page.waitForResponse((response) =>
     response.url().endsWith("/api/session/project-view"),
   );
-  await select.selectOption(view);
+  await switchTo.click();
   expect((await changed).status()).toBe(200);
-  await expect(select).toHaveValue(view);
+  await expect(switchBack).toBeEnabled();
   await expect(
     page.getByText(
       view === "porteur" ? "Suivi de votre projet" : "Projet suivi",
@@ -132,7 +139,7 @@ for (const [email, listTitle, projectContext] of [
       page.getByRole("heading", { level: 1, name: listTitle }),
     ).toBeVisible();
     await expect(
-      page.getByRole("combobox", { name: "Vue super admin" }),
+      page.getByRole("button", { name: /^Passer en vue / }),
     ).toHaveCount(0);
     await expect(page.getByRole("columnheader")).toHaveText(
       email === PORTEUR
@@ -293,7 +300,7 @@ for (const [email, listTitle, projectContext] of [
     await page.reload();
     await expect(page.getByText(projectContext, { exact: true })).toBeVisible();
     await expect(
-      page.getByRole("combobox", { name: "Vue super admin" }),
+      page.getByRole("button", { name: /^Passer en vue / }),
     ).toHaveCount(0);
     await page.getByTestId("footer-back").click();
     await expect(page).toHaveURL("/projets");
@@ -479,7 +486,7 @@ test("la liste vide garde un vocabulaire neutre sans inventer de profil", async 
     page.getByText("Aucun projet accessible", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByRole("combobox", { name: "Vue super admin" }),
+    page.getByRole("button", { name: /^Passer en vue / }),
   ).toHaveCount(0);
   await expect(page.locator("main")).toContainText(
     "une adresse e-mail disposant d'un accès au projet dans Démarche numérique",
@@ -551,8 +558,9 @@ test("la préférence de vue exige une session admin et une valeur reconnue", as
   expect(invalid).toEqual({ status: 400, body: { error: "Vue invalide" } });
   await page.reload();
   await expect(
-    page
-      .locator("#fr-header-quick-access-item-0")
-      .getByRole("combobox", { name: "Vue super admin" }),
-  ).toHaveValue("porteur");
+    page.getByRole("button", {
+      name: "Passer en vue instructeur",
+      exact: true,
+    }),
+  ).toBeEnabled();
 });
