@@ -1,4 +1,3 @@
-import Badge from "@codegouvfr/react-dsfr/Badge";
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
 
@@ -55,7 +54,6 @@ export const ProjectPagesNav = ({
     notice?: {
       label: string;
       count: number;
-      severity: "error" | "warning";
     };
   }[];
 }) => (
@@ -84,10 +82,15 @@ export const ProjectPagesNav = ({
           >
             {link.label}
             {link.notice && (
-              <span aria-hidden="true">
-                <Badge as="span" small severity={link.notice.severity}>
-                  {link.notice.count || "!"}
-                </Badge>
+              <span
+                aria-hidden="true"
+                className={`
+                  inline-flex size-5 items-center justify-center rounded-full
+                  bg-[var(--background-flat-error)] text-xs font-bold
+                  text-[var(--text-inverted-error)]
+                `}
+              >
+                {link.notice.count || "!"}
               </span>
             )}
           </Link>

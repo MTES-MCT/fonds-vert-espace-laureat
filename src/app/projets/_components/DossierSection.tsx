@@ -140,7 +140,6 @@ export async function DossierSection({
       ? {
           label: anomalySummary.label,
           count: anomalies.indicatorCount,
-          severity: anomalySummary.severity,
         }
       : undefined;
 
