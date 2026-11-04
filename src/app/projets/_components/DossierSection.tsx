@@ -10,16 +10,12 @@ import {
   ProjectHolder,
   ProjectPagesNav,
   ProjectPresentation,
-  SignalsCallout,
   SummaryHeader,
 } from "@/app/projets/_components/dossier-section/Summary";
 import { Timeline } from "@/app/projets/_components/dossier-section/Timeline";
 import { RefreshIndicator } from "@/app/projets/_components/RefreshIndicator";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import {
-  anomalyCategoryLabels,
-  fondsVertAnomalySummary,
-} from "@/components/metrics/FondsVertAnomalyStatus";
+import { fondsVertAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import {
@@ -140,7 +136,11 @@ export async function DossierSection({
       anomalySummary.severity === "warning") &&
     anomalies.status !== "incomplete" &&
     anomalies.status !== "invalid"
-      ? { label: anomalySummary.label, severity: anomalySummary.severity }
+      ? {
+          label: anomalySummary.label,
+          count: anomalies.indicatorCount,
+          severity: anomalySummary.severity,
+        }
       : undefined;
 
   return (
@@ -243,16 +243,6 @@ export async function DossierSection({
                   severity="error"
                   small
                   description="Les données Fonds vert sont temporairement indisponibles."
-                />
-              )}
-              {impactNotice && anomalies && (
-                <SignalsCallout
-                  notice={impactNotice}
-                  indicators={anomalies.indicators.map((indicator) => ({
-                    label: indicator.label,
-                    category: anomalyCategoryLabels[indicator.severity],
-                  }))}
-                  href={`${basePath}/impact${navigationQuery}#signalements`}
                 />
               )}
               <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_22rem]">

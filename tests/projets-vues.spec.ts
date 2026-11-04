@@ -192,31 +192,18 @@ for (const [email, listTitle, projectContext] of [
     await expect(synthese.getByRole("heading", { level: 3 })).toHaveText(
       email === PORTEUR
         ? [
-            "1 donnée à vérifier",
             "Présentation du projet",
             "Identité du porteur de projet",
             "Avancement du projet",
             "Calendrier",
           ]
         : [
-            "1 donnée à vérifier",
             "Identité du porteur de projet",
             "Présentation du projet",
             "Avancement du projet",
             "Calendrier",
           ],
     );
-    const signalements = synthese.getByRole("region", {
-      name: "1 donnée à vérifier",
-      exact: true,
-    });
-    await expect(signalements).toContainText(
-      `${METRIC_LABEL} · Incohérence forte`,
-    );
-    await expect(
-      signalements.getByRole("link", { name: "Voir les signalements" }),
-    ).toHaveAttribute("href", `/projets/${dossierNumber}/impact#signalements`);
-
     const projectPages = page
       .getByRole("navigation", { name: "Pages du projet" })
       .getByRole("link");
@@ -231,6 +218,7 @@ for (const [email, listTitle, projectContext] of [
     await expect(projectPages.nth(1)).toHaveAccessibleDescription(
       "1 donnée à vérifier",
     );
+    await expect(projectPages.nth(1)).toContainText("1");
     for (const [label, path, heading] of [
       ["Synthèse du projet", "", "Synthèse du projet"],
       ["Financement", "/financement", "Financement du projet"],
