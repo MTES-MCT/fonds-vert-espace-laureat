@@ -15,7 +15,7 @@ export function MetricValueSignals({
   if (corrected) {
     return (
       <div aria-label="Anomalie détectée" role="note">
-        <Badge small severity="info">
+        <Badge className="whitespace-nowrap" small severity="info">
           En attente d’analyse
         </Badge>
       </div>

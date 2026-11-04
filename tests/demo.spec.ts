@@ -174,6 +174,30 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "3 données à vérifier",
   );
 
+  const initialViewport = page.viewportSize()!;
+  const pendingBadge = gesBeforeAnomaly.getByText(PENDING_ANALYSIS, {
+    exact: true,
+  });
+  for (const width of [320, 1024, 1152, 1280]) {
+    await page.setViewportSize({ ...initialViewport, width });
+    await expect(pendingBadge).toBeVisible();
+    const fitsOnOneLine = await pendingBadge.evaluate((badge) => {
+      const badgeBounds = badge.getBoundingClientRect();
+      const rowBounds = badge.closest("dl")!.getBoundingClientRect();
+      const text = document.createRange();
+      text.selectNodeContents(badge);
+      return (
+        badgeBounds.height <= parseFloat(getComputedStyle(badge).lineHeight) &&
+        text.getBoundingClientRect().right <= badgeBounds.right &&
+        badgeBounds.right <= rowBounds.right + 1
+      );
+    });
+    expect(fitsOnOneLine, `Le badge tient dans sa cellule à ${width} px`).toBe(
+      true,
+    );
+  }
+  await page.setViewportSize(initialViewport);
+
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await expect(dialog.getByLabel("Valeur source")).toHaveCount(0);
