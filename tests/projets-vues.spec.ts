@@ -311,9 +311,7 @@ for (const [email, listTitle] of [
     await expect(
       metric.getByRole("note", { name: "Anomalie détectée" }),
     ).toBeVisible();
-    await expect(metric).toContainText(
-      "Corrigée, en attente de la prochaine analyse Fonds vert.",
-    );
+    await expect(metric).toContainText("En attente d’analyse");
 
     const refused = await page.evaluate(async () => {
       const response = await fetch("/api/session/project-view", {

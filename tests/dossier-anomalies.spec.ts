@@ -396,14 +396,13 @@ for (const [actor, email, correctedValue] of [
     });
     const opener = gain.getByRole("button", { name: "Modifier", exact: true });
     const gainNotes = gain.getByRole("note", { name: "Anomalie détectée" });
-    const correctionNote = gain.getByText(
-      "Corrigée, en attente de la prochaine analyse Fonds vert.",
-      { exact: true },
-    );
+    const pendingAnalysis = gain.getByText("En attente d’analyse", {
+      exact: true,
+    });
     await expect(gainNotes).toHaveText(
       "Anomalie statistiqueÀ vérifier avec les consommations avant et après travaux.",
     );
-    await expect(correctionNote).toHaveCount(0);
+    await expect(pendingAnalysis).toHaveCount(0);
     await expect(
       values.getByRole("button", { name: "Modifier", exact: true }),
     ).toHaveCount(3);
@@ -457,7 +456,7 @@ for (const [actor, email, correctedValue] of [
       `${correctedValue}%`,
     );
     await expect(gainNotes).toBeVisible();
-    await expect(correctionNote).toBeVisible();
+    await expect(pendingAnalysis).toBeVisible();
     await expect(impactTab(page)).toHaveAccessibleDescription(
       "2 données à vérifier",
     );
@@ -486,7 +485,7 @@ for (const [actor, email, correctedValue] of [
       `${correctedValue}%`,
     );
     await expect(gainNotes).toBeVisible();
-    await expect(correctionNote).toBeVisible();
+    await expect(pendingAnalysis).toBeVisible();
     await expect
       .poll(() =>
         page.evaluate(
@@ -498,7 +497,7 @@ for (const [actor, email, correctedValue] of [
     responseState = "recalculated";
     await page.reload();
     await expect(gainNotes).toHaveCount(0);
-    await expect(correctionNote).toHaveCount(0);
+    await expect(pendingAnalysis).toHaveCount(0);
     await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
     await expect(gain.getByTestId("valeur-estimee")).toHaveText(
       `${correctedValue}%`,

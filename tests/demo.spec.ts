@@ -15,8 +15,7 @@ import { createTestDatabaseClient } from "./setup/db";
 
 test.describe.configure({ mode: "default" });
 
-const CORRECTION_NOTE =
-  "Corrigée, en attente de la prochaine analyse Fonds vert.";
+const PENDING_ANALYSIS = "En attente d’analyse";
 
 function impactTab(page: Page) {
   return page
@@ -119,7 +118,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(
     energyMetrics
       .getByRole("group", { name: "Avant travaux" })
-      .getByText(CORRECTION_NOTE, { exact: true }),
+      .getByText(PENDING_ANALYSIS, { exact: true }),
   ).toBeVisible();
 
   const sql = createTestDatabaseClient();
@@ -156,11 +155,10 @@ test("demo page loads, corrects and persists its database-backed metrics", async
 
   await expect(dialog).toBeHidden();
   await expect(anomaly.getByText("420kgCO₂e")).toBeVisible();
-  await expect(gesBeforeAnomaly).toContainText("Incohérence forte");
+  await expect(gesBeforeAnomaly).toHaveText(PENDING_ANALYSIS);
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
   );
-  await expect(gesBeforeAnomaly).toHaveText(/^Incohérence forte/);
 
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -486,7 +484,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   ).toHaveCount(1);
   await page.reload();
   await expect(
-    before.getByText(CORRECTION_NOTE, { exact: true }),
+    before.getByText(PENDING_ANALYSIS, { exact: true }),
   ).toBeVisible();
   await expect(before.getByTestId("valeur-0")).toHaveText(
     /2\s*000\s*000\s*kWh/,
@@ -538,7 +536,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
   );
-  await expect(before.getByText(CORRECTION_NOTE, { exact: true })).toHaveCount(
+  await expect(before.getByText(PENDING_ANALYSIS, { exact: true })).toHaveCount(
     0,
   );
   await expect(before.getByTestId("valeur-0")).toHaveText(

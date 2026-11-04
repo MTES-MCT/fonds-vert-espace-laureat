@@ -3,8 +3,8 @@ import Badge from "@codegouvfr/react-dsfr/Badge";
 import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStatus";
 import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
-// Summarizes every Fonds vert signal attached to one displayed value: the most
-// severe category once, then the source values to check for a signaled ratio.
+// Summarizes every Fonds vert signal attached to one displayed value. Once the
+// value is corrected, only its pending re-analysis is shown.
 export function MetricValueSignals({
   anomalies,
   corrected,
@@ -12,6 +12,16 @@ export function MetricValueSignals({
   anomalies: NormalizedMetricAnomaly[];
   corrected: boolean;
 }) {
+  if (corrected) {
+    return (
+      <div aria-label="Anomalie détectée" role="note">
+        <Badge small severity="info">
+          En attente d’analyse
+        </Badge>
+      </div>
+    );
+  }
+
   const category = anomalies.some(
     (anomaly) => anomaly.severity === "strong-inconsistency",
   )
@@ -34,11 +44,6 @@ export function MetricValueSignals({
           À vérifier avec les {sourcesLabel}.
         </p>
       ))}
-      {corrected && (
-        <p className="mb-0 text-sm text-[var(--text-mention-grey)]">
-          Corrigée, en attente de la prochaine analyse Fonds vert.
-        </p>
-      )}
     </div>
   );
 }
