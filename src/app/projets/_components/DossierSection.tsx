@@ -187,64 +187,64 @@ export async function DossierSection({
           ]}
         />
 
-        <div className="mt-8">
-          {section === "impact" ? (
-            <div id="signalements" className="space-y-8">
-              <h2 className="sr-only">Données d’impact</h2>
-              {anomaliesSection}
-              {errorMessage && !anomaliesSection && (
-                <Alert
-                  severity="error"
-                  small
-                  description={
-                    metriques && Object.keys(metriques).length > 0
-                      ? "Les données Fonds vert sont temporairement indisponibles. Les valeurs déjà enregistrées restent consultables."
-                      : "Les données Fonds vert sont temporairement indisponibles."
-                  }
-                />
-              )}
-              {metriques && Object.keys(metriques).length > 0 ? (
-                <div data-testid="impact-section">
-                  <MetricsGrid metriques={metriques} />
-                </div>
-              ) : (
-                <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
-              )}
-            </div>
-          ) : section === "finance" ? (
-            <section id="financement" aria-labelledby="finance-heading">
-              <h2 id="finance-heading" className="sr-only">
-                Financement du projet
-              </h2>
-              {errorMessage && (
-                <Alert severity="error" small description={errorMessage} />
-              )}
-              <SubventionDetails
-                montantSubventionAttribuee={
-                  socleCommun?.montant_subvention_attribuee
-                }
-                totalDesDepenses={socleCommun?.total_des_depenses}
-                informationFinanciere={informationFinanciere}
-                engagementsSection={buildEngagementsSection(
-                  informationFinanciere,
-                  financesEJPromise,
+        <div className="mt-8 grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="min-w-0">
+            {section === "impact" ? (
+              <div id="signalements" className="space-y-8">
+                <h2 className="sr-only">Données d’impact</h2>
+                {anomaliesSection}
+                {errorMessage && !anomaliesSection && (
+                  <Alert
+                    severity="error"
+                    small
+                    description={
+                      metriques && Object.keys(metriques).length > 0
+                        ? "Les données Fonds vert sont temporairement indisponibles. Les valeurs déjà enregistrées restent consultables."
+                        : "Les données Fonds vert sont temporairement indisponibles."
+                    }
+                  />
                 )}
-              />
-            </section>
-          ) : (
-            <section aria-labelledby="summary-heading">
-              <h2 id="summary-heading" className="sr-only">
-                Synthèse du projet
-              </h2>
-              {errorMessage && (
-                <Alert
-                  className="mb-6"
-                  severity="error"
-                  small
-                  description="Les données Fonds vert sont temporairement indisponibles."
+                {metriques && Object.keys(metriques).length > 0 ? (
+                  <div data-testid="impact-section">
+                    <MetricsGrid metriques={metriques} />
+                  </div>
+                ) : (
+                  <p>Aucune donnée d’impact n’est disponible pour ce projet.</p>
+                )}
+              </div>
+            ) : section === "finance" ? (
+              <section id="financement" aria-labelledby="finance-heading">
+                <h2 id="finance-heading" className="sr-only">
+                  Financement du projet
+                </h2>
+                {errorMessage && (
+                  <Alert severity="error" small description={errorMessage} />
+                )}
+                <SubventionDetails
+                  montantSubventionAttribuee={
+                    socleCommun?.montant_subvention_attribuee
+                  }
+                  totalDesDepenses={socleCommun?.total_des_depenses}
+                  informationFinanciere={informationFinanciere}
+                  engagementsSection={buildEngagementsSection(
+                    informationFinanciere,
+                    financesEJPromise,
+                  )}
                 />
-              )}
-              <div className="grid items-start gap-x-12 gap-y-8 lg:grid-cols-[minmax(0,1fr)_22rem]">
+              </section>
+            ) : (
+              <section aria-labelledby="summary-heading">
+                <h2 id="summary-heading" className="sr-only">
+                  Synthèse du projet
+                </h2>
+                {errorMessage && (
+                  <Alert
+                    className="mb-6"
+                    severity="error"
+                    small
+                    description="Les données Fonds vert sont temporairement indisponibles."
+                  />
+                )}
                 <div className="min-w-0 space-y-8">
                   {view === "instructeur" ? (
                     <>
@@ -258,31 +258,29 @@ export async function DossierSection({
                     </>
                   )}
                 </div>
-                <div className="min-w-0 space-y-8">
-                  <Timeline
-                    steps={[
-                      {
-                        label: "Dépôt du dossier",
-                        date: socleCommun?.date_depot ?? null,
-                      },
-                      {
-                        label: "Notification",
-                        date: socleCommun?.date_notification ?? null,
-                      },
-                      {
-                        label: "Début d'exécution",
-                        date: socleCommun?.date_debut_execution ?? null,
-                      },
-                      {
-                        label: "Fin d'exécution",
-                        date: socleCommun?.date_fin_execution ?? null,
-                      },
-                    ]}
-                  />
-                </div>
-              </div>
-            </section>
-          )}
+              </section>
+            )}
+          </div>
+          <Timeline
+            steps={[
+              {
+                label: "Dépôt du dossier",
+                date: socleCommun?.date_depot ?? null,
+              },
+              {
+                label: "Notification",
+                date: socleCommun?.date_notification ?? null,
+              },
+              {
+                label: "Début d'exécution",
+                date: socleCommun?.date_debut_execution ?? null,
+              },
+              {
+                label: "Fin d'exécution",
+                date: socleCommun?.date_fin_execution ?? null,
+              },
+            ]}
+          />
         </div>
         <div className="mt-8 border-t border-[var(--border-default-grey)] pt-6">
           <Button

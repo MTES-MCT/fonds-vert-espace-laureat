@@ -235,7 +235,6 @@ for (const viewport of [
     await expect(synthese.getByRole("heading", { level: 3 })).toHaveText([
       "Présentation du projet",
       "Identité du porteur de projet",
-      "Calendrier",
     ]);
     await expect
       .poll(() =>
@@ -271,7 +270,7 @@ for (const viewport of [
       avancement.getByRole("button", { name: "Modifier l’avancement" }),
     ).toBeVisible();
 
-    const calendrier = synthese.getByRole("region", { name: "Calendrier" });
+    const calendrier = page.getByRole("region", { name: "Calendrier" });
     const zones = [presentation, identite, calendrier];
     for (const zone of zones) {
       await expect(zone).toBeVisible();
@@ -2562,12 +2561,15 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     ).toHaveAttribute("aria-current", "page");
   });
 
-  test("le porteur consulte les trois pages du dossier sur ordinateur puis la synthèse sur mobile et en conserve les captures", async ({
+  test("le porteur consulte les trois pages du dossier avec le calendrier sur ordinateur et mobile", async ({
     page,
   }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(cheminProjet);
     await waitForDsfrModal(page);
+    const calendrier = page.getByRole("region", { name: "Calendrier" });
+    const jalons = await calendrier.getByRole("listitem").allTextContents();
+    expect(jalons).toHaveLength(4);
 
     const synthese = page.getByRole("region", {
       name: "Synthèse du projet",
@@ -2583,7 +2585,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       synthese.getByTestId("project-progress-row"),
     ).toBeVisible();
     await expect(
-      synthese.getByRole("region", { name: "Calendrier" }),
+      page.getByRole("region", { name: "Calendrier" }),
     ).toBeVisible();
     await expect(
       synthese.getByRole("button", {
@@ -2623,6 +2625,8 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
           .getByTestId("valeur-estimee"),
       ).toContainText(value);
     }
+    await expect(calendrier).toBeVisible();
+    await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
     await page.screenshot({
       path: testInfo.outputPath("impact-desktop.png"),
       fullPage: true,
@@ -2650,27 +2654,44 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
         .nth(1)
         .getByLabel("Montant attribué initial", { exact: true }),
     ).toContainText("2 500 000,00 €");
+    await expect(calendrier).toBeVisible();
+    await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
     await page.screenshot({
       path: testInfo.outputPath("financement-desktop.png"),
       fullPage: true,
     });
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await navigation
-      .getByRole("link", { name: "Synthèse du projet", exact: true })
-      .click();
-    await expect(page).toHaveURL(cheminProjet);
-    for (const nom of [
-      "Présentation du projet",
-      "Identité du porteur de projet",
-      "Calendrier",
-    ]) {
-      await expect(synthese.getByRole("region", { name: nom })).toBeVisible();
+    for (const [onglet, chemin, titre, capture] of [
+      ["Synthèse du projet", cheminProjet, "Synthèse du projet", "synthese"],
+      ["Données d’impact", `${cheminProjet}/impact`, "Données d’impact", "impact"],
+      ["Financement", cheminFinancement, "Financement du projet", "financement"],
+    ] as const) {
+      await navigation.getByRole("link", { name: onglet, exact: true }).click();
+      await expect(page).toHaveURL(chemin);
+      await expect(calendrier).toBeVisible();
+      await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
+
+      const contenu = page.getByRole("heading", { level: 2, name: titre });
+      const basDuContenu = await contenu.evaluate(
+        (heading) => heading.parentElement?.getBoundingClientRect().bottom,
+      );
+      const calendrierMobile = await calendrier.boundingBox();
+      expect(calendrierMobile?.y).toBeGreaterThanOrEqual(
+        basDuContenu ?? Infinity,
+      );
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () => document.documentElement.scrollWidth === window.innerWidth,
+          ),
+        )
+        .toBe(true);
+      await page.screenshot({
+        path: testInfo.outputPath(`${capture}-mobile.png`),
+        fullPage: true,
+      });
     }
-    await page.screenshot({
-      path: testInfo.outputPath("synthese-mobile.png"),
-      fullPage: true,
-    });
   });
 });
 

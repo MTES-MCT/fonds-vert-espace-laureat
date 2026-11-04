@@ -188,12 +188,10 @@ for (const [email, listTitle] of [
         ? [
             "Présentation du projet",
             "Identité du porteur de projet",
-            "Calendrier",
           ]
         : [
             "Identité du porteur de projet",
             "Présentation du projet",
-            "Calendrier",
           ],
     );
     const projectPages = page

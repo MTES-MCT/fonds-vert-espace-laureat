@@ -101,9 +101,9 @@ export function Timeline({ steps }: TimelineProps) {
 
   return (
     <section aria-labelledby={headingId}>
-      <h3 id={headingId} className="fr-h6 mb-4">
+      <h2 id={headingId} className="fr-h6 mb-4">
         Calendrier
-      </h3>
+      </h2>
       <ol role="list" className="m-0 list-none p-0">
         {steps.map((step, index) => {
           const isDone = doneSteps[index];
