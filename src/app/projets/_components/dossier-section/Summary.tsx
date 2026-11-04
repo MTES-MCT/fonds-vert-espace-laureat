@@ -1,13 +1,9 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 import Breadcrumb from "@codegouvfr/react-dsfr/Breadcrumb";
 import Link from "next/link";
-import type { ReactNode } from "react";
 
 import { EmailLink } from "@/components/email-link/EmailLink";
-import {
-  factLabelClassName,
-  factListClassName,
-} from "@/components/fact-list/factList";
+import { FactList, FactRow } from "@/components/fact-list/FactList";
 import { SocleCommun } from "@/services/fondsvert/dossier";
 
 export const SummaryHeader = ({
@@ -106,30 +102,6 @@ export const ProjectPagesNav = ({
   </nav>
 );
 
-function ProjectFact({
-  id,
-  label,
-  children,
-}: {
-  id: string;
-  label: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="grid items-baseline gap-x-6 gap-y-1 py-3 sm:grid-cols-[15rem_minmax(0,1fr)]">
-      <dt id={id} className={factLabelClassName}>
-        {label}
-      </dt>
-      <dd
-        aria-labelledby={id}
-        className="m-0 min-w-0 font-medium [overflow-wrap:anywhere]"
-      >
-        {children}
-      </dd>
-    </div>
-  );
-}
-
 export const ProjectPresentation = ({
   numeroDossier,
   titreDemarche,
@@ -156,31 +128,31 @@ export const ProjectPresentation = ({
         {resume}
       </p>
     )}
-    <dl className={factListClassName}>
-      <ProjectFact id="dossier-number-label" label="Numéro de dossier">
+    <FactList>
+      <FactRow id="dossier-number-label" label="Numéro de dossier">
         {numeroDossier}
-      </ProjectFact>
-      <ProjectFact id="measure-label" label="Dispositif">
+      </FactRow>
+      <FactRow id="measure-label" label="Dispositif">
         {titreDemarche.replace("FONDS VERT - ", "")}
-      </ProjectFact>
-      <ProjectFact id="edition-label" label="Édition">
+      </FactRow>
+      <FactRow id="edition-label" label="Édition">
         {anneeMillesime ?? "Non renseignée"}
-      </ProjectFact>
-      <ProjectFact id="department-label" label="Département d'implantation">
+      </FactRow>
+      <FactRow id="department-label" label="Département d'implantation">
         {departementImplantation || "Aucun département précisé"}
-      </ProjectFact>
-      <ProjectFact id="commune-label" label="Commune principale impactée">
+      </FactRow>
+      <FactRow id="commune-label" label="Commune principale impactée">
         {socleCommun?.nom_commune || "Non renseignée"}
-      </ProjectFact>
+      </FactRow>
       {numeroDossierAgenceEau && (
-        <ProjectFact
+        <FactRow
           id="agency-number-label"
           label="Numéro de dossier agence de l'eau"
         >
           {numeroDossierAgenceEau}
-        </ProjectFact>
+        </FactRow>
       )}
-    </dl>
+    </FactList>
   </section>
 );
 
@@ -199,19 +171,19 @@ export const ProjectHolder = ({
     <h3 id="project-holder-heading" className="fr-h6 mb-3">
       Identité du porteur de projet
     </h3>
-    <dl className={factListClassName}>
-      <ProjectFact id="company-name-label" label="Nom du porteur">
+    <FactList>
+      <FactRow id="company-name-label" label="Nom du porteur">
         {socleCommun?.entreprise_raison_sociale || "Non renseigné"}
-      </ProjectFact>
-      <ProjectFact id="siret-label" label="SIRET">
+      </FactRow>
+      <FactRow id="siret-label" label="SIRET">
         {socleCommun?.siret || siret || "Non renseigné"}
-      </ProjectFact>
-      <ProjectFact id="legal-rep-label" label="Représentant légal">
+      </FactRow>
+      <FactRow id="legal-rep-label" label="Représentant légal">
         <EmailLink email={emailRepresentantLegal} />
-      </ProjectFact>
-      <ProjectFact id="contact-label" label="Responsable du suivi">
+      </FactRow>
+      <FactRow id="contact-label" label="Responsable du suivi">
         <EmailLink email={emailResponsableSuivi} />
-      </ProjectFact>
-    </dl>
+      </FactRow>
+    </FactList>
   </section>
 );

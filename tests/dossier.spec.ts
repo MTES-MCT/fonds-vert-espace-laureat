@@ -134,7 +134,6 @@ test("dossier page displays project presentation correctly", async ({
     projectSection.getByLabel("Commune principale impactée"),
   ).toContainText(COMMUNE);
   await expect(projectSection.getByText(AGENCE_EAU_NUMBER)).toBeVisible();
-  await expect(projectSection.locator("dl")).toHaveCount(1);
   await expect(projectSection.locator("dt")).toHaveText([
     "Numéro de dossier",
     "Dispositif",

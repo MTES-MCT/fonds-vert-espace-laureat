@@ -2,10 +2,7 @@
 
 import { Fragment, type ReactNode } from "react";
 
-import {
-  factLabelClassName,
-  factListClassName,
-} from "@/components/fact-list/factList";
+import { FactGroup, FactList, FactRow } from "@/components/fact-list/FactList";
 import {
   type MetricAnomaly,
   useMetricAnomaliesByMetricCode,
@@ -104,59 +101,40 @@ const MetricAnomalyNotices = ({
 );
 
 const MetricRow = ({
+  id,
   label,
   target,
   anomalies,
   indented = false,
   children,
 }: {
+  id: string;
   label: string;
   target?: DossierMetricRevisionTarget;
   anomalies?: MetricAnomaly[];
   indented?: boolean;
   children: ReactNode;
 }) => (
-  <div
-    className={`
-      grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 gap-y-1 py-3
-      sm:grid-cols-[15rem_minmax(0,1fr)_auto]
-      lg:grid-cols-[15rem_minmax(0,1fr)_minmax(0,1fr)_auto]
-    `}
-  >
-    <p
-      className={`
-        ${factLabelClassName}
-        col-start-1 row-start-1 sm:pt-0.5
-        ${indented ? "sm:pl-4" : ""}
-      `}
-    >
-      {label}
-    </p>
-    <div className="col-start-1 row-start-2 min-w-0 sm:col-start-2 sm:row-start-1">
-      {children}
-    </div>
-    {anomalies?.length ? (
-      <div
-        className={`
-          col-start-1 row-start-3 mt-2 min-w-0
-          sm:col-start-2 sm:row-start-2
-          lg:col-start-3 lg:row-start-1 lg:mt-0
-        `}
-      >
+  <FactRow
+    id={id}
+    label={label}
+    indented={indented}
+    aside={
+      anomalies?.length ? (
         <MetricAnomalyNotices
           anomalies={anomalies}
           corrected={(target?.revision ?? 1) > 1}
         />
-      </div>
-    ) : null}
-    {target && (
-      <div
-        className={`col-start-2 row-span-2 row-start-1 sm:col-start-3 sm:row-span-1 lg:col-start-4`}
-      >
+      ) : undefined
+    }
+    action={
+      target ? (
         <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
-      </div>
-    )}
-  </div>
+      ) : undefined
+    }
+  >
+    {children}
+  </FactRow>
 );
 
 const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
@@ -168,6 +146,7 @@ const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
   return (
     <section aria-label={metric.label} data-testid={`metric-${metricId}`}>
       <MetricRow
+        id={`metric-label-${metric.metricCode}`}
         label={metric.label}
         target={targets[metric.metricCode]}
         anomalies={anomaliesByMetricCode[metric.metricCode]}
@@ -229,12 +208,11 @@ const AvantApresTravauxRows = ({
   );
 
   return (
-    <section
+    <FactGroup
+      title={metric.label}
       aria-label={metric.label}
-      className="divide-y divide-[var(--border-default-grey)]"
       data-testid={`metric-${metricId}`}
     >
-      <h4 className="mb-0 pt-3 pb-1 text-sm font-bold">{metric.label}</h4>
       {rows.map(({ label, value, unite, metricCode, testId }) => (
         <div
           key={label}
@@ -247,6 +225,7 @@ const AvantApresTravauxRows = ({
           role="group"
         >
           <MetricRow
+            id={`metric-label-${metricCode}`}
             label={label}
             target={targets[metricCode]}
             anomalies={anomaliesByMetricCode[metricCode]}
@@ -261,7 +240,7 @@ const AvantApresTravauxRows = ({
           </MetricRow>
         </div>
       ))}
-    </section>
+    </FactGroup>
   );
 };
 
@@ -332,7 +311,7 @@ export function MetricsGrid({
                 {group.theme.label}
               </h3>
             )}
-            <div className={factListClassName}>
+            <FactList>
               {Object.entries(group.metrics).map(([key, metric]) => {
                 if (
                   metric._typename === "Simple" &&
@@ -381,7 +360,7 @@ export function MetricsGrid({
                   />
                 );
               })}
-            </div>
+            </FactList>
           </div>
         );
       })}
