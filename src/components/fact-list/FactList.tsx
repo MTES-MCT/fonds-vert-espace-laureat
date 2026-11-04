@@ -20,29 +20,12 @@ export function FactList({
   );
 }
 
-export function FactGroup({
-  title,
-  children,
-  ...props
-}: Omit<ComponentProps<"section">, "title"> & { title: string }) {
-  return (
-    <section
-      {...props}
-      className="divide-y divide-[var(--border-default-grey)]"
-    >
-      <h4 className="mb-0 pt-3 pb-1 text-sm font-bold">{title}</h4>
-      {children}
-    </section>
-  );
-}
-
 export function FactRow({
   id,
   label,
   children,
   aside,
   action,
-  indented = false,
   ...props
 }: Omit<ComponentProps<"dl">, "children" | "id"> & {
   id: string;
@@ -50,7 +33,6 @@ export function FactRow({
   children: ReactNode;
   aside?: ReactNode;
   action?: ReactNode;
-  indented?: boolean;
 }) {
   return (
     <dl
@@ -63,10 +45,7 @@ export function FactRow({
     >
       <dt
         id={id}
-        className={`
-          col-start-1 row-start-1 mb-0 text-sm text-[var(--text-mention-grey)]
-          ${indented ? "sm:pl-4" : ""}
-        `}
+        className={`col-start-1 row-start-1 mb-0 text-sm text-[var(--text-mention-grey)]`}
       >
         {label}
       </dt>

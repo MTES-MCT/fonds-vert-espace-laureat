@@ -30,18 +30,6 @@ export type SimpleMetric = {
   valeur_estimee: MetricValue;
 };
 
-export type AvantApresTravaux = {
-  _typename: "AvantApresTravaux";
-  beforeMetricCode: string;
-  afterMetricCode: string;
-  label: string;
-  unite: string | null;
-  valeur_avant_travaux: MetricValue;
-  valeur_apres_travaux: MetricValue;
-};
-
-export type ProcessedMetric = SimpleMetric | AvantApresTravaux;
-
 export type Metrics = Record<string, unknown>;
 
 export interface DemandePaiement {

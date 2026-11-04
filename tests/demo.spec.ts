@@ -45,33 +45,41 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   ).toHaveCount(0);
 
   const impactSection = page.getByTestId("impact-section");
-  const energyMetrics = impactSection.getByRole("region", {
-    name: "Consommation énergétique",
-  });
-  const energyBeforeAnomaly = energyMetrics
-    .getByRole("group", { name: "Avant travaux" })
+  const energyBeforeAnomaly = impactSection
+    .getByRole("region", {
+      name: "Consommation énergétique avant travaux",
+      exact: true,
+    })
     .getByRole("note", { name: "Anomalie détectée" });
   await expect(energyBeforeAnomaly).toHaveCount(1);
   await expect(energyBeforeAnomaly).toHaveText("Anomalie");
 
-  const energyGainAnomaly = energyMetrics
-    .getByRole("group", { name: "Gain énergétique estimé" })
+  const energyGainAnomaly = impactSection
+    .getByRole("region", {
+      name: "Gain énergétique estimé",
+      exact: true,
+    })
     .getByRole("note", { name: "Anomalie détectée" });
   await expect(energyGainAnomaly).toHaveText("Anomalie");
   await expect(
-    energyMetrics
-      .getByRole("group", { name: "Gain énergétique estimé" })
+    impactSection
+      .getByRole("region", {
+        name: "Gain énergétique estimé",
+        exact: true,
+      })
       .getByRole("button", { name: "Modifier", exact: true }),
   ).toBeVisible();
 
   const gesBeforeAnomaly = impactSection
-    .getByRole("region", { name: "Émissions de GES" })
-    .getByRole("group", { name: "Avant travaux" })
+    .getByRole("region", {
+      name: "Émissions de GES avant travaux",
+      exact: true,
+    })
     .getByRole("note", { name: "Anomalie détectée" });
   await expect(gesBeforeAnomaly).toHaveText("Erreur");
 
-  let anomaly = energyMetrics.getByRole("group", {
-    name: "Avant travaux",
+  let anomaly = impactSection.getByRole("region", {
+    name: "Consommation énergétique avant travaux",
     exact: true,
   });
 
@@ -110,12 +118,17 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "3 données à vérifier",
   );
   await expect(
-    impactSection.getByRole("region", { name: "Consommation énergétique" }),
+    impactSection.getByRole("region", {
+      name: "Consommation énergétique avant travaux",
+    }),
   ).toContainText(/1\s*900\s*000,5/);
   await expect(energyBeforeAnomaly).toHaveCount(1);
   await expect(
-    energyMetrics
-      .getByRole("group", { name: "Avant travaux" })
+    impactSection
+      .getByRole("region", {
+        name: "Consommation énergétique avant travaux",
+        exact: true,
+      })
       .getByText(PENDING_ANALYSIS, { exact: true }),
   ).toBeVisible();
 
@@ -138,12 +151,15 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "3 données à vérifier",
   );
   await expect(
-    impactSection.getByRole("region", { name: "Consommation énergétique" }),
+    impactSection.getByRole("region", {
+      name: "Consommation énergétique avant travaux",
+    }),
   ).toContainText(/1\s*900\s*000,5/);
 
-  anomaly = impactSection
-    .getByRole("region", { name: "Émissions de GES", exact: true })
-    .getByRole("group", { name: "Avant travaux", exact: true });
+  anomaly = impactSection.getByRole("region", {
+    name: "Émissions de GES avant travaux",
+    exact: true,
+  });
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Émissions de GES avant travaux").fill("420");
@@ -320,15 +336,17 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/projets/demo/impact");
     const values = page.getByTestId("impact-section");
-    const energy = values.getByRole("region", {
-      name: "Consommation énergétique",
-      exact: true,
-    });
 
     for (const [first, second] of [
       [
-        energy.getByRole("group", { name: "Avant travaux", exact: true }),
-        energy.getByRole("group", { name: "Après travaux", exact: true }),
+        values.getByRole("region", {
+          name: "Consommation énergétique avant travaux",
+          exact: true,
+        }),
+        values.getByRole("region", {
+          name: "Consommation énergétique après travaux",
+          exact: true,
+        }),
       ],
       [
         values.getByRole("region", {
@@ -371,12 +389,12 @@ for (const [situation, width, besideValue] of [
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/projets/demo/impact");
-    const before = page
-      .getByTestId("impact-section")
-      .getByRole("region", { name: "Consommation énergétique", exact: true })
-      .getByRole("group", { name: "Avant travaux", exact: true });
+    const before = page.getByTestId("impact-section").getByRole("region", {
+      name: "Consommation énergétique avant travaux",
+      exact: true,
+    });
 
-    const value = await before.getByTestId("valeur-0").boundingBox();
+    const value = await before.getByTestId("valeur-estimee").boundingBox();
     const note = await before
       .getByRole("note", { name: "Anomalie détectée" })
       .first()
@@ -404,18 +422,16 @@ test("fits related energy metric values and actions on mobile", async ({
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
 
-  const card = page
-    .getByTestId("impact-section")
-    .getByRole("region", { name: "Consommation énergétique" });
+  const card = page.getByTestId("metric-group-energy");
 
   for (const label of [
-    "Avant travaux",
-    "Après travaux",
+    "Consommation énergétique avant travaux",
+    "Consommation énergétique après travaux",
     "Gain énergétique estimé",
   ]) {
     await expect(
       card
-        .getByRole("group", { name: label })
+        .getByRole("region", { name: label, exact: true })
         .getByRole("button", { name: "Modifier" }),
     ).toBeVisible();
   }
@@ -453,10 +469,10 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
 
-  const before = page
-    .getByTestId("impact-section")
-    .getByRole("region", { name: "Consommation énergétique", exact: true })
-    .getByRole("group", { name: "Avant travaux", exact: true });
+  const before = page.getByTestId("impact-section").getByRole("region", {
+    name: "Consommation énergétique avant travaux",
+    exact: true,
+  });
   const modifier = before.getByRole("button", {
     name: "Modifier",
     exact: true,
@@ -484,7 +500,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(
     before.getByText(PENDING_ANALYSIS, { exact: true }),
   ).toBeVisible();
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /2\s*000\s*000\s*kWh/,
   );
 
@@ -499,7 +515,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(
     before.getByRole("note", { name: "Anomalie détectée" }),
   ).toHaveCount(0);
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /2\s*000\s*000\s*kWh/,
   );
   await navigation
@@ -521,7 +537,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(page.locator(".fr-alert")).toContainText(
     "Les valeurs déjà enregistrées restent consultables",
   );
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /2\s*000\s*000\s*kWh/,
   );
 
@@ -537,7 +553,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await expect(before.getByText(PENDING_ANALYSIS, { exact: true })).toHaveCount(
     0,
   );
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /2\s*055\s*650\s*kWh/,
   );
   await expect(
@@ -552,10 +568,10 @@ test("replaces a demo metric after another tab resets its revisions and permits 
 }) => {
   await resetDemoDossierMetrics();
   await page.goto("/projets/demo/impact");
-  const before = page
-    .getByTestId("impact-section")
-    .getByRole("region", { name: "Consommation énergétique", exact: true })
-    .getByRole("group", { name: "Avant travaux", exact: true });
+  const before = page.getByTestId("impact-section").getByRole("region", {
+    name: "Consommation énergétique avant travaux",
+    exact: true,
+  });
   const modifier = before.getByRole("button", {
     name: "Modifier",
     exact: true,
@@ -599,7 +615,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   );
   await expect(input).toHaveValue("2055650");
   await expect(input).toBeFocused();
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /2\s*055\s*650\s*kWh/,
   );
   expect(submittedRevisions).toEqual([3]);
@@ -619,7 +635,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
     .click();
   await expect(dialog).toBeHidden();
   await expect(modifier).toBeFocused();
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /1\s*800\s*000\s*kWh/,
   );
   expect(submittedRevisions).toEqual([3, 1]);
@@ -652,14 +668,14 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   });
   await source.selectOption("recalculated");
   await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /1\s*700\s*000\s*kWh/,
   );
   await modifier.click();
   await expect(input).toHaveValue("1700000");
   await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
   await page.reload();
-  await expect(before.getByTestId("valeur-0")).toHaveText(
+  await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /1\s*700\s*000\s*kWh/,
   );
   await resetDemoDossierMetrics();

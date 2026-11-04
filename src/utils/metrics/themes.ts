@@ -1,4 +1,4 @@
-import { ProcessedMetric } from "@/services/fondsvert/dossier";
+import type { SimpleMetric } from "@/services/fondsvert/dossier";
 
 export type MetricTheme = {
   id: string;
@@ -55,53 +55,24 @@ function getMetricTheme(metricLabel: string): MetricTheme | null {
   return null;
 }
 
-// Organise les métriques en groupes thématiques et colorés
+// Organise les métriques en groupes thématiques et colorés, dans leur ordre
 export function groupMetricsByTheme(
-  metrics: Record<string, ProcessedMetric>,
-): Record<
-  string,
-  {
-    theme: MetricTheme | null;
-    metrics: Record<string, ProcessedMetric>;
-  }
-> {
-  const groups: Record<
-    string,
-    {
-      theme: MetricTheme | null;
-      metrics: Record<string, ProcessedMetric>;
-    }
-  > = {};
-
-  groups["default"] = {
-    theme: null,
-    metrics: {},
-  };
-
-  METRIC_THEMES.forEach((theme) => {
-    groups[theme.id] = {
+  metrics: SimpleMetric[],
+): { id: string; theme: MetricTheme | null; metrics: SimpleMetric[] }[] {
+  const groups = [
+    { id: "default", theme: null, metrics: [] as SimpleMetric[] },
+    ...METRIC_THEMES.map((theme) => ({
+      id: theme.id,
       theme,
-      metrics: {},
-    };
-  });
+      metrics: [] as SimpleMetric[],
+    })),
+  ];
 
-  // Assigner les métriques à leur groupe
-  Object.entries(metrics).forEach(([key, metric]) => {
-    const theme = getMetricTheme(metric.label);
-
-    if (theme) {
-      groups[theme.id].metrics[key] = metric;
-    } else {
-      groups["default"].metrics[key] = metric;
-    }
-  });
+  for (const metric of metrics) {
+    const themeId = getMetricTheme(metric.label)?.id ?? "default";
+    groups.find((group) => group.id === themeId)?.metrics.push(metric);
+  }
 
   // Supprimer les groupes vides pour éviter d'afficher des sections vides
-  Object.keys(groups).forEach((groupId) => {
-    if (Object.keys(groups[groupId].metrics).length === 0) {
-      delete groups[groupId];
-    }
-  });
-
-  return groups;
+  return groups.filter((group) => group.metrics.length > 0);
 }

@@ -906,21 +906,31 @@ test("le lecteur mobile parcourt les cinq colonnes de l’historique dans le tab
 test("dossier page displays impact metrics correctly", async ({ page }) => {
   await page.goto(`/projets/${DOSSIER_NUMBER}/impact`);
 
-  // Métriques avant/après travaux
+  // Métriques avant/après travaux, chacune sur sa ligne
 
-  const consoEnergetique = page.getByTestId("metric-consommation-energetique");
-  await expect(consoEnergetique).toContainText("Consommation énergétique");
-  await expect(consoEnergetique.getByTestId("valeur-0")).toContainText(
-    "2 055 650",
-  );
-  await expect(consoEnergetique.getByTestId("valeur-1")).toContainText(
-    "1 935 960",
-  );
+  for (const [testId, label, value] of [
+    [
+      "metric-consommation-energetique-avant-travaux",
+      "Consommation énergétique avant travaux",
+      "2 055 650",
+    ],
+    [
+      "metric-consommation-energetique-apres-travaux",
+      "Consommation énergétique après travaux",
+      "1 935 960",
+    ],
+    [
+      "metric-emissions-de-ges-avant-travaux",
+      "Émissions de GES avant travaux",
+      "448",
+    ],
+  ]) {
+    const row = page.getByTestId(testId);
+    await expect(row).toContainText(label);
+    await expect(row.getByTestId("valeur-estimee")).toContainText(value);
+  }
 
   // Métriques simples
-
-  const emissionsGES = page.getByTestId("metric-emissions-de-ges");
-  await expect(emissionsGES).toContainText("Émissions de GES");
 
   const gainEnergetique = page.getByTestId("metric-gain-energetique-estime");
   await expect(gainEnergetique).toContainText("Gain énergétique estimé");
@@ -1559,12 +1569,11 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
     await page.goto(`/projets/${correctionDossierNumber}/impact`);
     await waitForDsfrModal(page);
 
-    const beforeAfterCard = page.getByRole("region", { name: "Énergie test" });
-    const beforeRow = beforeAfterCard.getByRole("group", {
-      name: "Avant travaux",
+    const beforeRow = page.getByRole("region", {
+      name: "Énergie test avant travaux",
     });
-    const afterRow = beforeAfterCard.getByRole("group", {
-      name: "Après travaux",
+    const afterRow = page.getByRole("region", {
+      name: "Énergie test après travaux",
     });
     const editBefore = beforeRow.getByRole("button", { name: "Modifier" });
     const editAfter = afterRow.getByRole("button", { name: "Modifier" });
@@ -2623,17 +2632,16 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
         exact: true,
       }),
     ).toBeVisible();
-    const consommation = page.getByRole("region", {
-      name: "Consommation énergétique",
-      exact: true,
-    });
-    await expect(consommation).toBeVisible();
-    await expect(consommation.getByTestId("valeur-0")).toContainText(
-      "2 055 650",
-    );
-    await expect(consommation.getByTestId("valeur-1")).toContainText(
-      "1 935 960",
-    );
+    for (const [label, value] of [
+      ["Consommation énergétique avant travaux", "2 055 650"],
+      ["Consommation énergétique après travaux", "1 935 960"],
+    ]) {
+      await expect(
+        page
+          .getByRole("region", { name: label, exact: true })
+          .getByTestId("valeur-estimee"),
+      ).toContainText(value);
+    }
     await page.screenshot({
       path: testInfo.outputPath("impact-desktop.png"),
       fullPage: true,

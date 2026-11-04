@@ -1,84 +1,96 @@
-import type {
-  MetricFields,
-  Metrics,
-  ProcessedMetric,
-} from "@/services/fondsvert/dossier";
+import type { Metrics, SimpleMetric } from "@/services/fondsvert/dossier";
 import { isDisplayableMetricFields } from "@/utils/metrics/guards";
 
-const AVANT_TRAVAUX = "avant travaux";
-const APRES_TRAVAUX = "après travaux";
+const AVANT_TRAVAUX = " avant travaux";
+const APRES_TRAVAUX = " après travaux";
 
-function extractBaseMetricName(label: string): string {
-  return label
-    .replace(` ${AVANT_TRAVAUX}`, "")
-    .replace(` ${APRES_TRAVAUX}`, "")
-    .trim();
+// Ratios read right after the values they compare, keyed by the measure name
+// shared by the "avant travaux" and "après travaux" labels.
+const RATIO_LABELS: Record<string, string> = {
+  "Consommation énergétique": "Gain énergétique estimé",
+  "Émissions de GES": "Émissions de GES évitées",
+};
+
+// Values read together although their labels do not share a measure name.
+const FOLLOWING_METRIC_CODES: Record<string, readonly string[]> = {
+  nature_operations: ["type_batiment"],
+  surface_batiment_m2_avant_projet: [
+    "surface_batiment_m2_apres_projet",
+    "type_surface",
+  ],
+  nombre_habitant_gestion_proximite: [
+    "tonnage_annuel_entrant_gestion_proximite",
+  ],
+  nombre_habitant_collecte_separee: [
+    "quantite_globale_annuel_biodechets_collectes",
+  ],
+};
+
+function measureName(label: string): string | undefined {
+  for (const suffix of [AVANT_TRAVAUX, APRES_TRAVAUX]) {
+    if (label.includes(suffix)) return label.replace(suffix, "").trim();
+  }
+  return undefined;
 }
 
-function findAvantTravauxMetric(
-  baseLabel: string,
-  metrics: Metrics,
-): { key: string; value: MetricFields } | null {
-  for (const [key, value] of Object.entries(metrics)) {
-    if (
-      isDisplayableMetricFields(value) &&
-      value.label.includes(` ${AVANT_TRAVAUX}`) &&
-      extractBaseMetricName(value.label) === baseLabel
-    ) {
-      return { key, value };
-    }
-  }
-  return null;
-}
+// Lists displayable metrics in reading order: each value is followed by its
+// "après travaux" counterpart, its ratio and the values read with it.
+export function orderMetrics(metrics: Metrics): SimpleMetric[] {
+  if (!metrics) return [];
 
-// Regroupe les métriques "avant/après travaux" dans une unique métrique
-export function processMetrics(
-  metrics: Metrics,
-): Record<string, ProcessedMetric> {
-  if (!metrics) return {};
-
-  const processedMetrics: Record<string, ProcessedMetric> = {};
-  const processedKeys = new Set<string>();
-
-  for (const [apresKey, apresValue] of Object.entries(metrics)) {
-    if (!isDisplayableMetricFields(apresValue) || processedKeys.has(apresKey))
-      continue;
-
-    if (apresValue.label.includes(` ${APRES_TRAVAUX}`)) {
-      const baseLabel = extractBaseMetricName(apresValue.label);
-      const avantMetric = findAvantTravauxMetric(baseLabel, metrics);
-
-      if (avantMetric) {
-        const newKey = baseLabel.toLowerCase().replace(/\s+/g, "_");
-        processedMetrics[newKey] = {
-          _typename: "AvantApresTravaux",
-          beforeMetricCode: avantMetric.key,
-          afterMetricCode: apresKey,
-          label: baseLabel,
-          unite: apresValue.unite,
-          valeur_avant_travaux: avantMetric.value.valeur_estimee,
-          valeur_apres_travaux: apresValue.valeur_estimee,
-        };
-
-        processedKeys.add(apresKey);
-        processedKeys.add(avantMetric.key);
-      }
-    }
-  }
-
-  for (const [key, value] of Object.entries(metrics)) {
-    if (!isDisplayableMetricFields(value) || processedKeys.has(key)) continue;
-
-    processedMetrics[key] = {
+  const metricsByCode = new Map<string, SimpleMetric>();
+  for (const [metricCode, value] of Object.entries(metrics)) {
+    if (!isDisplayableMetricFields(value)) continue;
+    metricsByCode.set(metricCode, {
       _typename: "Simple",
-      metricCode: key,
+      metricCode,
       label: value.label,
       unite: value.unite,
       valeur_estimee: value.valeur_estimee,
-    };
-
-    processedKeys.add(key);
+    });
   }
+  const codesByLabel = new Map(
+    [...metricsByCode.values()].map((metric) => [
+      metric.label,
+      metric.metricCode,
+    ]),
+  );
 
-  return processedMetrics;
+  const followersOf = (metric: SimpleMetric): string[] => {
+    const measure = measureName(metric.label);
+    return [
+      ...(metric.label.includes(AVANT_TRAVAUX)
+        ? [metric.label.replace(AVANT_TRAVAUX, APRES_TRAVAUX)]
+        : []),
+      ...(measure && RATIO_LABELS[measure] ? [RATIO_LABELS[measure]] : []),
+    ]
+      .map((label) => codesByLabel.get(label))
+      .concat(FOLLOWING_METRIC_CODES[metric.metricCode] ?? [])
+      .filter(
+        (code): code is string =>
+          code !== undefined &&
+          code !== metric.metricCode &&
+          metricsByCode.has(code),
+      );
+  };
+
+  const followers = new Set(
+    [...metricsByCode.values()].flatMap((metric) => followersOf(metric)),
+  );
+  const ordered: SimpleMetric[] = [];
+  const placed = new Set<string>();
+  const place = (metricCode: string) => {
+    const metric = metricsByCode.get(metricCode);
+    if (!metric || placed.has(metricCode)) return;
+    placed.add(metricCode);
+    ordered.push(metric);
+    followersOf(metric).forEach(place);
+  };
+
+  for (const metricCode of metricsByCode.keys()) {
+    if (!followers.has(metricCode)) place(metricCode);
+  }
+  for (const metricCode of metricsByCode.keys()) place(metricCode);
+
+  return ordered;
 }

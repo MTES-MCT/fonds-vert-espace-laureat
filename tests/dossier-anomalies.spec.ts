@@ -66,6 +66,10 @@ function impactValues(page: Page) {
   return page.getByTestId("impact-section");
 }
 
+function valueRow(page: Page, label: string) {
+  return impactValues(page).getByRole("region", { name: label, exact: true });
+}
+
 function otherSignals(page: Page) {
   return page.getByRole("region", {
     name: "Signalements Fonds vert",
@@ -134,23 +138,20 @@ test("la page Impact affiche chaque signalement sur sa valeur et regroupe ceux s
     "4 données à vérifier",
   );
 
-  const energy = impactValues(page).getByRole("region", {
-    name: "Consommation énergétique",
-    exact: true,
-  });
-  const beforeNotes = energy
-    .getByRole("group", { name: "Avant travaux", exact: true })
-    .getByRole("note", { name: "Anomalie détectée" });
-  await expect(beforeNotes).toHaveText("Erreur");
   await expect(
-    energy
-      .getByRole("group", { name: "Après travaux", exact: true })
-      .getByRole("note", { name: "Anomalie détectée" }),
+    valueRow(page, "Consommation énergétique avant travaux").getByRole("note", {
+      name: "Anomalie détectée",
+    }),
+  ).toHaveText("Erreur");
+  await expect(
+    valueRow(page, "Consommation énergétique après travaux").getByRole("note", {
+      name: "Anomalie détectée",
+    }),
   ).toHaveCount(0);
   await expect(
-    energy
-      .getByRole("group", { name: "Gain énergétique estimé", exact: true })
-      .getByRole("note", { name: "Anomalie détectée" }),
+    valueRow(page, "Gain énergétique estimé").getByRole("note", {
+      name: "Anomalie détectée",
+    }),
   ).toHaveText("Anomalie");
 
   const others = otherSignals(page);
@@ -319,9 +320,9 @@ test("un ratio signalé apparaît une seule fois, sur sa propre valeur", async (
   });
   await expect(notes).toHaveCount(1);
   await expect(
-    impactValues(page)
-      .getByRole("group", { name: "Gain énergétique estimé", exact: true })
-      .getByRole("note", { name: "Anomalie détectée" }),
+    valueRow(page, "Gain énergétique estimé").getByRole("note", {
+      name: "Anomalie détectée",
+    }),
   ).toHaveText("Anomalie");
   await expect(otherSignals(page)).toHaveCount(0);
 });
@@ -382,14 +383,7 @@ for (const [actor, email, correctedValue] of [
     ).toBeVisible();
 
     const values = impactValues(page);
-    const energy = values.getByRole("region", {
-      name: "Consommation énergétique",
-      exact: true,
-    });
-    const gain = energy.getByRole("group", {
-      name: "Gain énergétique estimé",
-      exact: true,
-    });
+    const gain = valueRow(page, "Gain énergétique estimé");
     const opener = gain.getByRole("button", { name: "Modifier", exact: true });
     const gainNotes = gain.getByRole("note", { name: "Anomalie détectée" });
     const pendingAnalysis = gain.getByText("En attente d’analyse", {
