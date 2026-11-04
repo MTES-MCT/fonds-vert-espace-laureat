@@ -377,6 +377,38 @@ for (const width of [1440, 390]) {
   });
 }
 
+for (const [situation, width, besideValue] of [
+  ["dans une colonne à part sur grand écran", 1440, true],
+  ["sous la valeur sur mobile", 390, false],
+] as const) {
+  test(`le lecteur voit les signalements d’une valeur ${situation}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/projets/demo/impact");
+    const before = page
+      .getByTestId("impact-section")
+      .getByRole("region", { name: "Consommation énergétique", exact: true })
+      .getByRole("group", { name: "Avant travaux", exact: true });
+
+    const value = await before.getByTestId("valeur-0").boundingBox();
+    const note = await before
+      .getByRole("note", { name: "Anomalie détectée" })
+      .first()
+      .boundingBox();
+    if (!value || !note) {
+      throw new Error("La valeur et son signalement doivent être affichés.");
+    }
+
+    if (besideValue) {
+      expect(note.x).toBeGreaterThan(value.x + value.width);
+      expect(Math.abs(note.y - value.y)).toBeLessThanOrEqual(8);
+    } else {
+      expect(note.y).toBeGreaterThanOrEqual(value.y + value.height);
+    }
+  });
+}
+
 test("fits related energy metric values and actions on mobile", async ({
   page,
 }) => {

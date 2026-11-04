@@ -88,7 +88,7 @@ const MetricAnomalyNotices = ({
   anomalies: MetricAnomaly[];
   corrected: boolean;
 }) => (
-  <div className="mt-2 space-y-2">
+  <div className="space-y-2">
     {anomalies.map((anomaly) => (
       <div key={anomaly.id} aria-label="Anomalie détectée" role="note">
         <MetricAnomalyMessage anomaly={anomaly} />
@@ -120,6 +120,7 @@ const MetricRow = ({
     className={`
       grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 gap-y-1 py-3
       sm:grid-cols-[15rem_minmax(0,1fr)_auto]
+      lg:grid-cols-[15rem_minmax(0,1fr)_minmax(0,1fr)_auto]
     `}
   >
     <p
@@ -133,15 +134,25 @@ const MetricRow = ({
     </p>
     <div className="col-start-1 row-start-2 min-w-0 sm:col-start-2 sm:row-start-1">
       {children}
-      {anomalies?.length ? (
+    </div>
+    {anomalies?.length ? (
+      <div
+        className={`
+          col-start-1 row-start-3 mt-2 min-w-0
+          sm:col-start-2 sm:row-start-2
+          lg:col-start-3 lg:row-start-1 lg:mt-0
+        `}
+      >
         <MetricAnomalyNotices
           anomalies={anomalies}
           corrected={(target?.revision ?? 1) > 1}
         />
-      ) : null}
-    </div>
+      </div>
+    ) : null}
     {target && (
-      <div className="col-start-2 row-span-2 row-start-1 sm:col-start-3 sm:row-span-1">
+      <div
+        className={`col-start-2 row-span-2 row-start-1 sm:col-start-3 sm:row-span-1 lg:col-start-4`}
+      >
         <MetricCorrectionEditor target={target} buttonLabel="Modifier" />
       </div>
     )}
