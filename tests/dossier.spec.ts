@@ -235,7 +235,6 @@ for (const viewport of [
     await expect(synthese.getByRole("heading", { level: 3 })).toHaveText([
       "Présentation du projet",
       "Identité du porteur de projet",
-      "Avancement du projet",
       "Calendrier",
     ]);
     await expect

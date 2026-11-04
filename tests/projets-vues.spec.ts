@@ -188,13 +188,11 @@ for (const [email, listTitle] of [
         ? [
             "Présentation du projet",
             "Identité du porteur de projet",
-            "Avancement du projet",
             "Calendrier",
           ]
         : [
             "Identité du porteur de projet",
             "Présentation du projet",
-            "Avancement du projet",
             "Calendrier",
           ],
     );

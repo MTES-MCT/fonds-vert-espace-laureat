@@ -240,9 +240,8 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     name: "Avancement du projet",
   });
   await expect(
-    progressSection.getByText("Non renseigné", { exact: true }),
+    progressSection.locator(".fr-badge").filter({ hasText: /^Non renseigné$/ }),
   ).toBeVisible();
-  await expect(progressSection.locator(".fr-badge")).toHaveCount(0);
 
   await page
     .getByRole("button", { name: "Modifier l’avancement", exact: true })

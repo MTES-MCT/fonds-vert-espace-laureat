@@ -16,7 +16,7 @@ export function DossierProgressBadge({
   status: DossierProgressStatus | null;
 }) {
   return status ? (
-    <Badge small noIcon severity={severityByStatus[status]}>
+    <Badge as="span" small noIcon severity={severityByStatus[status]}>
       {status}
     </Badge>
   ) : (

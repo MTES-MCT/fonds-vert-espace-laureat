@@ -1,10 +1,12 @@
 "use client";
 
+import Badge from "@codegouvfr/react-dsfr/Badge";
 import Button from "@codegouvfr/react-dsfr/Button";
 import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import Select from "@codegouvfr/react-dsfr/Select";
+import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import {
   type FormEvent,
   useId,
@@ -171,41 +173,41 @@ export function StatutRealisation({
     }
   };
 
+  const modificationTooltipId = target.updatedAt
+    ? `dossier-progress-date-${instanceId}`
+    : undefined;
+
   return (
-    <section
-      aria-labelledby="status-heading"
-      className={`
-        border-l-4 border-[var(--border-active-blue-france)] bg-[var(--background-alt-blue-france)]
-        px-4 py-3 text-left
-      `}
-    >
-      <h3 id="status-heading" className="mb-2 text-base font-bold">
-        Avancement du projet
-      </h3>
-      <div className="flex flex-col items-start gap-3">
-        <div>
+    <section aria-label="Avancement du projet">
+      <div className="flex items-center gap-2">
+        {target.updatedAt ? (
+          <Tooltip
+            id={modificationTooltipId}
+            title={`Dernière modification : ${dateFormatter.format(new Date(target.updatedAt))}`}
+          >
+            <DossierProgressBadge status={target.status} />
+          </Tooltip>
+        ) : target.status ? (
           <DossierProgressBadge status={target.status} />
-          {target.updatedAt && (
-            <p className="mt-1 mb-0 text-xs text-[var(--text-mention-grey)]">
-              Dernière modification :{" "}
-              {dateFormatter.format(new Date(target.updatedAt))}
-            </p>
-          )}
-        </div>
+        ) : (
+          <Badge as="span" small noIcon>
+            Non renseigné
+          </Badge>
+        )}
         <Button
           ref={openerRef}
-          className="bg-white"
           disabled={!isReady}
-          priority="secondary"
+          priority="tertiary no outline"
           size="small"
+          iconId="fr-icon-edit-line"
+          title="Modifier l’avancement"
           nativeButtonProps={{
             ...modal.buttonProps,
             type: "button",
+            "aria-describedby": modificationTooltipId,
             onClick: openEditor,
           }}
-        >
-          Modifier l’avancement
-        </Button>
+        />
       </div>
       <modal.Component
         title={

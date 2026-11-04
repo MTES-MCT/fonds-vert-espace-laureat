@@ -152,7 +152,7 @@ test("shares progress saved from the project list between the porteur, instructe
     .click();
   const section = page.getByRole("region", { name: "Avancement du projet" });
   await expect(
-    section.getByText("Non renseigné", { exact: true }),
+    section.locator(".fr-badge").filter({ hasText: /^Non renseigné$/ }),
   ).toBeVisible();
   await expect(
     section.locator(".fr-badge").filter({ hasText: /^Terminé$/ }),
@@ -161,9 +161,23 @@ test("shares progress saved from the project list between the porteur, instructe
 
   const saveDurations = [await saveOrdinaryProgress(page, "Non-commencé")];
   await page.reload();
-  await expect(
-    section.locator(".fr-badge").filter({ hasText: /^Non-commencé$/ }),
-  ).toBeVisible();
+  const badge = section
+    .locator(".fr-badge")
+    .filter({ hasText: /^Non-commencé$/ });
+  const modificationDate = section.getByRole("tooltip", {
+    includeHidden: true,
+  });
+  await expect(badge).toBeVisible();
+  await expect(modificationDate).toBeHidden();
+
+  await badge.hover();
+  await expect(modificationDate).toBeVisible();
+  await expect(modificationDate).toContainText("Dernière modification");
+
+  await page.getByRole("heading", { level: 1 }).hover();
+  await expect(modificationDate).toBeHidden();
+  await section.getByRole("button", { name: "Modifier l’avancement" }).focus();
+  await expect(modificationDate).toBeVisible();
 
   await page.context().clearCookies();
   await authenticatePage(page, { email: INSTRUCTEUR });
