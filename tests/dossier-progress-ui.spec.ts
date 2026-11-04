@@ -157,6 +157,9 @@ test("shares progress saved from the project list between the porteur, instructe
   await expect(
     section.locator(".fr-badge").filter({ hasText: /^Terminé$/ }),
   ).toHaveCount(0);
+  await expect(
+    section.getByRole("tooltip", { includeHidden: true }),
+  ).toHaveCount(0);
   expect(await progressRows(dossierNumber)).toEqual([]);
 
   const saveDurations = [await saveOrdinaryProgress(page, "Non-commencé")];
@@ -165,6 +168,15 @@ test("shares progress saved from the project list between the porteur, instructe
     .locator(".fr-badge")
     .filter({ hasText: /^Non-commencé$/ });
   await expect(badge).toBeVisible();
+  const dateTooltip = section.getByRole("tooltip", { includeHidden: true });
+  await expect(dateTooltip).toBeHidden();
+
+  await badge.hover();
+  await expect(dateTooltip).toBeVisible();
+  await expect(dateTooltip).toContainText("Dernière modification");
+
+  await section.getByRole("button", { name: "Modifier l’avancement" }).hover();
+  await expect(dateTooltip).toBeHidden();
 
   const dialog = await openProgress(page);
   await expect(dialog.getByText(/^Dernière modification/)).toBeVisible();

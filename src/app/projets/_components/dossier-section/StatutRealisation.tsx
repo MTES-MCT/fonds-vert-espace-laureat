@@ -6,6 +6,7 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import Select from "@codegouvfr/react-dsfr/Select";
+import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import {
   type FormEvent,
   useId,
@@ -173,6 +174,14 @@ export function StatutRealisation({
     }
   };
 
+  const badge = target.status ? (
+    <DossierProgressBadge status={target.status} />
+  ) : (
+    <Badge as="span" small noIcon>
+      Non renseigné
+    </Badge>
+  );
+
   return (
     <FactRow
       id="project-progress-label"
@@ -269,12 +278,14 @@ export function StatutRealisation({
         </>
       }
     >
-      {target.status ? (
-        <DossierProgressBadge status={target.status} />
+      {target.updatedAt ? (
+        <Tooltip
+          title={`Dernière modification : ${dateFormatter.format(new Date(target.updatedAt))}`}
+        >
+          {badge}
+        </Tooltip>
       ) : (
-        <Badge as="span" small noIcon>
-          Non renseigné
-        </Badge>
+        badge
       )}
     </FactRow>
   );
