@@ -28,7 +28,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** @description Exporte uniquement les corrections du catalogue fictif. Les pages restent figées pendant 24 h. Créez au plus un export par minute, puis suivez next_cursor avec la même route. Utilisez la clé machine de démonstration via HTTPS. */
+        /** @description Exporte uniquement les corrections du catalogue fictif. Les pages restent figées pendant 24 h. L’intervalle entre créations est configuré par environnement, avec 60 secondes par défaut. Suivez next_cursor avec la même route. Utilisez la clé machine de démonstration via HTTPS. */
         get: operations["getDemoCorrections"];
         put?: never;
         post?: never;

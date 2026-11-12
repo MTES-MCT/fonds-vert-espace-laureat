@@ -372,9 +372,9 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
           valeur_corrigee: 126_000,
         }),
       ]);
-      expect(
-        (await request.get(demoApi, { headers: demoHeaders })).status(),
-      ).toBe(429);
+      const limitedDemo = await request.get(demoApi, { headers: demoHeaders });
+      expect(limitedDemo.status()).toBe(429);
+      expect(limitedDemo.headers()["retry-after"]).toBe("5");
 
       const realResponse = await request.get(`${realApi}?page_size=1`, {
         headers: realHeaders,
@@ -419,15 +419,26 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
         }),
       ]);
 
-      await sql`update fonds_vert_export_admission set next_allowed_at = now() where id = 2`;
+      await expect
+        .poll(
+          async () => {
+            const [admission] =
+              await sql`select next_allowed_at <= clock_timestamp() as ready from fonds_vert_export_admission where id = 2`;
+            return admission.ready;
+          },
+          { timeout: 8_000 },
+        )
+        .toBe(true);
+
       const fresh = await request.get(demoApi, { headers: demoHeaders });
       expect(fresh.status()).toBe(200);
       expect((await fresh.json()).corrections).toContainEqual(
         expect.objectContaining({ champ: before, valeur_corrigee: 193_000 }),
       );
-      expect(
-        (await request.get(realApi, { headers: realHeaders })).status(),
-      ).toBe(429);
+
+      const limitedReal = await request.get(realApi, { headers: realHeaders });
+      expect(limitedReal.status()).toBe(429);
+      expect(limitedReal.headers()["retry-after"]).toBe("60");
     });
 
     await test.step("La réinitialisation publique restaure le catalogue et conserve les révisions réelles et historiques", async () => {

@@ -1,7 +1,6 @@
 import { correctionAccess } from "@/api/corrections-access";
 import type { components } from "@/api/generated/corrections-api";
 import {
-  CORRECTION_EXPORT_INTERVAL_SECONDS,
   CorrectionExportBusyError,
   createAdmittedCorrectionExport,
 } from "@/db/fondsVertCorrectionAdmission";
@@ -102,7 +101,7 @@ export async function getCorrections(request: Request, demo = false) {
   } catch (error) {
     if (error instanceof CorrectionExportBusyError) {
       return correctionError(429, "rate_limited", {
-        "Retry-After": String(CORRECTION_EXPORT_INTERVAL_SECONDS),
+        "Retry-After": String(error.retryAfterSeconds),
       });
     }
     if (error instanceof FondsVertExportPageError) {
