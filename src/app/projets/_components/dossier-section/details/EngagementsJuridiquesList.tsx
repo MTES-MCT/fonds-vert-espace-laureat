@@ -3,22 +3,22 @@
 import { Tabs } from "@codegouvfr/react-dsfr/Tabs";
 import React, { ReactNode } from "react";
 
-import { InformationFinanciere } from "@/services/fondsvert/dossier";
-import { getMontantRestant, groupEngagementsByEJ } from "@/utils/finance";
+import {
+  type EngagementJuridiqueGroupe,
+  getMontantRestant,
+} from "@/utils/finance";
 
 import { EngagementJuridiqueDetails } from "./engagement-juridique/EngagementJuridiqueDetails";
 import { EngagementJuridiqueHistorique } from "./engagement-juridique/EngagementJuridiqueHistorique";
 import { EtatEngagementBadge } from "./engagement-juridique/EtatEngagementBadge";
 
 export function EngagementsJuridiquesList({
-  informationFinanciere,
+  engagementsList,
   financeFieldsSlots,
 }: {
-  informationFinanciere: InformationFinanciere;
+  engagementsList: EngagementJuridiqueGroupe[];
   financeFieldsSlots: { initialAmount: ReactNode; parties: ReactNode }[];
 }) {
-  const engagementsList = groupEngagementsByEJ(informationFinanciere);
-
   return (
     <div className="min-w-0 space-y-8">
       {engagementsList.map((group, index) => {

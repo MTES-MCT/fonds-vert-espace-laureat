@@ -42,7 +42,7 @@ export function EngagementsSection({
         <FinanceFieldsErrorAlert financesEJPromise={financesEJPromise} />
       </Suspense>
       <EngagementsJuridiquesList
-        informationFinanciere={informationFinanciere}
+        engagementsList={engagementsList}
         financeFieldsSlots={financeFieldsSlots}
       />
     </>

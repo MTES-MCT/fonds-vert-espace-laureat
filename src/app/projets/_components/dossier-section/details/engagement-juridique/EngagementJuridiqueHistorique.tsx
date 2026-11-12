@@ -1,19 +1,10 @@
 import React, { ReactNode } from "react";
 
+import type { EngagementJuridiqueAnnee } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
 
-interface Engagement {
-  annee: number;
-  montant_engage: number;
-  demandes_paiement: {
-    numero_dp: string;
-    date_dp: string;
-    montant_paye: number;
-  }[];
-}
-
 interface EngagementHistoryTableProps {
-  sortedhistorique: Engagement[];
+  sortedhistorique: EngagementJuridiqueAnnee[];
 }
 
 function DsfrTable({ children }: { children: ReactNode }) {
