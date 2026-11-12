@@ -1,11 +1,10 @@
-import { ReactNode } from "react";
-
 import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
 import {
   anomalyCategoryLabels,
   FondsVertAnomalyStatus,
   fondsVertAnomalySummary,
 } from "@/components/metrics/FondsVertAnomalyStatus";
+import { DsfrTable } from "@/components/table/DsfrTable";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
 import { readFondsVertSignals } from "@/services/fondsvert/anomalies";
@@ -16,32 +15,26 @@ import type { ProjectView } from "@/utils/projectView";
 
 interface DossiersTableProps {
   dossiers: Dossier[];
+  projectLink?: (number: number, impact?: boolean) => string;
   view?: ProjectView;
   summaries: Record<number, DossierFondsVertSummary>;
   progress: Record<number, DossierProgressTarget>;
 }
 
-function DsfrTable({ children }: { children: ReactNode }) {
-  return (
-    <div className="fr-table fr-table--lg mb-0 max-w-full">
-      <div className="fr-table__wrapper">
-        <div className="fr-table__container">
-          <div className="fr-table__content">{children}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function DossiersTable({
   dossiers,
+  projectLink = (number, impact) =>
+    `/projets/${number}${impact ? "/impact#signalements" : ""}`,
   view,
   summaries,
   progress,
 }: DossiersTableProps) {
   const instructorView = view === "instructeur";
   return (
-    <DsfrTable>
+    <DsfrTable
+      label="Tableau des projets"
+      className="fr-table--lg mb-0 max-w-full"
+    >
       <table>
         <thead>
           <tr>
@@ -73,13 +66,13 @@ export default function DossiersTable({
               <tr key={dossier.numero}>
                 <td>{dossier.numero}</td>
                 <td className="min-w-52 max-w-lg whitespace-normal [overflow-wrap:anywhere]">
-                  <a href={`/projets/${dossier.numero}`}>
+                  <a href={projectLink(dossier.numero)}>
                     {dossier.champs.intituleProjet || "Non renseigné"}
                   </a>
                 </td>
                 <td className="min-w-52 whitespace-normal [overflow-wrap:anywhere]">
                   <a
-                    href={`/projets/${dossier.numero}/impact#signalements`}
+                    href={projectLink(dossier.numero, true)}
                     aria-label={`${fondsVertAnomalySummary(anomalies).label} pour le projet n°${dossier.numero}`}
                   >
                     <FondsVertAnomalyStatus anomalies={anomalies} />
@@ -181,7 +174,7 @@ export default function DossiersTable({
                 <td>
                   <a
                     className="fr-btn fr-btn--secondary"
-                    href={`/projets/${dossier.numero}`}
+                    href={projectLink(dossier.numero)}
                   >
                     Ouvrir
                   </a>

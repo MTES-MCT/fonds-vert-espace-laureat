@@ -1,6 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 
 type Database = ReturnType<typeof drizzle>;
+export type DbTransaction = Parameters<
+  Parameters<Database["transaction"]>[0]
+>[0];
 
 const poolMax = process.env.NODE_ENV === "production" ? 10 : 3;
 

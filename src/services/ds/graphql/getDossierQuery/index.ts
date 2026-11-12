@@ -6,7 +6,6 @@ export const getDossierQuery = graphql(`
       id
       number
       state
-      dateTraitement
       demandeur {
         __typename
         ...PersonneMoraleFragment
@@ -60,6 +59,5 @@ export const getDossierQuery = graphql(`
 
   fragment PersonneMoraleFragment on PersonneMorale {
     siret
-    libelleNaf
   }
 `);

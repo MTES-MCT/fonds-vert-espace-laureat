@@ -66,7 +66,7 @@ export const ProjectPagesNav = ({
     aria-label="Pages du projet"
     className="mt-8 border-b border-[var(--border-default-grey)]"
   >
-    <ul className="m-0 flex list-none gap-x-2 overflow-x-auto p-0">
+    <ul className="m-0 flex list-none flex-wrap gap-x-2 p-0">
       {links.map((link, index) => (
         <li key={link.href} className="p-0">
           <Link

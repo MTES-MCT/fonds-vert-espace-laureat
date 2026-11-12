@@ -2,7 +2,9 @@ import { correctionError, getCorrections } from "@/api/corrections-handler";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const GET = getCorrections;
+export function GET(request: Request) {
+  return getCorrections(request);
+}
 
 function methodNotAllowed() {
   return correctionError(405, "method_not_allowed", { Allow: "GET" });

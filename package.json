@@ -29,6 +29,7 @@
     "db:studio": "drizzle-kit studio --config drizzle.config.ts",
     "codegen:corrections": "openapi-typescript openapi/corrections.json -o src/api/generated/corrections-api.d.ts",
     "check:corrections": "npm run codegen:corrections -- --check",
+    "test:demo-catalogue": "dotenv -e tests/fixtures/corrections-api.env -- npm run test:e2e -- tests/demo-catalogue.spec.ts --workers=1",
     "test:corrections-api": "dotenv -e tests/fixtures/corrections-api.env -- npm run test:e2e -- tests/corrections-api.spec.ts --workers=1"
   },
   "overrides": {

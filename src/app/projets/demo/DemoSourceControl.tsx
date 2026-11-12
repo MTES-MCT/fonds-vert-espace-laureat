@@ -21,7 +21,7 @@ export function DemoSourceControl({ state }: { state: DemoSourceState }) {
   );
   return (
     <Select
-      className="mb-0"
+      className="mb-0 w-full"
       label="Réponse Fonds vert simulée"
       disabled={!hydrated || pending}
       nativeSelectProps={{

@@ -4,20 +4,18 @@ import { createContext, type ReactNode, useContext, useMemo } from "react";
 
 import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 
-export type MetricAnomaly = NormalizedMetricAnomaly;
-
-type MetricAnomalyContextValue = Record<string, MetricAnomaly[]>;
+type MetricAnomalyContextValue = Record<string, NormalizedMetricAnomaly[]>;
 const MetricAnomalyContext = createContext<MetricAnomalyContextValue>({});
 
 export function MetricAnomalyProvider({
   anomalies,
   children,
 }: {
-  anomalies: MetricAnomaly[];
+  anomalies: NormalizedMetricAnomaly[];
   children: ReactNode;
 }) {
   const value = useMemo(() => {
-    const anomaliesByMetricCode: Record<string, MetricAnomaly[]> = {};
+    const anomaliesByMetricCode: Record<string, NormalizedMetricAnomaly[]> = {};
 
     for (const anomaly of anomalies) {
       for (const metricCode of anomaly.metricCodes) {
@@ -37,7 +35,7 @@ export function MetricAnomalyProvider({
 
 export function useMetricAnomaliesByMetricCode(): Record<
   string,
-  MetricAnomaly[]
+  NormalizedMetricAnomaly[]
 > {
   return useContext(MetricAnomalyContext);
 }

@@ -5,7 +5,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import { anomalyCategoryLabels } from "@/components/metrics/FondsVertAnomalyStatus";
 import { MetricAnomalyMessage } from "@/components/metrics/MetricAnomalyMessage";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
-import type { ResolvedFondsVertAnomalies } from "@/utils/metrics/anomalies";
+import type { NormalizedFondsVertAnomalies } from "@/utils/metrics/anomalies";
 
 // Signals attached to a displayed value are shown next to it; this section
 // keeps only what no value can carry: source states, unmatched indicators,
@@ -15,7 +15,7 @@ export function AnomaliesSection({
   sourceUnavailable = false,
   hasLocalMetrics = false,
 }: {
-  anomalies: ResolvedFondsVertAnomalies;
+  anomalies: NormalizedFondsVertAnomalies;
   sourceUnavailable?: boolean;
   hasLocalMetrics?: boolean;
 }) {

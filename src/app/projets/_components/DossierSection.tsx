@@ -58,6 +58,8 @@ export async function DossierSection({
   isAdmin,
   section = "summary",
   navigationQuery = "",
+  projectPath,
+  listPath = "/projets",
   metrics,
   view,
   dossierSubvention,
@@ -71,6 +73,8 @@ export async function DossierSection({
   isAdmin: boolean;
   section?: ProjectSection;
   navigationQuery?: string;
+  projectPath?: string;
+  listPath?: string;
   metrics?: Metrics;
   view?: ProjectView;
   dossierSubvention: Dossier;
@@ -106,11 +110,9 @@ export async function DossierSection({
 
   const backLink = {
     label: isAdmin ? "Tous les projets" : projectListLabel(view),
-    linkProps: { href: "/projets" },
+    linkProps: { href: listPath },
   };
-  const basePath = progressApiPath
-    ? "/projets/demo"
-    : `/projets/${dossierSubvention.numero}`;
+  const basePath = projectPath ?? `/projets/${dossierSubvention.numero}`;
   const presentation = (
     <ProjectPresentation
       numeroDossier={dossierSubvention.numero}

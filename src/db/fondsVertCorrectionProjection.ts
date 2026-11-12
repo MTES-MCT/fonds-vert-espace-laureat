@@ -1,10 +1,13 @@
-import { and, asc, desc, gt, ne } from "drizzle-orm";
+import { and, asc, desc, gt, inArray, notInArray } from "drizzle-orm";
 
-import { getDb } from "@/db";
+import { type DbTransaction, getDb } from "@/db";
 import { metricRevisionValue } from "@/db/dossierMetricValue";
 import { dossierMetricRevisions } from "@/db/schema";
 import { type MetricValue } from "@/services/fondsvert/dossier";
-import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
+import {
+  DEMO_DOSSIER_NUMBERS,
+  LEGACY_DEMO_NUMBER,
+} from "@/utils/demo/reservation";
 
 type MetricRevisionRow = typeof dossierMetricRevisions.$inferSelect;
 export type FondsVertMetricValueType = MetricRevisionRow["valueType"];
@@ -33,12 +36,13 @@ const correctionSelection = {
 };
 
 /**
- * Reads the current local correction for each real dossier/metric pair.
+ * Reads the current local correction for each dossier/metric pair in scope.
  */
-export async function getLatestFondsVertCorrections(): Promise<
-  FondsVertCorrection[]
-> {
-  const rows = await getDb()
+export async function getLatestFondsVertCorrections(
+  demo = false,
+  transaction?: DbTransaction,
+): Promise<FondsVertCorrection[]> {
+  const rows = await (transaction ?? getDb())
     .selectDistinctOn(
       [dossierMetricRevisions.dossierNumber, dossierMetricRevisions.metricCode],
       correctionSelection,
@@ -47,7 +51,14 @@ export async function getLatestFondsVertCorrections(): Promise<
     .where(
       and(
         gt(dossierMetricRevisions.revision, 1),
-        ne(dossierMetricRevisions.dossierNumber, DEMO_DOSSIER_NUMBER),
+        demo
+          ? inArray(dossierMetricRevisions.dossierNumber, [
+              ...DEMO_DOSSIER_NUMBERS,
+            ])
+          : notInArray(dossierMetricRevisions.dossierNumber, [
+              ...DEMO_DOSSIER_NUMBERS,
+              LEGACY_DEMO_NUMBER,
+            ]),
       ),
     )
     .orderBy(

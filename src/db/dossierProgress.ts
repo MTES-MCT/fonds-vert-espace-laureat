@@ -1,7 +1,12 @@
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
+import {
+  DEMO_MAX_REVISIONS,
+  DEMO_REVISION_LIMIT_MESSAGE,
+} from "@/db/publicDemoWrites";
 import { dossierProgressRevisions } from "@/db/schema";
+import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
 import {
   type DossierProgressStatus,
   isDossierProgressStatus,
@@ -41,7 +46,10 @@ function targetFromRow(
 
 export class DossierProgressError extends Error {
   constructor(
-    public readonly code: "invalid-status" | "confirmation-required",
+    public readonly code:
+      | "invalid-status"
+      | "confirmation-required"
+      | "revision-limit",
     message: string,
   ) {
     super(message);
@@ -102,12 +110,14 @@ export async function appendDossierProgressRevision({
   expectedRevision,
   authorEmail,
   confirmed,
+  initialStatus = null,
 }: {
   numeroDossier: number;
   status: unknown;
   expectedRevision: number;
   authorEmail: string | null;
   confirmed: boolean;
+  initialStatus?: DossierProgressStatus | null;
 }): Promise<DossierProgressTarget> {
   if (!isDossierProgressStatus(status)) {
     throw new DossierProgressError("invalid-status", "Avancement invalide");
@@ -121,7 +131,9 @@ export async function appendDossierProgressRevision({
       .where(eq(dossierProgressRevisions.dossierNumber, numeroDossier))
       .orderBy(desc(dossierProgressRevisions.revision))
       .limit(1);
-    const target = targetFromRow(row);
+    const target = row
+      ? targetFromRow(row)
+      : { ...emptyProgress, status: initialStatus };
 
     if (target.revision !== expectedRevision)
       throw new DossierProgressConflict(target);
@@ -130,6 +142,15 @@ export async function appendDossierProgressRevision({
       throw new DossierProgressError(
         "confirmation-required",
         "Confirmez le passage à cet avancement",
+      );
+    }
+    if (
+      DEMO_DOSSIER_NUMBERS.includes(numeroDossier) &&
+      target.revision >= DEMO_MAX_REVISIONS
+    ) {
+      throw new DossierProgressError(
+        "revision-limit",
+        DEMO_REVISION_LIMIT_MESSAGE,
       );
     }
 
@@ -143,18 +164,5 @@ export async function appendDossierProgressRevision({
       })
       .returning(progressSelection);
     return targetFromRow(inserted);
-  });
-}
-
-export async function resetDossierProgress({
-  numeroDossier,
-}: {
-  numeroDossier: number;
-}): Promise<void> {
-  await getDb().transaction(async (tx) => {
-    await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
-    await tx
-      .delete(dossierProgressRevisions)
-      .where(eq(dossierProgressRevisions.dossierNumber, numeroDossier));
   });
 }

@@ -3,8 +3,6 @@ import type {
   AvertissementsSection,
   FondsVertSignals,
 } from "@/services/fondsvert/anomalies";
-import type { Metrics } from "@/services/fondsvert/dossier";
-import { isDisplayableMetricFields } from "@/utils/metrics/guards";
 
 export type FondsVertAnomalyCategory = "statistical" | "strong-inconsistency";
 export type FondsVertAnomalyTheme =
@@ -33,18 +31,6 @@ export type NormalizedFondsVertAnomalies = {
   warnings: AvertissementsSection;
   diagnostics: string[];
   hasNoSignals: boolean;
-};
-
-export type EditableAnomalyTarget = { metricCode: string; label: string };
-export type ResolvedMetricAnomaly = NormalizedMetricAnomaly & {
-  editableTargets: EditableAnomalyTarget[];
-  unavailableMetricCodes: string[];
-};
-export type ResolvedFondsVertAnomalies = Omit<
-  NormalizedFondsVertAnomalies,
-  "indicators"
-> & {
-  indicators: ResolvedMetricAnomaly[];
 };
 
 type IndicatorMapping = {
@@ -213,26 +199,4 @@ export function normalizeFondsVertAnomalies(
     data.anomalie_indicateur_list?.length === 0 &&
     data.error_indicateur_list?.length === 0;
   return normalized;
-}
-
-export function resolveEditableAnomalyTargets(
-  anomalies: NormalizedFondsVertAnomalies,
-  metrics: Metrics | undefined,
-): ResolvedFondsVertAnomalies {
-  return {
-    ...anomalies,
-    indicators: anomalies.indicators.map((indicator) => {
-      const editableTargets: EditableAnomalyTarget[] = [];
-      const unavailableMetricCodes: string[] = [];
-      for (const metricCode of indicator.metricCodes) {
-        const metric = metrics?.[metricCode];
-        if (isDisplayableMetricFields(metric)) {
-          editableTargets.push({ metricCode, label: metric.label });
-        } else {
-          unavailableMetricCodes.push(metricCode);
-        }
-      }
-      return { ...indicator, editableTargets, unavailableMetricCodes };
-    }),
-  };
 }

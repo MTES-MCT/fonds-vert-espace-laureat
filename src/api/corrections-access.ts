@@ -11,11 +11,26 @@ function equalSecret(received: string, expected: string) {
 }
 
 /** Trust only metadata overwritten by an authenticated, verified ingress. */
-export function correctionAccess(request: Request): 401 | 403 | 503 | null {
+export function correctionAccess(
+  request: Request,
+  demo = false,
+): 401 | 403 | 503 | null {
+  const demoKey = process.env.DEMO_CORRECTIONS_API_KEY ?? "";
+  const authorization = request.headers.get("authorization") ?? "";
+  const match = /^Bearer ([A-Za-z0-9_-]{43,128})$/i.exec(authorization);
   const key = process.env.CORRECTIONS_API_KEY ?? "";
   const previous = process.env.CORRECTIONS_API_PREVIOUS_KEY;
   const ingress = process.env.CORRECTIONS_INGRESS_SECRET ?? "";
   const addresses = (process.env.CORRECTIONS_ALLOWED_IPS ?? "").split(",");
+  if (demo) {
+    if (
+      !secretPattern.test(demoKey) ||
+      [key, previous, ingress].includes(demoKey)
+    )
+      return 503;
+    return match && equalSecret(match[1], demoKey) ? null : 401;
+  }
+
   if (
     process.env.CORRECTIONS_API_ENABLED !== "true" ||
     process.env.CORRECTIONS_INGRESS_VERIFIED !== "true" ||
@@ -29,8 +44,6 @@ export function correctionAccess(request: Request): 401 | 403 | 503 | null {
     return 503;
   }
 
-  const authorization = request.headers.get("authorization") ?? "";
-  const match = /^Bearer ([A-Za-z0-9_-]{43,128})$/i.exec(authorization);
   if (!match) return 401;
   const currentMatches = equalSecret(match[1], key);
   const previousMatches = equalSecret(match[1], previous ?? key);

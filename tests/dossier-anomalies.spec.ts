@@ -7,6 +7,8 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
+import type { DemoSourceState } from "@/utils/demo/anomalies";
+
 import { makeDossierDataWithNumber } from "./fixtures/ds";
 import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
 import { authenticatePage } from "./setup/auth";
@@ -338,7 +340,7 @@ for (const [actor, email, correctedValue] of [
     const dossierNumber = 89330260 + testInfo.parallelIndex;
     const sourceCode = "gain_energetique_estime_percentage";
     const sourceLabel = "Gain énergétique estimé";
-    let responseState: "initial" | "recalculated" | "unavailable" = "initial";
+    let responseState: DemoSourceState = "initial";
     msw.use(
       http.get("http://fondsvert/fonds_vert/v2/dossiers/:number", () => {
         if (responseState === "unavailable")

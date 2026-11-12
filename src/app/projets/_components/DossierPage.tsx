@@ -16,10 +16,7 @@ import {
   loadFinancesEJ,
 } from "@/services/fondsvert/finances";
 import { extractEJNumbers } from "@/utils/finance";
-import {
-  normalizeFondsVertAnomalies,
-  resolveEditableAnomalyTargets,
-} from "@/utils/metrics/anomalies";
+import { normalizeFondsVertAnomalies } from "@/utils/metrics/anomalies";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser, getSession } from "@/utils/session";
 
@@ -80,10 +77,7 @@ export async function DossierPage({
     metricLoadingResult;
 
   const dossierSubvention = dossierSubventionResult.data;
-  const anomalies = resolveEditableAnomalyTargets(
-    normalizeFondsVertAnomalies(dossierFondsVertResult.signals),
-    metrics,
-  );
+  const anomalies = normalizeFondsVertAnomalies(dossierFondsVertResult.signals);
   return (
     <>
       <ToastViewport />

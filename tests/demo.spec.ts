@@ -4,18 +4,51 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
-import { resetDemoDossierMetrics } from "@/db/demoMetrics";
 import {
   appendDossierMetricRevision,
   getDossierMetricRevisionTargets,
 } from "@/db/dossierMetrics";
-import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
+import { resetDemoCatalogue } from "@/db/publicDemoWrites";
+import { DEMO_POOL_NUMBER } from "@/utils/demo/reservation";
 
-import { createTestDatabaseClient } from "./setup/db";
+import {
+  createTestDatabaseClient,
+  deleteStoredDossierProgress,
+  getStoredDossierProgressRevisions,
+} from "./setup/db";
 
 test.describe.configure({ mode: "default" });
 
 const PENDING_ANALYSIS = "En attente d’analyse";
+const poolPath = `/projets/demo/${DEMO_POOL_NUMBER}`;
+
+test.beforeEach(resetDemoCatalogue);
+test.afterEach(resetDemoCatalogue);
+
+function demoTools(page: Page) {
+  return page.getByRole("complementary", { name: "Outils de démonstration" });
+}
+
+async function openDemoTools(page: Page) {
+  await demoTools(page).locator("summary").click();
+}
+
+async function waitForDemoWrite() {
+  const sql = createTestDatabaseClient();
+  try {
+    await expect
+      .poll(async () => {
+        const [row] = await sql`select not exists (
+        select from fonds_vert_export_admission
+        where id = 3 and next_allowed_at > clock_timestamp()
+      ) as ready`;
+        return row.ready;
+      })
+      .toBe(true);
+  } finally {
+    await sql.end();
+  }
+}
 
 function impactTab(page: Page) {
   return page
@@ -26,9 +59,7 @@ function impactTab(page: Page) {
 test("demo page loads, corrects and persists its database-backed metrics", async ({
   page,
 }) => {
-  await resetDemoDossierMetrics();
-
-  await page.goto("/projets/demo");
+  await page.goto(poolPath);
   await page
     .getByRole("navigation", { name: "Pages du projet" })
     .getByRole("link", { name: "Données d’impact", exact: true })
@@ -104,6 +135,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await dialog
     .getByLabel("Consommation énergétique avant travaux")
     .fill("1 900 000,5");
+  await waitForDemoWrite();
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -136,7 +168,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   try {
     const revisions =
       await sql`select revision, author_email from dossier_metric_revisions
-      where dossier_number = ${DEMO_DOSSIER_NUMBER}
+      where dossier_number = ${DEMO_POOL_NUMBER}
         and metric_code = 'conso_energetique_avant_travaux' order by revision`;
     expect(revisions).toEqual([
       { revision: 1, author_email: null },
@@ -163,6 +195,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await anomaly.getByRole("button", { name: "Modifier" }).click();
   dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await dialog.getByLabel("Émissions de GES avant travaux").fill("420");
+  await waitForDemoWrite();
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -220,6 +253,7 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await progressDialog
     .getByRole("combobox", { name: "Avancement du projet" })
     .selectOption("En cours de réalisation");
+  await waitForDemoWrite();
   await progressDialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -231,14 +265,14 @@ test("demo page loads, corrects and persists its database-backed metrics", async
       .locator(".fr-badge")
       .filter({ hasText: /^En cours de réalisation$/ }),
   ).toBeVisible();
-  const progressSql = createTestDatabaseClient();
-  try {
-    expect(
-      await progressSql`select status, author_email from dossier_progress_revisions where dossier_number=${DEMO_DOSSIER_NUMBER}`,
-    ).toEqual([{ status: "En cours de réalisation", author_email: null }]);
-  } finally {
-    await progressSql.end();
-  }
+  const progressRevisions =
+    await getStoredDossierProgressRevisions(DEMO_POOL_NUMBER);
+  expect(
+    progressRevisions.map(({ status, author_email }) => ({
+      status,
+      author_email,
+    })),
+  ).toEqual([{ status: "En cours de réalisation", author_email: null }]);
 
   await page
     .getByRole("button", { name: "Modifier l’avancement", exact: true })
@@ -246,12 +280,15 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await progressDialog.getByRole("combobox").selectOption("Bloqué");
   const resetPage = await page.context().newPage();
   await resetPage.goto("/projets/demo");
+  await openDemoTools(resetPage);
+  await waitForDemoWrite();
   await Promise.all([
     resetPage.waitForEvent("load"),
     resetPage.getByRole("button", { name: "Réinitialiser la démo" }).click(),
   ]);
   await resetPage.close();
 
+  await waitForDemoWrite();
   await progressDialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -269,23 +306,27 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("button", { name: "Modifier l’avancement", exact: true })
     .click();
   await progressDialog.getByRole("combobox").selectOption("Non-commencé");
+  await waitForDemoWrite();
   await progressDialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
   await expect(progressDialog).toBeHidden();
   await expect(progressSection.locator(".fr-badge")).toHaveText("Non-commencé");
-  const resetProgressSql = createTestDatabaseClient();
-  try {
-    expect(
-      await resetProgressSql`select revision,status,author_email from dossier_progress_revisions where dossier_number=${DEMO_DOSSIER_NUMBER}`,
-    ).toEqual([{ revision: 1, status: "Non-commencé", author_email: null }]);
-  } finally {
-    await resetProgressSql.end();
-  }
+  const resetProgressRevisions =
+    await getStoredDossierProgressRevisions(DEMO_POOL_NUMBER);
+  expect(
+    resetProgressRevisions.map(({ revision, status, author_email }) => ({
+      revision,
+      status,
+      author_email,
+    })),
+  ).toEqual([{ revision: 1, status: "Non-commencé", author_email: null }]);
 
+  await openDemoTools(page);
+  await waitForDemoWrite();
   await Promise.all([
     page.waitForEvent("load"),
-    page
+    demoTools(page)
       .getByRole("button", {
         name: "Réinitialiser la démo",
       })
@@ -317,16 +358,74 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
+test("la démo refuse une nouvelle révision d’avancement au plafond", async ({
+  request,
+}) => {
+  const sql = createTestDatabaseClient();
+  const progressUrl = `/api/projets/demo/${DEMO_POOL_NUMBER}/progress`;
+  const changeProgress = async (status: string, expectedRevision: number) => {
+    await waitForDemoWrite();
+    return request.post(progressUrl, { data: { status, expectedRevision } });
+  };
+
+  try {
+    await deleteStoredDossierProgress(DEMO_POOL_NUMBER);
+    await sql`insert into dossier_progress_revisions (dossier_number, revision, status)
+      select ${DEMO_POOL_NUMBER}, revision, 'Non-commencé'::dossier_progress_status
+      from generate_series(1, 99) as revision`;
+
+    await test.step("Le visiteur enregistre la centième révision", async () => {
+      const saved = await changeProgress("En cours de réalisation", 99);
+      expect(saved.status()).toBe(200);
+      expect(await saved.json()).toMatchObject({
+        target: { revision: 100, status: "En cours de réalisation" },
+      });
+    });
+
+    await test.step("Au plafond, un changement est refusé et le même statut reste sans effet", async () => {
+      const refused = await changeProgress("Bloqué", 100);
+      expect(refused.status()).toBe(409);
+      expect(await refused.json()).toEqual({
+        error:
+          "La limite de révisions est atteinte. Réinitialisez la démonstration pour continuer.",
+      });
+
+      const unchanged = await changeProgress("En cours de réalisation", 100);
+      expect(unchanged.status()).toBe(200);
+      expect(await unchanged.json()).toMatchObject({
+        target: { revision: 100, status: "En cours de réalisation" },
+      });
+      const revisions =
+        await getStoredDossierProgressRevisions(DEMO_POOL_NUMBER);
+      expect(revisions).toHaveLength(100);
+      expect(revisions.at(-1)).toMatchObject({
+        revision: 100,
+        status: "En cours de réalisation",
+      });
+    });
+
+    await test.step("Au plafond, un onglet périmé reçoit encore l’état courant", async () => {
+      const stale = await changeProgress("Bloqué", 99);
+      expect(stale.status()).toBe(409);
+      expect(await stale.json()).toMatchObject({
+        target: { revision: 100, status: "En cours de réalisation" },
+      });
+    });
+  } finally {
+    await sql.end();
+    await deleteStoredDossierProgress(DEMO_POOL_NUMBER);
+  }
+});
+
 for (const width of [1440, 390]) {
   test(`les outils de démonstration flottent en bas à droite à ${width} px sans élargir la page`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/projets/demo/impact");
+    await page.goto(`${poolPath}/impact`);
 
-    const tools = page.getByRole("complementary", {
-      name: "Outils de démonstration",
-    });
+    await openDemoTools(page);
+    const tools = demoTools(page);
     await expect(
       tools.getByRole("combobox", { name: "Réponse Fonds vert simulée" }),
     ).toBeVisible();
@@ -355,7 +454,7 @@ for (const width of [1440, 390]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/projets/demo/impact");
+    await page.goto(`${poolPath}/impact`);
     const values = page.getByTestId("impact-section");
 
     for (const [first, second] of [
@@ -409,7 +508,7 @@ for (const [situation, width, besideValue] of [
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/projets/demo/impact");
+    await page.goto(`${poolPath}/impact`);
     const before = page.getByTestId("impact-section").getByRole("region", {
       name: "Consommation énergétique avant travaux",
       exact: true,
@@ -437,7 +536,7 @@ test("fits related energy metric values and actions on mobile", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/projets/demo");
+  await page.goto(poolPath);
   await page
     .getByRole("navigation", { name: "Pages du projet" })
     .getByRole("link", { name: "Données d’impact", exact: true })
@@ -483,8 +582,7 @@ test("fits related energy metric values and actions on mobile", async ({
 test("keeps demo corrections until a distinct simulated Fonds vert response is selected", async ({
   page,
 }) => {
-  await resetDemoDossierMetrics();
-  await page.goto("/projets/demo");
+  await page.goto(poolPath);
   const navigation = page.getByRole("navigation", { name: "Pages du projet" });
   await navigation
     .getByRole("link", { name: "Données d’impact", exact: true })
@@ -505,6 +603,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await dialog
     .getByLabel("Consommation énergétique avant travaux")
     .fill("2000000");
+  await waitForDemoWrite();
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -524,12 +623,13 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     /2\s*000\s*000\s*kWh/,
   );
 
-  const source = page.getByRole("combobox", {
+  await openDemoTools(page);
+  const source = demoTools(page).getByRole("combobox", {
     name: "Réponse Fonds vert simulée",
   });
   await source.selectOption("recalculated");
   await expect(page).toHaveURL(
-    /\/projets\/demo\/impact\?fondsVert=recalculated$/,
+    /\/projets\/demo\/102\/impact\?fondsVert=recalculated$/,
   );
   await expect(impactTab(page)).not.toHaveAttribute("aria-describedby");
   await expect(
@@ -541,16 +641,17 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   await navigation
     .getByRole("link", { name: "Synthèse du projet", exact: true })
     .click();
-  await expect(page).toHaveURL(/\/projets\/demo\?fondsVert=recalculated$/);
+  await expect(page).toHaveURL(/\/projets\/demo\/102\?fondsVert=recalculated$/);
   await navigation
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
   await expect(page).toHaveURL(
-    /\/projets\/demo\/impact\?fondsVert=recalculated$/,
+    /\/projets\/demo\/102\/impact\?fondsVert=recalculated$/,
   );
   await expect(
     page.getByRole("heading", { name: "Données d’impact", exact: true }),
   ).toBeVisible();
+  await openDemoTools(page);
   await expect(source).toHaveValue("recalculated");
 
   await source.selectOption("unavailable");
@@ -561,11 +662,15 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     /2\s*000\s*000\s*kWh/,
   );
 
+  await waitForDemoWrite();
   await Promise.all([
     page.waitForEvent("load"),
-    page.getByRole("button", { name: "Réinitialiser la démo" }).click(),
+    demoTools(page)
+      .getByRole("button", { name: "Réinitialiser la démo" })
+      .click(),
   ]);
-  await expect(page).toHaveURL(/\/projets\/demo\/impact$/);
+  await expect(page).toHaveURL(/\/projets\/demo\/102\/impact$/);
+  await openDemoTools(page);
   await expect(source).toHaveValue("initial");
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
@@ -577,7 +682,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     /2\s*055\s*650\s*kWh/,
   );
   await expect(
-    getDossierMetricRevisionTargets({ numeroDossier: DEMO_DOSSIER_NUMBER }),
+    getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
     conso_energetique_avant_travaux: { revision: 1, effectiveValue: 2055650 },
   });
@@ -586,8 +691,7 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
 test("replaces a demo metric after another tab resets its revisions and permits a fresh correction", async ({
   page,
 }) => {
-  await resetDemoDossierMetrics();
-  await page.goto("/projets/demo/impact");
+  await page.goto(`${poolPath}/impact`);
   const before = page.getByTestId("impact-section").getByRole("region", {
     name: "Consommation énergétique avant travaux",
     exact: true,
@@ -600,6 +704,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   for (const value of ["2000000", "1900000"]) {
     await modifier.click();
     await input.fill(value);
+    await waitForDemoWrite();
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
@@ -611,6 +716,8 @@ test("replaces a demo metric after another tab resets its revisions and permits 
 
   const resetPage = await page.context().newPage();
   await resetPage.goto("/projets/demo");
+  await openDemoTools(resetPage);
+  await waitForDemoWrite();
   await Promise.all([
     resetPage.waitForEvent("load"),
     resetPage.getByRole("button", { name: "Réinitialiser la démo" }).click(),
@@ -626,6 +733,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
       submittedRevisions.push(request.postDataJSON().expectedRevision);
     }
   });
+  await waitForDemoWrite();
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -639,7 +747,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   );
   expect(submittedRevisions).toEqual([3]);
   await expect(
-    getDossierMetricRevisionTargets({ numeroDossier: DEMO_DOSSIER_NUMBER }),
+    getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
     conso_energetique_avant_travaux: { revision: 1, effectiveValue: 2055650 },
   });
@@ -649,6 +757,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   await modifier.press("Enter");
   await expect(input).toHaveValue("2055650");
   await input.fill("1800000");
+  await waitForDemoWrite();
   await dialog
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
@@ -659,7 +768,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   );
   expect(submittedRevisions).toEqual([3, 1]);
   await expect(
-    getDossierMetricRevisionTargets({ numeroDossier: DEMO_DOSSIER_NUMBER }),
+    getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
     conso_energetique_avant_travaux: { revision: 2, effectiveValue: 1800000 },
   });
@@ -667,7 +776,7 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   try {
     expect(
       await sql`select revision,author_email from dossier_metric_revisions
-      where dossier_number=${DEMO_DOSSIER_NUMBER} and metric_code='conso_energetique_avant_travaux' order by revision`,
+      where dossier_number=${DEMO_POOL_NUMBER} and metric_code='conso_energetique_avant_travaux' order by revision`,
     ).toEqual([
       { revision: 1, author_email: null },
       { revision: 2, author_email: null },
@@ -675,11 +784,12 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   } finally {
     await sql.end();
   }
-  const source = page.getByRole("combobox", {
+  await openDemoTools(page);
+  const source = demoTools(page).getByRole("combobox", {
     name: "Réponse Fonds vert simulée",
   });
   await appendDossierMetricRevision({
-    numeroDossier: DEMO_DOSSIER_NUMBER,
+    numeroDossier: DEMO_POOL_NUMBER,
     metricCode: "conso_energetique_avant_travaux",
     value: 1700000,
     expectedRevision: 2,
@@ -697,5 +807,4 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   await expect(before.getByTestId("valeur-estimee")).toHaveText(
     /1\s*700\s*000\s*kWh/,
   );
-  await resetDemoDossierMetrics();
 });

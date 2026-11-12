@@ -3,10 +3,7 @@
 import type { ReactNode } from "react";
 
 import { FactList, FactRow } from "@/components/fact-list/FactList";
-import {
-  type MetricAnomaly,
-  useMetricAnomaliesByMetricCode,
-} from "@/components/metrics/MetricAnomalyContext";
+import { useMetricAnomaliesByMetricCode } from "@/components/metrics/MetricAnomalyContext";
 import { MetricCorrectionEditor } from "@/components/metrics/MetricCorrectionEditor";
 import { useMetricRevisions } from "@/components/metrics/MetricRevisionContext";
 import { MetricValue } from "@/components/metrics/MetricValue";
@@ -14,6 +11,7 @@ import { MetricValueSignals } from "@/components/metrics/MetricValueSignals";
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { Metrics, SimpleMetric } from "@/services/fondsvert/dossier";
 import { slugify } from "@/utils/format";
+import type { NormalizedMetricAnomaly } from "@/utils/metrics/anomalies";
 import { isMetricFields } from "@/utils/metrics/guards";
 import { orderMetrics } from "@/utils/metrics/process";
 import { groupMetricsByTheme } from "@/utils/metrics/themes";
@@ -33,7 +31,7 @@ const MetricRow = ({
   id: string;
   label: string;
   target?: DossierMetricRevisionTarget;
-  anomalies?: MetricAnomaly[];
+  anomalies?: NormalizedMetricAnomaly[];
   children: ReactNode;
 }) => (
   <FactRow

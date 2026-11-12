@@ -29,8 +29,8 @@ export function correctionError(
   });
 }
 
-export async function getCorrections(request: Request) {
-  const access = correctionAccess(request);
+export async function getCorrections(request: Request, demo = false) {
+  const access = correctionAccess(request, demo);
   if (access) {
     return correctionError(
       access,
@@ -66,15 +66,19 @@ export async function getCorrections(request: Request) {
   try {
     const exportId = parsed
       ? parsed[1]
-      : (await createAdmittedCorrectionExport(Number(size))).exportId;
+      : (await createAdmittedCorrectionExport(Number(size), demo)).exportId;
     const pageNumber = parsed ? Number(parsed[2]) : 0;
-    const page = await readFondsVertCorrectionExportPage(exportId, pageNumber);
+    const page = await readFondsVertCorrectionExportPage(
+      exportId,
+      pageNumber,
+      demo,
+    );
     // Page zero retains the original size. A missing successor is an error on
     // continuation, never evidence that a partial export has reached its end.
     const pageSize =
       pageNumber === 0
         ? page.corrections.length
-        : await readFondsVertCorrectionExportPageSize(exportId);
+        : await readFondsVertCorrectionExportPageSize(exportId, demo);
     const nextCursor =
       (pageNumber + 1) * pageSize < page.totalCount
         ? `${exportId}:${pageNumber + 1}`

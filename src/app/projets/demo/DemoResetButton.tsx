@@ -17,13 +17,19 @@ export function DemoResetButton() {
         method: "POST",
       });
 
+      if (response.status === 429) {
+        throw new Error("Réessayez dans quelques secondes.");
+      }
+
       if (!response.ok) {
         throw new Error(
           "Les données de démonstration n’ont pas pu être réinitialisées.",
         );
       }
 
-      window.location.assign(window.location.pathname);
+      const url = new URL(window.location.href);
+      url.searchParams.delete("fondsVert");
+      window.location.assign(url.pathname + url.search);
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

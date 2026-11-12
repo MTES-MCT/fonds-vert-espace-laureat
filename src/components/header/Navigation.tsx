@@ -1,8 +1,9 @@
 import { MainNavigation } from "@codegouvfr/react-dsfr/MainNavigation";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { usePathname, useSelectedLayoutSegment } from "next/navigation";
 
 export function Navigation() {
   const segment = useSelectedLayoutSegment();
+  const demo = /^\/projets\/demo(?:\/|$)/.test(usePathname());
 
   return (
     <MainNavigation
@@ -20,7 +21,9 @@ export function Navigation() {
             href: "/projets",
           },
           isActive:
-            segment !== null && ["projets", "connexion"].includes(segment),
+            !demo &&
+            segment !== null &&
+            ["projets", "connexion"].includes(segment),
         },
       ]}
     />

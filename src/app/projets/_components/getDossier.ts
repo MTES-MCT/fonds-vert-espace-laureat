@@ -5,6 +5,7 @@ import { getDossierAccessQuery } from "@/services/ds/graphql/getDossierAccessQue
 import { getDossierQuery } from "@/services/ds/graphql/getDossierQuery";
 import { Dossier } from "@/services/ds/subvention";
 import { getChamps } from "@/services/ds/subvention/champs";
+import { isReservedDemoDossier } from "@/utils/demo/reservation";
 import { logException } from "@/utils/error";
 import { isAdmin } from "@/utils/roles";
 
@@ -43,6 +44,7 @@ export async function getDossierAccess({
   numeroDossier: number;
   userEmail: string;
 }): Promise<boolean> {
+  if (isReservedDemoDossier(numeroDossier)) return false;
   try {
     const { dossier } = await graphqlClient.request(getDossierAccessQuery, {
       number: numeroDossier,
@@ -65,6 +67,13 @@ export async function getDossier({
   | { success: true; data: Dossier }
   | { success: false; error: string; reason: "denied" | "unavailable" }
 > {
+  if (isReservedDemoDossier(numeroDossier)) {
+    return {
+      success: false,
+      error: "Impossible de trouver ce dossier",
+      reason: "denied",
+    };
+  }
   try {
     const { dossier } = await graphqlClient.request(getDossierQuery, {
       number: numeroDossier,
@@ -106,11 +115,8 @@ export async function getDossier({
               ? "instructeur"
               : undefined,
         numero: dossier.number,
-        dateTraitement: dossier.dateTraitement,
         demandeur: {
-          email: dossier.usager.email,
           siret: dossier.demandeur.siret,
-          libelleNaf: dossier.demandeur?.libelleNaf,
         },
         demarche: {
           title: dossier.demarche.title,

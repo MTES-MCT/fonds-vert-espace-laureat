@@ -2,18 +2,32 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  demoWriteRefusal,
+  readDemoJson,
+} from "@/app/api/projets/demo/_lib/publicWrites";
+import {
   appendDossierProgressRevision,
   DossierProgressConflict,
   DossierProgressError,
 } from "@/db/dossierProgress";
-import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
+import type { DossierProgressStatus } from "@/utils/dossierProgress";
 
-export async function POST(request: NextRequest) {
+export async function writeProgress(
+  request: NextRequest,
+  number: number,
+  initialStatus: DossierProgressStatus | null,
+) {
   let status: unknown;
   let expectedRevision: unknown;
   let confirmed: unknown;
   try {
-    ({ status, expectedRevision, confirmed } = await request.json());
+    ({ status, expectedRevision, confirmed } = (await readDemoJson(
+      request,
+    )) as {
+      status?: unknown;
+      expectedRevision?: unknown;
+      confirmed?: unknown;
+    });
   } catch {
     return NextResponse.json(
       { error: "Corps de requête invalide" },
@@ -31,15 +45,19 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const refusal = await demoWriteRefusal();
+  if (refusal) return refusal;
+
   try {
     const target = await appendDossierProgressRevision({
-      numeroDossier: DEMO_DOSSIER_NUMBER,
+      numeroDossier: number,
       status,
       expectedRevision,
+      initialStatus,
       authorEmail: null,
       confirmed: confirmed === true,
     });
-    revalidatePath("/projets/demo");
+    revalidatePath("/projets/demo", "layout");
     return NextResponse.json({ target });
   } catch (error) {
     if (error instanceof DossierProgressConflict)
@@ -48,7 +66,10 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     if (error instanceof DossierProgressError)
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.code === "revision-limit" ? 409 : 400 },
+      );
     throw error;
   }
 }

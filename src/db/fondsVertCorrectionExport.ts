@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { and, eq, lte, sql } from "drizzle-orm";
 
-import { getDb } from "@/db";
+import { type DbTransaction, getDb } from "@/db";
 import { getLatestFondsVertCorrections } from "@/db/fondsVertCorrectionProjection";
 import { fondsVertExportPages } from "@/db/schema";
 
@@ -26,16 +26,22 @@ function boundedInteger(value: number, max: number, name: string) {
 export async function createFondsVertCorrectionExport({
   pageSize,
   retentionMs,
+  demo = false,
+  transaction,
 }: {
   pageSize: number;
   retentionMs: number;
+  demo?: boolean;
+  transaction?: DbTransaction;
 }) {
   boundedInteger(pageSize, MAX_EXPORT_PAGE_SIZE, "pageSize");
   boundedInteger(retentionMs, MAX_EXPORT_RETENTION_MS, "retentionMs");
 
   const exportId = randomUUID();
   const generatedAt = new Date();
-  const corrections = (await getLatestFondsVertCorrections()).map((row) => ({
+  const corrections = (
+    await getLatestFondsVertCorrections(demo, transaction)
+  ).map((row) => ({
     ...row,
     correctedAt: row.correctedAt.toISOString(),
   }));
@@ -44,14 +50,20 @@ export async function createFondsVertCorrectionExport({
   const totalCount = corrections.length;
   const pageCount = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  await getDb().transaction(async (tx) => {
+  const publish = async (tx: DbTransaction) => {
     await tx
       .delete(fondsVertExportPages)
-      .where(lte(fondsVertExportPages.expiresAt, new Date()));
+      .where(
+        and(
+          eq(fondsVertExportPages.demo, demo),
+          lte(fondsVertExportPages.expiresAt, new Date()),
+        ),
+      );
     // Bound each insert independently of the total size of the export.
     for (let pageNumber = 0; pageNumber < pageCount; pageNumber++) {
       await tx.insert(fondsVertExportPages).values({
         exportId,
+        demo,
         pageNumber,
         generatedAt,
         expiresAt,
@@ -62,12 +74,14 @@ export async function createFondsVertCorrectionExport({
         ),
       });
     }
-  });
+  };
+  if (transaction) await publish(transaction);
+  else await getDb().transaction(publish);
 
   return { exportId, generatedAt, expiresAt, totalCount, pageCount };
 }
 
-function pageCondition(exportId: string, pageNumber: number) {
+function pageCondition(exportId: string, pageNumber: number, demo: boolean) {
   if (
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       exportId,
@@ -80,6 +94,7 @@ function pageCondition(exportId: string, pageNumber: number) {
   }
   return and(
     eq(fondsVertExportPages.exportId, exportId),
+    eq(fondsVertExportPages.demo, demo),
     eq(fondsVertExportPages.pageNumber, pageNumber),
   );
 }
@@ -96,8 +111,9 @@ function activePage<Page extends { expiresAt: Date }>(page: Page | undefined) {
 export async function readFondsVertCorrectionExportPage(
   exportId: string,
   pageNumber: number,
+  demo = false,
 ) {
-  const condition = pageCondition(exportId, pageNumber);
+  const condition = pageCondition(exportId, pageNumber, demo);
   const [page] = await getDb()
     .select()
     .from(fondsVertExportPages)
@@ -106,8 +122,11 @@ export async function readFondsVertCorrectionExportPage(
 }
 
 /** Reads the initial page length without transferring its correction payload. */
-export async function readFondsVertCorrectionExportPageSize(exportId: string) {
-  const condition = pageCondition(exportId, 0);
+export async function readFondsVertCorrectionExportPageSize(
+  exportId: string,
+  demo = false,
+) {
+  const condition = pageCondition(exportId, 0, demo);
   const [page] = await getDb()
     .select({
       pageSize: sql<number>`jsonb_array_length(${fondsVertExportPages.corrections})`,

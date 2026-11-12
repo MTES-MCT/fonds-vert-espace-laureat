@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+import type { MetricValue } from "@/services/fondsvert/dossier";
 import { orderMetrics } from "@/utils/metrics/process";
 
-const metric = (label: string, valeur_estimee: number | string) => ({
+const metric = (label: string, valeur_estimee: MetricValue) => ({
   label,
   unite: null,
   valeur_estimee,
@@ -76,3 +77,82 @@ test("chaque valeur garde son libellé, son unité et sa valeur, et les valeurs 
     },
   ]);
 });
+
+for (const { situation, value } of [
+  { situation: "nulle", value: null },
+  {
+    situation: "avec une valeur nulle",
+    value: {
+      label: "Consommation avant travaux",
+      unite: "kWh",
+      valeur_estimee: null,
+    },
+  },
+  {
+    situation: "sans valeur",
+    value: { label: "Consommation avant travaux", unite: "kWh" },
+  },
+  {
+    situation: "avec un libellé invalide",
+    value: { label: 42, unite: "kWh", valeur_estimee: 10 },
+  },
+  {
+    situation: "avec une unité invalide",
+    value: {
+      label: "Consommation avant travaux",
+      unite: 42,
+      valeur_estimee: 10,
+    },
+  },
+  {
+    situation: "avec une valeur objet",
+    value: {
+      label: "Consommation avant travaux",
+      unite: "kWh",
+      valeur_estimee: { value: 10 },
+    },
+  },
+  {
+    situation: "avec une valeur non finie",
+    value: metric("Consommation avant travaux", Number.POSITIVE_INFINITY),
+  },
+  {
+    situation: "avec une liste mixte",
+    value: {
+      label: "Consommation avant travaux",
+      unite: "kWh",
+      valeur_estimee: ["valide", 42],
+    },
+  },
+  {
+    situation: "marquée non disponible",
+    value: metric("Consommation avant travaux — Donnée non disponible", 10),
+  },
+]) {
+  test(`une métrique ${situation} n’est pas affichée`, () => {
+    const ordered = orderMetrics({ conso_energetique_avant_travaux: value });
+
+    expect(ordered).toEqual([]);
+  });
+}
+
+for (const { situation, value } of [
+  { situation: "nombre zéro", value: 0 },
+  { situation: "booléen faux", value: false },
+  { situation: "texte", value: "Valeur reçue" },
+  { situation: "liste de textes", value: ["École", "Mairie"] },
+] satisfies { situation: string; value: MetricValue }[]) {
+  test(`une valeur ${situation} prise en charge conserve son libellé et sa valeur dans la grille`, () => {
+    const ordered = orderMetrics({
+      conso_energetique_avant_travaux: metric("Métrique existante", value),
+    });
+
+    expect(ordered).toHaveLength(1);
+    expect(ordered[0]).toMatchObject({
+      metricCode: "conso_energetique_avant_travaux",
+      label: "Métrique existante",
+      unite: null,
+      valeur_estimee: value,
+    });
+  });
+}

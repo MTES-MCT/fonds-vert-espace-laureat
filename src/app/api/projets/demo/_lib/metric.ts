@@ -2,22 +2,25 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  demoWriteRefusal,
+  readDemoJson,
+} from "@/app/api/projets/demo/_lib/publicWrites";
+import {
   appendDossierMetricRevision,
   DossierMetricRevisionConflict,
   DossierMetricRevisionError,
 } from "@/db/dossierMetrics";
-import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
 
-export async function POST(
+export async function writeMetric(
   request: NextRequest,
-  { params }: { params: Promise<{ metricCode: string }> },
+  number: number,
+  metricCode: string,
 ) {
-  const { metricCode } = await params;
   let value: unknown;
   let expectedRevision: unknown;
 
   try {
-    ({ value, expectedRevision } = (await request.json()) as {
+    ({ value, expectedRevision } = (await readDemoJson(request)) as {
       value?: unknown;
       expectedRevision?: unknown;
     });
@@ -39,15 +42,18 @@ export async function POST(
     );
   }
 
+  const refusal = await demoWriteRefusal(expectedRevision);
+  if (refusal) return refusal;
+
   try {
     const target = await appendDossierMetricRevision({
-      numeroDossier: DEMO_DOSSIER_NUMBER,
+      numeroDossier: number,
       metricCode,
       value,
       authorEmail: null,
       expectedRevision,
     });
-    revalidatePath("/projets/demo");
+    revalidatePath("/projets/demo", "layout");
     return NextResponse.json({ target });
   } catch (error) {
     if (error instanceof DossierMetricRevisionConflict) {

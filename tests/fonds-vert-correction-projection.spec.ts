@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { getLatestFondsVertCorrections } from "@/db/fondsVertCorrectionProjection";
-import { DEMO_DOSSIER_NUMBER } from "@/utils/demo";
+import { LEGACY_DEMO_NUMBER } from "@/utils/demo/reservation";
 
 import {
   createTestDatabaseClient,
@@ -20,7 +20,7 @@ test.afterEach(async ({}, testInfo) => {
   try {
     await sql`
       delete from dossier_metric_revisions
-      where dossier_number = ${DEMO_DOSSIER_NUMBER}
+      where dossier_number = ${LEGACY_DEMO_NUMBER}
         and metric_code = ${`${DEMO_METRIC_CODE_PREFIX}_${testInfo.parallelIndex}`}
     `;
   } finally {
@@ -77,7 +77,7 @@ test("returns every corrected field outside the demo dossier", async ({}, testIn
           '2026-09-21T09:00:00Z'
         ),
         (
-          ${DEMO_DOSSIER_NUMBER},
+          ${LEGACY_DEMO_NUMBER},
           ${demoMetricCode},
           2,
           'Correction de démonstration',
@@ -120,7 +120,7 @@ test("returns every corrected field outside the demo dossier", async ({}, testIn
     expect(
       corrections.find(
         (correction) =>
-          correction.dossierNumber === DEMO_DOSSIER_NUMBER &&
+          correction.dossierNumber === LEGACY_DEMO_NUMBER &&
           correction.metricCode === demoMetricCode,
       ),
     ).toBeUndefined();

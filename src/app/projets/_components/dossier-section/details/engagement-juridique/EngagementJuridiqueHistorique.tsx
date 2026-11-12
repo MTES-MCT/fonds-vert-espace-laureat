@@ -1,5 +1,4 @@
-import React, { ReactNode } from "react";
-
+import { DsfrTable } from "@/components/table/DsfrTable";
 import type { EngagementJuridiqueAnnee } from "@/utils/finance";
 import { formatDate, formatEuros } from "@/utils/format";
 
@@ -7,23 +6,14 @@ interface EngagementHistoryTableProps {
   sortedhistorique: EngagementJuridiqueAnnee[];
 }
 
-function DsfrTable({ children }: { children: ReactNode }) {
-  return (
-    <div className="fr-table mt-0 mb-0 w-full max-w-full">
-      <div className="fr-table__wrapper">
-        <div className="fr-table__container">
-          <div className="fr-table__content">{children}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function EngagementJuridiqueHistorique({
   sortedhistorique,
 }: EngagementHistoryTableProps) {
   return (
-    <DsfrTable>
+    <DsfrTable
+      label="Historique des paiements"
+      className="mt-0 mb-0 w-full max-w-full"
+    >
       <table>
         <thead>
           <tr>
