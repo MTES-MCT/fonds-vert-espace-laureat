@@ -1,8 +1,23 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import postgres from "postgres";
 
-export const devDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5432/vert_impact";
-export const testDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5432/vert_impact_test";
+export const devDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5433/vert_impact";
+export const testDatabaseUrl = "postgres://vert_impact:vert_impact@localhost:5433/vert_impact_test";
+
+const localDatabaseHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+export function isLocalDatabaseHost(hostname) {
+  return localDatabaseHosts.has(hostname.toLowerCase().replace(/\.$/, ""));
+}
+
+export function assertLocalDatabasePort(url) {
+  const parsedUrl = new URL(url);
+  if (isLocalDatabaseHost(parsedUrl.hostname) && parsedUrl.port !== "5433") {
+    throw new Error(
+      "Les bases locales Vert Impact utilisent le port 5433. Vérifiez l’URL de connexion.",
+    );
+  }
+}
 
 export function getTestDatabaseName(url) {
   const name = getDatabaseName(url);
@@ -11,6 +26,7 @@ export function getTestDatabaseName(url) {
       "La base à recréer pour les tests doit porter un nom terminé par _test.",
     );
   }
+  assertLocalDatabasePort(url);
   return name;
 }
 
