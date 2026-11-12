@@ -355,6 +355,16 @@ for (const projectPath of [`/projets/${DOSSIER_NUMBER}`, "/projets/demo"]) {
   });
 }
 
+test("l’ancienne URL de demande de versement renvoie une page introuvable", async ({
+  page,
+}) => {
+  const ancienneUrl = `/projets/${DOSSIER_NUMBER}/demande-de-versement`;
+  const response = await page.goto(ancienneUrl);
+
+  expect(response?.status()).toBe(404);
+  await expect(page).toHaveURL(ancienneUrl);
+});
+
 test("le lecteur consulte les montants du projet et de sa subvention sur la page Financement", async ({
   page,
 }) => {
