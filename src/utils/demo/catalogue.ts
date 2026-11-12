@@ -13,7 +13,11 @@ import {
   demoPoolDossier,
 } from "@/utils/demo";
 import { demoInitialSignals } from "@/utils/demo/anomalies";
-import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
+import {
+  DEMO_COMPOST_NUMBER,
+  DEMO_GYM_NUMBER,
+  DEMO_SCHOOL_NUMBER,
+} from "@/utils/demo/reservation";
 import type { DossierProgressStatus } from "@/utils/dossierProgress";
 import type { ProjectView } from "@/utils/projectView";
 
@@ -27,22 +31,21 @@ type DemoProject = {
 
 type FinanceExercise = { year: number; committed: number; payments: number[] };
 
-const communes = [
-  {
-    name: demoDossierFondsVert.socle_commun.entreprise_raison_sociale,
-    commune: demoDossierFondsVert.socle_commun.nom_commune,
-    siret: demoPoolDossier.demandeur.siret,
-    email: demoPoolDossier.champs.emailRepresentantLegal,
-    department: demoPoolDossier.champs.departementImplantation,
-  },
-  {
-    name: "Communauté de communes des Rives",
-    commune: "Les Rives",
-    siret: "00000000200002",
-    email: "rives@example.test",
-    department: "05 — Hautes-Alpes",
-  },
-];
+const nantes = {
+  name: demoDossierFondsVert.socle_commun.entreprise_raison_sociale,
+  commune: demoDossierFondsVert.socle_commun.nom_commune,
+  siret: demoPoolDossier.demandeur.siret,
+  email: demoPoolDossier.champs.emailRepresentantLegal,
+  department: demoPoolDossier.champs.departementImplantation,
+};
+const rives = {
+  name: "Communauté de communes des Rives",
+  commune: "Les Rives",
+  siret: "00000000200002",
+  email: "rives@example.test",
+  department: "05 — Hautes-Alpes",
+};
+const energyRenovation = "Rénovation énergétique des bâtiments publics";
 
 const schoolImpact: Metrics = {
   nature_operations: {
@@ -236,20 +239,31 @@ function projectFinancing(
   return { engagementNumber, informationFinanciere, finances };
 }
 
-function project(
-  index: number,
-  name: string,
-  summary: string,
-  grant: number,
-  year: number,
-  status: DossierProgressStatus,
-  exercises: [FinanceExercise, ...FinanceExercise[]],
-  metrics: Metrics,
-) {
-  const holder = communes[index < 2 ? 0 : 1];
-  const number = DEMO_DOSSIER_NUMBERS[index];
-  const programme =
-    index === 2 ? "Biodéchets" : "Rénovation énergétique des bâtiments publics";
+function project({
+  number,
+  holder,
+  programme,
+  name,
+  summary,
+  grant,
+  year,
+  status,
+  exercises,
+  metrics,
+  anomalyLabels = [],
+}: {
+  number: number;
+  holder: typeof nantes;
+  programme: string;
+  name: string;
+  summary: string;
+  grant: number;
+  year: number;
+  status: DossierProgressStatus;
+  exercises: [FinanceExercise, ...FinanceExercise[]];
+  metrics: Metrics;
+  anomalyLabels?: string[];
+}): DemoProject {
   const { engagementNumber, informationFinanciere, finances } =
     projectFinancing(number, programme, grant, exercises);
   const date = `${year}-06-12`;
@@ -277,7 +291,7 @@ function project(
       date_notification: date,
       date_depot: `${year}-03-10`,
       date_derniere_modification: date,
-      date_debut_execution: index === 3 ? null : date,
+      date_debut_execution: status === "Non-commencé" ? null : date,
       date_fin_execution: null,
       entreprise_raison_sociale: holder.name,
       siret: holder.siret,
@@ -290,11 +304,10 @@ function project(
   };
   const signals = readFondsVertSignals({
     anomalies: {
-      est_anomalie: index === 0,
+      est_anomalie: anomalyLabels.length > 0,
       est_error: false,
       anomalie_demarche_list: [],
-      anomalie_indicateur_list:
-        index === 0 ? ["Consommation énergétique avant travaux"] : [],
+      anomalie_indicateur_list: anomalyLabels,
       error_indicateur_list: [],
     },
     avertissements: [],
@@ -303,19 +316,22 @@ function project(
 }
 
 const projects: DemoProject[] = [
-  project(
-    0,
-    "Rénovation de l’école des Tilleuls",
-    "Isolation et rénovation du chauffage de l’école communale.",
-    180_000,
-    2025,
-    "En cours de réalisation",
-    [
+  project({
+    number: DEMO_SCHOOL_NUMBER,
+    holder: nantes,
+    programme: energyRenovation,
+    name: "Rénovation de l’école des Tilleuls",
+    summary: "Isolation et rénovation du chauffage de l’école communale.",
+    grant: 180_000,
+    year: 2025,
+    status: "En cours de réalisation",
+    exercises: [
       { year: 2025, committed: 36_000, payments: [36_000] },
       { year: 2026, committed: 144_000, payments: [45_000, 27_000] },
     ],
-    schoolImpact,
-  ),
+    metrics: schoolImpact,
+    anomalyLabels: ["Consommation énergétique avant travaux"],
+  }),
   {
     dossier: demoPoolDossier,
     fondsVert: demoDossierFondsVert,
@@ -326,15 +342,18 @@ const projects: DemoProject[] = [
       [demoFinancesEJ2.numero_ej]: { success: true, data: demoFinancesEJ2 },
     },
   },
-  project(
-    2,
-    "Collecte séparée des biodéchets",
-    "Collecte des déchets alimentaires en zone dense et compostage de proximité dans les communes rurales.",
-    76_000,
-    2025,
-    "En cours de réalisation",
-    [{ year: 2025, committed: 76_000, payments: [22_800] }],
-    {
+  project({
+    number: DEMO_COMPOST_NUMBER,
+    holder: rives,
+    programme: "Biodéchets",
+    name: "Collecte séparée des biodéchets",
+    summary:
+      "Collecte des déchets alimentaires en zone dense et compostage de proximité dans les communes rurales.",
+    grant: 76_000,
+    year: 2025,
+    status: "En cours de réalisation",
+    exercises: [{ year: 2025, committed: 76_000, payments: [22_800] }],
+    metrics: {
       nature_operations: {
         label: "Nature des opérations",
         unite: null,
@@ -364,23 +383,26 @@ const projects: DemoProject[] = [
         valeur_estimee: 72,
       },
     },
-  ),
-  project(
-    3,
-    "Rénovation du gymnase des Rives",
-    "Isolation et modernisation des installations du gymnase intercommunal.",
-    130_000,
-    2025,
-    "Non-commencé",
-    [{ year: 2025, committed: 130_000, payments: [] }],
-    gymImpact,
-  ),
+  }),
+  project({
+    number: DEMO_GYM_NUMBER,
+    holder: rives,
+    programme: energyRenovation,
+    name: "Rénovation du gymnase des Rives",
+    summary:
+      "Isolation et modernisation des installations du gymnase intercommunal.",
+    grant: 130_000,
+    year: 2025,
+    status: "Non-commencé",
+    exercises: [{ year: 2025, committed: 130_000, payments: [] }],
+    metrics: gymImpact,
+  }),
 ];
 
 export function demoProjects(view: ProjectView = "instructeur") {
   return projects.filter(
     ({ dossier }) =>
-      view === "instructeur" || dossier.demandeur.siret === communes[0].siret,
+      view === "instructeur" || dossier.demandeur.siret === nantes.siret,
   );
 }
 

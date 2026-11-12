@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-import { LEGACY_DEMO_NUMBER } from "@/utils/demo/reservation";
+import {
+  DEMO_DOSSIER_NUMBERS,
+  LEGACY_DEMO_NUMBER,
+} from "@/utils/demo/reservation";
 
 import { createTestDatabaseClient } from "./setup/db";
 
@@ -33,9 +36,14 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
   });
   const openTools = () => tools.locator("summary").click();
   const sql = createTestDatabaseClient();
+  const catalogueAndWitnesses = [
+    ...DEMO_DOSSIER_NUMBERS,
+    realDossier,
+    LEGACY_DEMO_NUMBER,
+  ];
   const clean = async () => {
-    await sql`delete from dossier_metric_revisions where dossier_number in (101, 102, 103, 104, ${realDossier}, ${LEGACY_DEMO_NUMBER})`;
-    await sql`delete from dossier_progress_revisions where dossier_number in (101, 102, 103, 104, ${realDossier}, ${LEGACY_DEMO_NUMBER})`;
+    await sql`delete from dossier_metric_revisions where dossier_number in ${sql(catalogueAndWitnesses)}`;
+    await sql`delete from dossier_progress_revisions where dossier_number in ${sql(catalogueAndWitnesses)}`;
     await sql`delete from fonds_vert_export_pages`;
     await sql`delete from fonds_vert_export_admission`;
   };
@@ -574,7 +582,9 @@ test("le porteur et l’instructeur consultent les mesures et les trois exercice
     page.getByRole("link", { name: /l’école des Tilleuls/ }),
   ).toBeVisible();
   await expect(
-    page.getByRole("row").filter({ has: page.getByRole("link", { name: title }) }),
+    page
+      .getByRole("row")
+      .filter({ has: page.getByRole("link", { name: title }) }),
   ).toContainText("le 20 septembre 2023");
   await page.getByRole("link", { name: title }).click();
 
