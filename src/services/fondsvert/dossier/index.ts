@@ -23,7 +23,6 @@ export type MetricFields = {
 };
 
 export type SimpleMetric = MetricFields & {
-  _typename: "Simple";
   metricCode: string;
 };
 

@@ -69,7 +69,6 @@ test("chaque valeur garde son libellé, son unité et sa valeur, et les valeurs 
     }),
   ).toEqual([
     {
-      _typename: "Simple",
       metricCode: "valid",
       label: "Gain énergétique estimé",
       unite: "%",

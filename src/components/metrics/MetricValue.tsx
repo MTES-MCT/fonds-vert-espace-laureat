@@ -21,40 +21,21 @@ export const MetricValueContent = ({
 export type MetricValueProps = {
   value: MetricValueType;
   accessibleName?: string;
-  label?: string;
   unite?: string | null;
   testId?: string;
-  compact?: boolean;
 };
-
-function metricValueClassName({
-  isStringValue,
-  compact,
-}: {
-  isStringValue: boolean;
-  compact: boolean;
-}): string {
-  if (compact) return "text-base whitespace-nowrap";
-  return isStringValue ? "max-w-[32rem] text-base" : "text-base";
-}
 
 export const MetricValue = ({
   value,
   accessibleName,
-  label,
   unite,
   testId = "value",
-  compact = false,
 }: MetricValueProps) => {
-  const isNumberValue = typeof value === "number";
   const isStringValue = typeof value === "string";
   const isArrayValue = Array.isArray(value);
 
   return (
     <div className="flex flex-col">
-      {label && isNumberValue && (
-        <div className="text-xs text-gray-500">{label}</div>
-      )}
       {isArrayValue ? (
         <ul
           aria-label={accessibleName}
@@ -70,10 +51,7 @@ export const MetricValue = ({
       ) : (
         <div
           aria-label={accessibleName}
-          className={`font-medium ${metricValueClassName({
-            isStringValue,
-            compact,
-          })}`}
+          className={`font-medium ${isStringValue ? "max-w-[32rem] text-base" : "text-base"}`}
           data-testid={testId}
         >
           <MetricValueContent value={value} unite={unite} />

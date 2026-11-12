@@ -18,7 +18,6 @@ import { groupMetricsByTheme } from "@/utils/metrics/themes";
 
 type MetricsGridProps = {
   metriques?: Metrics;
-  visibleMetricCodes?: ReadonlySet<string>;
 };
 
 const MetricRow = ({
@@ -78,10 +77,7 @@ const SimpleMetricRow = ({ metric }: { metric: SimpleMetric }) => {
   );
 };
 
-export function MetricsGrid({
-  metriques,
-  visibleMetricCodes,
-}: MetricsGridProps) {
+export function MetricsGrid({ metriques }: MetricsGridProps) {
   const { targets } = useMetricRevisions();
   if (!metriques) return null;
 
@@ -97,12 +93,7 @@ export function MetricsGrid({
       ];
     }),
   );
-  const metricGroups = groupMetricsByTheme(
-    orderMetrics(effectiveMetrics).filter(
-      (metric) =>
-        !visibleMetricCodes || visibleMetricCodes.has(metric.metricCode),
-    ),
-  );
+  const metricGroups = groupMetricsByTheme(orderMetrics(effectiveMetrics));
 
   if (metricGroups.length === 0) return null;
 

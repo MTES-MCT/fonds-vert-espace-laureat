@@ -42,7 +42,6 @@ export function orderMetrics(metrics: Metrics): SimpleMetric[] {
   for (const [metricCode, value] of Object.entries(metrics)) {
     if (!isDisplayableMetricFields(value)) continue;
     metricsByCode.set(metricCode, {
-      _typename: "Simple",
       metricCode,
       label: value.label,
       unite: value.unite,
