@@ -43,7 +43,7 @@ export const demoPoolDossier = {
     montantSubventionAttribuee: 10073574,
     emailRepresentantLegal: LEGAL_REPRESENTATIVE_EMAIL,
     emailResponsableSuivi: "bob.doe@example.com",
-    dateSignatureDecision: new Date(),
+    dateSignatureDecision: new Date("2023-09-20"),
     numeroEngagementJuridique: "987654",
     autresNumerosEngagementJuridique: ["123456", "654321"],
     numeroDossierAgenceEau: AGENCE_EAU_NUMBER,

@@ -573,6 +573,9 @@ test("le porteur et l’instructeur consultent les mesures et les trois exercice
   await expect(
     page.getByRole("link", { name: /l’école des Tilleuls/ }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("row").filter({ has: page.getByRole("link", { name: title }) }),
+  ).toContainText("le 20 septembre 2023");
   await page.getByRole("link", { name: title }).click();
 
   for (const view of ["porteur", "instructeur"] as const) {
