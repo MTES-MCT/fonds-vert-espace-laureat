@@ -2,7 +2,7 @@
 export const DEMANDEUR_EMAIL = "alice.doe@example.com";
 export const LEGAL_REPRESENTATIVE_EMAIL = DEMANDEUR_EMAIL;
 
-// Instructeur test user - instructor for dossier 99999999
+// Instructeur test user for the dedicated project-list dossier.
 export const INSTRUCTEUR_EMAIL = "instructeur@example.com";
 export const CONTACT_EMAIL = "john.doe@example.com";
 export const DEPARTMENT = "44 - Loire-Atlantique";
