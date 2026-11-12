@@ -1057,3 +1057,47 @@ test("a GET logout request cannot modify an authenticated browser session", asyn
   )!;
   expect(after.value).toBe(before.value);
 });
+
+for (const [situation, viewport] of [
+  ["desktop", { width: 1280, height: 800 }],
+  ["mobile", { width: 390, height: 844 }],
+] as const) {
+  test(`an authenticated laureat logs out using the ${situation} header and keyboard`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await authenticatePage(page, { email: "porteur.deconnexion@example.com" });
+    await page.goto("/");
+
+    if (situation === "mobile") {
+      const menu = page.getByRole("button", { name: "Menu", exact: true });
+      await expect(menu).toHaveAttribute("data-fr-js-modal-button", "true");
+      await menu.press("Enter");
+      await expect(page.locator("#header-menu-modal-fr-header")).toBeVisible();
+    }
+    const quickAccess = page.locator(
+      situation === "mobile"
+        ? "#header-menu-modal-fr-header .fr-header__menu-links"
+        : ".fr-header__tools-links",
+    );
+    await expect(quickAccess).toContainText("porteur.deconnexion@example.com");
+    const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });
+    await expect(logout).toBeVisible();
+    await expect(logout).toHaveAttribute("type", "submit");
+
+    const submitted = page.waitForResponse((response) =>
+      response.url().endsWith("/api/auth/proconnect/logout"),
+    );
+    await logout.press("Enter");
+    const response = await submitted;
+    expect(response.request().method()).toBe("POST");
+    expect(response.status()).toBe(303);
+    await expect(page).toHaveURL("/");
+    const cookies = await page.context().cookies();
+    expect(
+      cookies.find((cookie) => cookie.name === cookieName),
+    ).toBeUndefined();
+    await page.goto("/projets");
+    await expect(page).toHaveURL(/\/connexion\?/);
+  });
+}

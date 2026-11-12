@@ -6,8 +6,6 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
-import { getSessionOptions } from "@/utils/session";
-
 import {
   DEPARTMENT,
   DOSSIER_NUMBER,
@@ -811,49 +809,3 @@ test("displays empty state when no dossiers in any source", async ({
     "votre groupe instructeur",
   );
 });
-
-for (const [situation, viewport] of [
-  ["desktop", { width: 1280, height: 800 }],
-  ["mobile", { width: 390, height: 844 }],
-] as const) {
-  test(`an authenticated laureat logs out using the ${situation} header and keyboard`, async ({
-    page,
-    msw,
-  }) => {
-    await page.setViewportSize(viewport);
-    await authenticatePage(page, { email: DEMANDEUR_EMAIL });
-    msw.use(makeDossiersHandler({ siret: emptyList, instructeur: emptyList }));
-    await page.goto("/projets");
-
-    if (situation === "mobile") {
-      const menu = page.getByRole("button", { name: "Menu", exact: true });
-      await expect(menu).toHaveAttribute("data-fr-js-modal-button", "true");
-      await menu.press("Enter");
-      await expect(page.locator("#header-menu-modal-fr-header")).toBeVisible();
-    }
-    const quickAccess = page.locator(
-      situation === "mobile"
-        ? "#header-menu-modal-fr-header .fr-header__menu-links"
-        : ".fr-header__tools-links",
-    );
-    await expect(quickAccess).toContainText(DEMANDEUR_EMAIL);
-    const logout = quickAccess.getByRole("button", { name: "Se déconnecter" });
-    await expect(logout).toBeVisible();
-    await expect(logout).toHaveAttribute("type", "submit");
-
-    const submitted = page.waitForResponse((response) =>
-      response.url().endsWith("/api/auth/proconnect/logout"),
-    );
-    await logout.press("Enter");
-    const response = await submitted;
-    expect(response.request().method()).toBe("POST");
-    expect(response.status()).toBe(303);
-    await expect(page).toHaveURL("/");
-    const cookies = await page.context().cookies();
-    expect(
-      cookies.find((cookie) => cookie.name === getSessionOptions().cookieName),
-    ).toBeUndefined();
-    await page.goto("/projets");
-    await expect(page).toHaveURL(/\/connexion\?/);
-  });
-}
