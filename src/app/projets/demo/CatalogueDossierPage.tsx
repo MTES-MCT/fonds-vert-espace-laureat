@@ -13,10 +13,12 @@ import { MetricAnomalyProvider } from "@/components/metrics/MetricAnomalyContext
 import { MetricRevisionProvider } from "@/components/metrics/MetricRevisionContext";
 import { ToastViewport } from "@/components/toast/toast";
 import { getDossierProgress } from "@/db/dossierProgress";
+import { completeDemoMetricSources } from "@/db/publicDemoWrites";
 import { demoSignals, readDemoSourceState } from "@/utils/demo/anomalies";
 import { demoProject } from "@/utils/demo/catalogue";
 import { DEMO_POOL_NUMBER } from "@/utils/demo/reservation";
 import { normalizeFondsVertAnomalies } from "@/utils/metrics/anomalies";
+import { isDisplayableMetricFields } from "@/utils/metrics/guards";
 
 export type CataloguePageProps = {
   params: Promise<{ dossierNumber: string }>;
@@ -45,8 +47,8 @@ export async function CatalogueDossierPage({
     sourceState === "unavailable" ||
     (!fondsVert.metrique_specifique && section === "impact");
   const progressPromise = getDossierProgress({ numeroDossier: number });
-  const { dossierFondsVertResult, metrics, metricRevisionTargets } =
-    await startDossierMetricLoading({
+  const loadMetrics = () =>
+    startDossierMetricLoading({
       numeroDossier: number,
       loadDossierFondsVert: async (includeMetrics) =>
         unavailable
@@ -72,6 +74,25 @@ export async function CatalogueDossierPage({
               signals,
             },
     }).resultPromise;
+  let metricLoading = await loadMetrics();
+  if (section === "impact" && !unavailable) {
+    const missingMetrics = Object.entries(
+      fondsVert.metrique_specifique ?? {},
+    ).filter(
+      ([code, metric]) =>
+        isDisplayableMetricFields(metric) &&
+        !metricLoading.metricRevisionTargets[code],
+    );
+    if (missingMetrics.length > 0) {
+      await completeDemoMetricSources(
+        number,
+        Object.fromEntries(missingMetrics),
+      );
+      metricLoading = await loadMetrics();
+    }
+  }
+  const { dossierFondsVertResult, metrics, metricRevisionTargets } =
+    metricLoading;
   const progress = await progressPromise;
   const anomalies = normalizeFondsVertAnomalies(signals);
   const base = `/projets/demo/${number}`;

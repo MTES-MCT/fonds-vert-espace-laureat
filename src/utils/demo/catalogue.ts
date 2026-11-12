@@ -47,29 +47,76 @@ const communes = [
   },
 ];
 
-function energyMetrics(
-  surface: number,
-  before: number,
-  after: number,
-): Metrics {
-  return {
-    surface_batiment_m2_avant_projet: {
-      label: "Surface du bâtiment avant projet",
-      unite: "m²",
-      valeur_estimee: surface,
-    },
-    conso_energetique_avant_travaux: {
-      label: "Consommation énergétique avant travaux",
-      unite: "kWh",
-      valeur_estimee: before,
-    },
-    conso_energetique_apres_travaux: {
-      label: "Consommation énergétique après travaux",
-      unite: "kWh",
-      valeur_estimee: after,
-    },
-  };
-}
+const schoolImpact: Metrics = {
+  nature_operations: {
+    label: "Nature des opérations",
+    unite: null,
+    valeur_estimee: [
+      "Isolation des façades et des combles",
+      "Remplacement de la chaudière par une pompe à chaleur",
+    ],
+  },
+  type_batiment: {
+    label: "Types des bâtiments",
+    unite: null,
+    valeur_estimee: ["École (établissement public du premier degré)"],
+  },
+  surface_batiment_m2_avant_projet: {
+    label: "Surface du bâtiment avant projet",
+    unite: "m²",
+    valeur_estimee: 1_250,
+  },
+  surface_batiment_m2_apres_projet: {
+    label: "Surface du bâtiment après projet",
+    unite: "m²",
+    valeur_estimee: 1_250,
+  },
+  type_surface: {
+    label: "Type de surface",
+    unite: null,
+    valeur_estimee: "Surface de plancher",
+  },
+  systeme_chauffage_avant_travaux: {
+    label: "Système de chauffage avant travaux",
+    unite: null,
+    valeur_estimee: "Chaudière au gaz naturel",
+  },
+  systeme_chauffage_apres_travaux: {
+    label: "Système de chauffage après travaux",
+    unite: null,
+    valeur_estimee: "Pompe à chaleur air-eau",
+  },
+  conso_energetique_avant_travaux: {
+    label: "Consommation énergétique avant travaux",
+    unite: "kWh",
+    valeur_estimee: 180_000,
+  },
+  conso_energetique_apres_travaux: {
+    label: "Consommation énergétique après travaux",
+    unite: "kWh",
+    valeur_estimee: 125_000,
+  },
+  gain_energetique_estime_percentage: {
+    label: "Gain énergétique estimé",
+    unite: "%",
+    valeur_estimee: 30.6,
+  },
+  emission_ges_avant_travaux: {
+    label: "Émissions de GES avant travaux",
+    unite: "kgCO₂e",
+    valeur_estimee: 41_400,
+  },
+  emission_ges_apres_travaux: {
+    label: "Émissions de GES après travaux",
+    unite: "kgCO₂e",
+    valeur_estimee: 11_250,
+  },
+  emission_ges_evitees_percentage: {
+    label: "Émissions de GES évitées",
+    unite: "%",
+    valeur_estimee: 72.8,
+  },
+};
 
 function projectFinancing(
   number: number,
@@ -201,7 +248,7 @@ const projects: DemoProject[] = [
       { year: 2025, committed: 36_000, payments: [36_000] },
       { year: 2026, committed: 144_000, payments: [45_000, 27_000] },
     ],
-    energyMetrics(1_250, 180_000, 125_000),
+    schoolImpact,
   ),
   {
     dossier: demoPoolDossier,

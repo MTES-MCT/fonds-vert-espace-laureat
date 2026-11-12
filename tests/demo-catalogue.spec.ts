@@ -67,6 +67,11 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
              (${realDossier}, ${after}, 2, 'Consommation', 'number', 20),
              (${LEGACY_DEMO_NUMBER}, ${before}, 1, 'Consommation historique', 'number', 180000),
              (${LEGACY_DEMO_NUMBER}, ${before}, 2, 'Consommation historique', 'number', 191000)`;
+    await sql`insert into dossier_metric_revisions
+      (dossier_number, metric_code, revision, label, unit, value_type, number_value)
+      values (101, 'surface_batiment_m2_avant_projet', 1, 'Surface du bâtiment avant projet', 'm²', 'number', 1250),
+             (101, ${before}, 1, 'Consommation énergétique avant travaux', 'kWh', 'number', 180000),
+             (101, ${after}, 1, 'Consommation énergétique après travaux', 'kWh', 'number', 125000)`;
     await sql`insert into dossier_progress_revisions (dossier_number, revision, status)
       values (${LEGACY_DEMO_NUMBER}, 1, 'En cours de réalisation')`;
 
@@ -143,6 +148,27 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await page
         .getByRole("link", { name: "Données d’impact", exact: true })
         .click();
+      await expect(
+        page.getByRole("heading", { name: "Caractéristiques du projet" }),
+      ).toBeVisible();
+      await expect(
+        page.getByText("Isolation des façades et des combles"),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Énergie", exact: true }),
+      ).toBeVisible();
+      await expect(page.getByText("Pompe à chaleur air-eau")).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Gaz à Effet de Serre (GES)" }),
+      ).toBeVisible();
+      const emissions = page.getByRole("region", {
+        name: "Émissions de GES après travaux",
+        exact: true,
+      });
+      await expect(emissions).toContainText(/11\s*250/);
+      await expect(
+        emissions.getByRole("button", { name: "Modifier" }),
+      ).toBeVisible();
       await expect(
         metric.getByRole("note", { name: "Anomalie détectée" }),
       ).toBeVisible();

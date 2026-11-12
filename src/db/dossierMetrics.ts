@@ -152,7 +152,7 @@ function toRevisionInsert({
   };
 }
 
-function toInitialRevisions({
+export function toInitialRevisions({
   dossierNumber,
   metrics,
 }: {

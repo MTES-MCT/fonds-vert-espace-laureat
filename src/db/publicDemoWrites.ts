@@ -1,13 +1,29 @@
 import { and, gt, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
+import { toInitialRevisions } from "@/db/dossierMetrics";
 import { dossierMetricRevisions, dossierProgressRevisions } from "@/db/schema";
+import type { Metrics } from "@/services/fondsvert/dossier";
 import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
 
 export const DEMO_WRITE_INTERVAL_SECONDS = 2;
 export const DEMO_MAX_REVISIONS = 100;
 export const DEMO_REVISION_LIMIT_MESSAGE =
   "La limite de révisions est atteinte. Réinitialisez la démonstration pour continuer.";
+
+export async function completeDemoMetricSources(
+  number: number,
+  metrics: Metrics,
+) {
+  if (!DEMO_DOSSIER_NUMBERS.includes(number)) return;
+  const revisions = toInitialRevisions({ dossierNumber: number, metrics });
+  if (revisions.length === 0) return;
+
+  await getDb()
+    .insert(dossierMetricRevisions)
+    .values(revisions)
+    .onConflictDoNothing();
+}
 
 export async function admitDemoWrite() {
   const rows = await getDb().execute(sql`
