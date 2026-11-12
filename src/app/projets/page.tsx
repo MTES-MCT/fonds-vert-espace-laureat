@@ -3,7 +3,6 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import { AucunDossier } from "@/app/projets/_components/AucunDossier";
 import { compareDateSignatureDecision } from "@/app/projets/_components/compareDateSignatureDecision";
 import DossiersTable from "@/app/projets/_components/DossiersTable";
-import { getPageTitle } from "@/app/projets/_components/getPageTitle";
 import {
   getSearchParams,
   SearchParams,
@@ -12,6 +11,7 @@ import { loadAuthorizedDossiers } from "@/app/projets/_components/loadAuthorized
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getDossiersProgress } from "@/db/dossierProgress";
 import { getAllDossierNumbers } from "@/services/fondsvert/dossiers";
+import { projectListLabel } from "@/utils/projectView";
 import { isAdmin } from "@/utils/roles";
 import { getAuthenticatedUser, getSession } from "@/utils/session";
 
@@ -80,7 +80,7 @@ export default async function Projets({
     <div className="fr-container my-8">
       <StartDsfrOnHydration />
       <div className="bg-white p-4 sm:p-8">
-        <h1>{getPageTitle(view)}</h1>
+        <h1>{projectListLabel(view)}</h1>
 
         {partial && (
           <Alert
