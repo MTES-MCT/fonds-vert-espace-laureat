@@ -43,8 +43,14 @@ export const MetricValue = ({
           data-testid={testId}
         >
           {value.map((item, index) => (
-            <li className="leading-tight" key={index}>
-              <Tag small>{item}</Tag>
+            <li className="max-w-full leading-tight" key={index}>
+              <Tag
+                small
+                className="max-w-[min(16rem,calc(100%_-_0.5rem))]"
+                title={item}
+              >
+                <span className="min-w-0 truncate">{item}</span>
+              </Tag>
             </li>
           ))}
         </ul>
