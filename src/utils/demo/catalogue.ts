@@ -3,7 +3,11 @@ import {
   readFondsVertSignals,
   unavailableFondsVertSignals,
 } from "@/services/fondsvert/anomalies";
-import type { DossierFondsVert, Metrics } from "@/services/fondsvert/dossier";
+import type {
+  DossierFondsVert,
+  InformationFinanciere,
+  Metrics,
+} from "@/services/fondsvert/dossier";
 import type { FinancesEJResult } from "@/services/fondsvert/finances";
 import {
   demoDossierFondsVert,
@@ -23,6 +27,8 @@ type DemoProject = {
   status: DossierProgressStatus | null;
   finances?: FinancesEJResult;
 };
+
+type FinanceExercise = { year: number; committed: number; payments: number[] };
 
 const communes = [
   {
@@ -65,6 +71,56 @@ function energyMetrics(
   };
 }
 
+function projectFinancing(
+  number: number,
+  programme: string,
+  grant: number,
+  exercises: [FinanceExercise, ...FinanceExercise[]],
+) {
+  const engagementNumber = `2109000${number}`;
+  const informationFinanciere: InformationFinanciere = {
+    informations_engagement: exercises.map(({ year, committed, payments }) => ({
+      annee_information_financiere: year,
+      montant_paye_per_dossier: payments.reduce(
+        (sum, amount) => sum + amount,
+        0,
+      ),
+      etat_engagement: payments.length ? "en cours" : "sans paiement",
+      engagements_juridiques: [
+        {
+          numero_ej: engagementNumber,
+          nom_demarche: programme,
+          nom_axe: 1,
+          montant_engage: committed,
+          demandes_paiement: payments.map((amount, index) => ({
+            numero_dp: `10${year}${number}${index + 1}`,
+            date_dp: `${year}-${index === 0 ? "09-18" : "10-20"}`,
+            montant_paye: amount,
+          })),
+        },
+      ],
+    })),
+  };
+  const finances: FinancesEJResult = {
+    [engagementNumber]: {
+      success: true,
+      data: {
+        numero_ej: engagementNumber,
+        date_creation_ej: `${exercises[0].year}-06-12`,
+        montant_engage_initial: grant,
+        annees_informations_financieres: exercises.map(
+          ({ year, committed }) => ({
+            annee_information_financiere: year,
+            montant_engage_total: committed,
+            postes: [],
+          }),
+        ),
+      },
+    },
+  };
+  return { engagementNumber, informationFinanciere, finances };
+}
+
 function project(
   index: number,
   name: string,
@@ -72,12 +128,15 @@ function project(
   grant: number,
   year: number,
   status: DossierProgressStatus,
+  exercises: [FinanceExercise, ...FinanceExercise[]],
   metrics?: Metrics,
 ) {
   const holder = communes[index < 2 ? 0 : 1];
   const number = DEMO_DOSSIER_NUMBERS[index];
   const programme =
     index === 2 ? "Biodéchets" : "Rénovation énergétique des bâtiments publics";
+  const { engagementNumber, informationFinanciere, finances } =
+    projectFinancing(number, programme, grant, exercises);
   const date = `${year}-06-12`;
   const dossier: Dossier = {
     numero: number,
@@ -87,6 +146,7 @@ function project(
     demarche: { title: `FONDS VERT - ${programme}` },
     champs: {
       intituleProjet: name,
+      numeroEngagementJuridique: engagementNumber,
       autresNumerosEngagementJuridique: [],
       departementImplantation: holder.department,
       resumeProjet: summary,
@@ -111,6 +171,7 @@ function project(
       total_des_depenses: grant * 2,
     },
     metrique_specifique: metrics,
+    information_financiere: informationFinanciere,
   };
   const signals = !metrics
     ? unavailableFondsVertSignals()
@@ -125,7 +186,7 @@ function project(
         },
         avertissements: [],
       });
-  return { dossier, fondsVert, status, signals };
+  return { dossier, fondsVert, status, signals, finances };
 }
 
 const projects: DemoProject[] = [
@@ -136,6 +197,10 @@ const projects: DemoProject[] = [
     180_000,
     2025,
     "En cours de réalisation",
+    [
+      { year: 2025, committed: 36_000, payments: [36_000] },
+      { year: 2026, committed: 144_000, payments: [45_000, 27_000] },
+    ],
     energyMetrics(1_250, 180_000, 125_000),
   ),
   {
@@ -155,6 +220,7 @@ const projects: DemoProject[] = [
     76_000,
     2025,
     "En cours de réalisation",
+    [{ year: 2025, committed: 76_000, payments: [22_800] }],
     {
       nombre_habitant_collecte_separee: {
         label: "Habitants concernés par la collecte séparée",
@@ -175,6 +241,7 @@ const projects: DemoProject[] = [
     130_000,
     2025,
     "Non-commencé",
+    [{ year: 2025, committed: 130_000, payments: [] }],
   ),
 ];
 

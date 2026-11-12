@@ -206,7 +206,9 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await page
         .getByRole("link", { name: "Financement", exact: true })
         .click();
-      await expect(page.getByText(/130\s*000,00\s*€/)).toBeVisible();
+      await expect(
+        page.getByLabel("Montant attribué", { exact: true }),
+      ).toHaveText(/130\s*000,00\s*€/);
       await page
         .getByRole("link", { name: "Données d’impact", exact: true })
         .click();
@@ -428,6 +430,57 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
   } finally {
     await clean();
     await sql.end();
+  }
+});
+
+test("l’instructeur retrouve les engagements et les paiements des autres projets de démo", async ({
+  page,
+}) => {
+  const projects = [
+    {
+      title: "Rénovation de l’école des Tilleuls",
+      engagement: "2109000101",
+      total: /108\s*000,00\s*€/,
+      payments: ["1020251011", "1020261011", "1020261012"],
+    },
+    {
+      title: "Collecte séparée des biodéchets",
+      engagement: "2109000103",
+      total: /22\s*800,00\s*€/,
+      payments: ["1020251031"],
+    },
+    {
+      title: "Rénovation du gymnase des Rives",
+      engagement: "2109000104",
+      total: /^0,00\s*€$/,
+      payments: ["Aucun paiement"],
+    },
+  ];
+
+  for (const project of projects) {
+    await test.step(`Le financement de « ${project.title} » présente son engagement et ses paiements`, async () => {
+      await page.goto("/projets/demo?vue=instructeur");
+      await page.getByRole("link", { name: project.title }).click();
+      await page
+        .getByRole("link", { name: "Financement", exact: true })
+        .click();
+
+      await expect(page.getByLabel("Montant total payé")).toHaveText(
+        project.total,
+      );
+      const engagement = page.getByRole("region", {
+        name: `Engagement juridique n°${project.engagement}`,
+      });
+      await expect(
+        engagement.getByText("Montant attribué initial"),
+      ).toBeVisible();
+      await engagement.getByRole("tab", { name: "Historique" }).click();
+      for (const number of project.payments) {
+        await expect(
+          engagement.getByRole("cell", { name: number }),
+        ).toBeVisible();
+      }
+    });
   }
 });
 
