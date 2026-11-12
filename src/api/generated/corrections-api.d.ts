@@ -71,8 +71,95 @@ export interface components {
             error: "invalid_request" | "unauthorized" | "forbidden" | "missing" | "expired" | "method_not_allowed" | "rate_limited" | "unavailable";
         };
     };
-    responses: never;
-    parameters: never;
+    responses: {
+        /** @description Une page de corrections. */
+        CorrectionPage: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["CorrectionPage"];
+            };
+        };
+        /** @description Paramètres invalides */
+        InvalidRequest: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Clé machine absente ou invalide */
+        Unauthorized: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Export ou page introuvable. Recommencez sans curseur. */
+        MissingExportPage: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Méthode non autorisée */
+        MethodNotAllowed: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Export expiré. Recommencez sans curseur. */
+        ExpiredExport: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Création trop fréquente ou déjà en cours */
+        RateLimited: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                "Retry-After"?: number;
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+        /** @description Service indisponible */
+        Unavailable: {
+            headers: {
+                "Cache-Control"?: "no-store";
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ApiError"];
+            };
+        };
+    };
+    parameters: {
+        /** @description Nombre de corrections par page. À préciser uniquement au premier appel, sans cursor. */
+        PageSize: number;
+        /** @description Valeur reçue dans next_cursor, à réutiliser sans modification. */
+        Cursor: string;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -83,9 +170,9 @@ export interface operations {
         parameters: {
             query?: {
                 /** @description Nombre de corrections par page. À préciser uniquement au premier appel, sans cursor. */
-                page_size?: number;
+                page_size?: components["parameters"]["PageSize"];
                 /** @description Valeur reçue dans next_cursor, à réutiliser sans modification. */
-                cursor?: string;
+                cursor?: components["parameters"]["Cursor"];
             };
             header?: never;
             path?: never;
@@ -93,36 +180,9 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Une page de corrections. */
-            200: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CorrectionPage"];
-                };
-            };
-            /** @description Paramètres invalides */
-            400: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Clé machine absente ou invalide */
-            401: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
+            200: components["responses"]["CorrectionPage"];
+            400: components["responses"]["InvalidRequest"];
+            401: components["responses"]["Unauthorized"];
             /** @description Origine réseau refusée */
             403: {
                 headers: {
@@ -133,66 +193,20 @@ export interface operations {
                     "application/json": components["schemas"]["ApiError"];
                 };
             };
-            /** @description Export ou page introuvable. Recommencez sans curseur. */
-            404: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Méthode non autorisée */
-            405: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Export expiré. Recommencez sans curseur. */
-            410: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Création trop fréquente ou déjà en cours */
-            429: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    "Retry-After"?: number;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Service indisponible */
-            503: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
+            404: components["responses"]["MissingExportPage"];
+            405: components["responses"]["MethodNotAllowed"];
+            410: components["responses"]["ExpiredExport"];
+            429: components["responses"]["RateLimited"];
+            503: components["responses"]["Unavailable"];
         };
     };
     getDemoCorrections: {
         parameters: {
             query?: {
                 /** @description Nombre de corrections par page. À préciser uniquement au premier appel, sans cursor. */
-                page_size?: number;
+                page_size?: components["parameters"]["PageSize"];
                 /** @description Valeur reçue dans next_cursor, à réutiliser sans modification. */
-                cursor?: string;
+                cursor?: components["parameters"]["Cursor"];
             };
             header?: never;
             path?: never;
@@ -200,87 +214,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Une page de corrections. */
-            200: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CorrectionPage"];
-                };
-            };
-            /** @description Paramètres invalides */
-            400: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Clé machine absente ou invalide */
-            401: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Export ou page introuvable. Recommencez sans curseur. */
-            404: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Méthode non autorisée */
-            405: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Export expiré. Recommencez sans curseur. */
-            410: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Création trop fréquente ou déjà en cours */
-            429: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    "Retry-After"?: number;
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
-            /** @description Service indisponible */
-            503: {
-                headers: {
-                    "Cache-Control"?: "no-store";
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiError"];
-                };
-            };
+            200: components["responses"]["CorrectionPage"];
+            400: components["responses"]["InvalidRequest"];
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["MissingExportPage"];
+            405: components["responses"]["MethodNotAllowed"];
+            410: components["responses"]["ExpiredExport"];
+            429: components["responses"]["RateLimited"];
+            503: components["responses"]["Unavailable"];
         };
     };
 }

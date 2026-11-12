@@ -24,10 +24,14 @@ const headers = {
 const profile = process.env.CORRECTIONS_TEST_PROFILE;
 
 test("published page-size maximum matches the stored export limit", () => {
-  const pageSize = correctionsContract.paths[endpoint].get.parameters.find(
-    (parameter) => parameter.name === "page_size",
-  );
-  expect(pageSize?.schema.maximum).toBe(MAX_EXPORT_PAGE_SIZE);
+  for (const path of [endpoint, "/api/v1/demo/corrections"] as const) {
+    expect(correctionsContract.paths[path].get.parameters).toContainEqual({
+      $ref: "#/components/parameters/PageSize",
+    });
+  }
+  expect(
+    correctionsContract.components.parameters.PageSize.schema.maximum,
+  ).toBe(MAX_EXPORT_PAGE_SIZE);
 });
 
 async function errorResponse(
@@ -323,10 +327,9 @@ test.describe("configured machine HTTP API", () => {
   test("uses canonical OpenAPI cursor syntax and rejects out-of-range positions", async ({
     request,
   }) => {
-    const cursorParameter = correctionsContract.paths[
-      endpoint
-    ].get.parameters.find((parameter) => parameter.name === "cursor");
-    const cursorPattern = new RegExp(cursorParameter?.schema.pattern ?? "");
+    const cursorPattern = new RegExp(
+      correctionsContract.components.parameters.Cursor.schema.pattern,
+    );
     const missingExportId = randomUUID();
     for (const position of ["0", "1", "2147483647"]) {
       const cursor = `${missingExportId}:${position}`;
