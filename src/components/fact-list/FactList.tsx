@@ -40,7 +40,7 @@ export function FactRow({
       className={`
         m-0 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-6 gap-y-1 py-3
         sm:grid-cols-[15rem_minmax(0,1fr)_auto] sm:items-center
-        min-[72rem]:grid-cols-[15rem_minmax(0,1fr)_minmax(min-content,1fr)_auto]
+        ${aside ? "min-[72rem]:grid-cols-[15rem_minmax(0,1fr)_minmax(min-content,1fr)_auto]" : ""}
       `}
     >
       <dt
@@ -56,7 +56,7 @@ export function FactRow({
           [overflow-wrap:anywhere]
           sm:col-start-2 sm:row-start-1
           ${action ? "" : "col-span-2 sm:col-span-2"}
-          ${aside ? "" : action ? "min-[72rem]:col-span-2" : "min-[72rem]:col-span-3"}
+          ${aside ? "min-[72rem]:col-span-1" : ""}
         `}
       >
         {children}
@@ -77,7 +77,7 @@ export function FactRow({
           className={`
             col-start-2 row-span-2 row-start-1 mb-0
             sm:col-start-3 sm:row-span-1
-            min-[72rem]:col-start-4
+            ${aside ? "min-[72rem]:col-start-4" : ""}
           `}
         >
           {action}
