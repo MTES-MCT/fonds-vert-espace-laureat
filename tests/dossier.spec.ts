@@ -825,7 +825,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
   });
 });
 
-test("access denied shows error page and does not render FV/EJ data", async ({
+test("un dossier DN absent affiche Introuvable sans détails financiers", async ({
   page,
   msw,
 }) => {
