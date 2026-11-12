@@ -29,7 +29,7 @@ const identity = {
   sub: "proconnect-return-user",
   email: "laureat@example.test",
   siret: "12345678900011",
-  idp_id: process.env.PROCONNECT_IDENTITE_IDP_ID,
+  idp_id: "proconnect-identite-test",
   custom: { email_verified: true },
 };
 const discoveryUrl = process.env.PROCONNECT_DISCOVER_URL!;
@@ -260,8 +260,6 @@ test.describe("ProConnect return after authentication", () => {
       id: identity.sub,
       email: identity.email,
       siret: identity.siret,
-      isProConnectIdentityProvider: true,
-      isSiretVerifiedForEmailDomain: true,
     });
     expect(storedSession.idToken).toBeTruthy();
     expect(storedSession.returnTo).toBeUndefined();
@@ -277,8 +275,6 @@ test.describe("ProConnect return after authentication", () => {
         id: identity.sub,
         email: identity.email,
         siret: identity.siret,
-        isProConnectIdentityProvider: true,
-        isSiretVerifiedForEmailDomain: true,
       },
       idToken: "existing-provider-id-token",
     };
@@ -501,7 +497,7 @@ test.describe("ProConnect return after authentication", () => {
     });
   }
 
-  test("an identity from another provider preserves the unverified SIRET interpretation", async () => {
+  test("an identity from another provider keeps its authenticated email and SIRET", async () => {
     userInfoClaims.idp_id = "other-provider";
     userInfoClaims.custom = { email_verified: false };
     await storeSession({ state: "state", nonce: "nonce" });
@@ -513,8 +509,6 @@ test.describe("ProConnect return after authentication", () => {
       id: identity.sub,
       email: identity.email,
       siret: identity.siret,
-      isProConnectIdentityProvider: false,
-      isSiretVerifiedForEmailDomain: false,
     });
   });
 
@@ -552,7 +546,7 @@ test.describe("ProConnect return after authentication", () => {
     ["custom claims", undefined],
     ["the SIRET verification claim", {}],
   ] as const) {
-    test(`a laureat without ${situation} can log in without a verification flag`, async () => {
+    test(`a laureat without ${situation} can log in with its authenticated identity`, async () => {
       userInfoClaims.custom = custom;
       await storeSession({ state: "state", nonce: "nonce" });
 
@@ -566,9 +560,6 @@ test.describe("ProConnect return after authentication", () => {
         email: identity.email,
         siret: identity.siret,
       });
-      expect(
-        (await readSession()).user?.isSiretVerifiedForEmailDomain,
-      ).toBeUndefined();
       expect((await readSession()).pkceCodeVerifier).toBeUndefined();
     });
   }

@@ -9,9 +9,7 @@ import { ttl } from "@/utils/session/ttl";
 
 type User = {
   id: string;
-  isProConnectIdentityProvider: boolean;
   email: string;
-  isSiretVerifiedForEmailDomain?: boolean;
   siret: string;
 };
 
@@ -49,16 +47,10 @@ export async function setSession(
   userInfo: ProConnectUserInfo,
   session: IronSession<Session>,
 ) {
-  const [proconnectIdentiteIdpId] = requireEnv("PROCONNECT_IDENTITE_IDP_ID");
   session.user = {
     id: userInfo.sub,
     email: userInfo.email,
     siret: userInfo.siret,
-    // With ProConnect, email_verified=true means the siret has been manually verified by against the email domain.
-    // This is only supported by ProConnect Identité (other FI returns email_verified=false).
-    // Note: the user email itself is always verified, automatically.
-    isSiretVerifiedForEmailDomain: userInfo.custom?.email_verified,
-    isProConnectIdentityProvider: userInfo.idp_id === proconnectIdentiteIdpId,
   };
   await session.save();
 }

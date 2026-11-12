@@ -29,9 +29,7 @@ async function createAuthCookie({
     projectView,
     user: {
       id: "test-user-id",
-      isProConnectIdentityProvider: true,
       email,
-      isSiretVerifiedForEmailDomain: true,
       siret,
     },
   };
