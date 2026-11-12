@@ -7,6 +7,7 @@ import { getLatestFondsVertCorrections } from "@/db/fondsVertCorrectionProjectio
 import { fondsVertExportPages } from "@/db/schema";
 
 export const MAX_EXPORT_PAGE_SIZE = 1_000;
+export const MAX_EXPORT_PAGE_NUMBER = 2_147_483_647;
 export const MAX_EXPORT_RETENTION_MS = 7 * 24 * 60 * 60 * 1_000;
 
 export class FondsVertExportPageError extends Error {
@@ -88,7 +89,7 @@ function pageCondition(exportId: string, pageNumber: number, demo: boolean) {
     ) ||
     !Number.isSafeInteger(pageNumber) ||
     pageNumber < 0 ||
-    pageNumber > 2_147_483_647
+    pageNumber > MAX_EXPORT_PAGE_NUMBER
   ) {
     throw new FondsVertExportPageError("missing");
   }

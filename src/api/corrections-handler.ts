@@ -7,6 +7,7 @@ import {
 } from "@/db/fondsVertCorrectionAdmission";
 import {
   FondsVertExportPageError,
+  MAX_EXPORT_PAGE_NUMBER,
   MAX_EXPORT_PAGE_SIZE,
   readFondsVertCorrectionExportPage,
   readFondsVertCorrectionExportPageSize,
@@ -56,7 +57,9 @@ export async function getCorrections(request: Request, demo = false) {
   const size = params.get("page_size") ?? "100";
   if (
     (cursor !== null &&
-      (!parsed || cursor.length > 64 || Number(parsed[2]) > 2_147_483_647)) ||
+      (!parsed ||
+        cursor.length > 64 ||
+        Number(parsed[2]) > MAX_EXPORT_PAGE_NUMBER)) ||
     !/^[1-9][0-9]{0,3}$/.test(size) ||
     Number(size) > MAX_EXPORT_PAGE_SIZE
   ) {
