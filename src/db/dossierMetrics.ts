@@ -152,6 +152,22 @@ function toRevisionInsert({
   };
 }
 
+function toInitialRevisions({
+  dossierNumber,
+  metrics,
+}: {
+  dossierNumber: number;
+  metrics: Metrics;
+}): MetricRevisionInsert[] {
+  return Object.entries(metrics)
+    .filter((entry): entry is [string, MetricFields] =>
+      isDisplayableMetricFields(entry[1]),
+    )
+    .map(([metricCode, metric]) =>
+      toRevisionInsert({ dossierNumber, metricCode, metric }),
+    );
+}
+
 function rowsToMetrics(rows: CurrentMetricRow[]): Record<string, MetricFields> {
   return Object.fromEntries(
     rows.map((row) => [
@@ -261,17 +277,10 @@ export async function importDossierMetricsIfMissing({
 }): Promise<void> {
   const db = getDb();
 
-  const revisions = Object.entries(metrics)
-    .filter((entry): entry is [string, MetricFields] =>
-      isDisplayableMetricFields(entry[1]),
-    )
-    .map(([metricCode, metric]) =>
-      toRevisionInsert({
-        dossierNumber: numeroDossier,
-        metricCode,
-        metric,
-      }),
-    );
+  const revisions = toInitialRevisions({
+    dossierNumber: numeroDossier,
+    metrics,
+  });
 
   if (revisions.length === 0) {
     return;
@@ -307,17 +316,10 @@ export async function resetDossierMetrics({
   metrics: Metrics;
 }): Promise<void> {
   const db = getDb();
-  const revisions = Object.entries(metrics)
-    .filter((entry): entry is [string, MetricFields] =>
-      isDisplayableMetricFields(entry[1]),
-    )
-    .map(([metricCode, metric]) =>
-      toRevisionInsert({
-        dossierNumber: numeroDossier,
-        metricCode,
-        metric,
-      }),
-    );
+  const revisions = toInitialRevisions({
+    dossierNumber: numeroDossier,
+    metrics,
+  });
 
   await db.transaction(async (tx) => {
     await tx.execute(sql`select pg_advisory_xact_lock(${numeroDossier})`);
