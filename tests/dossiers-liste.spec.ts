@@ -7,10 +7,8 @@ import {
 } from "next/experimental/testmode/playwright/msw";
 
 import {
-  DEPARTMENT,
   DOSSIER_NUMBER,
   INSTRUCTEUR_EMAIL,
-  PROGRAM_TITLE,
   PROJECT_TITLE,
 } from "./fixtures/constants";
 import {
@@ -327,12 +325,8 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
       "Dossier",
       "Projet",
       "Signalements",
-      "Porteur",
-      "Territoire",
-      "Dispositif",
       "Avancement",
       "Subvention attribuée",
-      "Actions",
     ]);
     const richProject = page.getByRole("row").filter({
       has: page.getByRole("cell", { name: String(rich), exact: true }),
@@ -366,27 +360,15 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
     expect(initialSignalsPosition.bottom).toBeLessThanOrEqual(
       initialSignalsPosition.viewportHeight,
     );
-    await expect(richProject.getByRole("cell").nth(1)).toHaveText(
-      PROJECT_TITLE,
-    );
-    await expect(richProject.getByRole("cell").nth(3)).toHaveText(
-      "COMMUNE DE REZÉ",
-    );
-    await expect(richProject.getByRole("cell").nth(4)).toContainText("REZÉ");
-    await expect(richProject.getByRole("cell").nth(4)).toContainText(
-      DEPARTMENT,
-    );
-    await expect(richProject.getByRole("cell").nth(5)).toContainText(
-      PROGRAM_TITLE,
-    );
-    await expect(richProject.getByRole("cell").nth(5)).toContainText("2025");
-    await expect(richProject.getByRole("cell").nth(6)).toHaveText("Bloqué");
-    await expect(richProject.getByRole("cell").nth(7)).toContainText(
-      /10\s*073\s*564,00\s*€/,
-    );
-    await expect(richProject.getByRole("cell").nth(7)).toContainText(
-      "1 octobre 2026",
-    );
+    const projectCell = richProject.getByRole("cell").nth(1);
+    await expect(
+      projectCell.getByRole("link", { name: PROJECT_TITLE }),
+    ).toHaveAttribute("href", `/projets/${rich}`);
+    await expect(projectCell).toContainText("COMMUNE DE REZÉ");
+    await expect(richProject.getByRole("cell").nth(3)).toHaveText("Bloqué");
+    const grant = richProject.getByRole("cell").nth(4);
+    await expect(grant).toContainText(/10\s*073\s*564,00\s*€/);
+    await expect(grant).toContainText("1 octobre 2026");
     await expect(
       richSignals.getByRole("link", {
         name: `2 données à vérifier pour le projet n°${rich}`,
@@ -401,16 +383,10 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
     const missingProject = page.getByRole("row").filter({
       has: page.getByRole("cell", { name: String(absent), exact: true }),
     });
+    await expect(missingProject.getByRole("cell").nth(1)).toContainText(
+      "Porteur non renseigné",
+    );
     await expect(missingProject.getByRole("cell").nth(3)).toHaveText(
-      "Non renseigné",
-    );
-    await expect(missingProject.getByRole("cell").nth(4)).toContainText(
-      "Non renseignée",
-    );
-    await expect(missingProject.getByRole("cell").nth(5)).toContainText(
-      "Millésime non renseigné",
-    );
-    await expect(missingProject.getByRole("cell").nth(6)).toHaveText(
       "Non renseigné",
     );
     for (const [number, label] of [

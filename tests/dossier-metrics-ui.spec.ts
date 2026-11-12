@@ -12,6 +12,7 @@ import {
   getDossierMetricRevisionTargets,
 } from "@/db/dossierMetrics";
 
+import { PROJECT_TITLE } from "./fixtures/constants";
 import { makeDossierDataWithNumber } from "./fixtures/ds";
 import { fondsVertDossierData } from "./fixtures/fondsvert";
 import { authenticatePage } from "./setup/auth";
@@ -417,7 +418,7 @@ test("persists successive metric corrections by an ordinary porteur and instruct
     await page
       .getByRole("row")
       .filter({ hasText: String(dossierNumber) })
-      .getByRole("link", { name: "Ouvrir" })
+      .getByRole("link", { name: PROJECT_TITLE, exact: true })
       .click();
     await page
       .getByRole("navigation", { name: "Pages du projet" })

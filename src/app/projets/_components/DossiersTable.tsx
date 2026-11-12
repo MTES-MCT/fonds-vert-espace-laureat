@@ -39,18 +39,13 @@ export default function DossiersTable({
             <th scope="col">Dossier</th>
             <th scope="col">Projet</th>
             <th scope="col">Signalements</th>
-            {instructorView && (
-              <>
-                <th scope="col">Porteur</th>
-                <th scope="col">Territoire</th>
-                <th scope="col">Dispositif</th>
-                <th scope="col">Avancement</th>
-              </>
-            )}
+            {instructorView && <th scope="col">Avancement</th>}
             <th scope="col">Subvention attribuée</th>
-            <th scope="col">
-              <span className="sr-only">Actions</span>
-            </th>
+            {!instructorView && (
+              <th scope="col">
+                <span className="sr-only">Actions</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -77,6 +72,12 @@ export default function DossiersTable({
                   <a href={projectLink(dossier.numero)}>
                     {dossier.champs.intituleProjet || "Non renseigné"}
                   </a>
+                  {instructorView && (
+                    <div className="mt-1 text-xs">
+                      {summary?.socleCommun?.entreprise_raison_sociale ||
+                        "Porteur non renseigné"}
+                    </div>
+                  )}
                 </td>
                 <td className="min-w-52 whitespace-normal [overflow-wrap:anywhere]">
                   <a
@@ -90,38 +91,11 @@ export default function DossiersTable({
                   </a>
                 </td>
                 {instructorView && (
-                  <>
-                    <td className="min-w-40 whitespace-normal [overflow-wrap:anywhere]">
-                      {summary?.socleCommun?.entreprise_raison_sociale ||
-                        "Non renseigné"}
-                    </td>
-                    <td className="min-w-40 whitespace-normal">
-                      <div>
-                        Commune :{" "}
-                        {summary?.socleCommun?.nom_commune || "Non renseignée"}
-                      </div>
-                      <div>
-                        Département :{" "}
-                        {dossier.champs.departementImplantation ||
-                          "Non renseigné"}
-                      </div>
-                    </td>
-                    <td className="min-w-52 whitespace-normal [overflow-wrap:anywhere]">
-                      <div>
-                        {dossier.demarche.title.replace("FONDS VERT - ", "")}
-                      </div>
-                      <div>
-                        {summary?.socleCommun?.annee_millesime
-                          ? `Édition ${summary.socleCommun.annee_millesime}`
-                          : "Millésime non renseigné"}
-                      </div>
-                    </td>
-                    <td>
-                      <DossierProgressBadge
-                        status={progress[dossier.numero]?.status ?? null}
-                      />
-                    </td>
-                  </>
+                  <td>
+                    <DossierProgressBadge
+                      status={progress[dossier.numero]?.status ?? null}
+                    />
+                  </td>
                 )}
                 <td>
                   <div className="text-lg font-semibold">
@@ -133,14 +107,16 @@ export default function DossiersTable({
                       : "Date de décision non renseignée"}
                   </div>
                 </td>
-                <td>
-                  <a
-                    className="fr-btn fr-btn--secondary"
-                    href={projectLink(dossier.numero)}
-                  >
-                    Ouvrir
-                  </a>
-                </td>
+                {!instructorView && (
+                  <td>
+                    <a
+                      className="fr-btn fr-btn--secondary"
+                      href={projectLink(dossier.numero)}
+                    >
+                      Ouvrir
+                    </a>
+                  </td>
+                )}
               </tr>
             );
           })}

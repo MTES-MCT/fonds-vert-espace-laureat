@@ -10,6 +10,7 @@ import {
 import { appendDossierProgressRevision } from "@/db/dossierProgress";
 import type { DossierProgressStatus } from "@/utils/dossierProgress";
 
+import { PROJECT_TITLE } from "./fixtures/constants";
 import { getDossierData, makeDossierDataWithNumber } from "./fixtures/ds";
 import {
   fondsVertDossierData,
@@ -167,7 +168,7 @@ test("shares progress saved from the project list between the porteur, instructe
   await page
     .getByRole("row")
     .filter({ hasText: String(dossierNumber) })
-    .getByRole("link", { name: "Ouvrir" })
+    .getByRole("link", { name: PROJECT_TITLE, exact: true })
     .click();
   await expect(
     section.locator(".fr-badge").filter({ hasText: /^Non-commencé$/ }),

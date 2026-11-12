@@ -10,6 +10,7 @@ import {
 import type { ProjectView } from "@/utils/projectView";
 import { getSessionOptions } from "@/utils/session";
 
+import { PROJECT_TITLE } from "./fixtures/constants";
 import { makeDossierDataWithNumber } from "./fixtures/ds";
 import { fondsVertDossierData, fondsVertLoginData } from "./fixtures/fondsvert";
 import { authenticatePage } from "./setup/auth";
@@ -155,12 +156,8 @@ for (const [email, listTitle] of [
             "Dossier",
             "Projet",
             "Signalements",
-            "Porteur",
-            "Territoire",
-            "Dispositif",
             "Avancement",
             "Subvention attribuée",
-            "Actions",
           ],
     );
     await expect(page.locator("main")).toContainText(
@@ -175,7 +172,7 @@ for (const [email, listTitle] of [
     await page
       .getByRole("row")
       .filter({ hasText: String(dossierNumber) })
-      .getByRole("link", { name: "Ouvrir" })
+      .getByRole("link", { name: PROJECT_TITLE, exact: true })
       .click();
     await expect(
       page
@@ -372,7 +369,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
   await page
     .getByRole("row")
     .filter({ hasText: String(dossierNumber) })
-    .getByRole("link", { name: "Ouvrir" })
+    .getByRole("link", { name: PROJECT_TITLE, exact: true })
     .click();
 
   for (const [label, suffix] of [
