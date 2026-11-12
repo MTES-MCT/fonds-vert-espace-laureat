@@ -12,45 +12,20 @@ import {
   DossierProgressConflict,
   getDossierProgress,
 } from "@/db/dossierProgress";
-import type { DossierProgressStatus } from "@/utils/dossierProgress";
 
 import { getDossierData } from "./fixtures/ds";
 import { authenticatePage } from "./setup/auth";
-import { createTestDatabaseClient } from "./setup/db";
+import {
+  createTestDatabaseClient,
+  deleteStoredDossierProgress,
+  getStoredDossierProgressRevisions,
+} from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const BASE_DOSSIER_NUMBER = 89998032;
 const PORTEUR_EMAIL = "porteur.avancement@example.com";
 const INSTRUCTEUR_EMAIL = "instructeur.avancement@example.com";
 const ADMIN_EMAIL = "alice.doe@example.com";
-
-async function deleteStoredProgress(dossierNumber: number) {
-  const sql = createTestDatabaseClient();
-  try {
-    await sql`delete from dossier_progress_revisions where dossier_number = ${dossierNumber}`;
-  } finally {
-    await sql.end();
-  }
-}
-
-async function storedRevisions(dossierNumber: number) {
-  const sql = createTestDatabaseClient();
-  try {
-    return await sql<
-      {
-        revision: number;
-        status: DossierProgressStatus;
-        author_email: string | null;
-        created_at: Date;
-      }[]
-    >`select revision, status, author_email, created_at
-      from dossier_progress_revisions
-      where dossier_number = ${dossierNumber}
-      order by revision`;
-  } finally {
-    await sql.end();
-  }
-}
 
 async function postProgress({
   page,
@@ -95,11 +70,15 @@ async function postProgress({
 }
 
 test.beforeEach(async ({}, testInfo) => {
-  await deleteStoredProgress(BASE_DOSSIER_NUMBER + testInfo.parallelIndex);
+  await deleteStoredDossierProgress(
+    BASE_DOSSIER_NUMBER + testInfo.parallelIndex,
+  );
 });
 
 test.afterEach(async ({}, testInfo) => {
-  await deleteStoredProgress(BASE_DOSSIER_NUMBER + testInfo.parallelIndex);
+  await deleteStoredDossierProgress(
+    BASE_DOSSIER_NUMBER + testInfo.parallelIndex,
+  );
 });
 
 test.afterAll(async () => {
@@ -115,7 +94,7 @@ test.describe("dossier progress storage", () => {
       status: null,
       updatedAt: null,
     });
-    expect(await storedRevisions(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
   });
 
   test("keeps all five statuses and backward changes with successive authors and server dates", async ({}, testInfo) => {
@@ -158,14 +137,14 @@ test.describe("dossier progress storage", () => {
         expect(
           await getDossierProgress({ numeroDossier: dossierNumber }),
         ).toEqual(target);
-        const stored = await storedRevisions(dossierNumber);
+        const stored = await getStoredDossierProgressRevisions(dossierNumber);
         expect(stored[index].created_at.toISOString()).toBe(target.updatedAt);
       }
       const [after] = await sql<
         { now: Date }[]
       >`select clock_timestamp() as now`;
 
-      const revisions = await storedRevisions(dossierNumber);
+      const revisions = await getStoredDossierProgressRevisions(dossierNumber);
       expect(revisions).toEqual(
         changes.map((change, index) => ({
           revision: index + 1,
@@ -202,7 +181,7 @@ test.describe("dossier progress storage", () => {
         authorEmail: PORTEUR_EMAIL,
         confirmed: true,
       });
-      const before = await storedRevisions(dossierNumber);
+      const before = await getStoredDossierProgressRevisions(dossierNumber);
 
       const unchanged = await appendDossierProgressRevision({
         numeroDossier: dossierNumber,
@@ -213,7 +192,9 @@ test.describe("dossier progress storage", () => {
       });
 
       expect(unchanged).toEqual(original);
-      expect(await storedRevisions(dossierNumber)).toEqual(before);
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+        before,
+      );
     });
   }
 
@@ -257,7 +238,7 @@ test.describe("dossier progress storage", () => {
       });
     }
 
-    expect(await storedRevisions(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
     expect(await getDossierProgress({ numeroDossier: dossierNumber })).toEqual({
       revision: 0,
       status: null,
@@ -331,7 +312,7 @@ test.describe("dossier progress storage", () => {
         updatedAt: expect.any(String),
       });
 
-      const revisions = await storedRevisions(dossierNumber);
+      const revisions = await getStoredDossierProgressRevisions(dossierNumber);
       expect(revisions).toHaveLength(opened.revision + 1);
       expect(revisions.at(-1)).toMatchObject({
         revision: current.revision,
@@ -351,7 +332,7 @@ test.describe("dossier progress storage", () => {
       authorEmail: null,
       confirmed: false,
     });
-    const before = await storedRevisions(dossierNumber);
+    const before = await getStoredDossierProgressRevisions(dossierNumber);
 
     await expect(
       appendDossierProgressRevision({
@@ -363,7 +344,9 @@ test.describe("dossier progress storage", () => {
       }),
     ).rejects.toMatchObject({ cause: { code: "22021" } });
 
-    expect(await storedRevisions(dossierNumber)).toEqual(before);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+      before,
+    );
     expect(await getDossierProgress({ numeroDossier: dossierNumber })).toEqual(
       original,
     );
@@ -376,7 +359,7 @@ test.describe("dossier progress storage", () => {
       confirmed: false,
     });
     expect(retry.revision).toBe(2);
-    expect(await storedRevisions(dossierNumber)).toEqual([
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([
       ...before,
       {
         revision: 2,
@@ -410,7 +393,9 @@ test.describe("dossier progress storage", () => {
       expect(read).toEqual(saved);
     }
 
-    expect(await storedRevisions(dossierNumber)).toHaveLength(30);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toHaveLength(
+      30,
+    );
     const summary = Object.fromEntries(
       Object.entries(durations).map(([operation, samples]) => {
         const ordered = [...samples].sort((left, right) => left - right);
@@ -505,7 +490,7 @@ test.describe("dossier progress HTTP access", () => {
       });
     }
 
-    expect(await storedRevisions(dossierNumber)).toEqual(
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
       changes.map((change, index) => ({
         revision: index + 1,
         status: change.status,
@@ -540,7 +525,7 @@ test.describe("dossier progress HTTP access", () => {
         authorEmail: PORTEUR_EMAIL,
         confirmed: false,
       });
-      const before = await storedRevisions(dossierNumber);
+      const before = await getStoredDossierProgressRevisions(dossierNumber);
       await page.context().clearCookies();
       if (email) await authenticatePage(page, { email });
 
@@ -552,7 +537,9 @@ test.describe("dossier progress HTTP access", () => {
       });
 
       expect(refused).toEqual({ status, body: { error } });
-      expect(await storedRevisions(dossierNumber)).toEqual(before);
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+        before,
+      );
 
       await page.context().clearCookies();
       await authenticatePage(page, { email: PORTEUR_EMAIL });
@@ -564,7 +551,7 @@ test.describe("dossier progress HTTP access", () => {
       });
 
       expect(authorized.status).toBe(200);
-      expect(await storedRevisions(dossierNumber)).toEqual([
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([
         ...before,
         {
           revision: 2,
@@ -593,7 +580,7 @@ test.describe("dossier progress HTTP access", () => {
         body: { error: "Révision lue invalide ou manquante" },
       });
     }
-    expect(await storedRevisions(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
 
     const valid = await postProgress({
       page,
@@ -621,7 +608,7 @@ test.describe("dossier progress HTTP access", () => {
       status: 400,
       body: { error: "Avancement invalide" },
     });
-    expect(await storedRevisions(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
   });
 
   test("keeps the previous status and author when an authorized HTTP save fails in PostgreSQL", async ({
@@ -635,7 +622,7 @@ test.describe("dossier progress HTTP access", () => {
       expectedRevision: 0,
     });
     expect(original.status).toBe(200);
-    const before = await storedRevisions(dossierNumber);
+    const before = await getStoredDossierProgressRevisions(dossierNumber);
     const sql = createTestDatabaseClient();
     const constraint = `progress_test_insert_failure_${dossierNumber}`;
 
@@ -650,7 +637,9 @@ test.describe("dossier progress HTTP access", () => {
         expectedRevision: 1,
       });
       expect(failed.status).toBe(500);
-      expect(await storedRevisions(dossierNumber)).toEqual(before);
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+        before,
+      );
       expect(
         await getDossierProgress({ numeroDossier: dossierNumber }),
       ).toEqual(original.body.target);
@@ -668,7 +657,9 @@ test.describe("dossier progress HTTP access", () => {
       expectedRevision: 1,
     });
     expect(retry.status).toBe(200);
-    expect((await storedRevisions(dossierNumber)).at(-1)).toMatchObject({
+    expect(
+      (await getStoredDossierProgressRevisions(dossierNumber)).at(-1),
+    ).toMatchObject({
       revision: 2,
       status: "Bloqué",
       author_email: PORTEUR_EMAIL,
@@ -694,7 +685,9 @@ test.describe("dossier progress HTTP access", () => {
           body: { error: "Confirmez le passage à cet avancement" },
         });
       }
-      expect(await storedRevisions(dossierNumber)).toEqual([]);
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+        [],
+      );
 
       const confirmed = await postProgress({
         page,
@@ -704,7 +697,7 @@ test.describe("dossier progress HTTP access", () => {
         confirmed: true,
       });
       expect(confirmed.status).toBe(200);
-      expect(await storedRevisions(dossierNumber)).toEqual([
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([
         {
           revision: 1,
           status,
@@ -726,7 +719,7 @@ test.describe("dossier progress HTTP access", () => {
       expectedRevision: 0,
     });
     expect(original.status).toBe(200);
-    const before = await storedRevisions(dossierNumber);
+    const before = await getStoredDossierProgressRevisions(dossierNumber);
     await page.context().clearCookies();
     await authenticatePage(page, { email: INSTRUCTEUR_EMAIL });
 
@@ -745,7 +738,9 @@ test.describe("dossier progress HTTP access", () => {
           target: original.body.target,
         },
       });
-      expect(await storedRevisions(dossierNumber)).toEqual(before);
+      expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+        before,
+      );
     }
 
     const unchanged = await postProgress({
@@ -755,6 +750,8 @@ test.describe("dossier progress HTTP access", () => {
       expectedRevision: 1,
     });
     expect(unchanged).toEqual(original);
-    expect(await storedRevisions(dossierNumber)).toEqual(before);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+      before,
+    );
   });
 });

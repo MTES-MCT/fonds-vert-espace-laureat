@@ -21,6 +21,8 @@ import { authenticatePage } from "./setup/auth";
 import {
   createTestDatabaseClient,
   deleteStoredDossierMetrics,
+  deleteStoredDossierProgress,
+  getStoredDossierProgressRevisions,
 } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
@@ -28,29 +30,6 @@ const PORTEUR = "porteur.avancement.ui@example.com";
 const INSTRUCTEUR = "instructeur.avancement.ui@example.com";
 const ADMIN = "alice.doe@example.com";
 
-async function progressRows(dossierNumber: number) {
-  const sql = createTestDatabaseClient();
-  try {
-    return await sql<
-      {
-        revision: number;
-        status: string;
-        author_email: string | null;
-        created_at: Date;
-      }[]
-    >`select revision,status,author_email,created_at from dossier_progress_revisions where dossier_number=${dossierNumber} order by revision`;
-  } finally {
-    await sql.end();
-  }
-}
-async function clearProgress(dossierNumber: number) {
-  const sql = createTestDatabaseClient();
-  try {
-    await sql`delete from dossier_progress_revisions where dossier_number=${dossierNumber}`;
-  } finally {
-    await sql.end();
-  }
-}
 async function openProgress(page: Page) {
   await page.waitForSelector('[data-fr-js-modal-button="true"]', {
     state: "attached",
@@ -82,7 +61,7 @@ async function saveOrdinaryProgress(page: Page, status: DossierProgressStatus) {
 
 test.beforeEach(async ({ page, msw }, testInfo) => {
   const dossierNumber = 89880032 + testInfo.parallelIndex;
-  await clearProgress(dossierNumber);
+  await deleteStoredDossierProgress(dossierNumber);
   await deleteStoredDossierMetrics(dossierNumber);
   const dossier = {
     ...makeDossierDataWithNumber(dossierNumber).data.dossier,
@@ -136,7 +115,7 @@ test.beforeEach(async ({ page, msw }, testInfo) => {
 
 test.afterEach(async ({}, testInfo) => {
   const dossierNumber = 89880032 + testInfo.parallelIndex;
-  await clearProgress(dossierNumber);
+  await deleteStoredDossierProgress(dossierNumber);
   await deleteStoredDossierMetrics(dossierNumber);
 });
 
@@ -160,7 +139,7 @@ test("shares progress saved from the project list between the porteur, instructe
   await expect(
     section.getByRole("tooltip", { includeHidden: true }),
   ).toHaveCount(0);
-  expect(await progressRows(dossierNumber)).toEqual([]);
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
 
   const saveDurations = [await saveOrdinaryProgress(page, "Non-commencé")];
   await page.reload();
@@ -210,7 +189,7 @@ test("shares progress saved from the project list between the porteur, instructe
       .locator(".fr-badge")
       .filter({ hasText: /^En cours de réalisation$/ }),
   ).toBeVisible();
-  expect(await progressRows(dossierNumber)).toEqual([
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([
     {
       revision: 1,
       status: "Non-commencé",
@@ -274,13 +253,13 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
     await expect(
       confirmation.getByText(`Passer l’avancement à « ${finalStatus} » ?`),
     ).toBeFocused();
-    expect(await progressRows(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
     await confirmation.getByRole("button", { name: "Annuler" }).click();
     await expect(confirmation).toBeHidden();
     await expect(
       page.getByRole("button", { name: "Modifier l’avancement" }),
     ).toBeFocused();
-    expect(await progressRows(dossierNumber)).toEqual([]);
+    expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
 
     dialog = await openProgress(page);
     await dialog
@@ -316,7 +295,7 @@ for (const finalStatus of ["Terminé", "Abandonné"] as const) {
       .click();
     await saveOrdinaryProgress(page, "Non-commencé");
     expect(
-      (await progressRows(dossierNumber)).map(
+      (await getStoredDossierProgressRevisions(dossierNumber)).map(
         ({ revision, status, author_email }) => ({
           revision,
           status,
@@ -346,7 +325,7 @@ test("discards closed edits, keeps unchanged progress and announces a failed sav
   await expect(
     page.getByRole("button", { name: "Modifier l’avancement" }),
   ).toBeFocused();
-  expect(await progressRows(dossierNumber)).toEqual([]);
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
 
   dialog = await openProgress(page);
   await expect(dialog.getByRole("combobox")).toHaveValue("");
@@ -362,7 +341,7 @@ test("discards closed edits, keeps unchanged progress and announces a failed sav
     .click();
   await expect(dialog).toBeHidden();
   await page.reload();
-  const before = await progressRows(dossierNumber);
+  const before = await getStoredDossierProgressRevisions(dossierNumber);
 
   dialog = await openProgress(page);
   await dialog
@@ -372,7 +351,9 @@ test("discards closed edits, keeps unchanged progress and announces a failed sav
   await expect(
     page.getByRole("status").filter({ hasText: "Avancement enregistré" }),
   ).toHaveCount(0);
-  expect(await progressRows(dossierNumber)).toEqual(before);
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+    before,
+  );
 
   dialog = await openProgress(page);
   await dialog.getByRole("combobox").selectOption("Bloqué");
@@ -386,7 +367,9 @@ test("discards closed edits, keeps unchanged progress and announces a failed sav
     "L’avancement n’a pas pu être enregistré.",
   );
   await expect(dialog.getByRole("combobox")).toBeFocused();
-  expect(await progressRows(dossierNumber)).toEqual(before);
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual(
+    before,
+  );
   await dialog.getByRole("button", { name: "Fermer" }).click();
   await expect(dialog).toBeHidden();
   await expect(
@@ -426,7 +409,9 @@ test("preserves the opening revision across refresh and replaces an obsolete ent
   );
   await expect(dialog.getByRole("combobox")).toHaveValue("Bloqué");
   await expect(dialog.getByRole("combobox")).toBeFocused();
-  expect(await progressRows(dossierNumber)).toHaveLength(1);
+  expect(await getStoredDossierProgressRevisions(dossierNumber)).toHaveLength(
+    1,
+  );
   await expect(
     page.getByRole("status").filter({ hasText: "Avancement enregistré" }),
   ).toHaveCount(0);
@@ -437,7 +422,7 @@ test("preserves the opening revision across refresh and replaces an obsolete ent
     .click();
   await expect(dialog).toBeHidden();
   expect(
-    (await progressRows(dossierNumber)).map(
+    (await getStoredDossierProgressRevisions(dossierNumber)).map(
       ({ revision, status, author_email }) => ({
         revision,
         status,
@@ -483,7 +468,9 @@ test("refreshes a newer revision even when its server date has the same millisec
     .getByRole("button", { name: "Enregistrer", exact: true })
     .click();
   await expect(dialog).toBeHidden();
-  expect((await progressRows(dossierNumber)).at(-1)).toMatchObject({
+  expect(
+    (await getStoredDossierProgressRevisions(dossierNumber)).at(-1),
+  ).toMatchObject({
     revision: 3,
     status: "En cours de réalisation",
     author_email: PORTEUR,
