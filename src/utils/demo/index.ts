@@ -1,8 +1,6 @@
 import { Dossier } from "@/services/ds/subvention";
 import { DossierFondsVert } from "@/services/fondsvert/dossier";
 import { FinancesEJData } from "@/services/fondsvert/finances";
-import { DEMO_POOL_NUMBER } from "@/utils/demo/reservation";
-
 import {
   AGENCE_EAU_NUMBER,
   CENTRE_COUTS,
@@ -22,11 +20,12 @@ import {
   PROGRAM_TITLE,
   PROJECT_SUMMARY,
   SIRET,
-} from "../../../tests/fixtures/constants";
+} from "@/utils/demo/poolConstants";
+import { DEMO_POOL_NUMBER } from "@/utils/demo/reservation";
 
 const demandeur = {
   demandeur: {
-    siret: "12345678910111",
+    siret: SIRET,
   },
 };
 
