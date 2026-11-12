@@ -1,0 +1,99 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "685f14f1-b5ad-4186-92f2-496a84861881",
+  "prevIds": [
+    "cdf82f2d-64e3-454d-9dd0-a4607f5da139"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "fonds_vert_export_admission"
+      ],
+      "writes": [
+        "s|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_singleton",
+        "n|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_singleton",
+        "e|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_singleton",
+        "n|con|public.fonds_vert_export_admission.fonds_vert_export_admission_singleton"
+      ],
+      "reads": [
+        "n|tbl|public.fonds_vert_export_admission",
+        "n|sch|public",
+        "e|col|public.fonds_vert_export_admission.id"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "fonds_vert_export_pages",
+        "demo"
+      ],
+      "writes": [
+        "s|col|public.fonds_vert_export_pages.demo",
+        "n|col|public.fonds_vert_export_pages.demo",
+        "e|col|public.fonds_vert_export_pages.demo"
+      ],
+      "reads": [
+        "n|tbl|public.fonds_vert_export_pages",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "fonds_vert_export_admission"
+      ],
+      "writes": [
+        "s|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_scope",
+        "n|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_scope",
+        "e|ck|public.fonds_vert_export_admission.fonds_vert_export_admission_scope",
+        "n|con|public.fonds_vert_export_admission.fonds_vert_export_admission_scope"
+      ],
+      "reads": [
+        "n|tbl|public.fonds_vert_export_admission",
+        "n|sch|public",
+        "n|col|public.fonds_vert_export_admission.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "fonds_vert_export_pages",
+        "name": "demo",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "fonds_vert_export_admission",
+        "name": "fonds_vert_export_admission_scope",
+        "value": "\"id\" in (1, 2)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "checks\u0000[\"public\",\"fonds_vert_export_admission\",\"fonds_vert_export_admission_singleton\"]"
+    }
+  ]
+}

@@ -120,6 +120,7 @@ export const fondsVertExportPages = pgTable(
   "fonds_vert_export_pages",
   {
     exportId: uuid("export_id").notNull(),
+    demo: boolean("demo").notNull().default(false),
     pageNumber: integer("page_number").notNull(),
     generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
@@ -151,6 +152,6 @@ export const fondsVertExportAdmission = pgTable(
     }).notNull(),
   },
   (table) => [
-    check("fonds_vert_export_admission_singleton", sql`${table.id} = 1`),
+    check("fonds_vert_export_admission_scope", sql`${table.id} in (1, 2)`),
   ],
 );
