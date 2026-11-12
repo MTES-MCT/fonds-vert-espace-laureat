@@ -42,7 +42,7 @@ export async function writeMetric(
     );
   }
 
-  const refusal = await demoWriteRefusal(expectedRevision);
+  const refusal = await demoWriteRefusal();
   if (refusal) return refusal;
 
   try {
@@ -63,6 +63,9 @@ export async function writeMetric(
       );
     }
     if (error instanceof DossierMetricRevisionError) {
+      if (error.code === "revision-limit") {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
       return NextResponse.json(
         { error: error.message },
         { status: error.code === "unknown-target" ? 404 : 400 },

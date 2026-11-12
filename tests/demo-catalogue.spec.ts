@@ -343,7 +343,6 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
         },
       );
       expect(oversized.status()).toBe(400);
-      expect((await writeMetric(101, after, 126_000, 100)).status()).toBe(409);
       expect((await writeMetric(101, after, 126_000)).status()).toBe(200);
       expect((await writeMetric(101, after, 127_000, 2)).status()).toBe(429);
     });

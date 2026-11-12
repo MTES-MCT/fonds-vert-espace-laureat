@@ -10,6 +10,11 @@ import {
   type MetricValue,
 } from "@/services/fondsvert/dossier";
 import {
+  DEMO_MAX_REVISIONS,
+  DEMO_REVISION_LIMIT_MESSAGE,
+} from "@/utils/demo/limits";
+import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
+import {
   classifyMetricValue,
   isDisplayableMetricFields,
 } from "@/utils/metrics/guards";
@@ -69,7 +74,7 @@ export type DossierMetricRevisionTarget = {
 
 export class DossierMetricRevisionError extends Error {
   constructor(
-    public readonly code: "unknown-target" | "invalid-value",
+    public readonly code: "unknown-target" | "invalid-value" | "revision-limit",
     message: string,
   ) {
     super(message);
@@ -428,6 +433,16 @@ export async function appendDossierMetricRevision({
 
     if (metricValuesEqual(target.effectiveValue, normalizedValue)) {
       return target;
+    }
+
+    if (
+      DEMO_DOSSIER_NUMBERS.includes(numeroDossier) &&
+      target.revision >= DEMO_MAX_REVISIONS
+    ) {
+      throw new DossierMetricRevisionError(
+        "revision-limit",
+        DEMO_REVISION_LIMIT_MESSAGE,
+      );
     }
 
     const revision = target.revision + 1;

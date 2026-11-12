@@ -1,11 +1,11 @@
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
+import { dossierProgressRevisions } from "@/db/schema";
 import {
   DEMO_MAX_REVISIONS,
   DEMO_REVISION_LIMIT_MESSAGE,
-} from "@/db/publicDemoWrites";
-import { dossierProgressRevisions } from "@/db/schema";
+} from "@/utils/demo/limits";
 import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
 import {
   type DossierProgressStatus,

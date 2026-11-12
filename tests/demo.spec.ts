@@ -358,6 +358,65 @@ test("demo page loads, corrects and persists its database-backed metrics", async
   await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
 });
 
+test("le plafond d’une métrique laisse un visiteur récupérer la valeur après une réinitialisation", async ({
+  page,
+  request,
+}) => {
+  const metricCode = "conso_energetique_avant_travaux";
+  const metricUrl = `/api/projets/demo/${DEMO_POOL_NUMBER}/metrics/${metricCode}`;
+  const changeMetric = async (value: number, expectedRevision: number) => {
+    await waitForDemoWrite();
+    return request.post(metricUrl, { data: { value, expectedRevision } });
+  };
+
+  await page.goto(`${poolPath}/impact`);
+  const sql = createTestDatabaseClient();
+  try {
+    await sql`insert into dossier_metric_revisions
+      (dossier_number, metric_code, revision, label, unit, value_type, number_value)
+      select dossier_number, metric_code, n, label, unit, value_type, 2000000
+      from dossier_metric_revisions cross join generate_series(2, 99) as n
+      where dossier_number = ${DEMO_POOL_NUMBER} and metric_code = ${metricCode}
+        and revision = 1`;
+  } finally {
+    await sql.end();
+  }
+
+  const saved = await changeMetric(1_900_000, 99);
+  expect(saved.status()).toBe(200);
+  expect(await saved.json()).toMatchObject({
+    target: { revision: 100, effectiveValue: 1_900_000 },
+  });
+
+  const refused = await changeMetric(1_800_000, 100);
+  expect(refused.status()).toBe(409);
+  expect(await refused.json()).toEqual({
+    error:
+      "La limite de révisions est atteinte. Réinitialisez la démonstration pour continuer.",
+  });
+
+  const unchanged = await changeMetric(1_900_000, 100);
+  expect(unchanged.status()).toBe(200);
+  expect(await unchanged.json()).toMatchObject({
+    target: { revision: 100, effectiveValue: 1_900_000 },
+  });
+
+  await waitForDemoWrite();
+  const reset = await request.post("/api/projets/demo/reset");
+  expect(reset.ok()).toBe(true);
+
+  const stale = await changeMetric(1_800_000, 100);
+  expect(stale.status()).toBe(409);
+  expect(await stale.json()).toMatchObject({
+    target: { revision: 1, effectiveValue: 2_055_650 },
+  });
+  await expect(
+    getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
+  ).resolves.toMatchObject({
+    [metricCode]: { revision: 1, effectiveValue: 2_055_650 },
+  });
+});
+
 test("la démo refuse une nouvelle révision d’avancement au plafond", async ({
   request,
 }) => {

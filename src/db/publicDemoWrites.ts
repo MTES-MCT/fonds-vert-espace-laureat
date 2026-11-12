@@ -7,9 +7,6 @@ import type { Metrics } from "@/services/fondsvert/dossier";
 import { DEMO_DOSSIER_NUMBERS } from "@/utils/demo/reservation";
 
 export const DEMO_WRITE_INTERVAL_SECONDS = 2;
-export const DEMO_MAX_REVISIONS = 100;
-export const DEMO_REVISION_LIMIT_MESSAGE =
-  "La limite de révisions est atteinte. Réinitialisez la démonstration pour continuer.";
 
 export async function completeDemoMetricSources(
   number: number,

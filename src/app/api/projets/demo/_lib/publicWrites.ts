@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 
 import {
   admitDemoWrite,
-  DEMO_MAX_REVISIONS,
-  DEMO_REVISION_LIMIT_MESSAGE,
   DEMO_WRITE_INTERVAL_SECONDS,
 } from "@/db/publicDemoWrites";
 
@@ -30,13 +28,7 @@ export async function readDemoJson(request: Request): Promise<unknown> {
   }
 }
 
-export async function demoWriteRefusal(expectedRevision = 0) {
-  if (expectedRevision >= DEMO_MAX_REVISIONS) {
-    return NextResponse.json(
-      { error: DEMO_REVISION_LIMIT_MESSAGE },
-      { status: 409 },
-    );
-  }
+export async function demoWriteRefusal() {
   if (!(await admitDemoWrite())) {
     return NextResponse.json(
       { error: "Réessayez dans quelques secondes." },
