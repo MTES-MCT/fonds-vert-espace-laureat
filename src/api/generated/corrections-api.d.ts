@@ -95,6 +95,7 @@ export interface components {
         /** @description Clé machine absente ou invalide */
         Unauthorized: {
             headers: {
+                "WWW-Authenticate": "Bearer";
                 "Cache-Control"?: "no-store";
                 [name: string]: unknown;
             };
@@ -115,6 +116,7 @@ export interface components {
         /** @description Méthode non autorisée */
         MethodNotAllowed: {
             headers: {
+                Allow: "GET";
                 "Cache-Control"?: "no-store";
                 [name: string]: unknown;
             };

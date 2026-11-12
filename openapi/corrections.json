@@ -296,6 +296,13 @@
       "Unauthorized": {
         "description": "Clé machine absente ou invalide",
         "headers": {
+          "WWW-Authenticate": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "Bearer"
+            }
+          },
           "Cache-Control": {
             "schema": {
               "type": "string",
@@ -332,6 +339,13 @@
       "MethodNotAllowed": {
         "description": "Méthode non autorisée",
         "headers": {
+          "Allow": {
+            "required": true,
+            "schema": {
+              "type": "string",
+              "const": "GET"
+            }
+          },
           "Cache-Control": {
             "schema": {
               "type": "string",
