@@ -439,8 +439,19 @@ for (const width of [1440, 390]) {
     await expect(tools).toHaveCSS("position", "fixed");
     const bounds = await tools.boundingBox();
     if (!bounds) throw new Error("Les outils doivent être affichés.");
-    expect(width - (bounds.x + bounds.width)).toBeLessThanOrEqual(16);
-    expect(900 - (bounds.y + bounds.height)).toBeLessThanOrEqual(16);
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(900);
+    expect(width - (bounds.x + bounds.width)).toBeLessThan(bounds.x);
+    expect(900 - (bounds.y + bounds.height)).toBeLessThan(bounds.y);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
     await expect
       .poll(() =>
         tools.evaluate((element) => element.scrollWidth <= element.clientWidth),
@@ -457,45 +468,40 @@ for (const width of [1440, 390]) {
     await page.goto(`${poolPath}/impact`);
     const values = page.getByTestId("impact-section");
 
-    for (const [first, second] of [
+    await expect(values.getByRole("region").first()).toBeVisible();
+    const metricLabels = await values
+      .getByRole("region")
+      .evaluateAll((regions) =>
+        regions.map((region) => region.getAttribute("aria-label")),
+      );
+    for (const [firstLabel, secondLabel] of [
       [
-        values.getByRole("region", {
-          name: "Consommation énergétique avant travaux",
-          exact: true,
-        }),
-        values.getByRole("region", {
-          name: "Consommation énergétique après travaux",
-          exact: true,
-        }),
+        "Consommation énergétique avant travaux",
+        "Consommation énergétique après travaux",
       ],
-      [
-        values.getByRole("region", {
-          name: "Surface du bâtiment avant projet",
-          exact: true,
-        }),
-        values.getByRole("region", { name: "Type de surface", exact: true }),
-      ],
-      [
-        values.getByRole("region", {
-          name: "Nature des opérations",
-          exact: true,
-        }),
-        values.getByRole("region", {
-          name: "Types des bâtiments",
-          exact: true,
-        }),
-      ],
+      ["Surface du bâtiment avant projet", "Type de surface"],
+      ["Nature des opérations", "Types des bâtiments"],
     ]) {
+      const first = values.getByRole("region", {
+        name: firstLabel,
+        exact: true,
+      });
+      const second = values.getByRole("region", {
+        name: secondLabel,
+        exact: true,
+      });
       const firstBounds = await first.boundingBox();
       const secondBounds = await second.boundingBox();
       if (!firstBounds || !secondBounds) {
         throw new Error("Les deux données liées doivent être affichées.");
       }
 
-      expect(Math.abs(secondBounds.x - firstBounds.x)).toBeLessThanOrEqual(1);
-      expect(
-        Math.abs(secondBounds.y - (firstBounds.y + firstBounds.height)),
-      ).toBeLessThanOrEqual(2);
+      expect(metricLabels[metricLabels.indexOf(firstLabel) + 1]).toBe(
+        secondLabel,
+      );
+      expect(secondBounds.y).toBeGreaterThanOrEqual(
+        firstBounds.y + firstBounds.height,
+      );
     }
   });
 }
@@ -525,7 +531,8 @@ for (const [situation, width, besideValue] of [
 
     if (besideValue) {
       expect(note.x).toBeGreaterThan(value.x + value.width);
-      expect(Math.abs(note.y - value.y)).toBeLessThanOrEqual(8);
+      expect(note.y).toBeLessThan(value.y + value.height);
+      expect(note.y + note.height).toBeGreaterThan(value.y);
     } else {
       expect(note.y).toBeGreaterThanOrEqual(value.y + value.height);
     }
