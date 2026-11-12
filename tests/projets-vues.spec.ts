@@ -145,13 +145,7 @@ for (const [email, listTitle] of [
     ).toHaveCount(0);
     await expect(page.getByRole("columnheader")).toHaveText(
       email === PORTEUR
-        ? [
-            "Dossier",
-            "Projet",
-            "Signalements",
-            "Subvention attribuée",
-            "Actions",
-          ]
+        ? ["Dossier", "Projet", "Signalements", "Subvention attribuée"]
         : [
             "Dossier",
             "Projet",

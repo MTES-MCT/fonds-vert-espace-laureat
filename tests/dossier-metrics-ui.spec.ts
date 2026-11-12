@@ -392,7 +392,7 @@ test("persists successive metric corrections by an ordinary porteur and instruct
     await page
       .getByRole("row")
       .filter({ hasText: String(dossierNumber) })
-      .getByRole("link", { name: "Ouvrir" })
+      .getByRole("link", { name: PROJECT_TITLE, exact: true })
       .click();
     await page
       .getByRole("navigation", { name: "Pages du projet" })

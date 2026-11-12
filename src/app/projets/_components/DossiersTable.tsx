@@ -41,11 +41,6 @@ export default function DossiersTable({
             <th scope="col">Signalements</th>
             {instructorView && <th scope="col">Avancement</th>}
             <th scope="col">Subvention attribuée</th>
-            {!instructorView && (
-              <th scope="col">
-                <span className="sr-only">Actions</span>
-              </th>
-            )}
           </tr>
         </thead>
         <tbody>
@@ -69,7 +64,7 @@ export default function DossiersTable({
               <tr key={dossier.numero}>
                 <td>{dossier.numero}</td>
                 <td className="min-w-52 max-w-lg whitespace-normal [overflow-wrap:anywhere]">
-                  <a href={projectLink(dossier.numero)}>
+                  <a className="fr-link" href={projectLink(dossier.numero)}>
                     {dossier.champs.intituleProjet || "Non renseigné"}
                   </a>
                   {instructorView && (
@@ -107,16 +102,6 @@ export default function DossiersTable({
                       : "Date de décision non renseignée"}
                   </div>
                 </td>
-                {!instructorView && (
-                  <td>
-                    <a
-                      className="fr-btn fr-btn--secondary"
-                      href={projectLink(dossier.numero)}
-                    >
-                      Ouvrir
-                    </a>
-                  </td>
-                )}
               </tr>
             );
           })}

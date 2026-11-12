@@ -128,7 +128,7 @@ test("shares progress saved from the project list between the porteur, instructe
   await page
     .getByRole("row")
     .filter({ hasText: String(dossierNumber) })
-    .getByRole("link", { name: "Ouvrir" })
+    .getByRole("link", { name: PROJECT_TITLE, exact: true })
     .click();
   const section = page.getByTestId("project-progress-row");
   await expect(
