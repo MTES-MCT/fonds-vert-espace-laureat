@@ -22,12 +22,9 @@ export type MetricFields = {
   valeur_estimee: MetricValue;
 };
 
-export type SimpleMetric = {
+export type SimpleMetric = MetricFields & {
   _typename: "Simple";
   metricCode: string;
-  label: string;
-  unite: string | null;
-  valeur_estimee: MetricValue;
 };
 
 export type Metrics = Record<string, unknown>;

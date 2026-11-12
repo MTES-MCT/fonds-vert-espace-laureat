@@ -1,5 +1,6 @@
 import { ClientError } from "graphql-request";
 
+import type { GetDossierAccessQuery } from "@/generated/graphql";
 import { createGraphqlClient } from "@/services/ds/graphql";
 import { getDossierAccessQuery } from "@/services/ds/graphql/getDossierAccessQuery";
 import { getDossierQuery } from "@/services/ds/graphql/getDossierQuery";
@@ -11,17 +12,11 @@ import { isAdmin } from "@/utils/roles";
 
 const graphqlClient = createGraphqlClient();
 
-type DossierAccessFields = {
-  demandeur: { __typename?: string };
-  usager: { email: string };
-  groupeInstructeur: { instructeurs: { email: string }[] };
-};
-
 function canAccessDossier({
   dossier,
   userEmail,
 }: {
-  dossier: DossierAccessFields;
+  dossier: GetDossierAccessQuery["dossier"];
   userEmail: string;
 }) {
   if (dossier.demandeur.__typename !== "PersonneMorale") {
