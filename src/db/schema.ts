@@ -152,6 +152,6 @@ export const fondsVertExportAdmission = pgTable(
     }).notNull(),
   },
   (table) => [
-    check("fonds_vert_export_admission_scope", sql`${table.id} in (1, 2)`),
+    check("fonds_vert_export_admission_scope", sql`${table.id} in (1, 2, 3)`),
   ],
 );
