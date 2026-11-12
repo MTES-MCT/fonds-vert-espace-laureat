@@ -221,7 +221,27 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       );
     });
 
-    await test.step("Le gymnase conserve sa synthèse et son financement quand l’impact est indisponible", async () => {
+    await test.step("L’instructeur retrouve les opérations, la collecte et le compostage des biodéchets", async () => {
+      await page.goto("/projets/demo?vue=instructeur");
+      await page
+        .getByRole("link", { name: "Collecte séparée des biodéchets" })
+        .click();
+      await page
+        .getByRole("link", { name: "Données d’impact", exact: true })
+        .click();
+
+      await expect(page.getByText(/Installation de bornes/)).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Gestion de proximité" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Collecte séparée", exact: true }),
+      ).toBeVisible();
+      await expect(page.getByText(/2\s*100/)).toBeVisible();
+      await expect(page.getByText(/240\s*t/)).toBeVisible();
+    });
+
+    await test.step("L’instructeur consulte les estimations d’impact du gymnase avant travaux", async () => {
       await page.goto("/projets/demo?vue=instructeur");
       await page
         .getByRole("link", { name: "Rénovation du gymnase des Rives" })
@@ -238,14 +258,15 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await page
         .getByRole("link", { name: "Données d’impact", exact: true })
         .click();
+      await expect(page.getByText(/temporairement indisponibles/)).toHaveCount(
+        0,
+      );
       await expect(
-        page.getByText(/temporairement indisponibles/),
+        page.getByText("Gymnase intercommunal", { exact: true }),
       ).toBeVisible();
-      await page.screenshot({
-        caret: "initial",
-        path: testInfo.outputPath("impact-indisponible-bureau.png"),
-        fullPage: true,
-      });
+      await expect(page.getByText(/150\s*000\s*kWh/)).toBeVisible();
+      await expect(page.getByText(/34\s*500\s*kgCO₂e/)).toBeVisible();
+
       await openTools();
       await page.getByRole("link", { name: "Passer en vue porteur" }).click();
       await expect(page).toHaveURL(/\/projets\/demo$/);

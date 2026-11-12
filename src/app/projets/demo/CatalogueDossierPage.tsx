@@ -43,9 +43,7 @@ export async function CatalogueDossierPage({
       ? readDemoSourceState(query.fondsVert)
       : undefined;
   const signals = sourceState ? demoSignals(sourceState) : project.signals;
-  const unavailable =
-    sourceState === "unavailable" ||
-    (!fondsVert.metrique_specifique && section === "impact");
+  const unavailable = sourceState === "unavailable";
   const progressPromise = getDossierProgress({ numeroDossier: number });
   const loadMetrics = () =>
     startDossierMetricLoading({
@@ -54,9 +52,8 @@ export async function CatalogueDossierPage({
         unavailable
           ? {
               success: false,
-              error: sourceState
-                ? "Les données Fonds vert sont temporairement indisponibles."
-                : "Les données d’impact sont temporairement indisponibles.",
+              error:
+                "Les données Fonds vert sont temporairement indisponibles.",
               signals,
             }
           : {

@@ -1,8 +1,5 @@
 import type { Dossier } from "@/services/ds/subvention";
-import {
-  readFondsVertSignals,
-  unavailableFondsVertSignals,
-} from "@/services/fondsvert/anomalies";
+import { readFondsVertSignals } from "@/services/fondsvert/anomalies";
 import type {
   DossierFondsVert,
   InformationFinanciere,
@@ -118,6 +115,77 @@ const schoolImpact: Metrics = {
   },
 };
 
+const gymImpact: Metrics = {
+  nature_operations: {
+    label: "Nature des opérations",
+    unite: null,
+    valeur_estimee: [
+      "Isolation de la toiture et des façades",
+      "Remplacement de la chaudière et régulation du chauffage",
+    ],
+  },
+  type_batiment: {
+    label: "Types des bâtiments",
+    unite: null,
+    valeur_estimee: ["Gymnase intercommunal"],
+  },
+  surface_batiment_m2_avant_projet: {
+    label: "Surface du bâtiment avant projet",
+    unite: "m²",
+    valeur_estimee: 1_800,
+  },
+  surface_batiment_m2_apres_projet: {
+    label: "Surface du bâtiment après projet",
+    unite: "m²",
+    valeur_estimee: 1_800,
+  },
+  type_surface: {
+    label: "Type de surface",
+    unite: null,
+    valeur_estimee: "Surface de plancher",
+  },
+  systeme_chauffage_avant_travaux: {
+    label: "Système de chauffage avant travaux",
+    unite: null,
+    valeur_estimee: "Chaudière au gaz naturel",
+  },
+  systeme_chauffage_apres_travaux: {
+    label: "Système de chauffage après travaux",
+    unite: null,
+    valeur_estimee: "Chaudière gaz à condensation",
+  },
+  conso_energetique_avant_travaux: {
+    label: "Consommation énergétique avant travaux",
+    unite: "kWh",
+    valeur_estimee: 230_000,
+  },
+  conso_energetique_apres_travaux: {
+    label: "Consommation énergétique après travaux",
+    unite: "kWh",
+    valeur_estimee: 150_000,
+  },
+  gain_energetique_estime_percentage: {
+    label: "Gain énergétique estimé",
+    unite: "%",
+    valeur_estimee: 34.8,
+  },
+  emission_ges_avant_travaux: {
+    label: "Émissions de GES avant travaux",
+    unite: "kgCO₂e",
+    valeur_estimee: 52_900,
+  },
+  emission_ges_apres_travaux: {
+    label: "Émissions de GES après travaux",
+    unite: "kgCO₂e",
+    valeur_estimee: 34_500,
+  },
+  emission_ges_evitees_percentage: {
+    label: "Émissions de GES évitées",
+    unite: "%",
+    valeur_estimee: 34.8,
+  },
+};
+
 function projectFinancing(
   number: number,
   programme: string,
@@ -176,7 +244,7 @@ function project(
   year: number,
   status: DossierProgressStatus,
   exercises: [FinanceExercise, ...FinanceExercise[]],
-  metrics?: Metrics,
+  metrics: Metrics,
 ) {
   const holder = communes[index < 2 ? 0 : 1];
   const number = DEMO_DOSSIER_NUMBERS[index];
@@ -220,19 +288,17 @@ function project(
     metrique_specifique: metrics,
     information_financiere: informationFinanciere,
   };
-  const signals = !metrics
-    ? unavailableFondsVertSignals()
-    : readFondsVertSignals({
-        anomalies: {
-          est_anomalie: index === 0,
-          est_error: false,
-          anomalie_demarche_list: [],
-          anomalie_indicateur_list:
-            index === 0 ? ["Consommation énergétique avant travaux"] : [],
-          error_indicateur_list: [],
-        },
-        avertissements: [],
-      });
+  const signals = readFondsVertSignals({
+    anomalies: {
+      est_anomalie: index === 0,
+      est_error: false,
+      anomalie_demarche_list: [],
+      anomalie_indicateur_list:
+        index === 0 ? ["Consommation énergétique avant travaux"] : [],
+      error_indicateur_list: [],
+    },
+    avertissements: [],
+  });
   return { dossier, fondsVert, status, signals, finances };
 }
 
@@ -263,12 +329,20 @@ const projects: DemoProject[] = [
   project(
     2,
     "Collecte séparée des biodéchets",
-    "Mise en place d’une collecte séparée des déchets alimentaires.",
+    "Collecte des déchets alimentaires en zone dense et compostage de proximité dans les communes rurales.",
     76_000,
     2025,
     "En cours de réalisation",
     [{ year: 2025, committed: 76_000, payments: [22_800] }],
     {
+      nature_operations: {
+        label: "Nature des opérations",
+        unite: null,
+        valeur_estimee: [
+          "Installation de bornes d’apport volontaire pour les déchets alimentaires",
+          "Distribution de composteurs et accompagnement des habitants",
+        ],
+      },
       nombre_habitant_collecte_separee: {
         label: "Habitants concernés par la collecte séparée",
         unite: null,
@@ -278,6 +352,16 @@ const projects: DemoProject[] = [
         label: "Quantité annuelle de biodéchets collectés",
         unite: "t",
         valeur_estimee: 240,
+      },
+      nombre_habitant_gestion_proximite: {
+        label: "Nombre d’habitants pratiquant la gestion de proximité",
+        unite: null,
+        valeur_estimee: 2_100,
+      },
+      tonnage_annuel_entrant_gestion_proximite: {
+        label: "Tonnage annuel entrant en gestion de proximité",
+        unite: "t",
+        valeur_estimee: 72,
       },
     },
   ),
@@ -289,6 +373,7 @@ const projects: DemoProject[] = [
     2025,
     "Non-commencé",
     [{ year: 2025, committed: 130_000, payments: [] }],
+    gymImpact,
   ),
 ];
 
