@@ -7,6 +7,7 @@ import {
   test,
 } from "next/experimental/testmode/playwright/msw";
 
+import type { ProjectView } from "@/utils/projectView";
 import { getSessionOptions } from "@/utils/session";
 
 import { makeDossierDataWithNumber } from "./fixtures/ds";
@@ -15,6 +16,8 @@ import { authenticatePage } from "./setup/auth";
 import {
   createTestDatabaseClient,
   deleteStoredDossierMetrics,
+  deleteStoredDossierProgress,
+  getStoredDossierProgressRevisions,
 } from "./setup/db";
 
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
@@ -33,15 +36,10 @@ const signals = {
 
 async function resetProject(dossierNumber: number) {
   await deleteStoredDossierMetrics(dossierNumber);
-  const sql = createTestDatabaseClient();
-  try {
-    await sql`delete from dossier_progress_revisions where dossier_number=${dossierNumber}`;
-  } finally {
-    await sql.end();
-  }
+  await deleteStoredDossierProgress(dossierNumber);
 }
 
-async function changeAdminView(page: Page, view: "porteur" | "instructeur") {
+async function changeAdminView(page: Page, view: ProjectView) {
   const quickAccess = page.locator(".fr-header__tools-links");
   const switchTo = quickAccess.getByRole("button", {
     name: `Passer en vue ${view}`,
@@ -72,7 +70,15 @@ test.beforeEach(async ({ page, msw }, testInfo) => {
   msw.use(
     ds.query("getDossier", () => HttpResponse.json({ data: { dossier } })),
     ds.query("getDossierAccess", () =>
-      HttpResponse.json({ data: { dossier } }),
+      HttpResponse.json({
+        data: {
+          dossier: {
+            demandeur: { __typename: dossier.demandeur.__typename },
+            usager: { email: PORTEUR },
+            groupeInstructeur: { instructeurs: [{ email: INSTRUCTEUR }] },
+          },
+        },
+      }),
     ),
     http.post("http://fondsvert/fonds_vert/login", () =>
       HttpResponse.json(fondsVertLoginData),
@@ -472,8 +478,7 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
       { value: 12, email: ADMIN },
       { value: 15, email: ADMIN },
     ]);
-    const progressRows =
-      await sql`select status,author_email from dossier_progress_revisions where dossier_number=${dossierNumber} order by revision`;
+    const progressRows = await getStoredDossierProgressRevisions(dossierNumber);
     expect(
       progressRows.map((row) => ({
         status: row.status,
