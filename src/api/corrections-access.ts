@@ -17,7 +17,8 @@ export function correctionAccess(
 ): 401 | 403 | 503 | null {
   const demoKey = process.env.DEMO_CORRECTIONS_API_KEY ?? "";
   const authorization = request.headers.get("authorization") ?? "";
-  const match = /^Bearer ([A-Za-z0-9_-]{43,128})$/i.exec(authorization);
+  const match = /^Bearer (.+)$/i.exec(authorization);
+  const token = match && secretPattern.test(match[1]) ? match[1] : null;
   const key = process.env.CORRECTIONS_API_KEY ?? "";
   const previous = process.env.CORRECTIONS_API_PREVIOUS_KEY;
   const ingress = process.env.CORRECTIONS_INGRESS_SECRET ?? "";
@@ -28,7 +29,7 @@ export function correctionAccess(
       [key, previous, ingress].includes(demoKey)
     )
       return 503;
-    return match && equalSecret(match[1], demoKey) ? null : 401;
+    return token && equalSecret(token, demoKey) ? null : 401;
   }
 
   if (
@@ -44,9 +45,9 @@ export function correctionAccess(
     return 503;
   }
 
-  if (!match) return 401;
-  const currentMatches = equalSecret(match[1], key);
-  const previousMatches = equalSecret(match[1], previous ?? key);
+  if (!token) return 401;
+  const currentMatches = equalSecret(token, key);
+  const previousMatches = equalSecret(token, previous ?? key);
   if (!currentMatches && !previousMatches) return 401;
 
   const attestation = request.headers.get("x-corrections-ingress") ?? "";
