@@ -1,9 +1,7 @@
+import Badge from "@codegouvfr/react-dsfr/Badge";
+
 import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
-import {
-  anomalyCategoryLabels,
-  FondsVertAnomalyStatus,
-  fondsVertAnomalySummary,
-} from "@/components/metrics/FondsVertAnomalyStatus";
+import { fondsVertAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
 import { DsfrTable } from "@/components/table/DsfrTable";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
@@ -61,7 +59,17 @@ export default function DossiersTable({
             const anomalies = normalizeFondsVertAnomalies(
               summary?.signals ?? readFondsVertSignals({}),
             );
+            const { label, severity } = fondsVertAnomalySummary(anomalies);
             const warnings = anomalies.warnings;
+            const warningOnly =
+              anomalies.hasNoSignals &&
+              "data" in warnings &&
+              warnings.data.length > 0;
+            const badgeLabel = warningOnly
+              ? "Avertissements à consulter"
+              : label;
+            const badgeSeverity =
+              warningOnly || severity === "error" ? "warning" : severity;
             return (
               <tr key={dossier.numero}>
                 <td>{dossier.numero}</td>
@@ -72,60 +80,14 @@ export default function DossiersTable({
                 </td>
                 <td className="min-w-52 whitespace-normal [overflow-wrap:anywhere]">
                   <a
+                    className="fr-raw-link inline-block"
                     href={projectLink(dossier.numero, true)}
-                    aria-label={`${fondsVertAnomalySummary(anomalies).label} pour le projet n°${dossier.numero}`}
+                    aria-label={`${badgeLabel} pour le projet n°${dossier.numero}`}
                   >
-                    <FondsVertAnomalyStatus anomalies={anomalies} />
+                    <Badge as="span" small noIcon severity={badgeSeverity}>
+                      {badgeLabel}
+                    </Badge>
                   </a>
-                  {(anomalies.status === "incomplete" ||
-                    anomalies.status === "invalid") &&
-                    (anomalies.indicatorCount > 0 ||
-                      anomalies.unspecifiedCategories.length > 0 ||
-                      anomalies.contextLabels.length > 0) && (
-                      <p className="mb-0 mt-2 text-xs">
-                        Signalements incomplets
-                      </p>
-                    )}
-                  {anomalies.indicators.length > 0 && (
-                    <ul className="mb-0 mt-2 pl-4 text-xs">
-                      {anomalies.indicators.map((indicator) => (
-                        <li key={indicator.id}>
-                          {indicator.label} —{" "}
-                          {indicator.categories
-                            .map((category) => anomalyCategoryLabels[category])
-                            .join(", ")}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  {anomalies.unspecifiedCategories.map((category) => (
-                    <p key={category} className="mb-0 mt-2 text-xs">
-                      {anomalyCategoryLabels[category]} : indicateur non précisé
-                    </p>
-                  ))}
-                  {anomalies.contextLabels.map((label) => (
-                    <p key={label} className="mb-0 mt-2 text-xs">
-                      {label}
-                    </p>
-                  ))}
-                  {(warnings.status === "loaded" ||
-                    warnings.status === "incomplete") &&
-                    warnings.data.map((warning) => (
-                      <p key={warning} className="mb-0 mt-2 text-xs">
-                        {warning}
-                      </p>
-                    ))}
-                  {(warnings.status === "incomplete" ||
-                    warnings.status === "invalid") && (
-                    <p className="mb-0 mt-2 text-xs">
-                      Avertissements incomplets
-                    </p>
-                  )}
-                  {warnings.status === "unavailable" && (
-                    <p className="mb-0 mt-2 text-xs">
-                      Avertissements indisponibles
-                    </p>
-                  )}
                 </td>
                 {instructorView && (
                   <>

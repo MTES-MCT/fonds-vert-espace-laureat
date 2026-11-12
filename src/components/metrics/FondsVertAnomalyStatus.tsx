@@ -61,16 +61,3 @@ export function fondsVertAnomalySummary(
     return { label: "Signalements non renseignés", severity: "info" as const };
   return { label: "Signalements incomplets", severity: "warning" as const };
 }
-
-export function FondsVertAnomalyStatus({
-  anomalies,
-}: {
-  anomalies: NormalizedFondsVertAnomalies;
-}) {
-  const summary = fondsVertAnomalySummary(anomalies);
-  return (
-    <Badge small severity={summary.severity}>
-      {summary.label}
-    </Badge>
-  );
-}

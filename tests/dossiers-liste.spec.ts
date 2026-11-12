@@ -393,17 +393,9 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
         exact: true,
       }),
     ).toHaveAttribute("href", `/projets/${rich}/impact#signalements`);
-    await expect(richSignals.locator(".fr-badge--error")).toHaveText(
-      "2 données à vérifier",
-    );
-    await expect(richSignals.getByRole("listitem")).toHaveText([
-      `${indicator} — Anomalie, Erreur`,
-      `${unknownIndicator} — Anomalie`,
-    ]);
+    await expect(richSignals).toHaveText("2 données à vérifier");
     await expect(
-      richSignals.getByText("Justificatif partenaire à vérifier", {
-        exact: true,
-      }),
+      richSignals.locator(".fr-badge--warning.fr-badge--no-icon"),
     ).toBeVisible();
 
     const missingProject = page.getByRole("row").filter({
@@ -439,8 +431,11 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
     const warnings = page.getByRole("row").filter({
       has: page.getByRole("cell", { name: String(warning), exact: true }),
     });
-    await expect(warnings).toContainText("Vérifier le périmètre de calcul");
-    await expect(warnings).toContainText("Avertissements incomplets");
+    await expect(
+      warnings.getByRole("link", {
+        name: `Avertissements à consulter pour le projet n°${warning}`,
+      }),
+    ).toBeVisible();
     const statisticalProject = page.getByRole("row").filter({
       has: page.getByRole("cell", { name: String(statistical), exact: true }),
     });
@@ -450,12 +445,11 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
           name: `1 donnée à vérifier pour le projet n°${statistical}`,
           exact: true,
         })
-        .locator(".fr-badge--warning"),
+        .locator(".fr-badge--warning.fr-badge--no-icon"),
     ).toBeVisible();
-    await expect(statisticalProject).toContainText("Signalements incomplets");
-    await expect(statisticalProject.getByRole("listitem")).toHaveText([
-      `${indicator} — Anomalie`,
-    ]);
+    await expect(statisticalProject.getByRole("cell").nth(2)).toHaveText(
+      "1 donnée à vérifier",
+    );
     expect(detailCalls).toBe(0);
     const [stored] = await sql<
       { count: string }[]
@@ -595,9 +589,9 @@ test("205 candidats paginés ne masquent pas le voisin autorisé d’un dossier 
   expect(await page.content()).not.toContain(
     "Signalement privé du dossier refusé",
   );
-  await expect(page.getByText("Signalement du dossier autorisé")).toHaveCount(
-    204,
-  );
+  await expect(
+    page.getByRole("link", { name: /^1 donnée à vérifier pour le projet n°/ }),
+  ).toHaveCount(204);
   await expect(
     page.getByRole("cell", { name: String(denied + 1), exact: true }),
   ).toBeVisible();
