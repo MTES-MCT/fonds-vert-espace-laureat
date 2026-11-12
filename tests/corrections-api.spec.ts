@@ -95,6 +95,7 @@ test("unsupported methods never create an export", async ({ request }) => {
 
 test("access configuration fails closed for each missing or malformed setting", () => {
   const valid = {
+    DEMO_CORRECTIONS_API_KEY: "synthetic_demo_key_000000000000000000000000000",
     CORRECTIONS_API_ENABLED: "true",
     CORRECTIONS_INGRESS_VERIFIED: "true",
     CORRECTIONS_API_KEY: key,
@@ -105,15 +106,19 @@ test("access configuration fails closed for each missing or malformed setting", 
   const saved = Object.fromEntries(
     Object.keys(valid).map((name) => [name, process.env[name]]),
   );
-  const check = () =>
+  const check = (realKey = key) =>
     correctionAccess(
-      new Request(`https://example.test${endpoint}`, { headers }),
+      new Request(`https://example.test${endpoint}`, {
+        headers: { ...headers, authorization: `Bearer ${realKey}` },
+      }),
     );
   try {
     Object.assign(process.env, valid);
     expect(check()).toBeNull();
     for (const name of Object.keys(valid).filter(
-      (name) => name !== "CORRECTIONS_API_PREVIOUS_KEY",
+      (name) =>
+        name !== "CORRECTIONS_API_PREVIOUS_KEY" &&
+        name !== "DEMO_CORRECTIONS_API_KEY",
     )) {
       delete process.env[name];
       expect(check(), name).toBe(503);
@@ -133,6 +138,24 @@ test("access configuration fails closed for each missing or malformed setting", 
       process.env[name] = value;
       expect(check(), name).toBe(503);
       Object.assign(process.env, valid);
+    }
+
+    const demoRequest = (demoKey: string) =>
+      new Request("https://example.test/api/v1/demo/corrections", {
+        headers: { authorization: `Bearer ${demoKey}` },
+      });
+    expect(
+      correctionAccess(demoRequest(valid.DEMO_CORRECTIONS_API_KEY), true),
+    ).toBeNull();
+    expect(check(oldKey)).toBeNull();
+    for (const [name, sharedKey] of [
+      ["clé réelle courante", key],
+      ["clé réelle précédente", oldKey],
+      ["secret d’ingress", ingress],
+    ]) {
+      process.env.DEMO_CORRECTIONS_API_KEY = sharedKey;
+      expect(check(sharedKey === oldKey ? oldKey : key), name).toBe(503);
+      expect(correctionAccess(demoRequest(sharedKey), true), name).toBe(503);
     }
   } finally {
     for (const [name, value] of Object.entries(saved)) {

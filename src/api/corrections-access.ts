@@ -23,12 +23,10 @@ export function correctionAccess(
   const previous = process.env.CORRECTIONS_API_PREVIOUS_KEY;
   const ingress = process.env.CORRECTIONS_INGRESS_SECRET ?? "";
   const addresses = (process.env.CORRECTIONS_ALLOWED_IPS ?? "").split(",");
+  if (demoKey && [key, previous, ingress].includes(demoKey)) return 503;
+
   if (demo) {
-    if (
-      !secretPattern.test(demoKey) ||
-      [key, previous, ingress].includes(demoKey)
-    )
-      return 503;
+    if (!secretPattern.test(demoKey)) return 503;
     return token && equalSecret(token, demoKey) ? null : 401;
   }
 
