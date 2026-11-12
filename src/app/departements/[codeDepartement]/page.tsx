@@ -33,13 +33,29 @@ export default async function ProjetsDepartement({
     );
   }
 
+  const communes = communesParDepartements[codeDepartement];
+  if (
+    codeCommune &&
+    (!communes?.some((commune) => commune.code === codeCommune) ||
+      !projetsParCommunesAnneesDemarches[codeCommune])
+  ) {
+    return (
+      <div className="fr-container my-8">
+        <StartDsfrOnHydration />
+        <h1>Commune introuvable dans ce département</h1>
+        <a href={`/departements/${codeDepartement}`}>
+          Revenir aux projets du département
+        </a>
+      </div>
+    );
+  }
+
   const projetsGroupe = codeCommune
     ? projetsParCommunesAnneesDemarches[codeCommune]
     : projetsParDepartementsAnneesDemarches[codeDepartement];
 
   const projetsParDemarches2023 = projetsGroupe[2023];
   const projetsParDemarches2024 = projetsGroupe[2024];
-  const communes = communesParDepartements[codeDepartement];
 
   return (
     <div className="fr-container my-8">
