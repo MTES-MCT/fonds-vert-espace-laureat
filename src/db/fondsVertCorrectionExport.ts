@@ -40,12 +40,7 @@ export async function createFondsVertCorrectionExport({
 
   const exportId = randomUUID();
   const generatedAt = new Date();
-  const corrections = (
-    await getLatestFondsVertCorrections(demo, transaction)
-  ).map((row) => ({
-    ...row,
-    correctedAt: row.correctedAt.toISOString(),
-  }));
+  const corrections = await getLatestFondsVertCorrections(demo, transaction);
   // Retention starts after projection; publication time is part of this window.
   const expiresAt = new Date(Date.now() + retentionMs);
   const totalCount = corrections.length;
@@ -69,10 +64,12 @@ export async function createFondsVertCorrectionExport({
         generatedAt,
         expiresAt,
         totalCount,
-        corrections: corrections.slice(
-          pageNumber * pageSize,
-          (pageNumber + 1) * pageSize,
-        ),
+        corrections: corrections
+          .slice(pageNumber * pageSize, (pageNumber + 1) * pageSize)
+          .map((row) => ({
+            ...row,
+            correctedAt: row.correctedAt.toISOString(),
+          })),
       });
     }
   };
