@@ -505,18 +505,21 @@ test("l’instructeur retrouve les engagements et les paiements des autres proje
     {
       title: "Rénovation de l’école des Tilleuls",
       engagement: "2109000101",
+      initial: /^180\s*000,00\s*€$/,
       total: /108\s*000,00\s*€/,
       payments: ["1020251011", "1020261011", "1020261012"],
     },
     {
       title: "Collecte séparée des biodéchets",
       engagement: "2109000103",
+      initial: /^76\s*000,00\s*€$/,
       total: /22\s*800,00\s*€/,
       payments: ["1020251031"],
     },
     {
       title: "Rénovation du gymnase des Rives",
       engagement: "2109000104",
+      initial: /^130\s*000,00\s*€$/,
       total: /^0,00\s*€$/,
       payments: ["Aucun paiement"],
     },
@@ -537,8 +540,8 @@ test("l’instructeur retrouve les engagements et les paiements des autres proje
         name: `Engagement juridique n°${project.engagement}`,
       });
       await expect(
-        engagement.getByText("Montant attribué initial"),
-      ).toBeVisible();
+        engagement.getByLabel("Montant attribué initial", { exact: true }),
+      ).toHaveText(project.initial);
       await engagement.getByRole("tab", { name: "Historique" }).click();
       for (const number of project.payments) {
         await expect(
@@ -608,20 +611,23 @@ test("le porteur et l’instructeur consultent les mesures et les trois exercice
 
       await finance.click();
       await expect(page.getByText(/6\s*122\s*079,20\s*€/)).toBeVisible();
-      for (const number of ["2105212345", "2106789012"]) {
+      for (const [number, initial] of [
+        ["2105212345", /^10\s*073\s*574,00\s*€$/],
+        ["2106789012", /^2\s*500\s*000,00\s*€$/],
+      ] as const) {
         const engagement = page.getByRole("region", {
           name: `Engagement juridique n°${number}`,
         });
         await expect(
-          engagement.getByText("Montant attribué initial"),
-        ).toBeVisible();
+          engagement.getByLabel("Montant attribué initial", { exact: true }),
+        ).toHaveText(initial);
         await engagement.getByRole("tab", { name: "Historique" }).click();
         const payments = engagement.getByRole("table");
-        for (const year of ["2023", "2024", "2025"]) {
-          await expect(
-            payments.getByRole("row").filter({ hasText: year }).first(),
-          ).toBeVisible();
-        }
+        await expect(payments).toBeVisible();
+        const years = await payments
+          .locator("tbody td:first-child")
+          .allTextContents();
+        expect([...new Set(years)].sort()).toEqual(["2023", "2024", "2025"]);
       }
       await expect(
         page.getByRole("cell", { name: "1009876546" }),
