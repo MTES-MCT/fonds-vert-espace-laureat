@@ -15,13 +15,18 @@ export default async function DemoPage({
   const query = await searchParams;
   const view = readDemoView(query.vue);
   const projects = demoProjects(view);
-  const progress = await getDossiersProgress({
-    dossierNumbers: projects.map(({ dossier }) => dossier.numero),
-  });
+  const progress =
+    view === "instructeur"
+      ? await getDossiersProgress({
+          dossierNumbers: projects.map(({ dossier }) => dossier.numero),
+        })
+      : {};
 
-  for (const { dossier, status } of projects) {
-    if (progress[dossier.numero].revision === 0)
-      progress[dossier.numero] = { ...progress[dossier.numero], status };
+  if (view === "instructeur") {
+    for (const { dossier, status } of projects) {
+      if (progress[dossier.numero].revision === 0)
+        progress[dossier.numero] = { ...progress[dossier.numero], status };
+    }
   }
 
   return (
