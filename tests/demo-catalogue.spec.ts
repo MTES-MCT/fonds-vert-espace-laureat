@@ -104,6 +104,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       ).toContainText(/en cours de réalisation/i);
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.screenshot({
+        caret: "initial",
         path: testInfo.outputPath("catalogue-bureau.png"),
         fullPage: true,
       });
@@ -118,6 +119,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
         element.scrollLeft = 0;
       });
       await page.screenshot({
+        caret: "initial",
         path: testInfo.outputPath("catalogue-mobile.png"),
       });
       await page.setViewportSize({ width: 1280, height: 900 });
@@ -160,6 +162,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await expect(metric).toContainText(/192\s*000/);
       await page.setViewportSize({ width: 375, height: 850 });
       await page.screenshot({
+        caret: "initial",
         path: testInfo.outputPath("impact-mobile.png"),
         fullPage: true,
       });
@@ -211,6 +214,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
         page.getByText(/temporairement indisponibles/),
       ).toBeVisible();
       await page.screenshot({
+        caret: "initial",
         path: testInfo.outputPath("impact-indisponible-bureau.png"),
         fullPage: true,
       });
