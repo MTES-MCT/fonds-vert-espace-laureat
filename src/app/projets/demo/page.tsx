@@ -27,7 +27,7 @@ export default async function DemoPage({
   return (
     <>
       <StartDsfrOnHydration />
-      <div className="fr-container py-8">
+      <div className="fr-container min-h-[60svh] py-8">
         <h1>{projectListLabel(view)}</h1>
         <DossiersTable
           dossiers={projects.map(({ dossier }) => dossier)}

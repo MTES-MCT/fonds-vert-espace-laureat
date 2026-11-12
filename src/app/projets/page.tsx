@@ -79,7 +79,7 @@ export default async function Projets({
   return (
     <div className="fr-container my-8">
       <StartDsfrOnHydration />
-      <div className="bg-white p-4 sm:p-8">
+      <div className="min-h-[60svh] bg-white p-4 sm:p-8">
         <h1>{projectListLabel(view)}</h1>
 
         {partial && (
