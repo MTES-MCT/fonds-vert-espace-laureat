@@ -95,7 +95,7 @@ test("l’enveloppe objet conserve des synthèses nullables et des signaux incon
         dossier(1, {
           socle_commun: {
             dossier_number: 1,
-            siret: null,
+            nom_commune: null,
             annee_millesime: null,
             entreprise_raison_sociale: "Commune",
           },
@@ -119,7 +119,7 @@ test("l’enveloppe objet conserve des synthèses nullables et des signaux incon
     summaries: {
       1: {
         socleCommun: {
-          siret: null,
+          nom_commune: null,
           annee_millesime: null,
           entreprise_raison_sociale: "Commune",
         },
@@ -324,7 +324,6 @@ test("une page en panne conserve explicitement le premier résultat partiel", as
     completeness: "partial",
   });
   if (!result.success) throw new Error("Résultat partiel attendu");
-  expect(result.warnings).toHaveLength(1);
   expect(result.summaries[1].signals.anomalies.status).toBe("absent");
   expect(requests).toHaveLength(2);
 });

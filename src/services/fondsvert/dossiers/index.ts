@@ -18,7 +18,14 @@ const defaultDossierSearchParams = {
 
 export interface DossierFondsVertSummary {
   numeroDossier: number;
-  socleCommun: { [Key in keyof SocleCommun]?: SocleCommun[Key] | null } | null;
+  socleCommun:
+    | {
+        [Key in
+          | "entreprise_raison_sociale"
+          | "nom_commune"
+          | "annee_millesime"]?: SocleCommun[Key] | null;
+      }
+    | null;
   signals: FondsVertSignals;
 }
 
@@ -28,14 +35,11 @@ type DossierNumbersResult =
       data: number[];
       summaries: Record<number, DossierFondsVertSummary>;
       completeness: "complete" | "partial";
-      warnings: string[];
     }
   | { success: false; error: string };
 
 const unavailableMessage =
   "La liste de vos dossiers est temporairement indisponible. Cependant, vous pouvez accéder directement à l’un de vos dossiers via un email de Démarches Simplifiées.";
-const partialMessage =
-  "La liste des projets est incomplète : certaines données n’ont pas pu être chargées. Réessayez pour actualiser la liste.";
 
 function readSummary(value: unknown): DossierFondsVertSummary | null {
   if (!isRecord(value) || !isRecord(value.socle_commun)) return null;
@@ -48,31 +52,16 @@ function readSummary(value: unknown): DossierFondsVertSummary | null {
   )
     return null;
   const socleCommun: NonNullable<DossierFondsVertSummary["socleCommun"]> = {};
-  for (const key of [
-    "demarche_title",
-    "date_depot",
-    "date_notification",
-    "date_derniere_modification",
-    "statut_realisation_projet",
-    "date_debut_execution",
-    "date_fin_execution",
-    "entreprise_raison_sociale",
-    "siret",
-    "nom_commune",
-  ] as const) {
+  for (const key of ["entreprise_raison_sociale", "nom_commune"] as const) {
     if (key in socle)
       socleCommun[key] = typeof socle[key] === "string" ? socle[key] : null;
   }
-  for (const key of [
-    "total_des_depenses",
-    "montant_subvention_attribuee",
-    "annee_millesime",
-  ] as const) {
-    if (key in socle)
-      socleCommun[key] =
-        typeof socle[key] === "number" && Number.isFinite(socle[key])
-          ? socle[key]
-          : null;
+  if ("annee_millesime" in socle) {
+    socleCommun.annee_millesime =
+      typeof socle.annee_millesime === "number" &&
+      Number.isFinite(socle.annee_millesime)
+        ? socle.annee_millesime
+        : null;
   }
   return {
     numeroDossier: number,
@@ -188,7 +177,6 @@ async function getDossiers(
     data: Object.values(summaries).map((summary) => summary.numeroDossier),
     summaries,
     completeness: complete ? "complete" : "partial",
-    warnings: complete ? [] : [partialMessage],
   };
 }
 
@@ -325,6 +313,5 @@ export async function getAllDossierNumbers({
     data: Object.values(summaries).map((summary) => summary.numeroDossier),
     summaries,
     completeness: complete ? "complete" : "partial",
-    warnings: complete ? [] : [partialMessage],
   };
 }

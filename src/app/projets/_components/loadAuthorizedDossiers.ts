@@ -33,8 +33,5 @@ export async function loadAuthorizedDossiers({
     unavailableCount: results.filter(
       (result) => !result.success && result.reason === "unavailable",
     ).length,
-    deniedCount: results.filter(
-      (result) => !result.success && result.reason === "denied",
-    ).length,
   };
 }
