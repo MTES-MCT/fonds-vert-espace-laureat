@@ -1,3 +1,5 @@
+import { pipeline } from "node:stream/promises";
+
 import { parse } from "fast-csv";
 import fs from "fs";
 import path from "path";
@@ -11,18 +13,13 @@ function parseFloatOrNull(value: string): number | null {
 
 export async function importProjets(): Promise<Projet[]> {
   const filePath = path.join(process.cwd(), "data", "projets.csv");
-  if (!fs.existsSync(filePath)) {
-    throw new Error(
-      "Export projets.csv introuvable dans le dossier utils/projets/data",
-    );
-  }
   const projets: Projet[] = [];
 
-  return new Promise((resolve, reject) => {
-    fs.createReadStream(filePath)
-      .pipe(parse({ headers: true, delimiter: ";" }))
-      .on("error", (error: Error) => reject(error))
-      .on("data", (row) => {
+  await pipeline(
+    fs.createReadStream(filePath),
+    parse({ headers: true, delimiter: ";" }),
+    async (rows) => {
+      for await (const row of rows) {
         const projet: Projet = {
           ...row,
           demarche_number: parseInt(row.demarche_number),
@@ -38,9 +35,8 @@ export async function importProjets(): Promise<Projet[]> {
           date_depot: new Date(row.date_depot),
         };
         projets.push(projet);
-      })
-      .on("end", () => {
-        resolve(projets);
-      });
-  });
+      }
+    },
+  );
+  return projets;
 }
