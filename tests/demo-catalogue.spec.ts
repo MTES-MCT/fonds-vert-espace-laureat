@@ -78,7 +78,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
     await sql`insert into dossier_metric_revisions
       (dossier_number, metric_code, revision, label, unit, value_type, number_value)
       values (101, 'surface_batiment_m2_avant_projet', 1, 'Surface du bâtiment avant projet', 'm²', 'number', 1250),
-             (101, ${before}, 1, 'Consommation énergétique avant travaux', 'kWh', 'number', 180000),
+             (101, ${before}, 1, 'Consommation énergétique avant travaux', 'kWh', 'number', 18000),
              (101, ${after}, 1, 'Consommation énergétique après travaux', 'kWh', 'number', 125000)`;
     await sql`insert into dossier_progress_revisions (dossier_number, revision, status)
       values (${LEGACY_DEMO_NUMBER}, 1, 'En cours de réalisation')`;
@@ -177,23 +177,33 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await expect(
         emissions.getByRole("button", { name: "Modifier" }),
       ).toBeVisible();
+      await expect(metric).toContainText(/18\s*000/);
       await expect(
         metric.getByRole("note", { name: "Anomalie détectée" }),
-      ).toBeVisible();
+      ).toHaveText("Anomalie");
+      const avoidedEmissions = page.getByRole("region", {
+        name: "Émissions de GES évitées",
+        exact: true,
+      });
+      await expect(avoidedEmissions).toContainText("172,8");
+      await expect(
+        avoidedEmissions.getByRole("note", { name: "Anomalie détectée" }),
+      ).toHaveText("Erreur");
+
       await metric.getByRole("button", { name: "Modifier" }).click();
       const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
-      await dialog.getByLabel(metricLabel).fill("192000");
+      await dialog.getByLabel(metricLabel).fill("180000");
       await dialog
         .getByRole("button", { name: "Enregistrer", exact: true })
         .click();
-      await expect(metric).toContainText(/192\s*000/);
+      await expect(metric).toContainText(/180\s*000/);
       await page.reload();
-      await expect(metric).toContainText(/192\s*000/);
+      await expect(metric).toContainText(/180\s*000/);
 
       await openTools();
       await page.getByRole("link", { name: "Passer en vue porteur" }).click();
       await expect(page).toHaveURL(/\/projets\/demo\/101\/impact$/);
-      await expect(metric).toContainText(/192\s*000/);
+      await expect(metric).toContainText(/180\s*000/);
       await page.setViewportSize({ width: 375, height: 850 });
       await page.screenshot({
         caret: "initial",
@@ -422,7 +432,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
         expect.objectContaining({
           dossier_number: 101,
           champ: before,
-          valeur_corrigee: 192_000,
+          valeur_corrigee: 180_000,
         }),
       ]);
 
@@ -455,7 +465,7 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
       await tools
         .getByRole("button", { name: "Réinitialiser la démo" })
         .click();
-      await expect(metric).toContainText(/180\s*000/);
+      await expect(metric).toContainText(/18\s*000/);
       await page
         .getByRole("link", { name: "Synthèse du projet", exact: true })
         .click();
@@ -600,7 +610,7 @@ test("le porteur et l’instructeur consultent les mesures et les trois exercice
           .getByText("COMMUNE DE NANTES", { exact: true }),
       ).toBeVisible();
       await impact.click();
-      await expect(consumption).toContainText(/2\s*055\s*650/);
+      await expect(consumption).toContainText(/205\s*565/);
       await expect(initialSignal).toBeVisible();
       await expect(
         page.getByRole("region", {

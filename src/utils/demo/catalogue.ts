@@ -89,7 +89,7 @@ const schoolImpact: Metrics = {
   conso_energetique_avant_travaux: {
     label: "Consommation énergétique avant travaux",
     unite: "kWh",
-    valeur_estimee: 180_000,
+    valeur_estimee: 18_000,
   },
   conso_energetique_apres_travaux: {
     label: "Consommation énergétique après travaux",
@@ -114,7 +114,7 @@ const schoolImpact: Metrics = {
   emission_ges_evitees_percentage: {
     label: "Émissions de GES évitées",
     unite: "%",
-    valeur_estimee: 72.8,
+    valeur_estimee: 172.8,
   },
 };
 
@@ -251,6 +251,7 @@ function project({
   exercises,
   metrics,
   anomalyLabels = [],
+  errorLabels = [],
 }: {
   number: number;
   holder: typeof nantes;
@@ -263,6 +264,7 @@ function project({
   exercises: [FinanceExercise, ...FinanceExercise[]];
   metrics: Metrics;
   anomalyLabels?: string[];
+  errorLabels?: string[];
 }): DemoProject {
   const { engagementNumber, informationFinanciere, finances } =
     projectFinancing(number, programme, grant, exercises);
@@ -305,10 +307,10 @@ function project({
   const signals = readFondsVertSignals({
     anomalies: {
       est_anomalie: anomalyLabels.length > 0,
-      est_error: false,
+      est_error: errorLabels.length > 0,
       anomalie_demarche_list: [],
       anomalie_indicateur_list: anomalyLabels,
-      error_indicateur_list: [],
+      error_indicateur_list: errorLabels,
     },
     avertissements: [],
   });
@@ -331,6 +333,7 @@ const projects: DemoProject[] = [
     ],
     metrics: schoolImpact,
     anomalyLabels: ["Consommation énergétique avant travaux"],
+    errorLabels: ["Émissions de GES évitées"],
   }),
   {
     dossier: demoPoolDossier,

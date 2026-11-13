@@ -122,7 +122,7 @@ export const demoDossierFondsVert = {
     conso_energetique_avant_travaux: {
       label: "Consommation énergétique avant travaux",
       unite: "kWh",
-      valeur_estimee: 2055650,
+      valeur_estimee: 205_565,
     },
     conso_energetique_apres_travaux: {
       label: "Consommation énergétique après travaux",
@@ -132,7 +132,7 @@ export const demoDossierFondsVert = {
     emission_ges_avant_travaux: {
       label: "Émissions de GES avant travaux",
       unite: "kgCO₂e",
-      valeur_estimee: 448,
+      valeur_estimee: -448,
     },
     emission_ges_apres_travaux: {
       label: "Émissions de GES après travaux",

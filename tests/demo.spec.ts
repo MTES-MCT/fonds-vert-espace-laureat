@@ -346,16 +346,16 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     "3 données à vérifier",
   );
   await expect(
-    impactSection.getByText(/2\s*055\s*650\s*kWh/).first(),
+    impactSection.getByText(/205\s*565\s*kWh/).first(),
   ).toBeVisible();
-  await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
+  await expect(impactSection.getByText("-448kgCO₂e")).toBeVisible();
   await expect(energyBeforeAnomaly).toHaveCount(1);
 
   await page.reload();
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
   );
-  await expect(impactSection.getByText("448kgCO₂e")).toBeVisible();
+  await expect(impactSection.getByText("-448kgCO₂e")).toBeVisible();
 });
 
 test("le plafond d’une métrique laisse un visiteur récupérer la valeur après une réinitialisation", async ({
@@ -408,12 +408,12 @@ test("le plafond d’une métrique laisse un visiteur récupérer la valeur apr�
   const stale = await changeMetric(1_800_000, 100);
   expect(stale.status()).toBe(409);
   expect(await stale.json()).toMatchObject({
-    target: { revision: 1, effectiveValue: 2_055_650 },
+    target: { revision: 1, effectiveValue: 205_565 },
   });
   await expect(
     getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
-    [metricCode]: { revision: 1, effectiveValue: 2_055_650 },
+    [metricCode]: { revision: 1, effectiveValue: 205_565 },
   });
 });
 
@@ -745,12 +745,12 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
     0,
   );
   await expect(before.getByTestId("valeur-estimee")).toHaveText(
-    /2\s*055\s*650\s*kWh/,
+    /205\s*565\s*kWh/,
   );
   await expect(
     getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
-    conso_energetique_avant_travaux: { revision: 1, effectiveValue: 2055650 },
+    conso_energetique_avant_travaux: { revision: 1, effectiveValue: 205565 },
   });
 });
 
@@ -806,22 +806,22 @@ test("replaces a demo metric after another tab resets its revisions and permits 
   await expect(dialog.getByRole("alert")).toContainText(
     "La valeur actuelle a été chargée",
   );
-  await expect(input).toHaveValue("2055650");
+  await expect(input).toHaveValue("205565");
   await expect(input).toBeFocused();
   await expect(before.getByTestId("valeur-estimee")).toHaveText(
-    /2\s*055\s*650\s*kWh/,
+    /205\s*565\s*kWh/,
   );
   expect(submittedRevisions).toEqual([3]);
   await expect(
     getDossierMetricRevisionTargets({ numeroDossier: DEMO_POOL_NUMBER }),
   ).resolves.toMatchObject({
-    conso_energetique_avant_travaux: { revision: 1, effectiveValue: 2055650 },
+    conso_energetique_avant_travaux: { revision: 1, effectiveValue: 205565 },
   });
 
   await dialog.getByRole("button", { name: "Annuler", exact: true }).click();
   await expect(modifier).toBeFocused();
   await modifier.press("Enter");
-  await expect(input).toHaveValue("2055650");
+  await expect(input).toHaveValue("205565");
   await input.fill("1800000");
   await waitForDemoWrite();
   await dialog
