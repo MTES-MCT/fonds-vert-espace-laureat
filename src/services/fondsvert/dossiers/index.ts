@@ -39,7 +39,7 @@ type DossierNumbersResult =
   | { success: false; error: string };
 
 const unavailableMessage =
-  "La liste de vos dossiers est temporairement indisponible. Cependant, vous pouvez accéder directement à l’un de vos dossiers via un email de Démarches Simplifiées.";
+  "La liste de vos projets est temporairement indisponible. Vous pouvez ouvrir un projet depuis le lien reçu par courriel de Démarche numérique.";
 
 function readSummary(value: unknown): DossierFondsVertSummary | null {
   if (!isRecord(value) || !isRecord(value.socle_commun)) return null;

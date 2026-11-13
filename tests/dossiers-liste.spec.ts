@@ -778,7 +778,9 @@ test("la liste tient sur un écran étroit pendant le chargement puis annonce la
 
   try {
     await page.goto("/projets", { waitUntil: "commit" });
-    await expect(page.getByRole("status", { name: "Chargement" })).toBeVisible();
+    await expect(
+      page.getByRole("status", { name: "Chargement" }),
+    ).toBeVisible();
     await expect
       .poll(() =>
         page.evaluate(
@@ -791,7 +793,10 @@ test("la liste tient sur un écran étroit pendant le chargement puis annonce la
   }
 
   await expect(
-    page.getByText("La liste de vos dossiers est temporairement indisponible"),
+    page.getByText(
+      "La liste de vos projets est temporairement indisponible. Vous pouvez ouvrir un projet depuis le lien reçu par courriel de Démarche numérique.",
+      { exact: true },
+    ),
   ).toBeVisible();
 });
 
