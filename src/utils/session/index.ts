@@ -2,8 +2,8 @@ import { getIronSession, IronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { ProConnectUserInfo } from "@/services/proconnect";
-import { requireEnv } from "@/utils/env";
+import type { ProConnectUserInfo } from "@/services/proconnect";
+import { isRealServiceConfigured, requireEnv } from "@/utils/env";
 import type { ProjectView } from "@/utils/projectView";
 import { ttl } from "@/utils/session/ttl";
 
@@ -55,8 +55,9 @@ export async function setSession(
   await session.save();
 }
 
-export async function getSession(): Promise<IronSession<Session>> {
+export async function getSession(): Promise<IronSession<Session> | null> {
   const cookieStore = await cookies();
+  if (!isRealServiceConfigured()) return null;
   return await getIronSession<Session>(cookieStore, getSessionOptions());
 }
 
@@ -79,8 +80,12 @@ export function withSession(
   handler: (req: RequestWithSession) => Promise<NextResponse>,
 ) {
   return async (req: NextRequest) => {
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.redirect(new URL("/connexion", req.url), 303);
+    }
     const reqWithSession = req as RequestWithSession;
-    reqWithSession.session = await getSession();
+    reqWithSession.session = session;
     return handler(reqWithSession);
   };
 }

@@ -7,7 +7,7 @@ import { welcomeUrl } from "@/utils/url";
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
-  if (!session.user) {
+  if (!session?.user) {
     return NextResponse.json(
       { error: "Utilisateur non authentifié" },
       { status: 401 },

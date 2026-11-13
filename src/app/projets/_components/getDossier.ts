@@ -10,8 +10,6 @@ import { isReservedDemoDossier } from "@/utils/demo/reservation";
 import { logException } from "@/utils/error";
 import { isAdmin } from "@/utils/roles";
 
-const graphqlClient = createGraphqlClient();
-
 function canAccessDossier({
   dossier,
   userEmail,
@@ -41,6 +39,7 @@ export async function getDossierAccess({
 }): Promise<boolean> {
   if (isReservedDemoDossier(numeroDossier)) return false;
   try {
+    const graphqlClient = createGraphqlClient();
     const { dossier } = await graphqlClient.request(getDossierAccessQuery, {
       number: numeroDossier,
     });
@@ -70,6 +69,7 @@ export async function getDossier({
     };
   }
   try {
+    const graphqlClient = createGraphqlClient();
     const { dossier } = await graphqlClient.request(getDossierQuery, {
       number: numeroDossier,
     });

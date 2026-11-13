@@ -55,7 +55,7 @@ export default async function Projets({
     compareDateSignatureDecision,
   );
   const view = admin
-    ? (session.projectView ?? "porteur")
+    ? (session?.projectView ?? "porteur")
     : dossiersSubvention.find((dossier) => dossier.viewerRelationship)
         ?.viewerRelationship;
   const progress =

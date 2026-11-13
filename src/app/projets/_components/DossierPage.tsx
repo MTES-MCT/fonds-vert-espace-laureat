@@ -94,7 +94,7 @@ export async function DossierPage({
               isAdmin={isAdmin({ userEmail: user.email })}
               view={
                 isAdmin({ userEmail: user.email })
-                  ? (session.projectView ?? "porteur")
+                  ? (session?.projectView ?? "porteur")
                   : dossierSubvention.viewerRelationship
               }
               dossierSubvention={dossierSubvention}

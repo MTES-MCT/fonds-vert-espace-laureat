@@ -2,6 +2,7 @@ import Alert from "@codegouvfr/react-dsfr/Alert";
 import ProConnectButton from "@codegouvfr/react-dsfr/ProConnectButton";
 
 import { StartDsfrOnHydration } from "@/components/dsfr";
+import { isRealServiceConfigured } from "@/utils/env";
 
 export default async function ConnexionPage({
   searchParams,
@@ -9,6 +10,7 @@ export default async function ConnexionPage({
   searchParams: Promise<{ error: string; returnTo?: string }>;
 }) {
   const { error, returnTo } = await searchParams;
+  const serviceConfigured = isRealServiceConfigured();
 
   const errorMessages: Record<string, string> = {
     user_unknown: "Veuillez vous connecter pour accéder à cette page.",
@@ -20,7 +22,7 @@ export default async function ConnexionPage({
     <div className="fr-container my-8 pb-48">
       <StartDsfrOnHydration />
       <div className="max-w-xl">
-        {errorMessage && (
+        {serviceConfigured && errorMessage && (
           <Alert
             className="mb-6"
             severity="warning"
@@ -29,14 +31,24 @@ export default async function ConnexionPage({
           />
         )}
         <h1>Vert impact</h1>
-        <p className="fr-text--lead">
-          Ce service est accessible aux porteurs et aux instructeurs d'un projet
-          Fonds vert. Identifiez-vous pour suivre les subventions et l'impact
-          des projets.
-        </p>
-        <ProConnectButton
-          url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
-        />
+        {serviceConfigured ? (
+          <>
+            <p className="fr-text--lead">
+              Ce service est accessible aux porteurs et aux instructeurs d'un
+              projet Fonds vert. Identifiez-vous pour suivre les subventions et
+              l'impact des projets.
+            </p>
+            <ProConnectButton
+              url={`/api/auth/proconnect/login${returnTo ? `?returnTo=${encodeURIComponent(returnTo)}` : ""}`}
+            />
+          </>
+        ) : (
+          <Alert
+            severity="error"
+            small
+            description="Le service est actuellement fermé."
+          />
+        )}
       </div>
     </div>
   );

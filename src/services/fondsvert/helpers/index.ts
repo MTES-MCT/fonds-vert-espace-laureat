@@ -2,7 +2,6 @@ import { login } from "@/services/fondsvert/login";
 import { requireEnv } from "@/utils/env";
 import { logException } from "@/utils/error";
 
-const [endpoint] = requireEnv("FONDSVERT_API_ENDPOINT");
 export const FONDS_VERT_TIMEOUT_MS = 10_000;
 
 export function defaultHeaders({ token }: { token?: string } = {}) {
@@ -19,6 +18,7 @@ export async function fetchFondsVert<T>(
   | { success: false; status: number; statusText: string }
 > {
   try {
+    const [endpoint] = requireEnv("FONDSVERT_API_ENDPOINT");
     const token = await login();
     if (!token)
       return {

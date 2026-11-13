@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { StartDsfrOnHydration } from "@/components/dsfr";
 import { getSession } from "@/utils/session";
@@ -11,7 +12,8 @@ export default async function ConnexionEchec({
 }) {
   const mfaRequired = (await searchParams).error === "mfa_required";
   const session = await getSession();
-  const destination = getAuthenticatedReturnUrl(session?.returnTo);
+  if (!session) redirect("/connexion");
+  const destination = getAuthenticatedReturnUrl(session.returnTo);
   const returnTo = destination.pathname + destination.search + destination.hash;
 
   return (

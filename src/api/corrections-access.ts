@@ -1,6 +1,8 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { BlockList, isIP } from "node:net";
 
+import { isRealServiceConfigured } from "@/utils/env";
+
 const secretPattern = /^[A-Za-z0-9_-]{43,128}$/;
 
 function equalSecret(received: string, expected: string) {
@@ -31,6 +33,7 @@ export function correctionAccess(
   }
 
   if (
+    !isRealServiceConfigured() ||
     process.env.CORRECTIONS_API_ENABLED !== "true" ||
     process.env.CORRECTIONS_INGRESS_VERIFIED !== "true" ||
     !secretPattern.test(key) ||

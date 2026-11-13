@@ -6,13 +6,7 @@ import {
 import { ProjetsPanel } from "@/app/departements/_components/ProjetsPanel";
 import { TabButton } from "@/app/departements/_components/TabButton";
 import { StartDsfrOnHydration } from "@/components/dsfr";
-import {
-  communesParDepartements,
-  nomDepartements,
-  projetsParCommunesAnneesDemarches,
-  ProjetsParDemarches,
-  projetsParDepartementsAnneesDemarches,
-} from "@/utils/projets";
+import type { ProjetsParDemarches } from "@/utils/projets";
 
 export default async function ProjetsDepartement({
   params,
@@ -23,6 +17,12 @@ export default async function ProjetsDepartement({
 }) {
   const { codeDepartement } = await params;
   const { codeCommune } = await getSearchParams({ searchParams });
+  const {
+    communesParDepartements,
+    nomDepartements,
+    projetsParCommunesAnneesDemarches,
+    projetsParDepartementsAnneesDemarches,
+  } = await import("@/utils/projets");
 
   if (!projetsParDepartementsAnneesDemarches[codeDepartement]) {
     return (

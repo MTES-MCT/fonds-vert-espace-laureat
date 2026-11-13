@@ -1,5 +1,5 @@
 import { ProjetSection } from "@/app/departements/_components/ProjetSection";
-import { Projets, ProjetsParDemarches } from "@/utils/projets";
+import type { Projets, ProjetsParDemarches } from "@/utils/projets";
 import { Projet } from "@/utils/projets/projet";
 
 export function ProjetsPanel({
