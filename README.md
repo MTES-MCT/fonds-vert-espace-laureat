@@ -92,9 +92,8 @@ Cette URL d'accès direct peut être utilisée, par exemple, dans les communicat
 
 #### Mode administrateur
 
-Si votre compte a un rôle administrateur, vous pouvez visualiser les dossiers des lauréats. Vous pouvez également accéder à tous les dossiers associés à un numéro de SIRET :
-
-- [/projets?siret=1234567891011](http://localhost:3000/projets?siret=1234567891011)
+Un administrateur peut consulter l’ensemble des projets depuis `/projets`
+et basculer entre les vues porteur et instructeur depuis l’en-tête.
 
 ### API des corrections Fonds Vert
 
