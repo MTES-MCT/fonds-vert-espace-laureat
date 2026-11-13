@@ -387,6 +387,17 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
           .getByRole("navigation", { name: "Pages du projet" })
           .getByRole("link", { name: label, exact: true }),
       ).toHaveAttribute("aria-current", "page");
+      if (!suffix) {
+        const synthese = page.getByRole("region", {
+          name: "Synthèse du projet",
+          exact: true,
+        });
+        await expect(synthese.getByRole("heading", { level: 3 })).toHaveText(
+          view === "instructeur"
+            ? ["Identité du porteur de projet", "Présentation du projet"]
+            : ["Présentation du projet", "Identité du porteur de projet"],
+        );
+      }
     }
     await page.reload();
     await expect(page).toHaveURL(path);
