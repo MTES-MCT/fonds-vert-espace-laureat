@@ -25,7 +25,8 @@ npm run db:up
 npm run db:setup
 ```
 
-Renseignez les variables des services externes dans `.env`. La commande
+Renseignez les variables des services externes dans `.env` pour ouvrir l’accès
+aux projets réels. La commande
 `npm run db:setup` applique les migrations Drizzle. Avec une base PostgreSQL
 existante, définissez `DATABASE_URL` et lancez `npm run db:migrate`.
 
@@ -95,17 +96,10 @@ Si votre compte a un rôle administrateur, vous pouvez visualiser les dossiers d
 
 - [/projets?siret=1234567891011](http://localhost:3000/projets?siret=1234567891011)
 
-#### Mode démo
-
-La démonstration utilise des données synthétiques, exclues des exports réels.
-Elle est accessible sans token ni compte ProConnect :
-
-- [/projets/demo](http://localhost:3000/projets/demo)
-
 ### API des corrections Fonds Vert
 
 `GET /api/v1/corrections` exporte les dernières corrections locales par champ
-et dossier, hors imports seuls et démonstration. L’accès nécessite une clé machine
-et une adresse IP autorisée.
+et dossier, hors imports seuls et dossiers fictifs. L’accès nécessite une clé
+machine et une adresse IP autorisée.
 
 [Documentation OpenAPI](openapi/corrections.json)
