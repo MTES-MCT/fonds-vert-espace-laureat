@@ -738,7 +738,7 @@ test("le tri utilise toutes les dates de décision DN plutôt que l’ordre FV o
                 ? {
                     ...champ,
                     date:
-                      variables.number === DOSSIER_NUMBER
+                      variables.number === INSTRUCTEUR_DOSSIER_NUMBER
                         ? "2026-10-01"
                         : "2024-01-01",
                   }
@@ -755,10 +755,10 @@ test("le tri utilise toutes les dates de décision DN plutôt que l’ordre FV o
   const rows = page.getByRole("table").getByRole("row");
   await expect(rows).toHaveCount(3);
   await expect(rows.nth(1).getByRole("cell").first()).toHaveText(
-    String(DOSSIER_NUMBER),
+    String(INSTRUCTEUR_DOSSIER_NUMBER),
   );
   await expect(rows.nth(2).getByRole("cell").first()).toHaveText(
-    String(INSTRUCTEUR_DOSSIER_NUMBER),
+    String(DOSSIER_NUMBER),
   );
 });
 
