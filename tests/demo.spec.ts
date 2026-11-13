@@ -56,17 +56,19 @@ function impactTab(page: Page) {
     .getByRole("link", { name: "Données d’impact", exact: true });
 }
 
-test("depuis le haut de la fiche, le porteur ouvre et referme la correction d’une valeur en bas de l’onglet Impact", async ({
+test("depuis le haut de l’onglet Impact, le porteur ouvre le gain énergétique visible en bas de l’écran sans faire défiler la fiche", async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.setViewportSize({ width: 1803, height: 1224 });
   await page.goto("/projets/demo");
   await page
     .getByRole("link", { name: "Rénovation de la piscine Jacques Demy" })
     .click();
   await impactTab(page).click();
+  await expect(impactTab(page)).toHaveAttribute("aria-current", "page");
+  await page.reload();
 
-  const metric = "Quantité annuelle globale de biodéchets collectés";
+  const metric = "Gain énergétique estimé";
   const edit = page.getByRole("button", {
     name: `Modifier la valeur « ${metric} »`,
   });
@@ -75,20 +77,25 @@ test("depuis le haut de la fiche, le porteur ouvre et referme la correction d’
       name: "Rénovation de la piscine Jacques Demy",
     }),
   ).toBeInViewport();
-  await expect(edit).not.toBeInViewport();
+  await expect(edit).toBeInViewport({ ratio: 1 });
+  await expect(edit).toBeEnabled();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 
-  await edit.scrollIntoViewIfNeeded();
-  const buttonTop = (await edit.boundingBox())!.y;
-  await edit.click();
+  // Le pointeur reste au même endroit pendant toute la pression.
+  const button = (await edit.boundingBox())!;
+  await page.mouse.click(
+    button.x + button.width / 2,
+    button.y + button.height / 2,
+  );
   const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
   await expect(dialog).toBeInViewport();
   await expect(dialog.getByRole("textbox", { name: metric })).toBeFocused();
-  expect((await edit.boundingBox())!.y).toBeCloseTo(buttonTop, 0);
+  expect((await edit.boundingBox())!.y).toBeCloseTo(button.y, 0);
 
   await dialog.getByRole("button", { name: "Annuler" }).click();
   await expect(dialog).toBeHidden();
   await expect(edit).toBeFocused();
-  expect((await edit.boundingBox())!.y).toBeCloseTo(buttonTop, 0);
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
 });
 
 test("demo page loads, corrects and persists its database-backed metrics", async ({

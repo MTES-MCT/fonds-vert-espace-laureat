@@ -6,15 +6,7 @@ import Input from "@codegouvfr/react-dsfr/Input";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import RadioButtons from "@codegouvfr/react-dsfr/RadioButtons";
-import {
-  type FormEvent,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { type FormEvent, useId, useMemo, useRef, useState } from "react";
 
 import { useModalButtonReady } from "@/components/dsfr/useModalButtonReady";
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
@@ -109,16 +101,7 @@ export function MetricCorrectionEditor({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
-  const anchorRef = useRef<HTMLDivElement>(null);
   const isReady = useModalButtonReady(openerRef);
-  const focusOpenerWhenReady = useCallback(() => {
-    const opener = openerRef.current;
-    if (!isReady || !opener || document.activeElement !== anchorRef.current)
-      return;
-    opener.focus({ preventScroll: true });
-    opener.scrollIntoView({ block: "center" });
-  }, [isReady]);
-  useEffect(focusOpenerWhenReady, [focusOpenerWhenReady]);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const textArrayInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   useIsModalOpen(modal, {
@@ -368,14 +351,7 @@ export function MetricCorrectionEditor({
   };
 
   return (
-    <div
-      id={metricEditorId(target.metricCode)}
-      ref={anchorRef}
-      tabIndex={-1}
-      onFocus={(event) => {
-        if (event.target === event.currentTarget) focusOpenerWhenReady();
-      }}
-    >
+    <div id={metricEditorId(target.metricCode)}>
       <Button
         disabled={!isReady}
         ref={openerRef}
