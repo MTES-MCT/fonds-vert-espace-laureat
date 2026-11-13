@@ -120,7 +120,7 @@ test.afterEach(async ({}, testInfo) => {
   await deleteStoredDossierMetrics(dossierNumber);
 });
 
-test("shares progress saved from the project list between the porteur, instructeur and administrator", async ({
+test("shares progress saved from the summary between the porteur, instructeur and administrator", async ({
   page,
 }, testInfo) => {
   const dossierNumber = 89880032 + testInfo.parallelIndex;
@@ -143,6 +143,14 @@ test("shares progress saved from the project list between the porteur, instructe
   expect(await getStoredDossierProgressRevisions(dossierNumber)).toEqual([]);
 
   const saveDurations = [await saveOrdinaryProgress(page, "Non-commencé")];
+  const [firstRevision] =
+    await getStoredDossierProgressRevisions(dossierNumber);
+  const firstSaveDate = new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "Europe/Paris",
+  }).format(firstRevision.created_at);
+  const firstSaveMessage = `Dernière modification : ${firstSaveDate}`;
   await page.reload();
   const badge = section
     .locator(".fr-badge")
@@ -153,13 +161,27 @@ test("shares progress saved from the project list between the porteur, instructe
 
   await badge.hover();
   await expect(dateTooltip).toBeVisible();
-  await expect(dateTooltip).toContainText("Dernière modification");
+  await expect(dateTooltip).toHaveText(firstSaveMessage);
 
-  await section.getByRole("button", { name: "Modifier l’avancement" }).hover();
+  const editButton = section.getByRole("button", {
+    name: "Modifier l’avancement",
+  });
+  await editButton.hover();
+  await expect(dateTooltip).toBeHidden();
+  await editButton.press("Shift+Tab");
+  await expect(
+    section.getByRole("button", { name: "Non-commencé", exact: true }),
+  ).toBeFocused();
+  await expect(dateTooltip).toBeVisible();
+  await expect(dateTooltip).toHaveText(firstSaveMessage);
+  await page.keyboard.press("Tab");
+  await expect(editButton).toBeFocused();
   await expect(dateTooltip).toBeHidden();
 
   const dialog = await openProgress(page);
-  await expect(dialog.getByText(/^Dernière modification/)).toBeVisible();
+  await expect(
+    dialog.getByText(firstSaveMessage, { exact: true }),
+  ).toBeVisible();
   await dialog.getByRole("button", { name: "Annuler" }).click();
 
   await page.context().clearCookies();

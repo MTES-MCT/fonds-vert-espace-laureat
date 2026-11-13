@@ -6,7 +6,6 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import Select from "@codegouvfr/react-dsfr/Select";
-import Tooltip from "@codegouvfr/react-dsfr/Tooltip";
 import {
   type FormEvent,
   useId,
@@ -44,6 +43,7 @@ export function StatutRealisation({
   correctionApiPath?: string;
 }) {
   const instanceId = useId().replaceAll(":", "");
+  const progressDateId = `dossier-progress-date-${instanceId}`;
   const modal = useMemo(
     () =>
       createModal({
@@ -279,11 +279,23 @@ export function StatutRealisation({
       }
     >
       {target.updatedAt ? (
-        <Tooltip
-          title={`Dernière modification : ${dateFormatter.format(new Date(target.updatedAt))}`}
-        >
-          {badge}
-        </Tooltip>
+        <>
+          <button
+            type="button"
+            className="text-left"
+            aria-describedby={progressDateId}
+          >
+            {badge}
+          </button>
+          <span
+            id={progressDateId}
+            role="tooltip"
+            className="fr-tooltip fr-placement"
+          >
+            Dernière modification :{" "}
+            {dateFormatter.format(new Date(target.updatedAt))}
+          </span>
+        </>
       ) : (
         badge
       )}
