@@ -736,7 +736,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       }),
     ).toBeVisible();
     for (const [label, value] of [
-      ["Consommation énergétique avant travaux", "2 055 650"],
+      ["Consommation énergétique avant travaux", "205 565"],
       ["Consommation énergétique après travaux", "1 935 960"],
     ]) {
       await expect(

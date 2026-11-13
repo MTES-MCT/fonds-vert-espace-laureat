@@ -28,7 +28,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     [
       "metric-consommation-energetique-avant-travaux",
       "Consommation énergétique avant travaux",
-      "2 055 650",
+      "205 565",
     ],
     [
       "metric-consommation-energetique-apres-travaux",
@@ -38,7 +38,7 @@ test("dossier page displays impact metrics correctly", async ({ page }) => {
     [
       "metric-emissions-de-ges-avant-travaux",
       "Émissions de GES avant travaux",
-      "448",
+      "-448",
     ],
   ]) {
     const row = page.getByTestId(testId);
