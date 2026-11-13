@@ -81,14 +81,11 @@ test("validates and submits a numeric metric correction once", async ({
     await expect(dialog.getByText("Saisissez un nombre valide.")).toBeVisible();
     await expect(numberInput).toBeFocused();
 
-    let releaseNumberRequest: (() => void) | undefined;
-    const numberRequestGate = new Promise<void>((resolve) => {
-      releaseNumberRequest = resolve;
-    });
+    const numberRequestGate = Promise.withResolvers<void>();
     let numberRequestCount = 0;
     await page.route("**/metrics/number_metric", async (route) => {
       numberRequestCount += 1;
-      await numberRequestGate;
+      await numberRequestGate.promise;
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -106,20 +103,22 @@ test("validates and submits a numeric metric correction once", async ({
       });
     });
 
-    await numberInput.fill("2,5");
-    await dialog
-      .getByRole("button", { name: "Enregistrer", exact: true })
-      .click();
-    await expect.poll(() => numberRequestCount, { timeout: 5000 }).toBe(1);
-    await expect(
-      dialog.getByRole("button", { name: "Enregistrement…" }),
-    ).toBeDisabled();
-    await dialog.locator("form").evaluate((form: HTMLFormElement) => {
-      form.requestSubmit();
-      form.requestSubmit();
-    });
-    expect(numberRequestCount).toBe(1);
-    releaseNumberRequest?.();
+    try {
+      await numberInput.fill("2,5");
+      await dialog
+        .getByRole("button", { name: "Enregistrer", exact: true })
+        .click();
+      await expect.poll(() => numberRequestCount, { timeout: 5000 }).toBe(1);
+      await expect(
+        dialog.getByRole("button", { name: "Enregistrement…" }),
+      ).toBeDisabled();
+      await dialog.locator("form").evaluate((form: HTMLFormElement) => {
+        form.requestSubmit();
+        form.requestSubmit();
+      });
+    } finally {
+      numberRequestGate.resolve();
+    }
     await expect(dialog).toBeHidden();
     await expect(numberCard.getByLabel("Valeur effective")).toHaveText(
       /2,5\s*ha/,
@@ -129,6 +128,7 @@ test("validates and submits a numeric metric correction once", async ({
         hasText: "Correction enregistrée pour « Métrique numérique ».",
       }),
     ).toBeVisible();
+    expect(numberRequestCount).toBe(1);
     await expect(numberCard.getByRole("status")).toHaveCount(0);
     await page.unroute("**/metrics/number_metric");
     await numberCard.getByRole("button", { name: "Modifier" }).click();
@@ -581,13 +581,18 @@ test("edits text, boolean and multiple metrics from their cards", async ({
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
-    const effectiveValues = arrayCard.getByLabel("Valeur effective");
-    await expect(
-      effectiveValues.getByText("Première valeur", { exact: true }),
-    ).toBeVisible();
-    await expect(
-      effectiveValues.getByText("Deuxième valeur", { exact: true }),
-    ).toBeVisible();
+    const effectiveValues = arrayCard
+      .getByRole("list", { name: "Valeur effective" })
+      .getByRole("listitem");
+    await expect(effectiveValues).toHaveText([
+      "Première valeur",
+      "Deuxième valeur",
+    ]);
+    await page.reload();
+    await expect(effectiveValues).toHaveText([
+      "Première valeur",
+      "Deuxième valeur",
+    ]);
   } finally {
     await deleteStoredDossierMetrics(correctionDossierNumber);
   }
@@ -642,8 +647,12 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
-    await expect(beforeRow).toContainText("120");
-    await expect(afterRow).toContainText("80");
+    await expect(beforeRow.getByTestId("valeur-estimee")).toHaveText(
+      /^120\s*kWh$/,
+    );
+    await expect(afterRow.getByTestId("valeur-estimee")).toHaveText(
+      /^80\s*kWh$/,
+    );
 
     await editAfter.click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -652,8 +661,12 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
       .getByRole("button", { name: "Enregistrer", exact: true })
       .click();
     await expect(dialog).toBeHidden();
-    await expect(beforeRow).toContainText("120");
-    await expect(afterRow).toContainText("70");
+    await expect(beforeRow.getByTestId("valeur-estimee")).toHaveText(
+      /^120\s*kWh$/,
+    );
+    await expect(afterRow.getByTestId("valeur-estimee")).toHaveText(
+      /^70\s*kWh$/,
+    );
   } finally {
     await deleteStoredDossierMetrics(correctionDossierNumber);
   }
