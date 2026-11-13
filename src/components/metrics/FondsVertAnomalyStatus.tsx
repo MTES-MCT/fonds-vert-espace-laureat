@@ -35,14 +35,10 @@ export function FondsVertCategoryBadge({
 export function fondsVertAnomalySummary(
   anomalies: NormalizedFondsVertAnomalies,
 ) {
-  const strong =
-    anomalies.indicators.some(
-      (indicator) => indicator.severity === "strong-inconsistency",
-    ) || anomalies.unspecifiedCategories.includes("strong-inconsistency");
   if (anomalies.indicatorCount > 0) {
     return {
       label: `${anomalies.indicatorCount} donnée${anomalies.indicatorCount > 1 ? "s" : ""} à vérifier`,
-      severity: strong ? ("error" as const) : ("warning" as const),
+      severity: "warning" as const,
     };
   }
   if (
@@ -51,7 +47,7 @@ export function fondsVertAnomalySummary(
   )
     return {
       label: "Signalement à préciser",
-      severity: strong ? ("error" as const) : ("warning" as const),
+      severity: "warning" as const,
     };
   if (anomalies.hasNoSignals)
     return { label: "Aucun signalement", severity: "success" as const };

@@ -50,7 +50,6 @@ export default function DossiersTable({
               summary?.signals ?? readFondsVertSignals({}),
             );
             const { label, severity } = fondsVertListAnomalySummary(anomalies);
-            const badgeSeverity = severity === "error" ? "warning" : severity;
             return (
               <tr key={dossier.numero}>
                 <td>{dossier.numero}</td>
@@ -71,7 +70,7 @@ export default function DossiersTable({
                     href={projectLink(dossier.numero, true)}
                     aria-label={`${label} pour le projet n°${dossier.numero}`}
                   >
-                    <Badge as="span" small noIcon severity={badgeSeverity}>
+                    <Badge as="span" small noIcon severity={severity}>
                       {label}
                     </Badge>
                   </a>

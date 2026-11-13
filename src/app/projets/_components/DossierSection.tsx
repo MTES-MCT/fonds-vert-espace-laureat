@@ -144,8 +144,7 @@ export async function DossierSection({
   const anomalySummary = anomalies && fondsVertAnomalySummary(anomalies);
   const impactNotice =
     anomalySummary &&
-    (anomalySummary.severity === "error" ||
-      anomalySummary.severity === "warning") &&
+    anomalySummary.severity === "warning" &&
     anomalies.status !== "incomplete" &&
     anomalies.status !== "invalid"
       ? {
