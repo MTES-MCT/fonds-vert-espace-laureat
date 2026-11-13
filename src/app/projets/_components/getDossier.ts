@@ -59,14 +59,10 @@ export async function getDossier({
   userEmail: string;
 }): Promise<
   | { success: true; data: Dossier }
-  | { success: false; error: string; reason: "denied" | "unavailable" }
+  | { success: false; reason: "denied" | "unavailable" }
 > {
   if (isReservedDemoDossier(numeroDossier)) {
-    return {
-      success: false,
-      error: "Impossible de trouver ce dossier",
-      reason: "denied",
-    };
+    return { success: false, reason: "denied" };
   }
   try {
     const graphqlClient = createGraphqlClient();
@@ -74,28 +70,12 @@ export async function getDossier({
       number: numeroDossier,
     });
 
-    if (!dossier) {
-      return {
-        success: false,
-        error: "Impossible de trouver ce dossier",
-        reason: "denied",
-      };
-    }
-
-    if (dossier.demandeur.__typename !== "PersonneMorale") {
-      return {
-        success: false,
-        error: "Seules les personnes morales peuvent accéder à cet espace",
-        reason: "denied",
-      };
-    }
-
-    if (!canAccessDossier({ dossier, userEmail })) {
-      return {
-        success: false,
-        error: "Vous n'êtes pas autorisé à accéder à ce dossier",
-        reason: "denied",
-      };
+    if (
+      !dossier ||
+      dossier.demandeur.__typename !== "PersonneMorale" ||
+      !canAccessDossier({ dossier, userEmail })
+    ) {
+      return { success: false, reason: "denied" };
     }
 
     return {
@@ -120,25 +100,17 @@ export async function getDossier({
       },
     };
   } catch (error: unknown) {
-    logException(error);
     if (
       error instanceof ClientError &&
-      error.response &&
-      error.response.status === 403
+      error.response.status === 200 &&
+      error.response.errors?.length === 1 &&
+      error.response.errors[0].path?.length === 1 &&
+      error.response.errors[0].path[0] === "dossier" &&
+      error.response.errors[0].extensions?.code === "not_found"
     ) {
-      return {
-        success: false,
-        reason: "unavailable",
-        error:
-          "Nous ne parvenons pas à nous connecter aux démarches Fonds vert pour le moment. Veuillez nous contacter si le problème persiste.",
-      };
-    } else {
-      return {
-        success: false,
-        reason: "unavailable",
-        error:
-          "Une erreur est survenue. Veuillez nous contacter si le problème persiste.",
-      };
+      return { success: false, reason: "denied" };
     }
+    logException(error);
+    return { success: false, reason: "unavailable" };
   }
 }

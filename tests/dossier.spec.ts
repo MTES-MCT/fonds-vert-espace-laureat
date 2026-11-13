@@ -832,7 +832,14 @@ test("un dossier DN absent affiche Introuvable sans détails financiers", async 
   msw.use(
     ds.query("getDossier", () => {
       return HttpResponse.json({
-        data: { dossier: null },
+        data: null,
+        errors: [
+          {
+            message: "Dossier not found",
+            path: ["dossier"],
+            extensions: { code: "not_found" },
+          },
+        ],
       });
     }),
   );
@@ -845,6 +852,25 @@ test("un dossier DN absent affiche Introuvable sans détails financiers", async 
   ).not.toBeAttached();
   await expect(
     page.getByRole("region", { name: /Engagement juridique/ }),
+  ).not.toBeAttached();
+});
+
+test("une panne DN indique que les données du projet sont temporairement indisponibles", async ({
+  page,
+  msw,
+}) => {
+  msw.use(
+    ds.query("getDossier", () => new HttpResponse(null, { status: 503 })),
+  );
+
+  await page.goto(`/projets/${DOSSIER_NUMBER}/financement`);
+
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText(
+    "Les données du projet sont temporairement indisponibles. Réessayez dans quelques instants.",
+  );
+  await expect(page.getByText("Introuvable")).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Aide du Fonds vert" }),
   ).not.toBeAttached();
 });
 

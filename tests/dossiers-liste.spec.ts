@@ -646,48 +646,67 @@ test("un projet présent dans les deux sources ne demande qu’une seule autoris
   expect(dnCalls).toBe(1);
 });
 
-test("une panne DN laisse visible le projet autorisé et annonce une liste partielle", async ({
-  page,
-  msw,
-}) => {
-  await authenticatePage(page, { email: DEMANDEUR_EMAIL });
-  msw.use(
-    makeDossiersHandler({
-      siret: {
-        success: true,
-        count: 2,
-        next_page: null,
-        previous_page: null,
-        data: [
-          ...fondsVertDossiersListBySiretData.data,
-          ...fondsVertDossiersListByInstructeurData.data,
-        ],
-      },
-      instructeur: emptyList,
-    }),
-    ds.query("getDossier", ({ variables }) =>
-      variables.number === INSTRUCTEUR_DOSSIER_NUMBER
-        ? HttpResponse.json(
-            { errors: [{ message: "DN indisponible" }] },
-            { status: 503 },
-          )
-        : HttpResponse.json(getDossierData),
-    ),
-  );
+for (const { title, body, status, partial } of [
+  {
+    title:
+      "une panne DN laisse visible le projet autorisé et annonce une liste partielle",
+    body: { errors: [{ message: "DN indisponible" }] },
+    status: 503,
+    partial: true,
+  },
+  {
+    title: "un dossier absent dans DN est écarté sans annoncer de panne",
+    body: {
+      data: null,
+      errors: [
+        {
+          message: "Dossier not found",
+          path: ["dossier"],
+          extensions: { code: "not_found" },
+        },
+      ],
+    },
+    status: 200,
+    partial: false,
+  },
+]) {
+  test(title, async ({ page, msw }) => {
+    await authenticatePage(page, { email: DEMANDEUR_EMAIL });
+    msw.use(
+      makeDossiersHandler({
+        siret: {
+          success: true,
+          count: 2,
+          next_page: null,
+          previous_page: null,
+          data: [
+            ...fondsVertDossiersListBySiretData.data,
+            ...fondsVertDossiersListByInstructeurData.data,
+          ],
+        },
+        instructeur: emptyList,
+      }),
+      ds.query("getDossier", ({ variables }) =>
+        variables.number === INSTRUCTEUR_DOSSIER_NUMBER
+          ? HttpResponse.json(body, { status })
+          : HttpResponse.json(getDossierData),
+      ),
+    );
 
-  await page.goto("/projets");
+    await page.goto("/projets");
 
-  await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
-  await expect(
-    page.getByText(/La liste des projets est incomplète/),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("cell", {
-      name: String(INSTRUCTEUR_DOSSIER_NUMBER),
-      exact: true,
-    }),
-  ).toHaveCount(0);
-});
+    await expect(page.getByText(String(DOSSIER_NUMBER))).toBeVisible();
+    await expect(
+      page.getByText(/La liste des projets est incomplète/),
+    ).toHaveCount(partial ? 1 : 0);
+    await expect(
+      page.getByRole("cell", {
+        name: String(INSTRUCTEUR_DOSSIER_NUMBER),
+        exact: true,
+      }),
+    ).toHaveCount(0);
+  });
+}
 
 test("une source vide et une source en panne ne présentent pas un état vide définitif", async ({
   page,

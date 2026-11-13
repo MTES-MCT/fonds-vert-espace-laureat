@@ -1,3 +1,5 @@
+import Alert from "@codegouvfr/react-dsfr/Alert";
+
 import { AnomaliesSection } from "@/app/projets/_components/dossier-section/details/AnomaliesSection";
 import type { ProjectSection } from "@/app/projets/_components/DossierSection";
 import { DossierSection } from "@/app/projets/_components/DossierSection";
@@ -40,8 +42,16 @@ export async function DossierPage({
   if (!dossierSubventionResult.success) {
     return (
       <div className="fr-container my-8">
-        Introuvable
         <StartDsfrOnHydration />
+        {dossierSubventionResult.reason === "unavailable" ? (
+          <Alert
+            severity="error"
+            small
+            description="Les données du projet sont temporairement indisponibles. Réessayez dans quelques instants."
+          />
+        ) : (
+          "Introuvable"
+        )}
       </div>
     );
   }
