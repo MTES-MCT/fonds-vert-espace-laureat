@@ -47,7 +47,7 @@ export async function CatalogueDossierPage({
   const progressPromise =
     section === "summary"
       ? getDossierProgress({ numeroDossier: number })
-      : undefined;
+      : null;
   const loadMetrics = () =>
     startDossierMetricLoading({
       numeroDossier: number,
@@ -125,9 +125,7 @@ export async function CatalogueDossierPage({
             financesEJPromise={Promise.resolve(finances ?? {})}
             metrics={metrics}
             progressTarget={
-              progress && progress.revision > 0
-                ? progress
-                : { revision: 0, status, updatedAt: null }
+              progress?.revision === 0 ? { ...progress, status } : progress
             }
             progressApiPath={`${api}/progress`}
             anomalies={anomalies}

@@ -70,7 +70,7 @@ export async function DossierPage({
         });
 
   const [progressTarget, metricLoadingResult] = await Promise.all([
-    getDossierProgress({ numeroDossier }),
+    section === "summary" ? getDossierProgress({ numeroDossier }) : null,
     metricLoading.resultPromise,
   ]);
   const { dossierFondsVertResult, metricRevisionTargets, metrics } =

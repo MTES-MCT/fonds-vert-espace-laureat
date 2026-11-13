@@ -82,7 +82,7 @@ export async function DossierSection({
     | { success: false; error: string }
     | { success: true; data: DossierFondsVert };
   financesEJPromise: Promise<FinancesEJResult>;
-  progressTarget: DossierProgressTarget;
+  progressTarget: DossierProgressTarget | null;
   progressApiPath?: string;
   anomalies?: NormalizedFondsVertAnomalies;
   anomaliesSection?: ReactNode;
@@ -122,11 +122,13 @@ export async function DossierSection({
       numeroDossierAgenceEau={subvention.numeroDossierAgenceEau}
       departementImplantation={subvention.departementImplantation}
       progress={
-        <StatutRealisation
-          dossierNumber={dossierSubvention.numero}
-          initialTarget={progressTarget}
-          correctionApiPath={progressApiPath}
-        />
+        progressTarget && (
+          <StatutRealisation
+            dossierNumber={dossierSubvention.numero}
+            initialTarget={progressTarget}
+            correctionApiPath={progressApiPath}
+          />
+        )
       }
       socleCommun={socleCommun}
     />
