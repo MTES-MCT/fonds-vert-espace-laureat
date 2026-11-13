@@ -1,7 +1,7 @@
 import Badge from "@codegouvfr/react-dsfr/Badge";
 
 import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
-import { fondsVertAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
+import { fondsVertListAnomalySummary } from "@/components/metrics/FondsVertAnomalyStatus";
 import { DsfrTable } from "@/components/table/DsfrTable";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
 import { Dossier } from "@/services/ds/subvention";
@@ -49,17 +49,8 @@ export default function DossiersTable({
             const anomalies = normalizeFondsVertAnomalies(
               summary?.signals ?? readFondsVertSignals({}),
             );
-            const { label, severity } = fondsVertAnomalySummary(anomalies);
-            const warnings = anomalies.warnings;
-            const warningOnly =
-              anomalies.hasNoSignals &&
-              "data" in warnings &&
-              warnings.data.length > 0;
-            const badgeLabel = warningOnly
-              ? "Avertissements à consulter"
-              : label;
-            const badgeSeverity =
-              warningOnly || severity === "error" ? "warning" : severity;
+            const { label, severity } = fondsVertListAnomalySummary(anomalies);
+            const badgeSeverity = severity === "error" ? "warning" : severity;
             return (
               <tr key={dossier.numero}>
                 <td>{dossier.numero}</td>
@@ -78,10 +69,10 @@ export default function DossiersTable({
                   <a
                     className="fr-raw-link inline-block"
                     href={projectLink(dossier.numero, true)}
-                    aria-label={`${badgeLabel} pour le projet n°${dossier.numero}`}
+                    aria-label={`${label} pour le projet n°${dossier.numero}`}
                   >
                     <Badge as="span" small noIcon severity={badgeSeverity}>
-                      {badgeLabel}
+                      {label}
                     </Badge>
                   </a>
                 </td>

@@ -61,3 +61,33 @@ export function fondsVertAnomalySummary(
     return { label: "Signalements non renseignés", severity: "info" as const };
   return { label: "Signalements incomplets", severity: "warning" as const };
 }
+
+export function fondsVertListAnomalySummary(
+  anomalies: NormalizedFondsVertAnomalies,
+): ReturnType<typeof fondsVertAnomalySummary> {
+  const summary = fondsVertAnomalySummary(anomalies);
+  if (anomalies.indicatorCount > 0 && anomalies.status !== "loaded") {
+    return { ...summary, label: `Au moins ${summary.label}` };
+  }
+  if (
+    anomalies.indicatorCount > 0 ||
+    anomalies.unspecifiedCategories.length > 0 ||
+    anomalies.contextLabels.length > 0
+  ) {
+    return summary;
+  }
+
+  const warnings = anomalies.warnings;
+  if ("data" in warnings && warnings.data.length > 0) {
+    return { label: "Avertissements à consulter", severity: "warning" };
+  }
+  if (anomalies.hasNoSignals) {
+    if (warnings.status === "invalid" || warnings.status === "incomplete") {
+      return { label: "Avertissements incomplets", severity: "warning" };
+    }
+    if (warnings.status === "unavailable") {
+      return { label: "Avertissements indisponibles", severity: "info" };
+    }
+  }
+  return summary;
+}

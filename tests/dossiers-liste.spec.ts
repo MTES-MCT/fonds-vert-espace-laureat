@@ -212,17 +212,24 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
 }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const first = 89993800 + testInfo.parallelIndex * 10;
-  const [rich, absent, incomplete, complete, warning, statistical] = Array.from(
-    { length: 6 },
-    (_, index) => first + index,
-  );
+  const end = first + 8;
+  const [
+    rich,
+    absent,
+    incomplete,
+    complete,
+    warning,
+    statistical,
+    warningsWithoutAnomalies,
+    invalidWarnings,
+  ] = Array.from({ length: end - first }, (_, index) => first + index);
   const indicator = "Surface du bâtiment avant projet";
   const unknownIndicator = "Indicateur partenaire à conserver";
   let detailCalls = 0;
   const sql = createTestDatabaseClient();
   try {
-    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
-    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${end}`;
+    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${end}`;
     await sql`insert into dossier_progress_revisions (dossier_number,revision,status,author_email) values
       (${rich},1,'En cours de réalisation',${INSTRUCTEUR_EMAIL}),
       (${rich},2,'Bloqué',${INSTRUCTEUR_EMAIL})`;
@@ -283,6 +290,15 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
                   est_anomalie: true,
                   anomalie_indicateur_list: [indicator],
                 },
+              },
+              {
+                socle_commun: { dossier_number: warningsWithoutAnomalies },
+                avertissements: ["Vérifier les hypothèses du projet"],
+              },
+              {
+                socle_commun: { dossier_number: invalidWarnings },
+                anomalies: noSignals,
+                avertissements: [42],
               },
             ];
         return HttpResponse.json({
@@ -393,6 +409,8 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
       [absent, "Signalements non renseignés"],
       [incomplete, "Signalements incomplets"],
       [complete, "Aucun signalement"],
+      [warningsWithoutAnomalies, "Avertissements à consulter"],
+      [invalidWarnings, "Avertissements incomplets"],
     ] as const) {
       const project = page.getByRole("row").filter({
         has: page.getByRole("cell", { name: String(number), exact: true }),
@@ -418,18 +436,18 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
     await expect(
       statisticalProject
         .getByRole("link", {
-          name: `1 donnée à vérifier pour le projet n°${statistical}`,
+          name: `Au moins 1 donnée à vérifier pour le projet n°${statistical}`,
           exact: true,
         })
         .locator(".fr-badge--warning.fr-badge--no-icon"),
     ).toBeVisible();
     await expect(statisticalProject.getByRole("cell").nth(2)).toHaveText(
-      "1 donnée à vérifier",
+      "Au moins 1 donnée à vérifier",
     );
     expect(detailCalls).toBe(0);
     const [stored] = await sql<
       { count: string }[]
-    >`select count(*) from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    >`select count(*) from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${end}`;
     expect(Number(stored.count)).toBe(0);
     await expect(page.locator("main")).toContainText(
       "l'adresse e-mail associée à votre groupe instructeur dans Démarche numérique",
@@ -449,8 +467,8 @@ test("l’instructeur voit les informations des projets autorisés, leur dernier
       fullPage: true,
     });
   } finally {
-    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
-    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${first + 6}`;
+    await sql`delete from dossier_progress_revisions where dossier_number >= ${first} and dossier_number < ${end}`;
+    await sql`delete from dossier_metric_revisions where dossier_number >= ${first} and dossier_number < ${end}`;
     await sql.end();
   }
 });
