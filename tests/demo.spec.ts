@@ -56,6 +56,41 @@ function impactTab(page: Page) {
     .getByRole("link", { name: "Données d’impact", exact: true });
 }
 
+test("depuis le haut de la fiche, le porteur ouvre et referme la correction d’une valeur en bas de l’onglet Impact", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto("/projets/demo");
+  await page
+    .getByRole("link", { name: "Rénovation de la piscine Jacques Demy" })
+    .click();
+  await impactTab(page).click();
+
+  const metric = "Quantité annuelle globale de biodéchets collectés";
+  const edit = page.getByRole("button", {
+    name: `Modifier la valeur « ${metric} »`,
+  });
+  await expect(
+    page.getByRole("heading", {
+      name: "Rénovation de la piscine Jacques Demy",
+    }),
+  ).toBeInViewport();
+  await expect(edit).not.toBeInViewport();
+
+  await edit.scrollIntoViewIfNeeded();
+  const buttonTop = (await edit.boundingBox())!.y;
+  await edit.click();
+  const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
+  await expect(dialog).toBeInViewport();
+  await expect(dialog.getByRole("textbox", { name: metric })).toBeFocused();
+  expect((await edit.boundingBox())!.y).toBeCloseTo(buttonTop, 0);
+
+  await dialog.getByRole("button", { name: "Annuler" }).click();
+  await expect(dialog).toBeHidden();
+  await expect(edit).toBeFocused();
+  expect((await edit.boundingBox())!.y).toBeCloseTo(buttonTop, 0);
+});
+
 test("demo page loads, corrects and persists its database-backed metrics", async ({
   page,
 }) => {

@@ -14,9 +14,9 @@ import {
   useMemo,
   useRef,
   useState,
-  useSyncExternalStore,
 } from "react";
 
+import { useModalButtonReady } from "@/components/dsfr/useModalButtonReady";
 import type { DossierMetricRevisionTarget } from "@/db/dossierMetrics";
 import type { MetricValue } from "@/services/fondsvert/dossier";
 import { metricEditorId } from "@/utils/metrics/editor";
@@ -29,8 +29,6 @@ import {
   MetricRevisionConflictError,
   useMetricRevisions,
 } from "./MetricRevisionContext";
-
-const subscribeToHydration = () => () => {};
 
 function inputValue(value: MetricValue): string {
   if (Array.isArray(value)) {
@@ -101,11 +99,6 @@ export function MetricCorrectionEditor({
     [instanceId, target.metricCode],
   );
   const { correctMetric } = useMetricRevisions();
-  const hydrated = useSyncExternalStore(
-    subscribeToHydration,
-    () => true,
-    () => false,
-  );
   const [openedRevision, setOpenedRevision] = useState(target.revision);
   const [rawValue, setRawValue] = useState(inputValue(target.effectiveValue));
   const [textArrayValues, setTextArrayValues] = useState(() =>
@@ -117,52 +110,20 @@ export function MetricCorrectionEditor({
   const submittingRef = useRef(false);
   const openerRef = useRef<HTMLButtonElement>(null);
   const anchorRef = useRef<HTMLDivElement>(null);
-  const cancelPendingFocus = useRef<(() => void) | undefined>(undefined);
+  const isReady = useModalButtonReady(openerRef);
   const focusOpenerWhenReady = useCallback(() => {
-    const anchor = anchorRef.current;
     const opener = openerRef.current;
-    if (!anchor || !opener || document.activeElement !== anchor) return;
-    cancelPendingFocus.current?.();
-    const ready = () =>
-      !opener.disabled && opener.hasAttribute("data-fr-js-modal-button");
-    const focus = () => {
-      opener.focus();
-      opener.scrollIntoView({ block: "center" });
-    };
-    if (ready()) {
-      focus();
+    if (!isReady || !opener || document.activeElement !== anchorRef.current)
       return;
-    }
-    const cancel = () => {
-      observer.disconnect();
-      anchor.removeEventListener("blur", cancel);
-      if (cancelPendingFocus.current === cancel)
-        cancelPendingFocus.current = undefined;
-    };
-    const observer = new MutationObserver(() => {
-      if (!anchor.isConnected || document.activeElement !== anchor) {
-        cancel();
-        return;
-      }
-      if (!ready()) return;
-      cancel();
-      focus();
-    });
-    cancelPendingFocus.current = cancel;
-    anchor.addEventListener("blur", cancel, { once: true });
-    observer.observe(opener, {
-      attributes: true,
-      attributeFilter: ["disabled", "data-fr-js-modal-button"],
-    });
-  }, []);
-  useEffect(() => {
-    focusOpenerWhenReady();
-    return () => cancelPendingFocus.current?.();
-  }, [focusOpenerWhenReady, hydrated]);
+    opener.focus({ preventScroll: true });
+    opener.scrollIntoView({ block: "center" });
+  }, [isReady]);
+  useEffect(focusOpenerWhenReady, [focusOpenerWhenReady]);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const textArrayInputRefs = useRef<Array<HTMLInputElement | null>>([]);
   useIsModalOpen(modal, {
-    onConceal: () => openerRef.current?.focus(),
+    onDisclose: () => focusCorrectionControl(0, { preventScroll: true }),
+    onConceal: () => openerRef.current?.focus({ preventScroll: true }),
   });
   const setInputRef = (
     element: HTMLInputElement | HTMLTextAreaElement | null,
@@ -170,15 +131,17 @@ export function MetricCorrectionEditor({
     inputRef.current = element;
   };
 
-  const focusCorrectionControl = (textArrayIndex = 0) => {
+  const focusCorrectionControl = (
+    textArrayIndex = 0,
+    options?: FocusOptions,
+  ) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        if (target.valueType === "text_array") {
-          textArrayInputRefs.current[textArrayIndex]?.focus();
-          return;
-        }
-
-        inputRef.current?.focus();
+        const control =
+          target.valueType === "text_array"
+            ? textArrayInputRefs.current[textArrayIndex]
+            : inputRef.current;
+        if (control?.closest("dialog[open]")) control.focus(options);
       });
     });
   };
@@ -189,7 +152,6 @@ export function MetricCorrectionEditor({
     setTextArrayValues(textArrayInputValue(target.effectiveValue));
     setError(undefined);
     setInvalidTextArrayIndex(undefined);
-    focusCorrectionControl();
   };
 
   const closeEditor = () => {
@@ -415,7 +377,7 @@ export function MetricCorrectionEditor({
       }}
     >
       <Button
-        disabled={!hydrated}
+        disabled={!isReady}
         ref={openerRef}
         priority="tertiary no outline"
         size="small"

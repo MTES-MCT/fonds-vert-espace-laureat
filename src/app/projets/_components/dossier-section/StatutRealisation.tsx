@@ -6,16 +6,10 @@ import ButtonsGroup from "@codegouvfr/react-dsfr/ButtonsGroup";
 import { createModal } from "@codegouvfr/react-dsfr/Modal";
 import { useIsModalOpen } from "@codegouvfr/react-dsfr/Modal/useIsModalOpen";
 import Select from "@codegouvfr/react-dsfr/Select";
-import {
-  type FormEvent,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { type FormEvent, useId, useMemo, useRef, useState } from "react";
 
 import { DossierProgressBadge } from "@/components/dossier-progress/DossierProgressBadge";
+import { useModalButtonReady } from "@/components/dsfr/useModalButtonReady";
 import { FactRow } from "@/components/fact-list/FactList";
 import { successToast } from "@/components/toast/toast";
 import type { DossierProgressTarget } from "@/db/dossierProgress";
@@ -31,7 +25,6 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeStyle: "short",
   timeZone: "Europe/Paris",
 });
-const subscribeToHydration = () => () => {};
 
 export function StatutRealisation({
   dossierNumber,
@@ -80,19 +73,18 @@ export function StatutRealisation({
   const openerRef = useRef<HTMLButtonElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
   const confirmationRef = useRef<HTMLParagraphElement>(null);
-  const isReady = useSyncExternalStore(
-    subscribeToHydration,
-    () => true,
-    () => false,
-  );
+  const isReady = useModalButtonReady(openerRef);
   useIsModalOpen(modal, {
-    onConceal: () => openerRef.current?.focus(),
-    onDisclose: () => focusSelect(),
+    onConceal: () => openerRef.current?.focus({ preventScroll: true }),
+    onDisclose: () => focusSelect({ preventScroll: true }),
   });
 
-  const focusSelect = () =>
+  const focusSelect = (options?: FocusOptions) =>
     requestAnimationFrame(() =>
-      requestAnimationFrame(() => selectRef.current?.focus()),
+      requestAnimationFrame(() => {
+        const select = selectRef.current;
+        if (select?.closest("dialog[open]")) select.focus(options);
+      }),
     );
   const openEditor = () => {
     setOpenedTarget(target);
