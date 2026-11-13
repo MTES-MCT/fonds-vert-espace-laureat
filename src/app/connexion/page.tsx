@@ -12,22 +12,16 @@ export default async function ConnexionPage({
   const { error, returnTo } = await searchParams;
   const serviceConfigured = isRealServiceConfigured();
 
-  const errorMessages: Record<string, string> = {
-    user_unknown: "Veuillez vous connecter pour accéder à cette page.",
-  };
-
-  const errorMessage = error && errorMessages[error];
-
   return (
     <div className="fr-container my-8 pb-48">
       <StartDsfrOnHydration />
       <div className="max-w-xl">
-        {serviceConfigured && errorMessage && (
+        {serviceConfigured && error === "user_unknown" && (
           <Alert
             className="mb-6"
             severity="warning"
             small
-            description={errorMessage}
+            description="Veuillez vous connecter pour accéder à cette page."
           />
         )}
         <h1>Vert impact</h1>

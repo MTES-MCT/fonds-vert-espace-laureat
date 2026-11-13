@@ -1007,6 +1007,17 @@ test.describe("ProConnect return after authentication", () => {
   });
 });
 
+test("la connexion reste accessible avec un code d’erreur inconnu", async ({
+  page,
+}) => {
+  await page.goto("/connexion?error=constructor");
+
+  await expect(
+    page.getByRole("main").locator('a[href="/api/auth/proconnect/login"]'),
+  ).toBeVisible();
+  await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);
+});
+
 test("a visitor without a login transaction can retry a failed connection from the project dashboard", async ({
   page,
 }) => {
