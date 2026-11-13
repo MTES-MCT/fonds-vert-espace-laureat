@@ -40,6 +40,10 @@ jobs:
         run: npm run test:demo-catalogue
         env:
           PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/demo-catalogue
+      - name: Verify service pause on a fresh server
+        run: npm run test:service-pause
+        env:
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report/service-pause
       - name: Verify revoked machine key on a fresh server
         run: npx dotenv -e tests/fixtures/corrections-api.env -- env -u CORRECTIONS_API_PREVIOUS_KEY CORRECTIONS_TEST_PROFILE=revoked npm run test:e2e -- tests/corrections-api.spec.ts --workers=1 --grep "HTTP configuration"
         env:

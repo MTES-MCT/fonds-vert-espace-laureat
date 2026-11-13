@@ -30,6 +30,7 @@
     "codegen:corrections": "openapi-typescript openapi/corrections.json -o src/api/generated/corrections-api.d.ts",
     "check:corrections": "npm run codegen:corrections -- --check",
     "test:demo-catalogue": "dotenv -e tests/fixtures/corrections-api.env -- npm run test:e2e -- tests/demo-catalogue.spec.ts --workers=1",
+    "test:service-pause": "dotenv -e tests/fixtures/corrections-api.env -- env DS_TOKEN= PROCONNECT_DISCOVER_URL=http://localhost:4000/.well-known/openid-configuration DS_GRAPHQL_ENDPOINT=http://localhost:4000/unconfigured-graphql FONDSVERT_API_ENDPOINT=http://localhost:4000 npm run test:e2e -- tests/service-pause.spec.ts --workers=1",
     "test:corrections-api": "dotenv -e tests/fixtures/corrections-api.env -- npm run test:e2e -- tests/corrections-api.spec.ts --workers=1"
   },
   "overrides": {

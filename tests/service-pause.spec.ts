@@ -11,7 +11,7 @@ import {
 test.skip(
   process.env.DS_TOKEN !== "" ||
     process.env.CORRECTIONS_TEST_PROFILE !== "enabled",
-  "Utiliser le profil des corrections avec DS_TOKEN vide.",
+  "Lancer npm run test:service-pause.",
 );
 
 const closureMessage = "Le service est actuellement fermé.";
@@ -19,7 +19,8 @@ const closureMessage = "Le service est actuellement fermé.";
 test("une session encore valide ne permet ni d’accéder aux projets ni de passer par ProConnect pendant la pause", async ({
   page,
 }) => {
-  await authenticatePage(page);
+  const email = "alice.doe@example.com";
+  await authenticatePage(page, { email });
   await page.goto("/");
   await page
     .getByRole("main")
@@ -34,7 +35,7 @@ test("une session encore valide ne permet ni d’accéder aux projets ni de pass
     page.locator('a[href^="/api/auth/proconnect/login"]'),
   ).toHaveCount(0);
   await expect(page.locator('a[href^="/projets/demo"]')).toHaveCount(0);
-  await expect(page.getByText("alice.doe@example.com")).toHaveCount(0);
+  await expect(page.getByText(email)).toHaveCount(0);
 
   for (const path of ["login", "login-callback", "logout-callback"]) {
     const response = await page.request.get(`/api/auth/proconnect/${path}`, {
@@ -92,9 +93,12 @@ test("un visiteur qui connaît l’adresse de la démo retrouve son avancement e
     await expect(editor).toBeHidden();
 
     await page.reload();
-    await expect(page.getByTestId("project-progress-row")).toContainText(
-      "En cours de réalisation",
-    );
+    await expect(
+      page.getByTestId("project-progress-row").getByRole("button", {
+        name: "En cours de réalisation",
+        exact: true,
+      }),
+    ).toBeVisible();
     expect(await getStoredDossierProgressRevisions(DEMO_POOL_NUMBER)).toEqual([
       expect.objectContaining({
         status: "En cours de réalisation",
