@@ -27,7 +27,7 @@ export function FactRow({
   aside,
   action,
   ...props
-}: Omit<ComponentProps<"dl">, "children" | "id"> & {
+}: Omit<ComponentProps<"dl">, "children" | "id" | "className"> & {
   id: string;
   label: ReactNode;
   children: ReactNode;
