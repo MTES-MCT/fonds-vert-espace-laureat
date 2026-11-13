@@ -762,13 +762,33 @@ test("le tri utilise toutes les dates de décision DN plutôt que l’ordre FV o
   );
 });
 
-test("displays error when both APIs fail", async ({ page, msw }) => {
+test("la liste tient sur un écran étroit pendant le chargement puis annonce la panne", async ({
+  page,
+  msw,
+}) => {
+  await page.setViewportSize({ width: 320, height: 800 });
   await authenticatePage(page, { email: DEMANDEUR_EMAIL });
+  const respond = Promise.withResolvers<void>();
   msw.use(
-    makeDossiersHandler({ siret: errorResponse, instructeur: errorResponse }),
+    http.get("http://fondsvert/fonds_vert/v2/dossiers", async () => {
+      await respond.promise;
+      return new HttpResponse(null, { status: 500 });
+    }),
   );
 
-  await page.goto("/projets");
+  try {
+    await page.goto("/projets", { waitUntil: "commit" });
+    await expect(page.getByRole("status", { name: "Chargement" })).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      )
+      .toBe(true);
+  } finally {
+    respond.resolve();
+  }
 
   await expect(
     page.getByText("La liste de vos dossiers est temporairement indisponible"),
