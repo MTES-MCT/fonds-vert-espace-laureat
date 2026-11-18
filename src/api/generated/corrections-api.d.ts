@@ -75,7 +75,7 @@ export interface components {
         /** @description Une page de corrections. */
         CorrectionPage: {
             headers: {
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -85,7 +85,7 @@ export interface components {
         /** @description Paramètres invalides */
         InvalidRequest: {
             headers: {
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -96,7 +96,7 @@ export interface components {
         Unauthorized: {
             headers: {
                 "WWW-Authenticate": "Bearer";
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -106,7 +106,7 @@ export interface components {
         /** @description Export ou page introuvable. Recommencez sans curseur. */
         MissingExportPage: {
             headers: {
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -117,7 +117,7 @@ export interface components {
         MethodNotAllowed: {
             headers: {
                 Allow: "GET";
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -127,7 +127,7 @@ export interface components {
         /** @description Export expiré. Recommencez sans curseur. */
         ExpiredExport: {
             headers: {
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -137,8 +137,8 @@ export interface components {
         /** @description Création trop fréquente ou déjà en cours */
         RateLimited: {
             headers: {
-                "Cache-Control"?: "no-store";
-                "Retry-After"?: number;
+                "Cache-Control": components["headers"]["CacheControl"];
+                "Retry-After": number;
                 [name: string]: unknown;
             };
             content: {
@@ -148,7 +148,7 @@ export interface components {
         /** @description Service indisponible */
         Unavailable: {
             headers: {
-                "Cache-Control"?: "no-store";
+                "Cache-Control": components["headers"]["CacheControl"];
                 [name: string]: unknown;
             };
             content: {
@@ -163,7 +163,9 @@ export interface components {
         Cursor: string;
     };
     requestBodies: never;
-    headers: never;
+    headers: {
+        CacheControl: "no-store";
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -188,7 +190,7 @@ export interface operations {
             /** @description Origine réseau refusée */
             403: {
                 headers: {
-                    "Cache-Control"?: "no-store";
+                    "Cache-Control": components["headers"]["CacheControl"];
                     [name: string]: unknown;
                 };
                 content: {

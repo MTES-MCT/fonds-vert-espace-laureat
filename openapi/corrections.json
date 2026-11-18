@@ -36,10 +36,7 @@
             "description": "Origine réseau refusée",
             "headers": {
               "Cache-Control": {
-                "schema": {
-                  "type": "string",
-                  "const": "no-store"
-                }
+                "$ref": "#/components/headers/CacheControl"
               }
             },
             "content": {
@@ -261,10 +258,7 @@
         "description": "Une page de corrections.",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -279,10 +273,7 @@
         "description": "Paramètres invalides",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -304,10 +295,7 @@
             }
           },
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -322,10 +310,7 @@
         "description": "Export ou page introuvable. Recommencez sans curseur.",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -347,10 +332,7 @@
             }
           },
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -365,10 +347,7 @@
         "description": "Export expiré. Recommencez sans curseur.",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -383,12 +362,10 @@
         "description": "Création trop fréquente ou déjà en cours",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           },
           "Retry-After": {
+            "required": true,
             "schema": {
               "type": "integer",
               "minimum": 1
@@ -407,10 +384,7 @@
         "description": "Service indisponible",
         "headers": {
           "Cache-Control": {
-            "schema": {
-              "type": "string",
-              "const": "no-store"
-            }
+            "$ref": "#/components/headers/CacheControl"
           }
         },
         "content": {
@@ -419,6 +393,15 @@
               "$ref": "#/components/schemas/ApiError"
             }
           }
+        }
+      }
+    },
+    "headers": {
+      "CacheControl": {
+        "required": true,
+        "schema": {
+          "type": "string",
+          "const": "no-store"
         }
       }
     }
