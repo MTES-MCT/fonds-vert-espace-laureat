@@ -272,32 +272,28 @@ test("navigation links work correctly", async ({ page }) => {
   await expect(footerBack).toHaveAttribute("href", backLink);
 });
 
-test("dossier page displays calendar timeline with correct dates and status", async ({
+test("le lecteur retrouve la date et l’état de chaque jalon du calendrier", async ({
   page,
 }) => {
   await page.goto(`/projets/${DOSSIER_NUMBER}`);
 
-  const calendarSection = page.getByRole("region", {
-    name: "Calendrier",
-  });
+  const calendrier = page.getByRole("region", { name: "Calendrier" });
+  const jalons = calendrier.getByRole("listitem");
+  const datesAttendues = [
+    ["Dépôt du dossier", "15 juin 2023", "terminé"],
+    ["Notification", "20 septembre 2023", "terminé"],
+    ["Début d'exécution", "15 janvier 2024", "terminé"],
+    ["Fin d'exécution", "31 décembre 2099", "à venir"],
+  ];
 
-  await expect(calendarSection.getByText("Dépôt du dossier")).toBeVisible();
-  await expect(calendarSection.getByText("15 juin 2023")).toBeVisible();
-
-  await expect(calendarSection.getByText("Notification")).toBeVisible();
-  await expect(calendarSection.getByText("20 septembre 2023")).toBeVisible();
-
-  await expect(calendarSection.getByText("Début d'exécution")).toBeVisible();
-  await expect(calendarSection.getByText("15 janvier 2024")).toBeVisible();
-
-  await expect(calendarSection.getByText("Fin d'exécution")).toBeVisible();
-  await expect(calendarSection.getByText("31 décembre 2099")).toBeVisible();
-
-  const timelineItems = calendarSection.locator("li");
-  await expect(timelineItems.nth(0)).toContainText("terminé");
-  await expect(timelineItems.nth(1)).toContainText("terminé");
-  await expect(timelineItems.nth(2)).toContainText("terminé");
-  await expect(timelineItems.nth(3)).toContainText("à venir");
+  await expect(jalons).toHaveCount(datesAttendues.length);
+  for (const [index, [libelle, date, statut]] of datesAttendues.entries()) {
+    const jalon = jalons.nth(index);
+    await expect(
+      jalon.getByText(`${libelle} - ${statut}`, { exact: true }),
+    ).toBeVisible();
+    await expect(jalon.getByText(date, { exact: true })).toBeVisible();
+  }
 });
 
 for (const [situation, serviceIndisponible] of [
@@ -468,7 +464,7 @@ test("dossier page removes the external impact form and invitation", async ({
   ).toHaveCount(0);
 });
 
-test("calendar timeline marks step as done when later step is done, even with missing date", async ({
+test("la notification sans date est terminée lorsque l’exécution a débuté", async ({
   page,
   msw,
 }) => {
@@ -495,12 +491,11 @@ test("calendar timeline marks step as done when later step is done, even with mi
     name: "Calendrier",
   });
 
-  await expect(calendarSection.getByText("Date non renseignée")).toBeVisible();
-
-  const timelineItems = calendarSection.locator("li");
-
+  const timelineItems = calendarSection.getByRole("listitem");
+  const notification = timelineItems.filter({ hasText: "Notification" });
+  await expect(notification.getByText("Date non renseignée")).toBeVisible();
+  await expect(notification).toContainText("terminé");
   await expect(timelineItems.nth(0)).toContainText("terminé");
-  await expect(timelineItems.nth(1)).toContainText("terminé");
   await expect(timelineItems.nth(2)).toContainText("terminé");
   await expect(timelineItems.nth(3)).toContainText("à venir");
 });
