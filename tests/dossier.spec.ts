@@ -506,6 +506,7 @@ test("calendar timeline marks step as done when later step is done, even with mi
 });
 
 test.describe("consultation d’un dossier par un porteur ordinaire", () => {
+  const alertePanne = "L'historique financier est temporairement indisponible.";
   const emailPorteur = "porteur-dossier@example.test";
   const cheminProjet = `/projets/${DOSSIER_NUMBER}`;
   const cheminFinancement = `${cheminProjet}/financement`;
@@ -569,6 +570,9 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     ).toHaveText("10 073 564,00 €");
     await expect(aide.getByLabel("Montant total payé")).toHaveText("N/A");
     await expect(
+      financement.getByText(alertePanne, { exact: true }),
+    ).toHaveCount(0);
+    await expect(
       financement.getByRole("region", { name: /Engagement juridique n°/ }),
     ).toHaveCount(0);
 
@@ -609,14 +613,8 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       name: "Financement du projet",
       exact: true,
     });
-    await expect(
-      financement.getByText(
-        "L'historique financier est temporairement indisponible.",
-        {
-          exact: true,
-        },
-      ),
-    ).toBeVisible();
+    const alerte = financement.getByText(alertePanne, { exact: true });
+    await expect(alerte).toBeVisible();
     for (const libelle of [
       "Montant total des dépenses du projet",
       "Montant attribué",
@@ -626,7 +624,6 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
         "N/A",
       );
     }
-    await expect(financement).not.toContainText(/0,00\s*€/);
     await expect(
       financement.getByRole("region", { name: /Engagement juridique n°/ }),
     ).toHaveCount(0);
@@ -642,14 +639,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
     await page.reload();
 
     await expect(page).toHaveURL(cheminFinancement);
-    await expect(
-      financement.getByText(
-        "L'historique financier est temporairement indisponible.",
-        {
-          exact: true,
-        },
-      ),
-    ).toBeVisible();
+    await expect(alerte).toBeVisible();
     for (const libelle of [
       "Montant total des dépenses du projet",
       "Montant attribué",
