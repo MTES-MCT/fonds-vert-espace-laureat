@@ -53,8 +53,8 @@ npm run test
 ```
 
 La commande prépare la base de test, applique les migrations et lance
-Playwright avec les services externes simulés. Les valeurs de
-`.env.test.example` peuvent être surchargées dans `.env.test`.
+Playwright avec les services externes simulés. Pour modifier les valeurs
+de `.env.test` sur votre poste, utilisez `.env.test.local`.
 
 Pour garder le serveur de test démarré entre deux passages, lancez
 `npm run dev:test`. Pour cibler un fichier, utilisez
