@@ -397,9 +397,7 @@ for (const [actor, email, correctedValue] of [
       values.getByRole("button", { name: /^Modifier la valeur «/ }),
     ).toHaveCount(3);
 
-    await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-      state: "attached",
-    });
+    await expect(opener).toBeEnabled();
     for (const closeAction of ["Annuler", "Fermer", "Échap"] as const) {
       await opener.focus();
       await opener.press("Enter");

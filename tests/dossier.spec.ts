@@ -29,11 +29,6 @@ async function waitForDsfrTabs(page: Page) {
   await page.waitForSelector("[data-fr-js-tab-button]");
 }
 
-async function waitForDsfrModal(page: Page) {
-  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-    state: "attached",
-  });
-}
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const DOSSIER_NUMBER = 12345678;
 const dossierData = configureAdministratorDossierFixtures(DOSSIER_NUMBER);
@@ -688,10 +683,10 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
   }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto(cheminProjet);
-    await waitForDsfrModal(page);
     const calendrier = page.getByRole("region", { name: "Calendrier" });
-    const jalons = await calendrier.getByRole("listitem").allTextContents();
-    expect(jalons).toHaveLength(4);
+    const jalonsAffiches = calendrier.getByRole("listitem");
+    await expect(jalonsAffiches).toHaveCount(4);
+    const jalons = await jalonsAffiches.allTextContents();
 
     const synthese = page.getByRole("region", {
       name: "Synthèse du projet",
@@ -746,7 +741,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       ).toContainText(value);
     }
     await expect(calendrier).toBeVisible();
-    await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
+    await expect(jalonsAffiches).toHaveText(jalons);
     await page.screenshot({
       path: testInfo.outputPath("impact-desktop.png"),
       fullPage: true,
@@ -775,7 +770,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
         .getByLabel("Montant attribué initial", { exact: true }),
     ).toContainText("2 500 000,00 €");
     await expect(calendrier).toBeVisible();
-    await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
+    await expect(jalonsAffiches).toHaveText(jalons);
     await page.screenshot({
       path: testInfo.outputPath("financement-desktop.png"),
       fullPage: true,
@@ -800,7 +795,7 @@ test.describe("consultation d’un dossier par un porteur ordinaire", () => {
       await navigation.getByRole("link", { name: onglet, exact: true }).click();
       await expect(page).toHaveURL(chemin);
       await expect(calendrier).toBeVisible();
-      await expect(calendrier.getByRole("listitem")).toHaveText(jalons);
+      await expect(jalonsAffiches).toHaveText(jalons);
 
       const contenu = page.getByRole("heading", { level: 2, name: titre });
       const basDuContenu = await contenu.evaluate(

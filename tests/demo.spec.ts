@@ -106,10 +106,6 @@ test("demo page loads, corrects and persists its database-backed metrics", async
     .getByRole("navigation", { name: "Pages du projet" })
     .getByRole("link", { name: "Données d’impact", exact: true })
     .click();
-  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-    state: "attached",
-  });
-
   await expect(impactTab(page)).toHaveAccessibleDescription(
     "3 données à vérifier",
   );
@@ -702,9 +698,6 @@ test("keeps demo corrections until a distinct simulated Fonds vert response is s
   });
   const modifier = before.getByRole("button", {
     name: /^Modifier la valeur «/,
-  });
-  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-    state: "attached",
   });
   await modifier.click();
   const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });

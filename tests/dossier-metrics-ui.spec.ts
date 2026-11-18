@@ -3,7 +3,6 @@ import {
   graphql,
   http,
   HttpResponse,
-  type Page,
   test,
 } from "next/experimental/testmode/playwright/msw";
 
@@ -24,11 +23,6 @@ import {
 } from "./setup/db";
 import { configureAdministratorDossierFixtures } from "./setup/dossier";
 
-async function waitForDsfrModal(page: Page) {
-  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-    state: "attached",
-  });
-}
 const ds = graphql.link("https://demarche.numerique.gouv.fr/api/v2/graphql");
 const DOSSIER_NUMBER = 89334002;
 configureAdministratorDossierFixtures(DOSSIER_NUMBER);
@@ -65,7 +59,6 @@ test("validates and submits a numeric metric correction once", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}/impact`);
-    await waitForDsfrModal(page);
 
     const numberCard = page.getByRole("region", {
       name: "Métrique numérique",
@@ -185,7 +178,6 @@ test("persists a correction submitted from the standard dossier page", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}/impact`);
-    await waitForDsfrModal(page);
 
     const metricCard = page.getByRole("region", {
       name: "Métrique persistante",
@@ -212,7 +204,6 @@ test("persists a correction submitted from the standard dossier page", async ({
       /12,5\s*ha/,
     );
 
-    await waitForDsfrModal(page);
     await metricCard.getByRole("button", { name: "Modifier" }).click();
     await dialog
       .getByRole("button", { name: "Enregistrer", exact: true })
@@ -260,7 +251,6 @@ test("refreshes a conflicting correction without replaying the discarded entry",
 
   try {
     await page.goto(`/projets/${dossierNumber}/impact`);
-    await waitForDsfrModal(page);
     const card = page.getByRole("region", { name: "Métrique partagée" });
     await card.getByRole("button", { name: "Modifier" }).click();
     const dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
@@ -398,7 +388,6 @@ test("persists successive metric corrections by an ordinary porteur and instruct
       .getByRole("navigation", { name: "Pages du projet" })
       .getByRole("link", { name: "Données d’impact", exact: true })
       .click();
-    await waitForDsfrModal(page);
     const card = page.getByRole("region", {
       name: "Métrique des deux acteurs",
     });
@@ -425,7 +414,6 @@ test("persists successive metric corrections by an ordinary porteur and instruct
       .getByRole("link", { name: "Données d’impact", exact: true })
       .click();
     await expect(card.getByLabel("Valeur effective")).toHaveText(/12\s*ha/);
-    await waitForDsfrModal(page);
     await card.getByRole("button", { name: /^Modifier la valeur «/ }).click();
     dialog = page.getByRole("dialog", { name: "Modifier la valeur" });
     await dialog.getByLabel("Métrique des deux acteurs").fill("15");
@@ -508,7 +496,6 @@ test("edits text, boolean and multiple metrics from their cards", async ({
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}/impact`);
-    await waitForDsfrModal(page);
 
     const textCard = page.getByRole("region", { name: "Métrique texte" });
     await textCard.getByRole("button", { name: "Modifier" }).click();
@@ -629,7 +616,6 @@ test("edits before and after metrics independently", async ({ page, msw }) => {
 
   try {
     await page.goto(`/projets/${correctionDossierNumber}/impact`);
-    await waitForDsfrModal(page);
 
     const beforeRow = page.getByRole("region", {
       name: "Énergie test avant travaux",

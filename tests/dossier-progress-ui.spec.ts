@@ -32,9 +32,6 @@ const INSTRUCTEUR = "instructeur.avancement.ui@example.com";
 const ADMIN = "alice.doe@example.com";
 
 async function openProgress(page: Page) {
-  await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-    state: "attached",
-  });
   await page
     .getByRole("button", { name: "Modifier l’avancement", exact: true })
     .click();

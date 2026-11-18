@@ -259,9 +259,7 @@ for (const [email, listTitle] of [
       name: `Modifier la valeur « ${METRIC_LABEL} »`,
       exact: true,
     });
-    await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-      state: "attached",
-    });
+    await expect(editMetric).toBeEnabled();
     await editMetric.press("Enter");
     const metricDialog = page.getByRole("dialog", {
       name: "Modifier la valeur",
@@ -427,9 +425,6 @@ test("le super admin découvre tous les projets puis modifie dans les deux vues 
         .filter({ has: page.getByText(ADMIN, { exact: true }) })
         .first(),
     ).toContainText(ADMIN);
-    await page.waitForSelector('[data-fr-js-modal-button="true"]', {
-      state: "attached",
-    });
     await page
       .getByTestId("impact-section")
       .getByRole("button", { name: /^Modifier la valeur «/ })
