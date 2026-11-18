@@ -141,21 +141,19 @@ test("un visiteur parcourt les deux vues et retrouve ses modifications dans l’
     const metricLabel = "Consommation énergétique avant travaux";
     const metric = page.getByRole("region", { name: metricLabel, exact: true });
 
-    await test.step("L’instructeur ouvre la synthèse puis corrige la consommation signalée dans l’onglet Impact", async () => {
-      await expect(
-        page.getByRole("link", { name: /pour le projet n°101/ }),
-      ).toHaveAttribute(
-        "href",
+    await test.step("L’instructeur suit le lien des signalements et corrige la consommation dans l’onglet Impact", async () => {
+      await page
+        .getByRole("link", { name: /pour le projet n°101/ })
+        .press("Enter");
+      await expect(page).toHaveURL(
         "/projets/demo/101/impact?vue=instructeur#signalements",
       );
-      const projectTitle = "Rénovation de l’école des Tilleuls";
-      await page.getByRole("link", { name: projectTitle }).click();
       await expect(
-        page.getByRole("heading", { name: projectTitle }),
+        page.getByRole("heading", {
+          name: "Rénovation de l’école des Tilleuls",
+        }),
       ).toBeVisible();
-      await page
-        .getByRole("link", { name: "Données d’impact", exact: true })
-        .click();
+      await expect(page.locator("#signalements")).toBeVisible();
       await expect(
         page.getByRole("heading", { name: "Caractéristiques du projet" }),
       ).toBeVisible();
