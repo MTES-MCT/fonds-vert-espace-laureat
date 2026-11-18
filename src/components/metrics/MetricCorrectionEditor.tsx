@@ -382,7 +382,7 @@ export function MetricCorrectionEditor({
           <div className="space-y-2">{correctionField()}</div>
 
           <ButtonsGroup
-            alignment="between"
+            alignment="right"
             inlineLayoutWhen="sm and up"
             isReverseOrder
             buttons={[
