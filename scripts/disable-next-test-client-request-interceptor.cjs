@@ -1,8 +1,8 @@
 const { version: nextVersion } = require("next/package.json");
 
-if (nextVersion !== "16.4.3") {
+if (nextVersion !== "16.4.6") {
   throw new Error(
-    `The Next.js test proxy workaround targets 16.4.3, not ${nextVersion}. Re-evaluate it before upgrading Next.js.`,
+    `The Next.js test proxy workaround targets 16.4.6, not ${nextVersion}. Re-evaluate it before upgrading Next.js.`,
   );
 }
 
