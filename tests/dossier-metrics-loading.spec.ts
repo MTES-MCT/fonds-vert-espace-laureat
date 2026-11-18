@@ -716,9 +716,10 @@ test("dossier page displays metrics", async ({ page, msw }) => {
     await expect(tags.nth(0)).toContainText("Friche commerciale");
 
     await expect(
-      impactSection.getByTestId(
-        "metric-activites-de-bureaux---surface-de-plancher",
-      ),
+      impactSection.getByRole("region", {
+        name: "Activités de bureaux - Surface de plancher",
+        exact: true,
+      }),
     ).not.toBeAttached();
   } finally {
     await deleteStoredDossierMetrics(metricsDossierNumber);
